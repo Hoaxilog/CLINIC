@@ -1,8 +1,7 @@
-@include('partial.head')
-<body>
-    @include('components.sidebar')
-    
-    <main id="mainContent" class="px-10 mt-10">
+@extends('index')
+
+@section('content')
+    <main id="mainContent" class="min-h-screen bg-gray-100 p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
         <div class="space-y-6">
             <section class="space-y-6">
                 <div class="flex justify-between ">
@@ -84,6 +83,4 @@
         </div>
         
     </main>
-
-</body>
-</html>
+@endsection
