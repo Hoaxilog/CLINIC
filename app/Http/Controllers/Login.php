@@ -29,7 +29,7 @@ class Login extends Controller
 
         if(Auth::attempt($validation)) {
             $request->session()->regenerate();
-            return redirect()->intended('/appointment');
+            return redirect()->intended('/dashboard');
         }
 
     }

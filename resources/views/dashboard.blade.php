@@ -95,7 +95,8 @@
             </section>
 
             <section class="lg:col-span-1 relative flex flex-col bg-gray-100 rounded-lg shadow-md">
-                <div class="rounded-t-lg bg-[#ccebff] p-3 text-center">
+                @include('notes', $notes)
+                {{-- <div class="rounded-t-lg bg-[#ccebff] p-3 text-center">
                     <h3 class="text-lg font-semibold text-gray-800">Notes / Reminders</h3>
                 </div>
 
@@ -131,7 +132,7 @@
 
                 <button id="add-notes" class="cursor-pointer absolute bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#ffac00] text-white shadow-lg transition hover:bg-yellow-500">
                     <span class="text-4xl font-light">+</span>
-                </button>
+                </button> --}}
             </section>
 
             <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-4">
@@ -165,137 +166,7 @@
 @endsection
 
 @push('script') 
-    <script>
-        function updateLiveTime() {
-            const timeElement = document.getElementById('realtime-time');
-            const dateElement = document.getElementById('realtime-date');
-            
-            if (!timeElement || !dateElement) return; // Failsafe
-            
-            const now = new Date();
-            
-            // Format Time
-            let hours = now.getHours();
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // 0 hour is 12
-            const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
-            
-            // Format Date
-            const formattedDate = now.toLocaleString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-            });
-            
-            // Update HTML
-            if (timeElement.innerText !== formattedTime) {
-            timeElement.innerText = formattedTime;
-            }
-            if (dateElement.innerText !== formattedDate) {
-            dateElement.innerText = formattedDate;
-            }
-        }
-
-        updateLiveTime();
-        setInterval(updateLiveTime, 1000);
-
-        (function () {
-            const openBtn = document.getElementById('add-notes');
-            const notesList = document.getElementById('notes-list');
-
-            // create modal element and append to body
-            const modalHtml = `
-            <div id="notes-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
-            <!-- darker backdrop -->
-            <div id="notes-modal-backdrop" class="absolute inset-0 bg-black opacity-60"></div>
-
-            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 z-10 overflow-hidden">
-                <!-- header: white background, larger blue close button -->
-                <div class="p-6 flex items-center justify-between bg-white border-b">
-                <h3 class="text-2xl font-semibold text-gray-900">Add Note</h3>
-                <button id="notes-modal-close" class="text-[#0086da] text-5xl leading-none px-3 py-1 rounded-full hover:bg-[#e6f4ff] transition" aria-label="Close">&times;</button>
-                </div>
-
-                <form id="notes-form" class="p-6">
-                <div class="mb-4">
-                    <label class="block text-lg font-medium text-gray-700 mb-2">Title</label>
-                    <input id="note-title" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="Note title" />
-                </div>
-                <div class="mb-4">
-                    <label class="block text-lg font-medium text-gray-700 mb-2">Notes</label>
-                    <textarea id="note-content" rows="6" class="w-full border rounded px-4 py-3 text-base" placeholder="Write something..."></textarea>
-                </div>
-                <div class="flex justify-end gap-3">
-                    <button type="button" id="notes-cancel" class="px-5 py-3 rounded bg-gray-200">Cancel</button>
-                    <button type="submit" class="px-5 py-3 rounded bg-[#0086da] text-white text-lg">Save</button>
-                </div>
-                </form>
-            </div>
-            </div>`;
-
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-            const modal = document.getElementById('notes-modal');
-            const backdrop = document.getElementById('notes-modal-backdrop');
-            const closeBtn = document.getElementById('notes-modal-close');
-            const cancelBtn = document.getElementById('notes-cancel');
-            const form = document.getElementById('notes-form');
-            const titleInput = document.getElementById('note-title');
-            const contentInput = document.getElementById('note-content');
-
-            function openModal() {
-            modal.classList.remove('hidden');
-            // reset fields
-            titleInput.value = '';
-            contentInput.value = '';
-            setTimeout(() => titleInput.focus(), 50);
-            }
-            function closeModal() {
-            modal.classList.add('hidden');
-            }
-
-            openBtn.addEventListener('click', openModal);
-            closeBtn.addEventListener('click', closeModal);
-            cancelBtn.addEventListener('click', closeModal);
-            backdrop.addEventListener('click', closeModal);
-
-            form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const title = (titleInput.value || 'Untitled note').trim();
-            const content = (contentInput.value || '').trim();
-            const now = new Date();
-            const formattedDate = now.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-            // build note node (matches existing styles)
-            const noteNode = document.createElement('div');
-            noteNode.className = 'rounded-lg bg-white hover:bg-[#ccebff] hover:cursor-pointer transition delay-75 shadow-lg p-4';
-            const titleEl = document.createElement('h4');
-            titleEl.className = 'font-medium text-gray-900';
-            titleEl.textContent = title;
-            noteNode.appendChild(titleEl);
-            if (content) {
-                const contentEl = document.createElement('p');
-                contentEl.className = 'text-sm text-gray-700 mt-1';
-                contentEl.textContent = content;
-                noteNode.appendChild(contentEl);
-            }
-            const dateEl = document.createElement('p');
-            dateEl.className = 'text-sm text-gray-700 mt-2';
-            dateEl.textContent = formattedDate;
-            noteNode.appendChild(dateEl);
-
-            // insert new note at top
-            if (notesList.firstChild) {
-                notesList.insertBefore(noteNode, notesList.firstChild);
-            } else {
-                notesList.appendChild(noteNode);
-            }
-
-            closeModal();
-            });
-        })();
-    </script>
+    @vite('resources/js/time.js')
+    @vite('resources/js/notes.js')
 @endpush
 
