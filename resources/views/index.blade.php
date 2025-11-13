@@ -6,9 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tejada Clinic</title>
     @vite('resources/css/app.css')
+    @livewireStyles
 
 </head>
-<body>
+<body class=" tracking-wide">
     <header class="bg-white border-b border-gray-200 h-14 flex items-center px-4 fixed top-0 left-0 right-0 z-10">
         <button id="toggleBtn" class="p-2 hover:bg-gray-100 rounded-lg">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,5 +128,6 @@
             });
         })();
     </script>
+    @livewireScripts
 </body>
 </html>

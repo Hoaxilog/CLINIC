@@ -13,6 +13,11 @@ class NotesController extends Controller
     }
 
     function createNotes(Request $request) {
+
+        $validation = $request->validate([
+            'title' => 'required|',
+            'password' => 'required',
+        ]);
         try {
             DB::table('notes')->insert([
                 'title' => $request->title,

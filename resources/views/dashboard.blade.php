@@ -36,12 +36,12 @@
             </section>
 
             <section class="lg:col-span-2 bg-white rounded-lg shadow-md flex flex-col">
-                <div class="flex items-center justify-between p-4 border-b">
+                <div class="flex items-center justify-between p-3">
                     <h1 class="text-2xl font-semibold text-gray-800">Today's Schedule</h1>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0086da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg>
                 </div>
                 
-                <div class="space-y-3 p-4 h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#ccebff] scrollbar-thumb-[#0086da]  scrollbar-color-[#0086da] ">
+                <div class="space-y-3 p-4  h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#ccebff] scrollbar-thumb-[#0086da]  scrollbar-color-[#0086da] ">
                     <div class="bg-[#ccebff] p-3 rounded-lg ">
                         <div class="flex items-center justify-between">
                             <div class="flex-1 mr-4">
@@ -95,7 +95,8 @@
             </section>
 
             <section class="lg:col-span-1 relative flex flex-col bg-gray-100 rounded-lg shadow-md">
-                @include('notes', $notes)
+                @livewire('notes')
+                {{-- @include('/notes/notes', $notes) --}}
                 {{-- <div class="rounded-t-lg bg-[#ccebff] p-3 text-center">
                     <h3 class="text-lg font-semibold text-gray-800">Notes / Reminders</h3>
                 </div>
@@ -167,6 +168,5 @@
 
 @push('script') 
     @vite('resources/js/time.js')
-    @vite('resources/js/notes.js')
 @endpush
 
