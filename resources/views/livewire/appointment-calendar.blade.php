@@ -23,7 +23,7 @@
                     </button>
                 </div>
             </div>
-            <div class="flex items-center gap-px rounded-lg bg-gray-100 p-1">
+            {{-- <div class="flex items-center gap-px rounded-lg bg-gray-100 p-1">
                 <button wire:click="changeView('week')" 
                     class="rounded-lg py-2.5 px-5 text-lg font-medium transition-all duration-300 hover:bg-white hover:text-[#0086da] {{ $viewType === 'week' ? 'bg-white text-[#0086da]' : 'text-gray-500' }}">
                     Week
@@ -32,13 +32,7 @@
                     class="rounded-lg py-2.5 px-5 text-lg font-medium transition-all duration-300 hover:bg-white hover:text-[#0086da] {{ $viewType === 'month' ? 'bg-white text-[#0086da]' : 'text-gray-500' }}">
                     Month
                 </button>
-            </div>
-            <button class="py-2.5 pr-7 pl-5 bg-[#0086da] rounded-xl flex items-center gap-2 text-base font-semibold text-white transition-all duration-300 borderV hover:bg-white hover:text-[#0086da]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 5V15M15 10H5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-                </svg>
-                New Appointment
-            </button>
+            </div> --}}
         </div>
 
         <div class="relative">
@@ -155,11 +149,10 @@
     </div>
 
     {{-- --- APPOINTMENT MODAL --- --}}
-    {{-- (This modal code is unchanged from the previous step) --}}
     @if($showAppointmentModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center">
             <div class="absolute inset-0 bg-black opacity-60"></div>
-            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 z-10 overflow-hidden">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 z-10 overflow-hidden">
                 <div class="px-6 py-4 flex items-center justify-between bg-white border-b">
                     <h3 class="text-2xl font-semibold text-gray-900 ">{{ $isViewing ? 'Appointment Details' : 'Book Appointment' }}</h3>
                     <button class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black text-[#0086da] text-5xl flex items-center justify-center px-3 py-1 rounded-full hover:bg-[#e6f4ff] transition" wire:click="closeAppointmentModal" aria-label="Close">×</button>

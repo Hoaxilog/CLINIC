@@ -12,6 +12,7 @@
             @livewire('patient-records')
         </section>
         @livewire('PatientFormController.patient-form-modal')
+        @livewire('appointment-history-modal')
 
     </main>
 @endsection

@@ -7,6 +7,7 @@ use Livewire\Attributes\On;
 
 class HealthHistory extends Component
 {
+    // ... (Properties remain the same) ...
     public $when_last_visit_q1;
     public $what_last_visit_reason_q1 = '';
     public $what_seeing_dentist_reason_q2 = '';
@@ -19,10 +20,8 @@ class HealthHistory extends Component
     public $is_nervous_q6 = false;
     public $what_nervous_concern_q6 = '';
 
-    // Medical
     public $is_condition_q1 = false;
     public $what_condition_reason_q1 = '';
-    // I also fixed a small typo here, 'public$' -> 'public $'
     public $is_hospitalized_q2 = false;
     public $what_hospitalized_reason_q2 = '';
     public $is_serious_illness_operation_q3 = false;
@@ -33,21 +32,28 @@ class HealthHistory extends Component
     public $what_allergies_list_q5 = '';
     public $is_allergic_latex_rubber_metals_q6 = false;
 
-    // For Women Only
     public $is_pregnant_q7 = false;
     public $is_breast_feeding_q8 = false;
     
-    // This property will hold the gender from Step 1
     public $gender;
     
-    
-    
+    // --- ADDED: Mount function handles data and gender passed from parent ---
+    public function mount($data = [], $gender = null)
+    {
+        if (!empty($data)) {
+            $this->fill($data);
+        }
+        if ($gender) {
+            $this->gender = $gender;
+        }
+    }
+
     #[On('setGender')]
     public function setGender($gender) {
         $this->gender = $gender;
     }
     
-    // This is crucial for Livewire to handle '1' and '0' from radios as booleans
+    // ... (Casts and rules remain the same) ...
     protected $casts = [
         'is_clicking_jaw_q3a' => 'boolean',
         'is_pain_jaw_q3b' => 'boolean',
@@ -71,7 +77,6 @@ class HealthHistory extends Component
     {
         $isFemale = ($this->gender === 'Female');
 
-        // MODIFIED: Added full validation rules for this step
         return [
             'when_last_visit_q1' => 'nullable|date',
             'what_last_visit_reason_q1' => 'nullable|string',
@@ -137,11 +142,24 @@ class HealthHistory extends Component
     #[On('validateHealthHistory')]
     public function validateForm()
     {
-        // Validate the data
         $validatedData = $this->validate();
-        
-        // Send the data up to the parent
         $this->dispatch('healthHistoryValidated', data: $validatedData);
+    }
+
+    
+    #[On('fillHealthHistory')]
+    public function fillForm($data, $gender)
+    {   
+        $this->fill($data); 
+        if($gender) {
+            $this->gender = $gender;
+        }
+    }
+
+    #[On('resetForm')]
+    public function resetForm()
+    {
+        $this->reset();
     }
 
     public function render()

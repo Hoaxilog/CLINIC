@@ -8,7 +8,7 @@ use Livewire\Attributes\On;
 
 class BasicInfo extends Component
 {
-    
+    // ... (Properties remain the same) ...
     // == Step 1: Patient Information ==
     public $last_name = '';
     public $first_name = '';
@@ -40,7 +40,17 @@ class BasicInfo extends Component
     public $mother_number = '';
     public $guardian_name = '';
     public $guardian_number = '';
-    
+
+    // --- ADDED: Mount function to accept data passed from parent ---
+    public function mount($data = [])
+    {
+        if (!empty($data)) {
+            $this->fill($data);
+        }
+    }
+
+    // ... (getAgeProperty, rules, validationAttributes remain the same) ...
+
     // Computed property for Age
     public function getAgeProperty()
     {
@@ -54,14 +64,12 @@ class BasicInfo extends Component
         return null;
     }
 
-    // Validation rules moved from parent
     public function rules()
     {
         $rules = [
-            // Patient Info
             'last_name' => 'required|string',
             'first_name' => 'required|string',
-            'middle_name' => 'nullable|string',
+            'middle_name' => 'required|string',
             'nickname' => 'nullable|string',
             'occupation' => 'required|string',
             'birth_date' => 'required|date',
@@ -75,12 +83,10 @@ class BasicInfo extends Component
             'email_address' => 'nullable|email',
             'referral' => 'nullable|string',
             
-            // Emergency Contact
             'emergency_contact_name' => 'required|string',
             'emergency_contact_number' => 'required|string',
             'relationship' => 'required|string',
-            
-            // Below 18 (nullable by default)
+
             'who_answering' => 'nullable|string',
             'relationship_to_patient' => 'nullable|string',
             'father_name' => 'nullable|string',
@@ -99,7 +105,6 @@ class BasicInfo extends Component
         return $rules;
     }
 
-    // Friendly names moved from parent
     protected $validationAttributes = [
         'last_name' => 'Last Name',
         'first_name' => 'First Name',
@@ -117,18 +122,25 @@ class BasicInfo extends Component
         'relationship_to_patient' => 'Relationship to Patient (Below 18)',
     ];
 
-    // Listen for the validation event from the parent
     #[On('validateBasicInfo')]
     public function validateForm()
     {
-        // Validate the data
         $validatedData = $this->validate();
-
-        // If validation passes, dispatch the data back up to the parent
         $this->dispatch('basicInfoValidated', data: $validatedData);
     }
 
-    
+    // We can keep this for safety, but mount() does the heavy lifting now
+    #[On('fillBasicInfo')]
+    public function fillForm($data)
+    {
+        $this->fill($data); 
+    }
+
+    #[On('resetForm')]
+    public function resetForm()
+    {
+        $this->reset();
+    }
 
     public function render()
     {

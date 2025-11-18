@@ -4,93 +4,64 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
-use Livewire\WithPagination; // <-- 1. IMPORT (uncommented)
+use Livewire\WithPagination;
 
 class PatientRecords extends Component
 {
-    use WithPagination; // <-- 2. USE THE TRAIT
+    use WithPagination;
 
-    /**
-     * @var string
-     * The search term bound to the input box.
-     */
     public $search = '';
+    
+    // Add this property to track the current sort order
+    // Options: 'recent', 'oldest', 'a_z', 'z_a'
+    public $sortOption = 'recent';
 
-    /**
-     * @var \stdClass|null
-     * Holds the full details of the patient clicked on.
-     */
     public $selectedPatient;
-
-    /**
-     * @var \stdClass|null
-     * Holds the last appointment details for the selected patient.
-     */
     public $lastVisit;
 
-    /**
-     * @var string
-     * Tell Livewire to use Tailwind for pagination styling.
-     */
-    protected $paginationTheme = 'tailwind'; // <-- 3. ADD THIS FOR TAILWIND STYLING
+    protected $paginationTheme = 'tailwind';
 
-    /**
-     * mount() is Livewire's constructor.
-     * It runs once when the component is first loaded.
-     */
     public function mount()
     {
-        // Load the very first patient by default so the right side isn't empty
-        $firstPatient = DB::table('patients')
-                            ->orderBy('last_name')
-                            ->orderBy('first_name')
-                            ->first();
-
-        if ($firstPatient) {
-            $this->selectPatient($firstPatient->id);
-        }
+        $this->fetchFirstPatient();
     }
 
-    /**
-     * This is the key function. It's triggered when a user
-     * clicks on a patient from the list.
-     *
-     * @param int $patientId
-     */
     public function selectPatient($patientId)
     {
-        // 1. Fetch the patient's main details
-        $this->selectedPatient = DB::table('patients')
-                                    ->where('id', $patientId)
-                                    ->first();
+        $this->selectedPatient = DB::table('patients')->where('id', $patientId)->first();
 
-        // 2. Fetch their last completed appointment
         $this->lastVisit = DB::table('appointments')
                             ->where('patient_id', $patientId)
-                            ->where('status', 'Completed') // As per your schema
+                            ->where('status', 'Completed')
                             ->orderBy('appointment_date', 'desc')
                             ->first();
     }
-                    
-                        
-    public function updatingSearch()
+
+    // MODIFIED: Changed to 'updatedSearch' so it runs AFTER the search text updates
+    public function updatedSearch()
     {
-        $this->resetPage(); // <-- 5. ADD THIS METHOD
+        $this->resetPage();
+        $this->fetchFirstPatient(); // Auto-select top result when searching
+    }
+    
+    // MODIFIED: Auto-select top result when sorting changes
+    public function setSort($option)
+    {
+        $this->sortOption = $option;
+        $this->resetPage();
+        $this->fetchFirstPatient(); 
     }
 
     /**
-     * render() is called every time a public property (like $search) changes.
-     * It re-fetches the patient list and re-renders the view.
+     * NEW HELPER: Centralized query logic to avoid code duplication.
+     * This ensures 'render' and 'fetchFirstPatient' always use the same filters.
      */
-    public function render()
+    protected function getPatientsQuery()
     {
-        // Base query for the patient list
         $query = DB::table('patients')
-                    ->select('id', 'first_name', 'last_name', 'mobile_number', 'home_address')
-                    ->orderBy('last_name')
-                    ->orderBy('first_name');
+                    ->select('id', 'first_name', 'last_name', 'mobile_number', 'home_address');
 
-        // Apply the search filter if $search is not empty
+        // 1. Apply Search
         if (!empty($this->search)) {
             $query->where(function($q) {
                 $q->where('first_name', 'like', '%' . $this->search . '%')
@@ -99,9 +70,47 @@ class PatientRecords extends Component
             });
         }
 
-        return view('livewire.patient-records', [
-            'patients' => $query-> paginate(15)
-        ]);
+        // 2. Apply Sort
+        switch ($this->sortOption) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'a_z':
+                $query->orderBy('first_name', 'asc')->orderBy('last_name', 'asc');
+                break;
+            case 'z_a':
+                $query->orderBy('first_name', 'desc')->orderBy('last_name', 'desc');
+                break;
+            case 'recent':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        return $query;
     }
 
+    /**
+     * Helper to fetch the first patient for the initial view state
+     */
+    protected function fetchFirstPatient()
+    {
+        // Use the centralized query so it respects Search AND Sort
+        $firstPatient = $this->getPatientsQuery()->first();
+
+        if ($firstPatient) {
+            $this->selectPatient($firstPatient->id);
+        } else {
+            // If search result is empty, clear the selection
+            $this->selectedPatient = null;
+            $this->lastVisit = null;
+        }
+    }
+
+    public function render()
+    {
+        return view('livewire.patient-records', [
+            'patients' => $this->getPatientsQuery()->paginate(15)
+        ]);
+    }
 }
