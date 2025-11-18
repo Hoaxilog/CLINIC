@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tejada Clinic</title>
     @vite('resources/css/app.css')
+    <style>
+        @yield("style");
+    </style>
     @livewireStyles
 
 </head>
@@ -71,7 +74,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#"
+                    <a href="patient-records"
                         class="nav-item flex items-center gap-5 px-3 py-2 relative w-full
                             transition-all duration-300
                             text-gray-700 hover:bg-gray-100 <!-- <== FIXED: Added default text color and hover -->

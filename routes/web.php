@@ -3,6 +3,7 @@
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Login;
+use App\Http\Controllers\PatientsController;
 
 Route::middleware(['isAdmin'])->group(function () {
     // Route::get('/dashboard', [])
@@ -11,6 +12,9 @@ Route::middleware(['isAdmin'])->group(function () {
         return view('appointment');
     });
 });
+
+
+Route::get('/patient-records', action: [PatientsController::class, 'index']);
 
 
 Route::post('/login', [Login::class, 'login']);

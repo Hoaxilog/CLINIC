@@ -1,5 +1,6 @@
 <div class="relative ">
-    <div class="w-full max-w-9xl mx-auto px-2 py-10 lg:px-8 overflow-x-auto bg-white">
+    <h1 class="text-3xl lg:text-4xl font-bold text-gray-800">Appointment</h1>
+    <div class="w-full max-w-9xl mx-auto px-2 py-10 lg:px-8 overflow-x-auto bg-white mt-6">
         {{-- ... (Calendar header code is unchanged) ... --}}
         <div class="flex flex-col md:flex-row max-md:gap-3 items-center justify-between mb-5">
             <div class="flex items-center gap-4">

@@ -203,7 +203,6 @@ class AppointmentCalendar extends Component
         $this->validate();
 
         try {
-            // 1. Get service duration
             $service = $this->servicesList->firstWhere('id', $this->selectedService);
             if (!$service) {
                 $this->addError('selectedService', 'Please select a valid service.');
