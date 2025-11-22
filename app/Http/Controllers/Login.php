@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class Login extends Controller
 {   
@@ -12,26 +13,30 @@ class Login extends Controller
     }
 
     public function login(Request $request) {
-
-        $validation = $request->validate([
+        
+        $request->validate([
             'username' => 'required|',
             'password' => 'required',
         ]);
 
-        $users = DB::table('users')
-                    ->where('username', $request->input('username'))
+        $user = DB::table('users')
+                    ->where('username', $request->username)
                     ->first();
 
-        if(!$users) {
-            return back()->with('failed', "Wrong credentials!")
-                        ->withInput($request->only('username'));
-        }
-
-        if(Auth::attempt($validation)) {
+        if($user && Hash::check($request->password, $user->password)) {
+            Auth::loginUsingId($user->id);
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+            return redirect()->route('dashboard');
         }
 
+        return back()->with('failed', "Wrong credentials!")->withInput($request->only('username'));
     }
+
+    public function logout(Request $request) {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
+    }   
     
 }

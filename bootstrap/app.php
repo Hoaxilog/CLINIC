@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectUsersTo('/dashboard'); //if we see that the user is already login we will redirect them to dashboard (['guest'])
         $middleware->alias([
             'isAdmin' => IsAdminMiddleware::class,
         ]);

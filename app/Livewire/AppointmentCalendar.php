@@ -14,22 +14,24 @@ class AppointmentCalendar extends Component
     public $viewType = 'week';
     public $weekDates = [];
     public $timeSlots = [];
+    /** @var \Illuminate\Support\Collection */
     public $appointments = [];
     public $showAppointmentModal = false;
+    /** @var \Illuminate\Support\Collection */
     public $servicesList = [];
     public $firstName = '';
     public $lastName = '';
     public $middleName = '';
     public $recordNumber = '';
     public $contactNumber = '';
-    public $birthDate = null; // <--- ADD THIS    
+    public $birthDate = null;  
     public $selectedService = '';
     public $selectedDate = null;
     public $selectedTime = null;
     public $endTime = null;
-    public $isViewing = false; // <-- Add this
-    public $viewingAppointmentId = null; // To track which ID we are updating
-    public $appointmentStatus = '';      // To track the current status
+    public $isViewing = false; 
+    public $viewingAppointmentId = null; 
+    public $appointmentStatus = '';     
     public $searchQuery = '';
     public $patientSearchResults = [];
 
@@ -76,11 +78,6 @@ class AppointmentCalendar extends Component
         }
     }
 
-    // ---
-    //
-    // THIS IS THE ONLY FUNCTION THAT HAS CHANGED
-    //
-    // ---
     public function loadAppointments()
     {
         $startOfWeek = $this->weekDates[0]->startOfDay();
@@ -101,11 +98,8 @@ class AppointmentCalendar extends Component
             ->get()
             ->map(function($appointment) {
                 
-                // --- THIS IS THE FIX ---
-                // Use sscanf to reliably parse the 'HH:MM:SS' string
                 sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);
                 $appointment->duration_in_minutes = ($h * 60) + $m;
-                // --- END OF FIX ---
                 
                 $carbonDate = Carbon::parse($appointment->appointment_date);
                 $appointment->start_date = $carbonDate->toDateString();
@@ -298,19 +292,13 @@ class AppointmentCalendar extends Component
         // 2. Loop sa lahat ng appointments
         foreach ($this->appointments as $appointment) 
         {
-            // Check muna kung 'yung date ay 'yun din
             if (Carbon::parse($appointment->start_date)->isSameDay($slotStart)) {
 
-                // 3. Kunin ang start at end ng existing booking
                 $existingStart = Carbon::parse($appointment->start_date . ' ' . $appointment->start_time);
                 
                 // Convert sa "total minutes from start of day"
                 $existingStartInMinutes = $existingStart->hour * 60 + $existingStart->minute;
                 $existingEndInMinutes = $existingStartInMinutes + $appointment->duration_in_minutes;
-
-                // 4. Ang Pinal na Overlap Logic (using numbers)
-                // (StartA < EndB) AND (EndA > StartB)
-                // (slotStart < existingEnd) AND (slotEnd > existingStart)
 
                 $isOverlapping = (
                     $slotStartInMinutes < $existingEndInMinutes && 
@@ -318,12 +306,12 @@ class AppointmentCalendar extends Component
                 );
 
                 if ($isOverlapping) {
-                    return true; // May overlap! I-disable ang slot.
+                    return true; 
                 }
             }
         }
         
-        return false; // Walang overlap, hayaang clickable.
+        return false;
     }
 
     public function viewAppointment($appointmentId)
@@ -338,7 +326,7 @@ class AppointmentCalendar extends Component
                 'patients.last_name',
                 'patients.middle_name',
                 'patients.mobile_number',
-                'patients.birth_date', // <--- ADD THIS (Select the column)
+                'patients.birth_date', 
                 'services.service_name',
                 'services.duration'
             )
@@ -346,7 +334,7 @@ class AppointmentCalendar extends Component
             ->first();
 
         if ($appointment) {
-            $this->resetForm(); // Clear old data
+            $this->resetForm(); 
 
             // 2. Populate the form fields
             $this->firstName = $appointment->first_name;
@@ -354,13 +342,13 @@ class AppointmentCalendar extends Component
             $this->middleName = $appointment->middle_name;
             $this->contactNumber = $appointment->mobile_number;
             $this->selectedService = $appointment->service_id;
-            $this->viewingAppointmentId = $appointment->id;    // <--- NEW
-            $this->appointmentStatus = $appointment->status;   // <--- NEW
+            $this->viewingAppointmentId = $appointment->id;    
+            $this->appointmentStatus = $appointment->status;   
 
             // 3. Format Dates and Times
             $dt = Carbon::parse($appointment->appointment_date);
             $this->selectedDate = $dt->toDateString();
-            $this->selectedTime = $dt->format('H:i:s'); // Use H:i:s to match time inputs usually
+            $this->selectedTime = $dt->format('H:i:s');
 
             // Calculate End Time for display
             sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);

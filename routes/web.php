@@ -8,18 +8,18 @@ use App\Http\Controllers\BackupController;
 
 Route::middleware(['isAdmin'])->group(function () {
     // Route::get('/dashboard', [])
-    Route::get('/dashboard', [Dashboard::class, 'index']);
+    Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
     Route::get('/appointment', function () {
         return view('appointment');
-    });
+    })->name('appointment');
+    Route::get('/patient-records', action: [PatientsController::class, 'index'])->name('patient-records');
+    Route::get('/admin/backup-database', [BackupController::class, 'downloadBackup'])
+             ->name('admin.db.backup');
+    Route::post('/logout', [Login::class, 'logout'])->name('logout');
 });
 
+Route::middleware(['guest'])->group(function() {
+    Route::get('/', [Login::class, 'index'])->name('login');
+    Route::post('/login', [Login::class, 'login']);
+});
 
-Route::get('/patient-records', action: [PatientsController::class, 'index']);
-
-
-Route::post('/login', [Login::class, 'login']);
-Route::get('/', [Login::class, 'index']);
-
-Route::get('/admin/backup-database', [BackupController::class, 'downloadBackup'])
-         ->name('admin.db.backup');
