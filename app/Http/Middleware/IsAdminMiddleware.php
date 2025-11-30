@@ -6,25 +6,17 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class IsAdminMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
+    
     public function handle(Request $request, Closure $next): Response
     {
-        $isAdmin = DB::table('users')
-                    ->where('username', $request['user'])
-                    ->where('role', 1);
-
-        if($isAdmin) {
-            return $next($request);
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->withErrors(['email' => 'You must log in first.']);
         }
-
-        dd("NOT AN ADMIN");
-
+        return $next($request);
     }
 }

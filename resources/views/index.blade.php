@@ -6,32 +6,49 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tejada Clinic</title>
     @vite('resources/css/app.css')
+    <style>
+        @yield("style");
+    </style>
     @livewireStyles
 
 </head>
 <body class=" tracking-wide">
-    <header class="bg-white border-b border-gray-200 h-14 flex items-center px-4 fixed top-0 left-0 right-0 z-10">
-        <button id="toggleBtn" class="p-2 hover:bg-gray-100 rounded-lg">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-        </button>
-        <h2 class="ml-4 text-lg font-semibold text-gray-900">Tejada Dent</h2>
+    <header class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-4 fixed  top-0 left-0 right-0 z-10 ">
+        <div class="flex items-center">
+            <button id="toggleBtn" class="p-2 hover:bg-gray-100 rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <h2 class="ml-4 text-lg font-semibold text-gray-900">Tejada Dent</h2>
+        </div>
+            <div class="">
+                <form action="{{ route('logout') }}" method="POST" class="w-full">
+                    @csrf
+                    <button type="submit" class="nav-item flex items-center gap-2 px-3 py-2 relative w-full transition-all duration-300 text-[#f56565] hover:bg-gray-100">  
+                        <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-door-open-icon lucide-door-open">
+                                <path d="M11 20H2"/><path d="M11 4.562v16.157a1 1 0 0 0 1.242.97L19 20V5.562a2 2 0 0 0-1.515-1.94l-4-1A2 2 0 0 0 11 4.561z"/><path d="M11 4H8a2 2 0 0 0-2 2v14"/><path d="M14 12h.01"/><path d="M22 20h-3"/>
+                            </svg>
+                        </span>
+                        <span class="nav-text whitespace-nowrap text-md overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                            Logout
+                        </span>
+                    </button>
+                </form>
+            </div>
     </header>
 
     
-    <aside id="sidebar"
-        class="peer sidebar bg-white border-r border-gray-200 fixed left-0 top-14 bottom-0 overflow-hidden transition-all duration-300 w-64
-            flex flex-col
-            [&.collapsed]:w-16 group">
-        <nav class="mt-10 w-full">
-            <ul class="space-y-3 w-full">
+    <aside id="sidebar" class="peer sidebar bg-white border-r border-gray-200 fixed left-0 top-12 bottom-0 overflow-hidden transition-all duration-300 w-64 flex flex-col [&.collapsed]:w-16 group">
+        <nav class="w-full h-full flex flex-col py-10">
+            <ul class="space-y-3 w-full h-full">
                 <li>
-                    <a href="dashboard"
+                    <a href="{{route('dashboard')}}"
                         class="{{ request()->is('dashboard') ? 'active' : '' }}
                             nav-item flex items-center gap-5 px-3 py-2 relative w-full
                             transition-all duration-300
-                            text-gray-700 hover:bg-gray-100 <!-- <== FIXED: Added default text color and hover -->
+                            text-gray-700 hover:bg-gray-100
                             [&.active]:bg-[#0086DA] [&.active]:text-white
                             group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
 
@@ -52,11 +69,11 @@
                     </a>
                 </li>
                 <li>
-                    <a href="appointment"
+                    <a href="{{ route('appointment')}}"
                         class="{{ request()->is('appointment') ? 'active' : '' }}
                             nav-item flex items-center gap-5 px-3 py-2 relative w-full
                             transition-all duration-300
-                            text-gray-700 hover:bg-gray-100 <!-- <== FIXED: Added default text color and hover -->
+                            text-gray-700 hover:bg-gray-100
                             [&.active]:bg-[#0086DA] [&.active]:text-white
                             group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
                         <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
@@ -71,10 +88,12 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#"
-                        class="nav-item flex items-center gap-5 px-3 py-2 relative w-full
+                    <a href="{{ route('patient-records') }}"
+                        class="{{ request()->is('patient-records') ? 'active' : '' }} 
+                            nav-item flex items-center gap-5 px-3 py-2 relative w-full
                             transition-all duration-300
-                            text-gray-700 hover:bg-gray-100 <!-- <== FIXED: Added default text color and hover -->
+                            text-gray-700 hover:bg-gray-100 
+                            [&.active]:bg-[#0086DA] [&.active]:text-white
                             group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
                         <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -104,6 +123,7 @@
                         <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Reports</span>
                     </a>
                 </li>
+                <li >
             </ul>
         </nav>
     </aside>

@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Auth;
 class AuthMiddleware
 {
     /**
@@ -16,14 +16,11 @@ class AuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        
-        $auth = DB::table('users')
-                    ->where('username', $request['user']);
-        
-        if ($auth) {
-            return $next($request);
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->withErrors(['email' => 'You must log in first.']);
         }
 
-        dd("NO USER");
+        return $next($request);    
     }
 }
