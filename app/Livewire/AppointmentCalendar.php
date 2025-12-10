@@ -26,7 +26,8 @@ class AppointmentCalendar extends Component
     public $contactNumber = '';
     public $birthDate = null;  
     public $selectedService = '';
-    public $selectedDate = null;
+    public $selectedDate;      // For the date picker input (Y-m-d)
+    public $appointmentDate;   // For the modal display (Y-m-d stored, formatted on display)
     public $selectedTime = null;
     public $endTime = null;
     public $isViewing = false; 
@@ -34,6 +35,8 @@ class AppointmentCalendar extends Component
     public $appointmentStatus = '';     
     public $searchQuery = '';
     public $patientSearchResults = [];
+    public $selectedMonthYear; // stores "YYYY-MM" format
+    public $selectableMonthYears = [];
 
     protected $rules = [
         'firstName' => 'required|string|max:100',
@@ -50,11 +53,12 @@ class AppointmentCalendar extends Component
     public function mount()
     {
         $this->currentDate = Carbon::now();
+        $this->selectedDate = $this->currentDate->format('Y-m-d');
+
         $this->generateWeekDates(); 
         $this->generateTimeSlots();
         $this->loadAppointments();
         $this->servicesList = DB::table('services')->get();
-        
     }
 
     public function generateWeekDates()
@@ -96,6 +100,7 @@ class AppointmentCalendar extends Component
                 'services.duration'
             )
             ->get()
+            // THIS IS WTF
             ->map(function($appointment) {
                 
                 sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);
@@ -111,11 +116,7 @@ class AppointmentCalendar extends Component
                 return $appointment;
             });
     }
-    // ---
-    //
-    // (The rest of your file is correct)
-    //
-    // ---
+    
 
     public function getAppointmentsForDay($date)
     {
@@ -149,12 +150,12 @@ class AppointmentCalendar extends Component
         $this->middleName = '';
         $this->recordNumber = '';
         $this->contactNumber = '';
-        $this->birthDate = null; // <--- ADD THIS
+        $this->birthDate = null; 
         $this->selectedService = '';
-        $this->selectedDate = null;
+        $this->appointmentDate = null;  // Reset this instead
         $this->selectedTime = null;
         $this->endTime = null;
-        $this->isViewing = false; // <-- Add this line
+        $this->isViewing = false; 
         $this->viewingAppointmentId = null;
         $this->appointmentStatus = '';
         $this->searchQuery = '';
@@ -165,7 +166,8 @@ class AppointmentCalendar extends Component
     public function openAppointmentModal($date, $time)
     {
         $this->resetForm();
-        $this->selectedDate = $date;
+        $this->selectedDate = $date;      // Keep for date picker
+        $this->appointmentDate = $date;   // NEW: Use this in modal
         $this->selectedTime = $time;
         $this->showAppointmentModal = true;
     }
@@ -205,28 +207,21 @@ class AppointmentCalendar extends Component
             sscanf($service->duration, '%d:%d:%d', $h, $m, $s);
             $durationInMinutes = ($h * 60) + $m;
 
-            // 2. Calculate proposed start and end
-            $proposedStart = Carbon::parse($this->selectedDate)->setTimeFromTimeString($this->selectedTime);
+            // Use appointmentDate here
+            $proposedStart = Carbon::parse($this->appointmentDate)->setTimeFromTimeString($this->selectedTime);
             $proposedEnd = $proposedStart->copy()->addMinutes($durationInMinutes);
-
-            // 3. Find conflicting appointments using SQL overlap logic
-            // An overlap occurs if (StartA < EndB) AND (EndA > StartB)
             $conflicts = DB::table('appointments')
                 ->join('services', 'appointments.service_id', '=', 'services.id')
                 ->where(function ($query) use ($proposedStart, $proposedEnd) {
-                    
-                    // Define existing start and end times using SQL
                     $existingStart = 'appointments.appointment_date';
-                    // Use MySQL's TIME_TO_SEC to convert HH:MM:SS duration to seconds
                     $existingEnd = DB::raw("DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)");
                     
                     $query->where($existingStart, '<', $proposedEnd->toDateTimeString())
                         ->where($existingEnd, '>', $proposedStart->toDateTimeString());
                 })
-                ->count(); // We just need to know if any conflict exists
+                ->count(); 
 
             if ($conflicts > 0) {
-                // 4. If a conflict exists, add an error and stop.
                 $this->addError('conflict', 'This time and duration conflicts with an existing appointment.');
                 return;
             }
@@ -257,7 +252,7 @@ class AppointmentCalendar extends Component
                 ]);
             }
 
-            $appointmentDateTime = Carbon::parse($this->selectedDate)
+            $appointmentDateTime = Carbon::parse($this->appointmentDate)
                 ->setTimeFromTimeString($this->selectedTime)
                 ->toDateTimeString();
 
@@ -275,7 +270,7 @@ class AppointmentCalendar extends Component
             $this->closeAppointmentModal();
 
         } catch (\Throwable $th) {
-            // dd($th); // You can uncomment this to debug if it fails
+            // dd($th);
         }
     }
     public function isSlotOccupied($date, $time)
@@ -347,7 +342,7 @@ class AppointmentCalendar extends Component
 
             // 3. Format Dates and Times
             $dt = Carbon::parse($appointment->appointment_date);
-            $this->selectedDate = $dt->toDateString();
+            $this->appointmentDate = $dt->toDateString();  // NEW: Use this
             $this->selectedTime = $dt->format('H:i:s');
 
             // Calculate End Time for display
@@ -399,7 +394,6 @@ class AppointmentCalendar extends Component
             ->get();
     }
 
-    // This runs when you click a name from the dropdown
     public function selectPatient($patientId)
     {
         $patient = DB::table('patients')->find($patientId);
@@ -410,7 +404,7 @@ class AppointmentCalendar extends Component
             $this->lastName = $patient->last_name;
             $this->middleName = $patient->middle_name;
             $this->contactNumber = $patient->mobile_number;
-            $this->birthDate = $patient->birth_date; // <--- ADD THIS
+            $this->birthDate = $patient->birth_date;
 
             // Optional: If you store record_number in DB, map it here too
             // $this->recordNumber = $patient->record_number; 
@@ -419,6 +413,25 @@ class AppointmentCalendar extends Component
             $this->searchQuery = '';
             $this->patientSearchResults = [];
         }
+    }
+
+    public function goToDate()
+    {
+        if (!$this->selectedDate) {
+            return;
+        }
+
+        $this->currentDate = Carbon::parse($this->selectedDate);
+        $this->generateWeekDates();
+        $this->loadAppointments();
+    }
+
+    public function goToToday()
+    {
+        $this->currentDate = Carbon::now();
+        $this->selectedDate = $this->currentDate->format('Y-m-d');
+        $this->generateWeekDates();
+        $this->loadAppointments();
     }
 
     public function render()

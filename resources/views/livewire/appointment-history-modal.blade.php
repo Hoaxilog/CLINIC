@@ -7,12 +7,10 @@
             
                 <div class="flex-none p-8 pb-4 border-b border-gray-200">
                     <div class="flex items-center justify-between mb-6">
-                        <!-- Patient Name -->
                         <h2 class="text-3xl font-bold text-gray-800">
                             {{ $patient->first_name }} {{ $patient->last_name }}
                         </h2>
 
-                        <!-- Go Back Button -->
                         <button 
                             wire:click="closeModal" 
                             class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black bg-[#F06565] hover:outline-2 hover:outline-[#F06565] text-white px-6 py-2 rounded shadow flex items-center gap-2 transition"
@@ -27,9 +25,7 @@
                     <h3 class="text-xl font-semibold text-gray-800">Appointment history</h3>
                 </div>
 
-                {{-- 2. Scrollable List Section --}}
                 <div class="flex-1 overflow-y-auto px-8 pb-10">
-                    
                     @if(count($appointmentHistory) > 0)
                         <div class="flex flex-col">
                             @foreach($appointmentHistory as $appt)

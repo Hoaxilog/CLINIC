@@ -11,11 +11,7 @@ class PatientRecords extends Component
     use WithPagination;
 
     public $search = '';
-    
-    // Add this property to track the current sort order
-    // Options: 'recent', 'oldest', 'a_z', 'z_a'
     public $sortOption = 'recent';
-
     public $selectedPatient;
     public $lastVisit;
 
@@ -50,20 +46,17 @@ class PatientRecords extends Component
         $this->sortOption = $option;
         $this->resetPage();
         $this->fetchFirstPatient(); 
+        $this->dispatch('closeSortDropdown');
+
     }
 
-    /**
-     * NEW HELPER: Centralized query logic to avoid code duplication.
-     * This ensures 'render' and 'fetchFirstPatient' always use the same filters.
-     */
     protected function getPatientsQuery()
     {
-        $query = DB::table('patients')
-                    ->select('id', 'first_name', 'last_name', 'mobile_number', 'home_address');
+        $query = DB::table('patients');
 
         // 1. Apply Search
         if (!empty($this->search)) {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('first_name', 'like', '%' . $this->search . '%')
                   ->orWhere('last_name', 'like', '%' . $this->search . '%')
                   ->orWhere('mobile_number', 'like', '%' . $this->search . '%');
@@ -95,13 +88,11 @@ class PatientRecords extends Component
      */
     protected function fetchFirstPatient()
     {
-        // Use the centralized query so it respects Search AND Sort
-        $firstPatient = $this->getPatientsQuery()->first();
-
-        if ($firstPatient) {
-            $this->selectPatient($firstPatient->id);
+        $patient = $this->getPatientsQuery()->first();
+        
+        if ($patient) {
+            $this->selectPatient($patient->id);
         } else {
-            // If search result is empty, clear the selection
             $this->selectedPatient = null;
             $this->lastVisit = null;
         }
@@ -110,7 +101,7 @@ class PatientRecords extends Component
     public function render()
     {
         return view('livewire.patient-records', [
-            'patients' => $this->getPatientsQuery()->paginate(15)
+            'patients' => $this->getPatientsQuery()->paginate(10),
         ]);
     }
 }

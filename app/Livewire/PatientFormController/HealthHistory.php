@@ -80,7 +80,7 @@ class HealthHistory extends Component
         return [
             'when_last_visit_q1' => 'nullable|date',
             'what_last_visit_reason_q1' => 'nullable|string',
-            'what_seeing_dentist_reason_q2' => 'required|string',
+            'what_seeing_dentist_reason_q2' => 'nullable|string',
             
             'is_clicking_jaw_q3a' => 'required|boolean',
             'is_pain_jaw_q3b' => 'required|boolean',

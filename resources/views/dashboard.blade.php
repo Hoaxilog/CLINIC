@@ -10,9 +10,13 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0086da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
             </div>
             <div>
-                <h1 class="text-5xl font-semibold text-gray-900">6</h1>
+                <h1 class="text-5xl font-semibold text-gray-900">{{$todayAppointmentsCount ?? 0}}</h1>
             </div>
-            <p class="text-gray-600">2 completed, 4 upcoming</p>
+            <p class="text-gray-600">
+                {{ $todayCompletedCount ?? 0 }} completed,
+                {{ $todayCancelledCount ?? 0 }} cancelled,
+                {{ $todayUpcomingCount ?? 0 }} upcoming
+            </p>
             </section>
 
             <section class="lg:col-span-1 bg-white p-6 rounded-lg shadow-md space-y-4 h-full">
@@ -21,7 +25,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0086da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
             </div>
             <div>
-                <h1 class="text-5xl font-semibold text-gray-900">13</h1>
+                <h1 class="text-5xl font-semibold text-gray-900">{{ $weeklyCompletedCount ?? 0 }}</h1>
             </div>
             <p class="text-gray-600">+5 from last week</p>
             </section>
@@ -36,104 +40,11 @@
             </section>
 
             <section class="lg:col-span-2 bg-white rounded-lg shadow-md flex flex-col">
-                <div class="flex items-center justify-between p-3">
-                    <h1 class="text-2xl font-semibold text-gray-800">Today's Schedule</h1>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0086da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg>
-                </div>
-                
-                <div class="space-y-3 p-4  h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#ccebff] scrollbar-thumb-[#0086da]  scrollbar-color-[#0086da] ">
-                    <div class="bg-[#ccebff] p-3 rounded-lg ">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 mr-4">
-                                <h2 class="text-lg font-semibold text-gray-900">Ace Morada</h2>
-                                <p class="text-sm font-medium text-gray-700">Cleaning</p>
-                            </div>
-                            <p class="flex-shrink-0 text-md font-semibold text-[#0086da] bg-white border border-[#0086da] px-3 py-1 rounded-lg w-20 text-center">9:00</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-[#ccebff] p-3 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 mr-4">
-                            <h2 class="text-lg font-semibold text-gray-900">Jhon Stephen Nicolas </h2>
-                            <p class="text-sm font-medium text-gray-700">Cleaning</p>
-                            </div>
-                            <p class="flex-shrink-0 text-md font-semibold text-[#0086da] bg-white border border-[#0086da] px-3 py-1 rounded-lg w-20 text-center">10:00</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-[#ccebff] p-3 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 mr-4">
-                            <h2 class="text-lg font-semibold text-gray-900">Clarenz Luigi</h2>
-                            <p class="text-sm font-medium text-gray-700">Cleaning</p>
-                            </div>
-                            <p class="flex-shrink-0 text-md font-semibold text-[#0086da] bg-white border border-[#0086da] px-3 py-1 rounded-lg w-20 text-center">11:00</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-[#ccebff] p-3 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 mr-4">
-                            <h2 class="text-lg font-semibold text-gray-900">Clarenz Luigi</h2>
-                            <p class="text-sm font-medium text-gray-700">Cleaning</p>
-                            </div>
-                            <p class="flex-shrink-0 text-md font-semibold text-[#0086da] bg-white border border-[#0086da] px-3 py-1 rounded-lg w-20 text-center">10:00</p>
-                        </div>
-                    </div>
-                    <div class="bg-[#ccebff] p-3 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1 mr-4">
-                            <h2 class="text-lg font-semibold text-gray-900">Clarenz Luigi</h2>
-                            <p class="text-sm font-medium text-gray-700">Cleaning</p>
-                            </div>
-                            <p class="flex-shrink-0 text-md font-semibold text-[#0086da] bg-white border border-[#0086da] px-3 py-1 rounded-lg w-20 text-center">10:00</p>
-                        </div>
-                    </div>
-                    
-                </div>
+                @livewire('today-schedule')
             </section>
 
             <section class="lg:col-span-1 relative flex flex-col bg-gray-100 rounded-lg shadow-md">
                 @livewire('notes')
-                {{-- @include('/notes/notes', $notes) --}}
-                {{-- <div class="rounded-t-lg bg-[#ccebff] p-3 text-center">
-                    <h3 class="text-lg font-semibold text-gray-800">Notes / Reminders</h3>
-                </div>
-
-                <div class="
-                    space-y-3 overflow-y-auto p-4 h-96 
-                    scrollbar-thin 
-                    scrollbar-color-[#0086da]
-                    scrollbar-track-[#ccebff]
-                    scrollbar-thumb-[#0086da] 
-                    scrollbar-thumb-rounded-full
-                    ">
-                    <div class="rounded-lg bg-white hover:bg-[#ccebff] hover:cursor-pointer transition delay-75  shadow-lg p-4">
-                    <h4 class="font-medium text-gray-900">Sample notes title goes here</h4>
-                    <p class="text-sm text-gray-700">October 26, 2025</p>
-                    </div>
-                    <div class="rounded-lg bg-white hover:bg-[#ccebff] hover:cursor-pointer transition delay-75  shadow-lg p-4">
-                    <h4 class="font-medium text-gray-900">Another note about the project</h4>
-                    <p class="text-sm text-gray-700">October 25, 2025</p>
-                    </div>
-                    <div class="rounded-lg bg-white hover:bg-[#ccebff] hover:cursor-pointer transition delay-75  shadow-lg p-4">
-                    <h4 class="font-medium text-gray-900">Team meeting reminder</h4>
-                    <p class="text-sm text-gray-700">October 24, 2025</p>
-                    </div>
-                    <div class="rounded-lg bg-white hover:bg-[#ccebff] hover:cursor-pointer transition delay-75  shadow-lg p-4">
-                    <h4 class="font-medium text-gray-900">Deploy staging server</h4>
-                    <p class="text-sm text-gray-700">October 23, 2025</p>
-                    </div>
-                    <div class="rounded-lg bg-white hover:bg-[#ccebff] hover:cursor-pointer transition delay-75 shadow-lg p-4">
-                    <h4 class="font-medium text-gray-900">Update dependencies</h4>
-                    <p class="text-sm text-gray-700">October 22, 2025</p>
-                    </div>
-                </div>
-
-                <button id="add-notes" class="cursor-pointer absolute bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#ffac00] text-white shadow-lg transition hover:bg-yellow-500">
-                    <span class="text-4xl font-light">+</span>
-                </button> --}}
             </section>
 
             <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-4">

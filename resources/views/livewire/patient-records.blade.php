@@ -19,10 +19,9 @@
             </div>
             
             <!-- Recent Button -->
-            <div class="relative" x-data="{ open: false }">
+            <div class="relative" id="sortDropdown">
                 <button 
-                    @click="open = !open"
-                    @click.away="open = false"
+                    onclick="document.getElementById('sortMenu').classList.toggle('hidden')"
                     class="flex shrink-0 items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 w-full sm:w-40 justify-center transition-colors"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down h-4 w-4 text-gray-600">
@@ -40,26 +39,19 @@
 
                 <!-- Dropdown Menu -->
                 <div 
-                    x-show="open"
-                    x-transition:enter="transition ease-out duration-100"
-                    x-transition:enter-start="opacity-0 scale-95"
-                    x-transition:enter-end="opacity-100 scale-100"
-                    x-transition:leave="transition ease-in duration-75"
-                    x-transition:leave-start="opacity-100 scale-100"
-                    x-transition:leave-end="opacity-0 scale-95"
-                    class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
-                    style="display: none;"
+                    id="sortMenu"
+                    class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50"
                 >
-                    <button wire:click="setSort('recent')" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'recent' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
+                    <button wire:click.stop="setSort('recent')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'recent' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
                         Recent (Newest)
                     </button>
-                    <button wire:click="setSort('oldest')" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'oldest' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
+                    <button wire:click.stop="setSort('oldest')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'oldest' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
                         Oldest First
                     </button>
-                    <button wire:click="setSort('a_z')" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'a_z' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
+                    <button wire:click.stop="setSort('a_z')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'a_z' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
                         Name (A-Z)
                     </button>
-                    <button wire:click="setSort('z_a')" @click="open = false" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'z_a' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
+                    <button wire:click.stop="setSort('z_a')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'z_a' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
                         Name (Z-A)
                     </button>
                 </div>
@@ -219,3 +211,21 @@
 
     </div>
 </div>
+
+@push('script')
+    <script>
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('sortDropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                document.getElementById('sortMenu').classList.add('hidden');
+            }
+        });
+
+        // Listen for Livewire dispatch to close dropdown
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('closeSortDropdown', () => {
+                document.getElementById('sortMenu').classList.add('hidden');
+            });
+        });
+    </script>
+@endpush
