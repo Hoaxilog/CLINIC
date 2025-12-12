@@ -98,6 +98,28 @@ class PatientRecords extends Component
         }
     }
 
+    public function deletePatient($id)
+    {
+        // 1. Find the patient
+        $patient = \Illuminate\Support\Facades\DB::table('patients')->where('id', $id)->first();
+
+        if ($patient) {
+            // 2. Delete the patient
+            // Your DB schema is set to ON DELETE CASCADE, so this will automatically
+            // delete linked appointments, health history, etc.
+            \Illuminate\Support\Facades\DB::table('patients')->where('id', $id)->delete();
+
+            // 3. Reset selection if the deleted patient was currently being viewed
+            if ($this->selectedPatient && $this->selectedPatient->id == $id) {
+                $this->selectedPatient = null;
+                $this->lastVisit = null;
+            }
+
+            // 4. (Optional) Show a success message (if using a notification component)
+            // session()->flash('message', 'Patient record deleted successfully.');
+        }
+    }
+
     public function render()
     {
         return view('livewire.patient-records', [

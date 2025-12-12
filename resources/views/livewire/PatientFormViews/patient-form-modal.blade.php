@@ -66,73 +66,117 @@
                                     :isReadOnly="$isReadOnly"
                                     :history="$chartHistory"
                                     :selectedHistoryId="$selectedHistoryId" 
-                                    :isCreating="$forceNewRecord" {{-- [NEW] Pass creation status --}}
+                                    :isCreating="$forceNewRecord"
                                 />
                             </div>
-                            @if ($currentStep == 4)
-                                 <p>Treatment Record will go here...</p>
-                            @endif
+                            <!-- Step 4: Treatment Record -->
+                            <div @if($currentStep != 4) hidden @endif>
+                                {{-- [UPDATED] Added chartKey to wire:key to force refresh when switching history --}}
+                                <livewire:PatientFormController.treatment-record 
+                                    :wire:key="'treatment-record-'.$chartKey" 
+                                    :data="$treatmentRecordData ?? []" 
+                                    :isReadOnly="$isReadOnly"
+                                />
+                            </div>
                         @endif
                     </div>
 
                     <!-- Footer / Buttons -->
-                        <div class="bg-white rounded-b-lg p-6 flex justify-between items-center shadow-[inset_0_4px_6px_-2px_rgba(0,0,0,0.1)]">                        
-                            
-                            <!-- LEFT SIDE: ACTION BUTTONS (Edit or Save) -->
-                            <div>
-                                @if($isEditing && $isReadOnly)
-                                    {{-- 
-                                        [UPDATED LOGIC] 
-                                        Only show "Edit Record" if:
-                                        1. We are viewing an existing patient (isEditing && isReadOnly).
-                                        2. We are NOT viewing a historical record (selectedHistoryId is empty).
-                                        3. AND (Specific for Step 3): Dental Chart history exists. 
-                                        If no history, the 'Empty State' center button handles creation, so hide this one.
-                                    --}}
-                                    @if(empty($selectedHistoryId) && !($currentStep == 3 && count($chartHistory) == 0))
-                                        <button wire:click="enableEditMode" type="button" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-[#ffac00] hover:bg-yellow-600 shadow-md flex items-center gap-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                                            Edit Record
-                                        </button>
-                                    @endif
-                                @elseif(!$isReadOnly)
-                                    <!-- EDIT/ADD MODE: Show Save Button -->
-                                    <button wire:click="save" type="button" class="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-green-600 hover:bg-green-700 shadow-sm">
-                                        {{ (!$isEditing && $currentStep == 2) ? 'Save Patient' : 'Update & Save' }}
+                    <div class="bg-white rounded-b-lg p-6 flex justify-between items-center shadow-[inset_0_4px_6px_-2px_rgba(0,0,0,0.1)]">                        
+                        
+                        <!-- LEFT SIDE: ACTION BUTTONS (Edit or Save) -->
+                        <div>
+                            @if($isEditing && $isReadOnly)
+                                @if($currentStep == 3 || $currentStep == 4)
+                                    <!-- Edit buttons typically handled by sub-components or unified 'enableEditMode' -->
+                                @else 
+                                    <button wire:click="enableEditMode" type="button" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-[#ffac00] hover:bg-yellow-600 shadow-md flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                        Edit Record
                                     </button>
                                 @endif
-                            </div>
+                            @elseif(!$isReadOnly)
+                                {{-- [UPDATED] Logic for Save Button Visibility --}}
+                                @php
+                                    $shouldShowSave = true;
+                                    
+                                    // Case 1: Adding New Patient -> Only show on Step 2
+                                    if (!$isEditing && $currentStep == 1) {
+                                        $shouldShowSave = false;
+                                    }
 
-                            <!-- RIGHT SIDE: NAVIGATION -->
-                            <div class="flex items-center gap-4">
-                                
-                                <button wire:click="cancelEdit" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
-                                    {{ ($isEditing && !$isReadOnly) ? 'Cancel Edit' : 'Close' }}
-                                </button>
-                                
-                                @if($isReadOnly || !$isEditing)
-                                    @if ($currentStep > 1)
-                                        <button wire:click="previousStep" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
-                                            Back
-                                        </button>
-                                    @endif
+                                    // Case 2: Editing (Admin) -> Hide on Step 3 (Dental Chart) to force flow to Step 4
+                                    if ($isEditing && $currentStep == 3) {
+                                        $shouldShowSave = false;
+                                    }
+                                @endphp
 
-                                    {{-- Max Step Logic for NEXT button --}}
-                                    @php
-                                        $showNext = true;
-                                        if (!$isEditing && $currentStep >= 2) $showNext = false;
-                                        if ($isEditing && $currentStep >= 4) $showNext = false;
-                                    @endphp
-
-                                    @if ($showNext)
-                                        <button wire:click="nextStep" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0086da] hover:bg-blue-500">
-                                            Next
-                                        </button>
-                                    @endif
+                                @if($shouldShowSave)
+                                    <button wire:click="save" type="button" class="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-green-600 hover:bg-green-700 shadow-sm">
+                                        {{ (!$isEditing && $currentStep == 2) ? 'Save Patient' : (($currentStep == 4) ? 'Save Record' : 'Update & Save') }}
+                                    </button>
                                 @endif
-                            </div>
+                            @endif
+                        </div>
+
+                        <!-- RIGHT SIDE: NAVIGATION -->
+                        <div class="flex items-center gap-4">
+                            
+                            <button wire:click="cancelEdit" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
+                                {{ ($isEditing && !$isReadOnly) ? 'Cancel Edit' : 'Close' }}
+                            </button>
+                            
+                            @php
+                                $showNext = true;
+                                $showBack = ($currentStep > 1);
+
+                                // 1. Adding New Patient
+                                if (!$isEditing) {
+                                    if ($currentStep >= 2) $showNext = false;
+                                } 
+                                // 2. Editing Existing Patient
+                                else {
+                                    // Max Step Constraints
+                                    if ($isAdmin) {
+                                        if ($currentStep >= 4) $showNext = false;
+                                    } else {
+                                        if ($currentStep >= 2) $showNext = false;
+                                    }
+
+                                    // Active Edit Mode Restrictions
+                                    if (!$isReadOnly) {
+                                        // Only show 'Next' if we are on Step 3 (Dental Chart) to go to Step 4.
+                                        // Steps 1 & 2 should strictly use 'Update & Save'.
+                                        if ($currentStep != 3) {
+                                            $showNext = false;
+                                        }
+
+                                        // Hide 'Back' on Step 2 and Step 3 during edit mode.
+                                        // Step 2: Health History -> prevent back to Basic Info
+                                        // Step 3: Dental Chart -> prevent back to Health History
+                                        // Step 4: Treatment Record -> ALLOW Back to Dental Chart
+                                        if ($currentStep == 2 || $currentStep == 3) {
+                                            $showBack = false;
+                                        }
+                                    }
+                                }
+                            @endphp
+
+                            @if ($showBack)
+                                <button wire:click="previousStep" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
+                                    Back
+                                </button>
+                            @endif
+
+                            @if ($showNext)
+                                <button wire:click="nextStep" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0086da] hover:bg-blue-500">
+                                    Next
+                                </button>
+                            @endif
 
                         </div>
+
+                    </div>
                 </div>  
             </div>
         </div>

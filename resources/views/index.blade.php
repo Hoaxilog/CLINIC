@@ -107,10 +107,12 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#"
-                        class="nav-item flex items-center gap-5 px-3 py-2 relative w-full
+                    <a href="{{ route('reports.index') }}"
+                        class="{{ request()->routeIs('reports.*') ? 'active' : '' }}
+                            nav-item flex items-center gap-5 px-3 py-2 relative w-full
                             transition-all duration-300
-                            text-gray-700 hover:bg-gray-100 <!-- <== FIXED: Added default text color and hover -->
+                            text-gray-700 hover:bg-gray-100
+                            [&.active]:bg-[#0086DA] [&.active]:text-white
                             group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
                         <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -120,7 +122,11 @@
                                 <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>
                             </svg>
                         </span>
-                        <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Reports</span>
+                        <span class="nav-text whitespace-nowrap text-xl overflow-hidden
+                            transition-all duration-300
+                            group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                            Reports
+                        </span>
                     </a>
                 </li>
                 <li>

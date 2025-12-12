@@ -77,9 +77,15 @@
             <!-- List Container -->
             <div class="space-y-3 flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#ccebff] scrollbar-thumb-[#0086da]">
                 @forelse($patients as $patient)
-                    <button wire:click="selectPatient({{ $patient->id }})"
-                        class="w-full px-5 p-8 bg-white rounded-lg shadow-sm flex items-center justify-between transition-all
-                        @if($patient->id == $selectedPatient?->id) border-l-4 border-[#0086da] @else hover:bg-gray-50 @endif">
+                    {{-- 
+                        [UPDATED] Changed from <button> to <div> to allow nested buttons 
+                        Added 'cursor-pointer' to make it feel like a button
+                    --}}
+                    <div 
+                        wire:click="selectPatient({{ $patient->id }})"
+                        class="w-full px-5 p-8 bg-white rounded-lg shadow-sm flex items-center justify-between transition-all cursor-pointer relative group
+                        @if($patient->id == $selectedPatient?->id) border-l-4 border-[#0086da] @else hover:bg-gray-50 @endif"
+                    >
 
                         <!-- LEFT SIDE -->
                         <div class="flex items-center gap-4">
@@ -105,15 +111,27 @@
 
                         </div>
 
-                        <!-- RIGHT TRASH ICON -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                            stroke="#f56e6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                            <path d="M3 6h18"/>
-                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
+                        <!-- RIGHT TRASH ICON BUTTON -->
+                        {{-- 
+                             [UPDATED] Wrapped in a button with wire:click.stop 
+                             Added wire:confirm for safety
+                        --}}
+                        <button 
+                            type="button"
+                            wire:click.stop="deletePatient({{ $patient->id }})"
+                            wire:confirm="Are you sure you want to delete this patient? All associated records will be removed permanently."
+                            class="p-2 rounded-full hover:bg-red-50 transition-colors"
+                            title="Delete Patient"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                stroke="#f56e6e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                <path d="M3 6h18"/>
+                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
 
-                    </button>
+                    </div>
 
                 @empty
                     <div class="p-4 text-center text-gray-500">
@@ -132,10 +150,9 @@
             @if ($selectedPatient)
                 <div class="bg-white rounded-2xl shadow-lg p-8 space-y-5">
                     <!-- Details Header -->
-                    <h2 class="text-2xl font-semibold text-gray-800">Patient Details</h2>
-
                     <div class="flex justify-between items-start">
                         <div>
+                            <h2 class="text-2xl font-semibold text-gray-800">Patient Details</h2>
                             <h3 class="text-4xl font-bold text-black mt-2">
                                 {{ $selectedPatient->first_name }} {{ $selectedPatient->last_name }}
                             </h3>

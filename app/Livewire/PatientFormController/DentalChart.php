@@ -75,7 +75,6 @@ class DentalChart extends Component
     {
         $this->isReadOnly = $isReadOnly;
         $this->history = $history; 
-        // [FIX] Explicitly set this ID so dropdown has a value
         $this->selectedHistoryId = $selectedHistoryId; 
         $this->isCreating = $isCreating;
 

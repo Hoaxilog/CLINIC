@@ -6,6 +6,7 @@ use App\Http\Controllers\Login;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
 
 Route::middleware(['isAdmin'])->group(function () {
     Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
@@ -23,6 +24,8 @@ Route::middleware(['isAdmin'])->group(function () {
         Route::put('/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 });
 
 

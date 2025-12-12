@@ -10,7 +10,7 @@ use Livewire\Attributes\On;
 
 class PatientFormModal extends Component
 {
-    // ... (Properties remain the same) ...
+    // ... (Existing Properties) ...
     public $showModal = false;
     public $currentStep = 1;
     public $isEditing = false;
@@ -22,13 +22,16 @@ class PatientFormModal extends Component
     public $basicInfoData = [];
     public $healthHistoryData = [];
     public $dentalChartData = []; 
+    public $treatmentRecordData = []; 
     public $chartHistory = []; 
     public $newPatientId;
     
+    // Track the current Dental Chart ID to link Treatment Record
+    public $currentDentalChartId = null;
+
     public $chartKey = 'initial'; 
     public $selectedHistoryId = '';
     
-    // ... (mount/open methods same) ...
     #[On('openAddPatientModal')]
     public function openModal()
     {
@@ -38,6 +41,7 @@ class PatientFormModal extends Component
         $this->isReadOnly = false; 
         $this->isSaving = false;
         $this->forceNewRecord = false;
+        $this->currentDentalChartId = null; 
         $this->chartKey = uniqid(); 
         
         $user = Auth::user();
@@ -56,6 +60,7 @@ class PatientFormModal extends Component
         $this->isSaving = false;
         $this->forceNewRecord = false;
         $this->selectedHistoryId = ''; 
+        $this->currentDentalChartId = null;
 
         $user = Auth::user();
         if ($user) {
@@ -77,7 +82,6 @@ class PatientFormModal extends Component
         $this->currentStep = 1;
     }
 
-    // ... (getMaxStep same) ...
     protected function getMaxStep()
     {
         if (!$this->isEditing) return 2;
@@ -93,16 +97,32 @@ class PatientFormModal extends Component
 
         if ($latestChart && !empty($latestChart->chart_data)) {
             $this->dentalChartData = json_decode($latestChart->chart_data, true);
-            // [FIX] Set the selected history ID to this latest record
-            $this->selectedHistoryId = $latestChart->id;
+            $this->currentDentalChartId = $latestChart->id; 
+            
+            // Load the treatment record linked to THIS chart
+            $this->loadTreatmentRecordForChart($latestChart->id);
         } else {
             $this->dentalChartData = [];
-            $this->selectedHistoryId = '';
+            $this->currentDentalChartId = null;
+            $this->treatmentRecordData = [];
         }
+        $this->selectedHistoryId = ''; 
         $this->chartKey = uniqid(); 
     }
 
-    // ... (Rest of the file remains exactly the same) ...
+    public function loadTreatmentRecordForChart($chartId)
+    {
+        $record = DB::table('treatment_records')
+            ->where('dental_chart_id', $chartId)
+            ->first();
+
+        if ($record) {
+            $this->treatmentRecordData = (array) $record;
+        } else {
+            $this->treatmentRecordData = [];
+        }
+    }
+
     public function loadHistoryList($patientId)
     {
         $this->chartHistory = DB::table('dental_charts')
@@ -132,12 +152,17 @@ class PatientFormModal extends Component
         if ($chart) {
             $this->isReadOnly = true; 
             $this->selectedHistoryId = $chartId; 
+            $this->currentDentalChartId = $chartId;
             
             if (!empty($chart->chart_data)) {
                 $this->dentalChartData = json_decode($chart->chart_data, true);
             } else {
                 $this->dentalChartData = [];
             }
+            
+            // Load connected treatment record
+            $this->loadTreatmentRecordForChart($chartId);
+            
             $this->chartKey = uniqid(); 
         }
     }
@@ -148,7 +173,9 @@ class PatientFormModal extends Component
         $this->isReadOnly = false; 
         $this->forceNewRecord = true; 
         $this->dentalChartData = []; 
+        $this->currentDentalChartId = null; 
         $this->selectedHistoryId = ''; 
+        $this->treatmentRecordData = []; 
         $this->chartKey = uniqid(); 
     }
 
@@ -210,9 +237,25 @@ class PatientFormModal extends Component
     {
         if ($this->isReadOnly) return;
         $this->dentalChartData = $data;
-        if ($this->isEditing) {
+        
+        // [MODIFIED] Only save if explicitly requested. 
+        // If navigating Next, just update state and move step.
+        if ($this->isSaving) {
+            if ($this->isEditing) $this->updatePatientData();
+        } elseif ($this->currentStep == 3) {
+            // Move to Treatment Record
+            $this->currentStep = 4;
+        }
+    }
+
+    #[On('treatmentRecordValidated')]
+    public function handleTreatmentRecordValidated($data)
+    {
+        $this->treatmentRecordData = $data;
+        if ($this->isSaving && $this->isEditing) {
             $this->updatePatientData();
         }
+        $this->isSaving = false;
     }
 
     public function nextStep()
@@ -240,7 +283,9 @@ class PatientFormModal extends Component
                 $this->dispatch('validateHealthHistory')->to('PatientFormController.health-history');
             }
             elseif ($this->currentStep == 3) {
-                $this->currentStep = 4;
+                // [MODIFIED] Request data but DO NOT save yet. 
+                // The handler will move us to Step 4.
+                $this->dispatch('requestDentalChartData')->to('PatientFormController.dental-chart');
             }
         }
     }
@@ -268,8 +313,12 @@ class PatientFormModal extends Component
         elseif ($this->currentStep == 2) {
             $this->dispatch('validateHealthHistory')->to('PatientFormController.health-history');
         } 
-        elseif ($this->currentStep >= 3 && $this->isAdmin) {
+        elseif ($this->currentStep == 3 && $this->isAdmin) {
+            // This case might not be reached if button is hidden, but kept for safety
             $this->dispatch('requestDentalChartData')->to('PatientFormController.dental-chart');
+        }
+        elseif ($this->currentStep == 4 && $this->isAdmin) {
+            $this->dispatch('validateTreatmentRecord')->to('PatientFormController.treatment-record');
         }
     }
 
@@ -293,6 +342,47 @@ class PatientFormModal extends Component
         } catch (\Exception $e) { }
     }
 
+    private function saveDentalChart() 
+    {
+        $modifier = Auth::check() ? Auth::user()->username : 'SYSTEM';
+
+        if (!empty($this->dentalChartData)) {
+            $shouldInsert = true;
+            if (!$this->forceNewRecord) {
+                $todayStart = Carbon::today();
+                $todayEnd = Carbon::tomorrow();
+                
+                $existingToday = DB::table('dental_charts')
+                    ->where('patient_id', $this->newPatientId)
+                    ->whereBetween('created_at', [$todayStart, $todayEnd])
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if ($existingToday) {
+                    $shouldInsert = false;
+                    DB::table('dental_charts')->where('id', $existingToday->id)->update([
+                        'chart_data' => json_encode($this->dentalChartData),
+                        'modified_by' => $modifier,
+                        'updated_at' => now()
+                    ]);
+                    $this->currentDentalChartId = $existingToday->id;
+                }
+            }
+
+            if ($shouldInsert) {
+                $this->currentDentalChartId = DB::table('dental_charts')->insertGetId([
+                    'patient_id' => $this->newPatientId,
+                    'chart_data' => json_encode($this->dentalChartData),
+                    'modified_by' => $modifier,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $this->forceNewRecord = false; 
+            }
+        }
+        return $this->currentDentalChartId;
+    }
+
     public function updatePatientData()
     {
         try {
@@ -310,45 +400,42 @@ class PatientFormModal extends Component
                     DB::table('health_histories')->updateOrInsert(['patient_id' => $this->newPatientId], $this->healthHistoryData);
                 }
                 elseif ($this->currentStep == 3 && $this->isAdmin) {
-                    if (!empty($this->dentalChartData)) {
-                        $shouldInsert = true;
-                        if (!$this->forceNewRecord) {
-                            $todayStart = Carbon::today();
-                            $todayEnd = Carbon::tomorrow();
-                            $existingToday = DB::table('dental_charts')
-                                ->where('patient_id', $this->newPatientId)
-                                ->whereBetween('created_at', [$todayStart, $todayEnd])
-                                ->orderBy('created_at', 'desc')
-                                ->first();
+                   $this->saveDentalChart();
+                }
+                elseif ($this->currentStep == 4 && $this->isAdmin) {
+                    // Save Chart FIRST to get ID
+                    $chartId = $this->saveDentalChart();
 
-                            if ($existingToday) {
-                                $shouldInsert = false;
-                                DB::table('dental_charts')->where('id', $existingToday->id)->update([
-                                    'chart_data' => json_encode($this->dentalChartData),
-                                    'modified_by' => $modifier,
-                                    'updated_at' => now()
-                                ]);
-                            }
-                        }
-                        if ($shouldInsert) {
-                            DB::table('dental_charts')->insert([
+                    // Then Save Treatment Record linked to that ID
+                    if ($chartId && !empty($this->treatmentRecordData)) {
+                        DB::table('treatment_records')->updateOrInsert(
+                            ['dental_chart_id' => $chartId], 
+                            [
                                 'patient_id' => $this->newPatientId,
-                                'chart_data' => json_encode($this->dentalChartData),
+                                'dmd' => $this->treatmentRecordData['dmd'] ?? null,
+                                'treatment' => $this->treatmentRecordData['treatment'] ?? null,
+                                'cost_of_treatment' => $this->treatmentRecordData['cost_of_treatment'] ?? null,
+                                'amount_charged' => $this->treatmentRecordData['amount_charged'] ?? null,
+                                'remarks' => $this->treatmentRecordData['remarks'] ?? null,
+                                'image' => $this->treatmentRecordData['image'] ?? null,
                                 'modified_by' => $modifier,
-                                'created_at' => now(),
                                 'updated_at' => now(),
-                            ]);
-                            $this->forceNewRecord = false; 
-                        }
+                            ]
+                        );
                     }
                 }
             });
 
             if ($this->isAdmin) {
                 $this->loadHistoryList($this->newPatientId);
+                if ($this->currentStep == 4 && $this->currentDentalChartId) {
+                    $this->loadTreatmentRecordForChart($this->currentDentalChartId);
+                }
             }
+            
             $this->isReadOnly = true; 
             $this->dispatch('patient-added'); 
+            
         } catch (\Exception $e) { }
     }
 
