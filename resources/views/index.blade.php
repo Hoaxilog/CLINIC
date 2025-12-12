@@ -106,29 +106,36 @@
                         <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Patient Records</span>
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('reports.index') }}"
-                        class="{{ request()->routeIs('reports.*') ? 'active' : '' }}
-                            nav-item flex items-center gap-5 px-3 py-2 relative w-full
-                            transition-all duration-300
-                            text-gray-700 hover:bg-gray-100
-                            [&.active]:bg-[#0086DA] [&.active]:text-white
-                            group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
-                        <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                class="lucide lucide-chart-line">
-                                <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>
-                            </svg>
-                        </span>
-                        <span class="nav-text whitespace-nowrap text-xl overflow-hidden
-                            transition-all duration-300
-                            group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
-                            Reports
-                        </span>
-                    </a>
-                </li>
+                @php
+                    $user = auth()->user();
+                    $role = is_array($user) ? ($user['role'] ?? null) : ($user->role ?? null);
+                    $isAdmin = (string)$role === 'admin'; // change if numeric roles
+                @endphp
+                @auth
+                    @if($isAdmin)
+                        <li>
+                            <a href="{{ route('reports.index') }}"
+                                class="{{ request()->routeIs('reports.*') ? 'active' : '' }}
+                                    nav-item flex items-center gap-5 px-3 py-2 relative w-full
+                                    transition-all duration-300
+                                    text-gray-700 hover:bg-gray-100
+                                    [&.active]:bg-[#0086DA] [&.active]:text-white
+                                    group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
+                                <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        class="lucide lucide-chart-line">
+                                        <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                                    Reports
+                                </span>
+                            </a>
+                        </li>
+                    @endif
+                @endauth
                 <li>
                     <a href="{{ route('users.index') }}"
                         class="{{ request()->routeIs('users.*') ? 'active' : '' }}

@@ -8,13 +8,25 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 
-Route::middleware(['isAdmin'])->group(function () {
+// Public (guest) routes
+Route::middleware(['guest'])->group(function() {
+    Route::get('/', [Login::class, 'index'])->name('login');
+    Route::post('/login', [Login::class, 'login']);
+});
+
+// Authenticated user routes (visible to all logged-in users)
+Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
-    Route::get('/appointment', function () {return view('appointment');})->name('appointment');
-    Route::get('/patient-records', action: [PatientsController::class, 'index'])->name('patient-records');
-    Route::get('/admin/backup-database', [BackupController::class, 'downloadBackup'])
-             ->name('admin.db.backup');
+    Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
+    Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
+
+    // Logout should be available to all authenticated users
     Route::post('/logout', [Login::class, 'logout'])->name('logout');
+});
+
+// Admin-only routes
+Route::middleware(['auth', 'isAdmin'])->group(function () {
+    Route::get('/admin/backup-database', [BackupController::class, 'downloadBackup'])->name('admin.db.backup');
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users.index');
@@ -26,11 +38,5 @@ Route::middleware(['isAdmin'])->group(function () {
     });
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-});
-
-
-Route::middleware(['guest'])->group(function() {
-    Route::get('/', [Login::class, 'index'])->name('login');
-    Route::post('/login', [Login::class, 'login']);
 });
 
