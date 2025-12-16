@@ -50,14 +50,14 @@
         <!-- Age (Readonly) -->
         <div>
             <label class="block text-lg font-medium text-gray-700 mb-2">Age</label>
-            <input wire:model="Age" type="text" value="{{ $this->age }}" readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100" placeholder="Age">
+            <input type="text" value="{{ $this->age }}" readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100" placeholder="Age">
         </div>
 
         <!-- Sex (Select) -->
         <div>
             <label class="block text-lg font-medium text-gray-700 mb-2">Sex</label>
             <select wire:model="gender" class="w-full border rounded px-4 py-3 text-base bg-white">
-                <option value="">Select...</option>
+                <option value="" disable>Select...</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
             </select>

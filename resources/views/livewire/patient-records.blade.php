@@ -57,7 +57,6 @@
                 </div>
             </div>
 
-            <!-- Add Patient Button -->
             <button 
                 wire:click="$dispatch('openAddPatientModal')"
                 type="button"
@@ -77,10 +76,6 @@
             <!-- List Container -->
             <div class="space-y-3 flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#ccebff] scrollbar-thumb-[#0086da]">
                 @forelse($patients as $patient)
-                    {{-- 
-                        [UPDATED] Changed from <button> to <div> to allow nested buttons 
-                        Added 'cursor-pointer' to make it feel like a button
-                    --}}
                     <div 
                         wire:click="selectPatient({{ $patient->id }})"
                         class="w-full px-5 p-8 bg-white rounded-lg shadow-sm flex items-center justify-between transition-all cursor-pointer relative group
@@ -110,12 +105,7 @@
                             </div>
 
                         </div>
-
-                        <!-- RIGHT TRASH ICON BUTTON -->
-                        {{-- 
-                             [UPDATED] Wrapped in a button with wire:click.stop 
-                             Added wire:confirm for safety
-                        --}}
+                        
                         <button 
                             type="button"
                             wire:click.stop="deletePatient({{ $patient->id }})"

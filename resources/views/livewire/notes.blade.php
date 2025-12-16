@@ -40,7 +40,7 @@
         @endforelse
     </div>
 
-    <button wire:click="openModal" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black cursor-pointer absolute bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#ffac00] text-white shadow-lg transition hover:bg-yellow-500">
+    <button wire:click="openNotes" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black cursor-pointer absolute bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#ffac00] text-white shadow-lg transition hover:bg-yellow-500">
         <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-badge-plus-icon lucide-badge-plus"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><line x1="12" x2="12" y1="8" y2="16"/><line x1="8" x2="16" y1="12" y2="12"/></svg>    
     </button>
 
@@ -51,7 +51,7 @@
             <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 z-10 overflow-hidden">
                 <div class="px-6 py-4 flex items-center justify-between bg-white border-b">
                     <h3 class="text-2xl font-semibold text-gray-900 ">{{ $isEditing || !$noteId ? 'Add Note' : 'My Note' }}</h3>
-                    <button class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black text-[#0086da] text-5xl flex items-center justify-center px-3 py-1 rounded-full hover:bg-[#e6f4ff] transition" wire:click="closeModal" aria-label="Close">×</button>
+                    <button class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black text-[#0086da] text-5xl flex items-center justify-center px-3 py-1 rounded-full hover:bg-[#e6f4ff] transition" wire:click="closeNotes" aria-label="Close">×</button>
                 </div>
 
                 <form class="p-6" wire:submit.prevent="{{ $noteId && $isEditing ? 'update' : ($noteId ? 'update' : 'save') }}">
@@ -72,9 +72,9 @@
                             <button type="button" wire:click="edit" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black px-5 py-3 rounded bg-[#0086da] text-white text-lg">Edit</button>
                         @endif
 
-                        <button type="button" wire:click="closeModal" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black px-5 py-3 rounded bg-gray-200">Cancel</button>
-
+                        
                         @if(!$noteId || $isEditing)
+                            <button type="button" wire:click="cancelEdit" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black px-5 py-3 rounded bg-gray-200">Cancel</button>
                             <button type="submit" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black px-5 py-3 rounded bg-[#0086da] text-white text-lg">
                                 Save
                             </button>

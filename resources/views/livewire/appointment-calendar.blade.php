@@ -1,4 +1,4 @@
-<div class="relative ">
+<div class="relative z-[]">
     <h1 class="text-3xl lg:text-4xl font-bold text-gray-800">Appointment Calendar</h1>
     <div class="w-full max-w-9xl mx-auto px-2 py-10 lg:px-8 overflow-x-auto bg-white mt-6">
         <div class="flex flex-col md:flex-row max-md:gap-3 items-center justify-between mb-5">
@@ -25,7 +25,7 @@
         </div>
 
         <div class="relative">
-            <div class="grid grid-cols-[120px_repeat(7,1fr)] border-t border-gray-200 sticky top-0 left-0 w-full bg-white z-10">
+            <div class="grid grid-cols-[120px_repeat(7,1fr)] border-t border-gray-200 sticky top-0 left-0 w-full bg-white z-[1]">
                 <div class="p-3.5 flex items-center justify-center text-sm font-medium text-gray-900">
                 </div>
                 @foreach($weekDates as $date)
@@ -38,50 +38,44 @@
                 @endforeach
             </div>
 
-            {{-- This grid contains both the background cells AND the absolute-positioned appointments --}}
-            <div class="hidden sm:grid grid-cols-[120px_repeat(7,1fr)] w-full overflow-x-auto relative pt-4">                
-                {{-- Loop 1: Render the background grid cells (with click handlers) --}}
-                {{-- Loop 1: Render the background grid cells (with click handlers) --}}
-            @foreach($timeSlots as $time)
-                {{-- This is the fixed time slot label cell --}}
-                <div class="relative h-16 lg:h-16 border-t border-r border-gray-200">
-                    <span class="absolute top-0 left-2 -mt-2.5 bg-white px-1 text-sm font-semibold text-gray-500">
-                        {{ Carbon\Carbon::parse($time)->format('h:i A') }}
-                    </span>
-                </div>
-                @foreach($weekDates as $date)
-                    @php
-                        // --- NEW CHECK ---
-                        $isOccupied = $this->isSlotOccupied($date->toDateString(), $time);
-                    @endphp 
-
-                    <div 
-                        {{-- If it's NOT occupied, add the click handler --}}
-                        @if(!$isOccupied)
-                            wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')"
-                        @endif
-                        
-                        {{-- This class logic is UPDATED --}}
-                        class="h-16 lg:h-16 p-0.5 md:p-3.5 border-t border-r border-gray-200 transition-all 
-                            @if(!$isOccupied)
-                                hover:bg-stone-100 cursor-default
-                            @endif
-                            "
-                    >
-                        {{-- This is the background cell --}}
+            <div class="hidden sm:grid grid-cols-[120px_repeat(7,1fr)] w-full overflow-x-auto relative pt-4 z-10">           
+                @foreach($timeSlots as $time)
+                    {{-- This is the fixed time slot label cell --}}
+                    <div class="relative h-16 lg:h-16 border-t border-r border-gray-200">
+                        <span class="absolute top-0 left-2 -mt-2.5 bg-white px-1 text-sm font-semibold text-gray-500">
+                            {{ Carbon\Carbon::parse($time)->format('h:i A') }}
+                        </span>
                     </div>
-                @endforeach
-            @endforeach
+                    @foreach($weekDates as $date)
+                        @php
+                            // --- NEW CHECK ---
+                            $isOccupied = $this->isSlotOccupied($date->toDateString(), $time);
+                        @endphp 
 
-                {{-- Loop 2: Render the appointments OVER the grid --}}
-                {{-- UPDATED: Added pointer-events-none to this overlay --}}
+                        <div 
+                            {{-- If it's NOT occupied, add the click handler --}}
+                            @if(!$isOccupied)
+                                wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')"
+                            @endif
+                            
+                            {{-- This class logic is UPDATED --}}
+                            class="h-16 lg:h-16 p-0.5 md:p-3.5 border-t border-r border-gray-200 transition-all 
+                                @if(!$isOccupied)
+                                    hover:bg-stone-100 cursor-default
+                                @endif
+                                "
+                        >
+                            {{-- This is the background cell --}}
+                        </div>
+                    @endforeach
+                @endforeach
+
                 <div class="absolute inset-x-0 bottom-0 top-4 grid grid-cols-[120px_repeat(7,1fr)] w-full pointer-events-none">                    
                     <div class="h-full">
-                        {{-- Empty spacer for the 120px time column --}}
+                        {{-- SPACER --}}
                     </div>
                     
                     @foreach($weekDates as $date)
-                        {{-- This is a 'day' column, it must be relative --}}
                         <div class="relative h-full border-r border-gray-200">
                             @php
                                 $dayAppointments = $this->getAppointmentsForDay($date);
@@ -101,13 +95,12 @@
                                 @endphp
 
                                 {{-- This is the actual appointment block --}}
-                                <div class="absolute w-full px-1 py-0.5" 
+                                <div class="absolute w-full px-1 py-0.5 " 
                                      style="top: {{ $topPositionRem }}rem; height: {{ $heightInRem }}rem; z-index: 10;">
                                      
-                                     {{-- UPDATED: Added pointer-events-auto so this block is "solid" --}}
                                      <div wire:click="viewAppointment({{ $appointment->id }})" class="rounded p-1.5 border-l-4 border-t-4 border-blue-600 bg-blue-50 h-full overflow-hidden pointer-events-auto cursor-pointer">
                                          <p class="text-md font-semibold text-gray-900 mb-px">
-                                             {{ $appointment->last_name }}, {{ $appointment->first_name }}
+                                             {{ $appointment->last_name }}, {{ $appointment->first_name }} 
                                          </p>
                                          <p class="text-md font-medium text-gray-700 leading-tight mb-1 truncate">
                                             {{ $appointment->service_name }}
@@ -137,9 +130,9 @@
 
     {{-- --- APPOINTMENT MODAL --- --}}
     @if($showAppointmentModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="fixed inset-0 z-60 flex items-center justify-center">
             <div class="absolute inset-0 bg-black opacity-60"></div>
-            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 z-10 overflow-hidden">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 z-50 overflow-hidden">
                 <div class="px-6 py-4 flex items-center justify-between bg-white border-b">
                     <h3 class="text-2xl font-semibold text-gray-900 ">{{ $isViewing ? 'Appointment Details' : 'Book Appointment' }}</h3>
                     <button class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black text-[#0086da] text-5xl flex items-center justify-center px-3 py-1 rounded-full hover:bg-[#e6f4ff] transition" wire:click="closeAppointmentModal" aria-label="Close">×</button>
@@ -219,17 +212,17 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label class="block text-lg font-medium text-gray-700 mb-2">First Name</label>
-                            <input wire:model.defer="firstName" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="Renz" />
+                            <input wire:model.defer="firstName" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="Renz" @if($isViewing) readonly disabled class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
                             @error('firstName') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-lg font-medium text-gray-700 mb-2">Middle Name</label>
-                            <input wire:model.defer="middleName" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="S" />
+                            <input wire:model.defer="middleName" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="S" @if($isViewing) readonly disabled class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
                             @error('middleName') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-lg font-medium text-gray-700 mb-2">Last Name</label>
-                            <input wire:model.defer="lastName" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="Rosales" />
+                            <input wire:model.defer="lastName" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="Rosales" @if($isViewing) readonly disabled class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
                             @error('lastName') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -238,7 +231,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-lg font-medium text-gray-700 mb-2">Contact Number</label>
-                            <input wire:model.defer="contactNumber" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="09..." />
+                            <input wire:model.defer="contactNumber" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="09..." @if($isViewing) readonly disabled class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
                             @error('contactNumber') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                         </div>
                         
@@ -247,23 +240,22 @@
                             <input 
                                 wire:model.defer="birthDate" 
                                 type="date" 
-                                class="w-full border rounded px-4 py-3 text-base" 
-                                @if($isViewing) readonly @endif 
+                                class="w-full border rounded px-4 py-3 text-base @if($isViewing) bg-gray-100 cursor-not-allowed @endif" 
+                                @if($isViewing) readonly disabled @endif 
                             />
-                            {{-- FIXED: Changed error key from 'contactNumber' to 'birthDate' --}}
                             @error('birthDate') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                         </div>
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-lg font-medium text-gray-700 mb-2">Patient Number (Optional)</label>
-                        <input wire:model.defer="recordNumber" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., P-00123" />
+                        <input wire:model.defer="recordNumber" type="text" class="w-full border rounded px-4 py-3 text-base @if($isViewing) bg-gray-100 cursor-not-allowed @endif" placeholder="e.g., P-00123" @if($isViewing) readonly disabled @endif />
                         @error('recordNumber') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                     </div>
                     {{-- SERVICES --}}
                     <div class="mb-4">
                         <label class="block text-lg font-medium text-gray-700 mb-2">Service</label>
-                        <select wire:model.live="selectedService" class="w-full border rounded px-4 py-3 text-base bg-white">
+                        <select wire:model.live="selectedService" class="w-full border rounded px-4 py-3 text-base bg-white @if($isViewing) bg-gray-100 cursor-not-allowed @endif" @if($isViewing) disabled @endif>
                             <option value="">-- Select a service --</option>
                             @foreach($servicesList as $service)
                                 <option value="{{ $service->id }}">
@@ -281,8 +273,6 @@
                         @enderror
                         @if($isViewing)
                             {{-- --- VIEW MODE BUTTONS --- --}}
-                            
-                            {{-- 1. Cancel Button (Visible if not already cancelled or completed) --}}
                             @if(!in_array($appointmentStatus, ['Cancelled', 'Completed']))
                                 <button type="button" 
                                     wire:click="updateStatus('Cancelled')"

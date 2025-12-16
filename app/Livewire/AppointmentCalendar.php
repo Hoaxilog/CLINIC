@@ -74,7 +74,7 @@ class AppointmentCalendar extends Component
     public function generateTimeSlots()
     {
         $this->timeSlots = [];
-        for ($hour = 9; $hour <= 19; $hour++) {
+        for ($hour = 9; $hour <= 24; $hour++) {
             $this->timeSlots[] = sprintf('%02d:00', $hour);
             if ($hour != 19) {
                 $this->timeSlots[] = sprintf('%02d:30', $hour);
@@ -196,6 +196,10 @@ class AppointmentCalendar extends Component
 
     public function saveAppointment()
     {
+        if ($this->isViewing) {
+            return; // Prevent saving when in viewing mode
+        }
+
         $this->validate();
 
         try {
@@ -336,8 +340,9 @@ class AppointmentCalendar extends Component
             $this->lastName = $appointment->last_name;
             $this->middleName = $appointment->middle_name;
             $this->contactNumber = $appointment->mobile_number;
+            $this->birthDate = $appointment->birth_date;
             $this->selectedService = $appointment->service_id;
-            $this->viewingAppointmentId = $appointment->id;    
+            $this->viewingAppointmentId = $appointment->id;
             $this->appointmentStatus = $appointment->status;   
 
             // 3. Format Dates and Times
@@ -388,9 +393,10 @@ class AppointmentCalendar extends Component
 
         // Search by First Name, Last Name, or Mobile Number
         $this->patientSearchResults = DB::table('patients')
-            ->select('id', 'first_name', 'last_name', 'middle_name', 'mobile_number', 'birth_date') // Select birthdate
-            ->where('first_name', 'like', '%' . $this->searchQuery . '%')
-            ->limit(5) // Limit results to keep UI clean
+            ->select('id', 'first_name', 'last_name', 'middle_name', 'mobile_number', 'birth_date') 
+            ->orwhere('first_name', 'like', '%' . $this->searchQuery . '%')
+            ->orwhere('last_name', 'like', '%' . $this->searchQuery . '%')
+            ->limit(10) // Limit results to keep UI clean
             ->get();
     }
 

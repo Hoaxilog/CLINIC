@@ -51,7 +51,7 @@
             <h1 class="text-2xl font-semibold text-gray-800 mb-4">Quick Actions</h1>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
-                <button class="bg-[#ccebff] text-gray-800 font-semibold p-4 rounded-lg flex flex-col items-center gap-2 hover:bg-blue-200 transition">
+                {{-- <button class="bg-[#ccebff] text-gray-800 font-semibold p-4 rounded-lg flex flex-col items-center gap-2 hover:bg-blue-200 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0086da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
                     <span>Add Patient</span>
                 </button>
@@ -64,7 +64,7 @@
                 <button class="bg-[#ccebff] text-gray-800 font-semibold p-4 rounded-lg flex flex-col items-center gap-2 hover:bg-blue-200 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0086da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-plus"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14h6"/><path d="M12 17v-6"/></svg>
                     <span>Book Appointment</span>
-                </button>
+                </button> --}}
 
                 <a href="{{ route('admin.db.backup') }}" class="bg-[#ccebff] text-gray-800 font-semibold p-4 rounded-lg flex flex-col items-center gap-2 hover:bg-blue-200 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0086da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database-backup"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 12a9 3 0 0 0 5 2.69"/><path d="M21 9.3V5"/><path d="M3 5v14a9 3 0 0 0 6.47 2.88"/><path d="M12 12v4h4"/><path d="M13 20a5 5 0 0 0 9-3 4.5 4.5 0 0 0-4.5-4.5c-1.33 0-2.54.54-3.41 1.41L12 16"/></svg>

@@ -101,13 +101,17 @@ class Notes extends Component
         }
     }
 
-    public function openModal()
+    public function openNotes()
     {
         $this->resetForm();
         $this->showModal = true;
     }
 
-    public function closeModal()
+    public function cancelEdit() {
+        $this->isEditing = false;
+    }
+
+    public function closeNotes()
     {
         $this->showModal = false;
         $this->resetForm();

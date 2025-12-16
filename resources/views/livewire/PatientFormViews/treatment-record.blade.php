@@ -90,7 +90,7 @@
                         <p class="text-gray-500 font-medium">No image available in view mode.</p>
                     @endif
                 @else
-                    <input type="file" wire:model="image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    {{-- <input type="file" wire:model="image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"> --}}
                     
                     @if($image)
                         <!-- Preview for Single Image -->

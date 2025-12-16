@@ -5,6 +5,8 @@ namespace App\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Facade;
+
 
 class PatientRecords extends Component
 {
@@ -33,14 +35,12 @@ class PatientRecords extends Component
                             ->first();
     }
 
-    // MODIFIED: Changed to 'updatedSearch' so it runs AFTER the search text updates
     public function updatedSearch()
     {
         $this->resetPage();
-        $this->fetchFirstPatient(); // Auto-select top result when searching
+        $this->fetchFirstPatient(); 
     }
     
-    // MODIFIED: Auto-select top result when sorting changes
     public function setSort($option)
     {
         $this->sortOption = $option;
@@ -54,16 +54,12 @@ class PatientRecords extends Component
     {
         $query = DB::table('patients');
 
-        // 1. Apply Search
         if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('first_name', 'like', '%' . $this->search . '%')
+            $query->where('first_name', 'like', '%' . $this->search . '%')
                   ->orWhere('last_name', 'like', '%' . $this->search . '%')
-                  ->orWhere('mobile_number', 'like', '%' . $this->search . '%');
-            });
+                  ->orWhere('mobile_number', 'like', '%' . $this->search . '%');;
         }
 
-        // 2. Apply Sort
         switch ($this->sortOption) {
             case 'oldest':
                 $query->orderBy('created_at', 'asc');
@@ -83,9 +79,6 @@ class PatientRecords extends Component
         return $query;
     }
 
-    /**
-     * Helper to fetch the first patient for the initial view state
-     */
     protected function fetchFirstPatient()
     {
         $patient = $this->getPatientsQuery()->first();
@@ -100,23 +93,17 @@ class PatientRecords extends Component
 
     public function deletePatient($id)
     {
-        // 1. Find the patient
-        $patient = \Illuminate\Support\Facades\DB::table('patients')->where('id', $id)->first();
+        $patient = DB::table('patients')->where('id', $id)->first();
 
         if ($patient) {
-            // 2. Delete the patient
-            // Your DB schema is set to ON DELETE CASCADE, so this will automatically
-            // delete linked appointments, health history, etc.
-            \Illuminate\Support\Facades\DB::table('patients')->where('id', $id)->delete();
+            DB::table('patients')->where('id', $id)->delete();
 
-            // 3. Reset selection if the deleted patient was currently being viewed
+            // Reset selection if the deleted patient was currently being viewed
             if ($this->selectedPatient && $this->selectedPatient->id == $id) {
                 $this->selectedPatient = null;
                 $this->lastVisit = null;
             }
 
-            // 4. (Optional) Show a success message (if using a notification component)
-            // session()->flash('message', 'Patient record deleted successfully.');
         }
     }
 

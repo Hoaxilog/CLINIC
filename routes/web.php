@@ -19,7 +19,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
     Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
     Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
-
     // Logout should be available to all authenticated users
     Route::post('/logout', [Login::class, 'logout'])->name('logout');
 });

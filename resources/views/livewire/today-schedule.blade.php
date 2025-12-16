@@ -107,8 +107,6 @@
                                 </button>
                             @endif
 
-                            <button type="button" wire:click="closeAppointmentModal" class="px-5 py-3 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold">Close</button>
-
                             @if($appointmentStatus === 'Scheduled')
                                 <button type="button" wire:click="updateStatus('Ongoing')" class="px-5 py-3 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold">
                                     Mark as Ongoing

@@ -16,22 +16,6 @@
 @endsection
 
 @section('content')
-    
-    {{--
-        ========================================================
-        MOCK DATA GENERATOR (For View Preview Only)
-        This prevents the page from crashing if the Controller
-        doesn't pass these variables yet.
-        ========================================================
-    --}}
-    @php
-        $dates = $dates ?? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        $totals = $totals ?? [12, 19, 3, 5, 2, 3, 10];
-        $statusLabels = $statusLabels ?? ['Completed', 'Pending', 'Cancelled'];
-        $statusCounts = $statusCounts ?? [65, 20, 15];
-        $serviceNames = $serviceNames ?? ['Cleaning', 'Whitening', 'Extraction', 'Braces'];
-        $serviceCounts = $serviceCounts ?? [40, 25, 15, 20];
-    @endphp
     <!-- ==================== MAIN CONTENT ==================== -->
     <main id="mainContent" class="mt-14 ml-64 transition-all duration-300 peer-[.collapsed]:ml-16 min-h-screen p-6 lg:p-8 bg-slate-50">
         
@@ -47,19 +31,19 @@
                 <p class="text-slate-500 mt-2 ml-14 text-sm font-medium">Live performance dashboard • {{ date('F Y') }}</p>
             </div>
             
-            <div class="flex gap-3 relative z-10">
-                <div class="relative">
-                    <button id="dateDropdownBtn" onclick="toggleDropdown()" class="group flex items-center gap-3 bg-white border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl shadow-sm hover:border-emerald-500 hover:text-emerald-600 transition-all text-sm font-bold">
+            <div class="flex gap-3 relative z-[1001]">
+                <div class="relative z-[1001]">
+                    <button type="button" id="dateDropdownBtn" onclick="toggleDropdown(event)" class="group flex items-center gap-3 bg-white border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl shadow-sm hover:border-emerald-500 hover:text-emerald-600 transition-all text-sm font-bold">
                         <svg class="w-4 h-4 text-slate-400 group-hover:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        <span id="selectedDateRange">This Year</span>
+                        <span id="selectedDateRange">{{ $rangeLabel }}</span>
                         <svg class="w-3 h-3 ml-1 text-slate-400 group-hover:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
-                    <div id="dateDropdownMenu" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden transform origin-top-right transition-all z-50">
+                    <div id="dateDropdownMenu" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden transform origin-top-right transition-all z-[1001]">
                         <div class="p-2 space-y-1">
-                            <a href="#" onclick="selectRange('Last 7 Days')" class="block px-4 py-2.5 text-sm text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl transition-colors font-medium">Last 7 Days</a>
-                            <a href="#" onclick="selectRange('Last 30 Days')" class="block px-4 py-2.5 text-sm text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl transition-colors font-medium">Last 30 Days</a>
-                            <a href="#" onclick="selectRange('This Month')" class="block px-4 py-2.5 text-sm text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl transition-colors font-medium">This Month</a>
-                            <a href="#" onclick="selectRange('This Year')" class="block px-4 py-2.5 text-sm text-emerald-700 bg-emerald-50 rounded-xl transition-colors font-bold">This Year</a>
+                            <a href="{{ request()->fullUrlWithQuery(['range' => '7d']) }}" class="block px-4 py-2.5 text-sm rounded-xl transition-colors font-medium {{ ($range ?? '30d') === '7d' ? 'text-emerald-700 bg-emerald-50 font-bold' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700' }}">Last 7 Days</a>
+                            <a href="{{ request()->fullUrlWithQuery(['range' => '30d']) }}" class="block px-4 py-2.5 text-sm rounded-xl transition-colors font-medium {{ ($range ?? '30d') === '30d' ? 'text-emerald-700 bg-emerald-50 font-bold' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700' }}">Last 30 Days</a>
+                            <a href="{{ request()->fullUrlWithQuery(['range' => 'month']) }}" class="block px-4 py-2.5 text-sm rounded-xl transition-colors font-medium {{ ($range ?? '30d') === 'month' ? 'text-emerald-700 bg-emerald-50 font-bold' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700' }}">This Month</a>
+                            <a href="{{ request()->fullUrlWithQuery(['range' => 'year']) }}" class="block px-4 py-2.5 text-sm rounded-xl transition-colors font-medium {{ ($range ?? '30d') === 'year' ? 'text-emerald-700 bg-emerald-50 font-bold' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700' }}">This Year</a>
                         </div>
                     </div>
                 </div>
@@ -87,7 +71,7 @@
                         <span class="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 rounded-full">+12% vs last month</span>
                     </div>
                     <p class="text-slate-400 text-xs font-bold tracking-widest uppercase">Total Appointments</p>
-                    <h2 class="text-4xl font-black text-slate-800 mt-1" id="total-appointments-display">0</h2>
+                    <h2 class="text-4xl font-black text-slate-800 mt-1" id="total-appointments-display">{{ number_format($totalAppointments) }}</h2>
                     <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden"><div class="bg-emerald-500 h-1.5 rounded-full" style="width: 65%"></div></div>
                 </div>
             </div>
@@ -100,7 +84,7 @@
                         </div>
                     </div>
                     <p class="text-slate-400 text-xs font-bold tracking-widest uppercase">Most Popular Service</p>
-                    <h2 class="text-3xl font-black text-slate-800 mt-1 truncate" id="top-service-display">Loading...</h2>
+                    <h2 class="text-3xl font-black text-slate-800 mt-1 truncate" id="top-service-display">{{ $topServiceName }}</h2>
                     <p class="text-xs text-slate-400 mt-2">Highest booking volume</p>
                 </div>
             </div>
@@ -111,10 +95,10 @@
                         <div class="p-3 bg-amber-100 text-amber-600 rounded-2xl">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                         </div>
-                        <span class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full" id="completion-badge">Calculating...</span>
+                        <span class="{{ $completionBadge['class'] }}" id="completion-badge">{{ $completionBadge['text'] }}</span>
                     </div>
                     <p class="text-slate-400 text-xs font-bold tracking-widest uppercase">Completion Rate</p>
-                    <h2 class="text-4xl font-black text-slate-800 mt-1" id="completion-rate-display">0%</h2>
+                    <h2 class="text-4xl font-black text-slate-800 mt-1" id="completion-rate-display">{{ $completionRate }}%</h2>
                     <p class="text-xs text-slate-400 mt-2">Successful appointments</p>
                 </div>
             </div>
@@ -140,7 +124,7 @@
                 <div class="relative h-64 flex justify-center items-center my-2">
                     <canvas id="statusChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-4xl font-black text-slate-800 tracking-tighter" id="center-total">0</span>
+                        <span class="text-4xl font-black text-slate-800 tracking-tighter" id="center-total">{{ number_format($totalAppointments) }}</span>
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
                     </div>
                 </div>
@@ -192,15 +176,31 @@
         })();
 
         // --- 2. Dropdown Functions ---
-        function toggleDropdown() { document.getElementById('dateDropdownMenu').classList.toggle('hidden'); }
-        function selectRange(range) {
-            document.getElementById('selectedDateRange').innerText = range;
-            document.getElementById('dateDropdownMenu').classList.add('hidden');
+        function toggleDropdown(ev) {
+            ev && ev.stopPropagation();
+            const menu = document.getElementById('dateDropdownMenu');
+            if (!menu) return;
+            menu.classList.toggle('hidden');
         }
+        function selectRange(range) { /* no-op; using links now */ }
         window.addEventListener('click', function(e) {
             const btn = document.getElementById('dateDropdownBtn');
             const menu = document.getElementById('dateDropdownMenu');
-            if (!btn.contains(e.target) && !menu.contains(e.target)) { menu.classList.add('hidden'); }
+            if (!btn || !menu) return;
+            const inBtn = e.target.closest('#dateDropdownBtn') !== null;
+            const inMenu = e.target.closest('#dateDropdownMenu') !== null;
+            if (!inBtn && !inMenu) { menu.classList.add('hidden'); }
+        });
+
+        // Close menu after clicking a menu item
+        document.addEventListener('DOMContentLoaded', function(){
+            const menu = document.getElementById('dateDropdownMenu');
+            if (!menu) return;
+            menu.querySelectorAll('a[href]').forEach(a => {
+                a.addEventListener('click', () => {
+                    menu.classList.add('hidden');
+                });
+            });
         });
 
         // --- 3. Chart Logic ---
@@ -213,26 +213,6 @@
             const statusCounts = JSON.parse(dataElement.dataset.statusCounts);
             const serviceNames = JSON.parse(dataElement.dataset.serviceNames);
             const serviceCounts = JSON.parse(dataElement.dataset.serviceCounts);
-
-            // KPI Calculations
-            const totalAppts = dailyTotals.reduce((a, b) => a + b, 0);
-            document.getElementById('total-appointments-display').innerText = totalAppts;
-            document.getElementById('center-total').innerText = totalAppts;
-
-            if (serviceNames.length > 0) {
-                const maxCount = Math.max(...serviceCounts);
-                const maxIndex = serviceCounts.indexOf(maxCount);
-                document.getElementById('top-service-display').innerText = serviceNames[maxIndex];
-            } else { document.getElementById('top-service-display').innerText = "N/A"; }
-
-            const completedIndex = statusLabels.indexOf('Completed');
-            if (completedIndex !== -1 && totalAppts > 0) {
-                const rate = Math.round((statusCounts[completedIndex] / totalAppts) * 100);
-                document.getElementById('completion-rate-display').innerText = rate + "%";
-                const badge = document.getElementById('completion-badge');
-                if(rate < 50) { badge.className = "text-xs font-bold bg-red-50 text-red-600 px-3 py-1 rounded-full"; badge.innerText = "Needs Attention"; }
-                else { badge.className = "text-xs font-bold bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full"; badge.innerText = "On Track"; }
-            } else { document.getElementById('completion-badge').innerText = "No Data"; }
 
             // Chart Configurations
             Chart.defaults.font.family = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";

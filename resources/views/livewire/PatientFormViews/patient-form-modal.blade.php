@@ -123,7 +123,7 @@
                         <div class="flex items-center gap-4">
                             
                             <button wire:click="cancelEdit" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
-                                {{ ($isEditing && !$isReadOnly) ? 'Cancel Edit' : 'Close' }}
+                                {{ ($isEditing && !$isReadOnly) ? 'Cancel' : 'Close' }}
                             </button>
                             
                             @php

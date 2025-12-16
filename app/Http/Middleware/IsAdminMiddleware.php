@@ -20,7 +20,7 @@ class IsAdminMiddleware
         $userId = Auth::id();
         $role = DB::table('users')->where('id', $userId)->value('role');
 
-        $isAdmin = $role === 2;
+        $isAdmin = $role === 1;
 
         if (!$isAdmin) {
             return abort(403, 'Unauthorized.');
