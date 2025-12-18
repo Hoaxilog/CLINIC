@@ -41,7 +41,7 @@
                 <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 relative overflow-hidden">
                     {{-- Role Badge --}}
                     @if($user->role_name)
-                        <span class="absolute top-4 right-4 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-green-100 text-green-700">
+                        <span class="absolute top-4 right-4 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-green-100 text-[#10b981]">
                             {{ $user->role_name }}
                         </span>
                     @endif

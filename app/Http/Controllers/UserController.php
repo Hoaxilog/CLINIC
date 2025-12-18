@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -59,16 +60,29 @@ class UserController extends Controller
             'contact'  => ['nullable', 'string', 'max:225'],
             'password' => ['required', 'confirmed', 'min:8'],
             'role'     => ['required', 'integer', 'exists:roles,id'],
+            // 🟢 NEW VALIDATION RULES
+            'security_question' => ['nullable', 'string'],
+            'security_answer'   => ['nullable', 'required_with:security_question', 'string'],
         ]);
 
-        DB::table('users')->insert([
+        // Prepare the data
+        $insertData = [
             'username'   => $request->username,
             'contact'    => $request->contact,
             'password'   => Hash::make($request->password),
             'role'       => $request->role,
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
+        ];
+
+        // 🟢 HANDLE SECURITY QUESTION (Optional)
+        if ($request->filled('security_question') && $request->filled('security_answer')) {
+            $insertData['security_question'] = $request->security_question;
+            // Normalize (lowercase + trim) then Hash the answer
+            $insertData['security_answer'] = Hash::make(Str::lower(trim($request->security_answer)));
+        }
+
+        DB::table('users')->insert($insertData);
 
         return redirect()->route('users.index')
             ->with('success', 'User created successfully.');
@@ -100,6 +114,8 @@ class UserController extends Controller
             'contact'  => ['nullable', 'string', 'max:225'],
             'role'     => ['required', 'integer', 'exists:roles,id'],
             'password' => ['nullable', 'confirmed', 'min:8'],
+            'security_question' => ['nullable', 'string'],
+            'security_answer'   => ['nullable', 'string'],
         ]);
 
         $updateData = [
@@ -111,6 +127,11 @@ class UserController extends Controller
 
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
+        }
+
+        if ($request->filled('security_answer') && $request->filled('security_question')) {
+            $updateData['security_question'] = $request->security_question;
+            $updateData['security_answer']   = Hash::make(Str::lower(trim($request->security_answer)));
         }
 
         DB::table('users')->where('id', $id)->update($updateData);
@@ -138,4 +159,6 @@ class UserController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'User deleted successfully.');
     }
+
+    
 }

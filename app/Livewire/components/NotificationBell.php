@@ -20,12 +20,10 @@ class NotificationBell extends Component
     {
         $now = Carbon::now();
         
-        // UPDATE: Set window to exactly 30 minutes from now
-        $upcomingTime = $now->copy()->addMinutes(30); 
+        $upcomingTime = $now->copy()->addDay(); 
 
         $appointments = DB::table('appointments')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
-            // This gets appointments happening between NOW and NOW + 30 mins
             ->whereBetween('appointments.appointment_date', [$now, $upcomingTime])
             ->where('appointments.status', '!=', 'Completed') 
             ->where('appointments.status', '!=', 'Cancelled')
@@ -39,20 +37,23 @@ class NotificationBell extends Component
             )
             ->get();
 
+        // Transform the data to match what the Blade View expects
         $this->notifications = $appointments->map(function($appt) {
             $appointmentTime = Carbon::parse($appt->appointment_date);
             
-            return [
+            return (object) [ // Cast to object so Blade can use -> syntax
                 'id' => $appt->id,
-                'patient_name' => $appt->first_name . ' ' . $appt->last_name,
-                'time' => $appointmentTime->format('h:i A'),
-                // This will say "in 15 minutes", "in 5 minutes", etc.
-                'time_diff' => $appointmentTime->diffForHumans(), 
-                'status' => $appt->status
+                'title' => 'Upcoming Appointment',
+                // Create a readable message
+                'message' => "{$appt->first_name} {$appt->last_name} - {$appointmentTime->format('h:i A')}",
+                'created_at' => $appt->appointment_date, // Used for "time ago"
+                'status' => $appt->status,
+                'is_read' => false, // Default to unread for these alerts
+                'link' => url('/appointment') 
             ];
-        })->toArray();
+        });
 
-        $this->unreadCount = count($this->notifications);
+        $this->unreadCount = $this->notifications->count();
     }
 
     public function render()

@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Login;
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\UserController;
@@ -10,8 +10,10 @@ use App\Http\Controllers\ReportController;
 
 // Public (guest) routes
 Route::middleware(['guest'])->group(function() {
-    Route::get('/', [Login::class, 'index'])->name('login');
-    Route::post('/login', [Login::class, 'login']);
+    Route::get('/', [LoginController::class, 'index'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/forgot-password', [LoginController::class, 'forgotPassword'])->name('password.forgot');
+    Route::post('/forgot-password', [LoginController::class, 'processForgotPassword'])->name('password.process');
 });
 
 // Authenticated user routes (visible to all logged-in users)
@@ -20,7 +22,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
     Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
     // Logout should be available to all authenticated users
-    Route::post('/logout', [Login::class, 'logout'])->name('logout');
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
 // Admin-only routes
