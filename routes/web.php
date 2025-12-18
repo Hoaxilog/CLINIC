@@ -7,6 +7,7 @@ use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
+USE App\Http\Controllers\ProfileController;
 
 // Public (guest) routes
 Route::middleware(['guest'])->group(function() {
@@ -23,6 +24,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
     // Logout should be available to all authenticated users
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 });
 
 // Admin-only routes

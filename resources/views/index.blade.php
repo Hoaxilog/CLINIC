@@ -14,34 +14,53 @@
 </head>
 <body class=" tracking-wide">
     <header class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-50">
-        <div class="flex items-center">
-            <button id="toggleBtn" class="p-2 hover:bg-gray-100 rounded-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
-            <h2 class="ml-4 text-lg font-semibold text-gray-900">Tejada Dent</h2>
-        </div>
-        <div class="flex items-center gap-4">
-            <!-- Notification Bell Component -->
-            @livewire('components.notification-bell')
+    <div class="flex items-center">
+        <button id="toggleBtn" class="p-2 hover:bg-gray-100 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-icon lucide-circle-user"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+        </button>
+        <h2 class="ml-4 text-lg font-semibold text-gray-900">Tejada Dent</h2>
+    </div>
+
+    <div class="flex items-center gap-3">
+        @livewire('components.notification-bell')
+        
+        <a href="{{ route('profile.index') }}" 
+        class="{{ request()->routeIs('profile.index') ? 'bg-gray-100' : '' }} 
+                flex items-center gap-2 px-2 py-1 hover:bg-gray-100 rounded-lg transition-all duration-300 group">
             
-            <!-- Logout Button -->
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="nav-item flex items-center gap-2 px-3 py-2 relative transition-all duration-300 text-[#f56565] hover:bg-gray-100">  
-                    <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-door-open-icon lucide-door-open">
-                            <path d="M11 20H2"/><path d="M11 4.562v16.157a1 1 0 0 0 1.242.97L19 20V5.562a2 2 0 0 0-1.515-1.94l-4-1A2 2 0 0 0 11 4.561z"/><path d="M11 4H8a2 2 0 0 0-2 2v14"/><path d="M14 12h.01"/><path d="M22 20h-3"/>
-                        </svg>
-                    </span>
-                    <span class="nav-text whitespace-nowrap text-md overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
-                        Logout
-                    </span>
-                </button>
-            </form>
-        </div>
-    </header>
+            <div class="flex-shrink-0 text-gray-400 group-hover:text-[#0086DA] transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-icon">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="10" r="3"/>
+                    <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+                </svg>
+            </div>
+
+            <div class="hidden md:flex flex-col items-start">
+                <span class="text-sm font-medium text-gray-700 group-hover:text-[#0086DA] leading-tight">
+                    {{ auth()->user()->username }}
+                </span>
+                <span class="text-[10px] text-gray-500 leading-tight">
+                    {{ auth()->user()->role == 1 ? 'Admin' : (auth()->user()->role == 2 ? 'Staff' : 'User') }}
+                </span>
+            </div>
+        </a>
+
+        <div class="h-6 w-px bg-gray-200 mx-1"></div>
+
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="nav-item flex items-center gap-2 px-2 py-2 relative transition-all duration-300 text-[#f56565] hover:bg-red-50 hover:text-red-600 rounded-lg" title="Logout">  
+                <span class="flex items-center justify-center w-5 h-5 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+                    </svg>
+                </span>
+                <span class="hidden md:inline text-sm font-medium">Logout</span>
+            </button>
+        </form>
+    </div>
+</header>
 
     
     <aside id="sidebar" class=" peer sidebar bg-white border-r border-gray-200 fixed left-0 top-12 bottom-0 overflow-hidden transition-all duration-300 w-64 flex flex-col [&.collapsed]:w-16 group">
@@ -69,7 +88,8 @@
 
                         <span class="nav-text whitespace-nowrap text-xl overflow-hidden
                             transition-all duration-300
-                            group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Dashboard</span>
+                            group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Dashboard
+                        </span>
                     </a>
                 </li>
                 <li>
@@ -162,6 +182,7 @@
 
     @yield("content")
 
+
     @stack('script')
     <script>
         (function(){
@@ -180,6 +201,7 @@
             });
         })();
     </script>
+
     @livewireScripts
 </body>
 </html>
