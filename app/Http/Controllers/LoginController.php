@@ -32,11 +32,10 @@ class LoginController extends Controller
             Auth::loginUsingId($user->id);
             $request->session()->regenerate();
 
-            // 🟢 CRITICAL ADDITION: Force Security Setup 🟢
-            // If the user hasn't set up a question yet, send them to setup page
-            if (is_null($user->security_question)) {
-                return redirect()->route('security.show'); 
-            }
+            // If the user hasnt set up a question yet, send them to setup page
+            // if (is_null($user->security_question)) {
+            //     return redirect()->route('security.show'); 
+            // }
 
             return redirect()->route('dashboard');
         }

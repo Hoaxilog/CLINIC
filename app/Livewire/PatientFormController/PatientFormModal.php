@@ -10,35 +10,24 @@ use Livewire\Attributes\On;
 
 class PatientFormModal extends Component
 {
-    // ==========================================
-    // 1. STATE PROPERTIES
-    // ==========================================
     public $showModal = false;
     public $currentStep = 1;
-    
-    // Modes
     public $isEditing = false;
     public $isAdmin = false;
     public $isReadOnly = false;
     public $isSaving = false; 
-    public $forceNewRecord = false; // For Dental Chart logic
+    public $forceNewRecord = false; 
 
-    // Data Containers
     public $basicInfoData = [];
     public $healthHistoryData = [];
     public $dentalChartData = [];
     public $treatmentRecordData = [];
     
-    // IDs & Keys
     public $newPatientId;
     public $currentDentalChartId = null;
     public $selectedHistoryId = '';
     public $chartHistory = [];
     public $chartKey = 'initial'; 
-
-    // ==========================================
-    // 2. MODAL CONTROLS
-    // ==========================================
 
     #[On('openAddPatientModal')]
     public function openForCreate()
@@ -58,7 +47,6 @@ class PatientFormModal extends Component
         $this->newPatientId = $id;
         $this->checkAdminRole();
 
-        // Load Data
         $this->loadPatientData($id);
         
         if ($this->isAdmin) {
@@ -87,15 +75,11 @@ class PatientFormModal extends Component
         $this->isAdmin = ($user && $user->role === 1);
     }
 
-    // ==========================================
-    // 3. NAVIGATION & SAVE TRIGGERS
-    // ==========================================
 
     public function nextStep()
     {
         $this->isSaving = false;
         
-        // If Read Only, just move next without validation
         if ($this->isReadOnly) {
             if ($this->currentStep < $this->getMaxStep()) {
                 $this->currentStep++;
@@ -103,8 +87,6 @@ class PatientFormModal extends Component
             }
             return;
         }
-
-        // Trigger Validation in Child Components based on current step
         $this->triggerStepValidation($this->currentStep);
     }
 
@@ -121,7 +103,6 @@ class PatientFormModal extends Component
         
         $this->isSaving = true;
         
-        // [FIXED] Removed the `dd('ye?')` that was here
         $this->triggerStepValidation($this->currentStep);
     }
 
@@ -134,11 +115,6 @@ class PatientFormModal extends Component
             4 => $this->dispatch('validateTreatmentRecord')->to('PatientFormController.treatment-record'),
         };
     }
-
-    // ==========================================
-    // 4. EVENT HANDLERS (Delegators)
-    // ==========================================
-
     #[On('basicInfoValidated')]
     public function handleBasicInfo($data)
     {
@@ -148,11 +124,9 @@ class PatientFormModal extends Component
             if ($this->isEditing) {
                 $this->updateBasicInfo();
             } else {
-                // If saving on Step 1 (rare, but possible), create record now
                 $this->createFullPatientRecord(); 
             }
         } else {
-            // Just moving to next step
             $this->currentStep = 2;
             $this->syncDataToSteps();
         }
@@ -167,7 +141,6 @@ class PatientFormModal extends Component
             if ($this->isEditing) {
                 $this->updateHealthHistory();
             } else {
-                // Finalize creation of new patient
                 $this->createFullPatientRecord();
             }
         } else {
@@ -183,14 +156,12 @@ class PatientFormModal extends Component
         $this->dentalChartData = $data;
 
         if ($this->isSaving) {
-            // Only explicitly save chart if user clicks "Save" on Step 3
             if ($this->isEditing && $this->isAdmin) {
                 $this->updateDentalChart(); 
                 $this->dispatch('patient-added');
                 $this->isReadOnly = true;
             }
         } else {
-            // Navigation: Move to Treatment Record
             $this->currentStep = 4;
         }
     }
@@ -207,23 +178,11 @@ class PatientFormModal extends Component
         }
         $this->isSaving = false;
     }
-
-    // ==========================================
-    // 5. CRUD ACTIONS (Refactored)
-    // ==========================================
-
-    /**
-     * Creates the complete patient record (Basic Info + Health History).
-     * Used when adding a NEW patient.
-     */
     private function createFullPatientRecord()
     {
-        // [FIXED] Removed try/catch suppression to verify errors
         DB::transaction(function () {
-            // 1. Add Basic Info
             $this->newPatientId = $this->addBasicInfo($this->basicInfoData);
 
-            // 2. Add Health History (linked to new ID)
             if (!empty($this->healthHistoryData)) {
                 $this->addHealthHistory($this->newPatientId, $this->healthHistoryData);
             }
@@ -246,8 +205,6 @@ class PatientFormModal extends Component
         DB::table('health_histories')->insert($data);
     }
 
-    // --- Update Methods ---
-
     private function updateBasicInfo()
     {
         $this->basicInfoData['modified_by'] = $this->getModifier();
@@ -264,7 +221,7 @@ class PatientFormModal extends Component
     private function updateHealthHistory()
     {
         $this->healthHistoryData['modified_by'] = $this->getModifier();
-        unset($this->healthHistoryData['id']); // Prevent ID collision
+        unset($this->healthHistoryData['id']); 
         
         DB::table('health_histories')
             ->updateOrInsert(
@@ -284,7 +241,6 @@ class PatientFormModal extends Component
         $modifier = $this->getModifier();
         $chartId = null;
 
-        // Check if we update today's chart or create new
         if (!$this->forceNewRecord) {
             $existingToday = DB::table('dental_charts')
                 ->where('patient_id', $this->newPatientId)
@@ -302,7 +258,7 @@ class PatientFormModal extends Component
             }
         }
 
-        // Create new if strictly needed or no existing chart today
+
         if (!$chartId) {
             $chartId = DB::table('dental_charts')->insertGetId([
                 'patient_id' => $this->newPatientId,
@@ -315,13 +271,12 @@ class PatientFormModal extends Component
         }
 
         $this->currentDentalChartId = $chartId;
-        $this->loadDentalChartHistory($this->newPatientId); // Refresh history list
+        $this->loadDentalChartHistory($this->newPatientId); 
         return $chartId;
     }
 
     private function updateTreatmentRecord()
     {
-        // Ensure chart exists/is saved first
         $chartId = $this->updateDentalChart();
 
         if ($chartId && !empty($this->treatmentRecordData)) {
@@ -346,13 +301,9 @@ class PatientFormModal extends Component
         }
     }
 
-    // ==========================================
-    // 6. HELPER FUNCTIONS
-    // ==========================================
 
     private function getModifier()
     {
-        // Ensure 'username' exists on your User model, otherwise change to 'name'
         return Auth::check() ? (Auth::user()->username ?? 'USER') : 'SYSTEM';
     }
 

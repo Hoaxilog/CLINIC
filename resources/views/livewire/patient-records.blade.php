@@ -2,7 +2,7 @@
     MODIFIED: Added 'h-full flex flex-col'
     This makes the component fill its parent and become a flex container
 --}}
-<div class="h-full flex flex-col">
+<div class="h-full flex flex-col"  wire:poll.5s>
         
     <!-- Header (No change) -->
     <div class="flex flex-col gap-4 mb-6">

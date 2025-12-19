@@ -7,7 +7,6 @@ use Livewire\Attributes\Reactive;
 
 class DentalChart extends Component
 {
-    // ... (Keep other properties) ...
     public $teeth = []; 
     public $selectedTool = null;
     public $toolLabels = [];
@@ -18,7 +17,6 @@ class DentalChart extends Component
     #[Reactive]
     public $history = []; 
     
-    // [FIX] Make this reactive so it updates when parent changes it
     public $selectedHistoryId = '';
     
     #[Reactive]
@@ -36,7 +34,6 @@ class DentalChart extends Component
 
     public $tools = [
         ['label' => 'Chief Complaint', 'code' => 'CC', 'color' => 'red'],
-        // ... (Keep tools list) ...
         ['label' => 'Caries', 'code' => 'C', 'color' => 'red'],
         ['label' => 'Incipient Caries', 'code' => 'CI', 'color' => 'red'],
         ['label' => 'Deep Caries', 'code' => 'CD', 'color' => 'red'],
@@ -93,7 +90,6 @@ class DentalChart extends Component
         }
     }
 
-    // ... (Keep existing methods: selectTool, updateSurface, etc.) ...
     public function updatedSelectedHistoryId($value)
     {
         $this->dispatch('switchChartHistory', chartId: $value);

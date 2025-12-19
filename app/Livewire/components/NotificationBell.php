@@ -41,14 +41,13 @@ class NotificationBell extends Component
         $this->notifications = $appointments->map(function($appt) {
             $appointmentTime = Carbon::parse($appt->appointment_date);
             
-            return (object) [ // Cast to object so Blade can use -> syntax
+            return (object) [ 
                 'id' => $appt->id,
                 'title' => 'Upcoming Appointment',
-                // Create a readable message
                 'message' => "{$appt->first_name} {$appt->last_name} - {$appointmentTime->format('h:i A')}",
-                'created_at' => $appt->appointment_date, // Used for "time ago"
+                'created_at' => $appt->appointment_date, 
                 'status' => $appt->status,
-                'is_read' => false, // Default to unread for these alerts
+                'is_read' => false, 
                 'link' => url('/appointment') 
             ];
         });

@@ -35,7 +35,6 @@ class TreatmentRecord extends Component
 
     public function rules()
     {
-        // Check if image is a new upload (object) or existing data (string)
         $isNewUpload = is_object($this->image);
 
         return [
@@ -45,7 +44,6 @@ class TreatmentRecord extends Component
             'amount_charged' => 'nullable|numeric',
             'remarks' => 'nullable|string',
             
-            // [UPDATED] Validation for 'image'
             'image' => $isNewUpload ? 'nullable|image|max:10240' : 'nullable', 
         ];
     }
@@ -55,17 +53,14 @@ class TreatmentRecord extends Component
     {
         $validatedData = $this->validate();
         
-        // If it's a new file upload, convert it to Base64 String immediately
         if (isset($this->image) && is_object($this->image)) {
             $imageContent = file_get_contents($this->image->getRealPath());
             $base64 = base64_encode($imageContent);
             $mimeType = $this->image->getMimeType();
             
-            // Format: "data:image/jpeg;base64,..."
             $validatedData['image'] = 'data:' . $mimeType . ';base64,' . $base64;
         }
 
-        // Dispatch with 'image' key
         $this->dispatch('treatmentRecordValidated', data: $validatedData);
     }
 

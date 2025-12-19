@@ -7,7 +7,6 @@ use Livewire\Attributes\On;
 
 class HealthHistory extends Component
 {
-    // ... (Properties remain the same) ...
     public $when_last_visit_q1;
     public $what_last_visit_reason_q1 = '';
     public $what_seeing_dentist_reason_q2 = '';
@@ -37,7 +36,6 @@ class HealthHistory extends Component
     
     public $gender;
     
-    // --- ADDED: Mount function handles data and gender passed from parent ---
     public function mount($data = [], $gender = null)
     {
         if (!empty($data)) {
@@ -53,7 +51,6 @@ class HealthHistory extends Component
         $this->gender = $gender;
     }
     
-    // ... (Casts and rules remain the same) ...
     protected $casts = [
         'is_clicking_jaw_q3a' => 'boolean',
         'is_pain_jaw_q3b' => 'boolean',

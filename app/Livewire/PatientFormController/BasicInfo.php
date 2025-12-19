@@ -67,58 +67,26 @@ class BasicInfo extends Component
     public function rules()
     {
 
-        $rules = [
-            'last_name' => 'nullable|string',
-            'first_name' => 'nullable|string',
-            'middle_name' => 'nullable|string',
-            'nickname' => 'nullable|string',
-            'occupation' => 'nullable|string',
-            'birth_date' => 'nullable|date',
-            'gender' => 'nullable|in:Male,Female,Other',
-            'civil_status' => 'nullable|string',
-            'home_address' => 'nullable|string',
-            'office_address' => 'nullable|string',
-            'home_number' => 'nullable|string',
-            'office_number' => 'nullable|string',
-            'mobile_number' => 'nullable|string',
-            'email_address' => 'nullable|email',
-            'referral' => 'nullable|string',
-            
-            'emergency_contact_name' => 'nullable|string',
-            'emergency_contact_number' => 'nullable|string',
-            'relationship' => 'nullable|string',
-
-            'who_answering' => 'nullable|string',
-            'relationship_to_patient' => 'nullable|string',
-            'father_name' => 'nullable|string',
-            'father_number' => 'nullable|string',
-            'mother_name' => 'nullable|string',
-            'mother_number' => 'nullable|string',
-            'guardian_name' => 'nullable|string',
-            'guardian_number' => 'nullable|string',
-        ];
-
-
         // $rules = [
-        //     'last_name' => 'required|string',
-        //     'first_name' => 'required|string',
-        //     'middle_name' => 'required|string',
+        //     'last_name' => 'nullable|string',
+        //     'first_name' => 'nullable|string',
+        //     'middle_name' => 'nullable|string',
         //     'nickname' => 'nullable|string',
-        //     'occupation' => 'required|string',
-        //     'birth_date' => 'required|date',
-        //     'gender' => 'required|in:Male,Female,Other',
-        //     'civil_status' => 'required|string',
-        //     'home_address' => 'required|string',
+        //     'occupation' => 'nullable|string',
+        //     'birth_date' => 'nullable|date',
+        //     'gender' => 'nullable|in:Male,Female,Other',
+        //     'civil_status' => 'nullable|string',
+        //     'home_address' => 'nullable|string',
         //     'office_address' => 'nullable|string',
         //     'home_number' => 'nullable|string',
         //     'office_number' => 'nullable|string',
-        //     'mobile_number' => 'required|string',
+        //     'mobile_number' => 'nullable|string',
         //     'email_address' => 'nullable|email',
         //     'referral' => 'nullable|string',
             
-        //     'emergency_contact_name' => 'required|string',
-        //     'emergency_contact_number' => 'required|string',
-        //     'relationship' => 'required|string',
+        //     'emergency_contact_name' => 'nullable|string',
+        //     'emergency_contact_number' => 'nullable|string',
+        //     'relationship' => 'nullable|string',
 
         //     'who_answering' => 'nullable|string',
         //     'relationship_to_patient' => 'nullable|string',
@@ -130,10 +98,42 @@ class BasicInfo extends Component
         //     'guardian_number' => 'nullable|string',
         // ];
 
-        // if ($this->age !== null && $this->age < 18) {
-        //     $rules['who_answering'] = 'required|string';
-        //     $rules['relationship_to_patient'] = 'required|string';
-        // }
+
+        $rules = [
+            'last_name' => 'required|string',
+            'first_name' => 'required|string',
+            'middle_name' => 'required|string',
+            'nickname' => 'nullable|string',
+            'occupation' => 'required|string',
+            'birth_date' => 'required|date',
+            'gender' => 'required|in:Male,Female,Other',
+            'civil_status' => 'required|string',
+            'home_address' => 'required|string',
+            'office_address' => 'nullable|string',
+            'home_number' => 'nullable|string',
+            'office_number' => 'nullable|string',
+            'mobile_number' => 'required|string',
+            'email_address' => 'nullable|email',
+            'referral' => 'nullable|string',
+            
+            'emergency_contact_name' => 'required|string',
+            'emergency_contact_number' => 'required|string',
+            'relationship' => 'required|string',
+
+            'who_answering' => 'nullable|string',
+            'relationship_to_patient' => 'nullable|string',
+            'father_name' => 'nullable|string',
+            'father_number' => 'nullable|string',
+            'mother_name' => 'nullable|string',
+            'mother_number' => 'nullable|string',
+            'guardian_name' => 'nullable|string',
+            'guardian_number' => 'nullable|string',
+        ];
+
+        if ($this->age !== null && $this->age < 18) {
+            $rules['who_answering'] = 'required|string';
+            $rules['relationship_to_patient'] = 'required|string';
+        }
 
         return $rules;
     }

@@ -1,4 +1,4 @@
-<div class="relative z-[]">
+<div class="relative"  @if(!$showAppointmentModal) wire:poll.5s="loadAppointments" @endif">
     <h1 class="text-3xl lg:text-4xl font-bold text-gray-800">Appointment Calendar</h1>
     <div class="w-full max-w-9xl mx-auto px-2 py-10 lg:px-8 overflow-x-auto bg-white mt-6">
         <div class="flex flex-col md:flex-row max-md:gap-3 items-center justify-between mb-5">
