@@ -1,0 +1,161 @@
+@extends('index') 
+
+@section('content')
+<main id="mainContent" class="min-h-screen bg-gray-100 p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
+    
+    <div class="max-w-3xl mx-auto">
+        
+        {{-- Card Container (Matches Login: rounded-2xl, shadow-xl, border) --}}
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-10 relative">
+            
+            {{-- HEADER (Typography matches Login Page: ExtraBold & Tracking Wide) --}}
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-extrabold text-gray-800 tracking-wide mb-2">
+                    CREATE <span class="text-[#0086DA]">USER</span>
+                </h1>
+                <p class="text-sm text-gray-500 font-semibold">Add a new administrator or staff member.</p>
+            </div>
+            
+            @if(session('error'))
+                <div class="mb-8 p-4 rounded-lg bg-red-50 border-l-4 border-red-500 text-red-700 text-sm flex items-center shadow-sm">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div>
+                        <span class="font-bold block">Error Encountered</span>
+                        {{ session('error') }}
+                    </div>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('users.store') }}">
+                @csrf
+
+                {{-- SECTION 1: ACCOUNT DETAILS --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {{-- Username --}}
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                {{-- User Icon --}}
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            </span>
+                            <input type="text" name="username" value="{{ old('username') }}" placeholder="e.g. dr_smith" required
+                                class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('username') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- Role --}}
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Role</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                {{-- Badge Icon --}}
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            </span>
+                            <select name="role" required class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] appearance-none bg-white transition duration-200 text-gray-800 font-medium">
+                                <option value="" selected disabled>Select Role</option>
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->id }}" {{ old('role') == $role->id ? 'selected' : '' }}>{{ ucfirst($role->role_name) }}</option>
+                                @endforeach
+                            </select>
+                            {{-- Dropdown Arrow --}}
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            </div>
+                        </div>
+                        @error('role') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- Contact --}}
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Contact Number</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-bold border-r border-gray-300 pr-2 my-2 bg-gray-50 rounded-l-md">+63</span>
+                            <input type="tel" name="contact" value="{{ old('contact') }}" placeholder="917 123 4567" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                class="w-full pl-16 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('contact') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                {{-- SECTION 2: PASSWORD --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            </span>
+                            <input type="password" name="password" placeholder="Min. 8 characters" required
+                                class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('password') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Confirm Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            </span>
+                            <input type="password" name="password_confirmation" placeholder="Re-enter password" required
+                                class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- SECTION 3: SECURITY RECOVERY (AT BOTTOM) --}}
+                <div class="mb-10 bg-blue-50 rounded-xl p-6 border border-blue-100">
+                    <div class="mb-4">
+                        <h3 class="text-sm font-extrabold text-[#0086DA] uppercase tracking-wide">Security Recovery <span class="text-gray-400 font-normal ml-1">(Optional)</span></h3>
+                        <p class="text-xs text-gray-500 mt-1 font-medium">If skipped, the user must set this up on their first login.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        {{-- Question --}}
+                        <div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </span>
+                                <select name="security_question" class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-blue-200 focus:outline-none focus:border-[#0086DA] appearance-none bg-white transition duration-200 text-gray-700 font-medium text-sm">
+                                    <option value="">-- Let user set this later --</option>
+                                    <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                                    <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+                                    <option value="What city were you born in?">What city were you born in?</option>
+                                    <option value="What is your favorite color?">What is your favorite color?</option>
+                                    <option value="What is the name of your elementary school?">What is the name of your elementary school?</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        {{-- Answer --}}
+                        <div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </span>
+                                <input type="text" name="security_answer" placeholder="Type answer here..."
+                                    class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-blue-200 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-700 font-medium text-sm placeholder-gray-400">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- FOOTER BUTTONS --}}
+                <div class="flex items-center justify-end gap-5 pt-2">
+                    <a href="{{ route('users.index') }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-8 py-3 bg-[#0086DA] hover:bg-[#0073A8] text-white font-bold rounded-lg shadow-md transition duration-200 text-lg tracking-wide">
+                        CREATE ACCOUNT
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
+@endsection
