@@ -199,7 +199,7 @@ class AppointmentCalendar extends Component
         if ($this->isViewing) {
             return; // Prevent saving when in viewing mode
         }
-
+    
         $this->validate();
 
         try {

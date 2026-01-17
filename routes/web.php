@@ -2,11 +2,12 @@
 
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\PatientsController;
-use App\Http\Controllers\BackupController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\PatientsController;
+use App\Http\Controllers\ActivityLogController;
 USE App\Http\Controllers\ProfileController;
 
 // Public (guest) routes
@@ -28,7 +29,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
-});
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs');
+}); 
 
 // Admin-only routes
 Route::middleware(['auth', 'isAdmin'])->group(function () {

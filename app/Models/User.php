@@ -9,6 +9,17 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    public function getRoleLabelAttribute()
+    {
+        // These match the IDs in your database (1=admin, 2=staff, 3=user)
+        return match($this->role) {
+            1 => 'Super Admin',
+            2 => 'Staff',
+            3 => 'Patient/User',
+            default => 'Unknown',
+        };
+    }
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -22,6 +33,7 @@ class User extends Authenticatable
         'email',
         'password',
     ];
+    
 
     /**
      * The attributes that should be hidden for serialization.

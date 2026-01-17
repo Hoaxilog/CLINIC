@@ -100,7 +100,6 @@ class LoginController extends Controller
             $cleanAnswer = Str::lower(trim($request->answer));
             
             if (Hash::check($cleanAnswer, $user->security_answer)) {
-                // Success: Move to Step 3
                 return view('forgot-password', [
                     'step'    => 3,
                     'user_id' => $user->id

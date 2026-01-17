@@ -195,7 +195,23 @@ class PatientFormModal extends Component
     private function addBasicInfo($data)
     {
         $data['modified_by'] = $this->getModifier();
-        return DB::table('patients')->insertGetId($data);
+        $newId = DB::table('patients')->insertGetId($data);
+        
+        $subject = new \App\Models\Patient(); // Fake Model
+        $subject->id = $newId;
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($subject)
+            ->event('patient_created') // Specific Event
+            ->withProperties([
+                'attributes' => $data
+            ])
+            ->log('Created New Patient Record'); // Specific Description
+        // ========================
+
+        return $newId;
+
     }
 
     private function addHealthHistory($patientId, $data)
@@ -209,9 +225,46 @@ class PatientFormModal extends Component
     {
         $this->basicInfoData['modified_by'] = $this->getModifier();
         
+        // 1. Fetch Old Data
+        $oldDataObj = DB::table('patients')->where('id', $this->newPatientId)->first();
+        $oldDataArray = (array) $oldDataObj; // Convert to array for easy comparison
+
+        // 2. === SMART DIFF CHECK (The Fix) ===
+        // We loop through the NEW data and check if it's different from the OLD data.
+        $changedAttributes = [];
+        $oldAttributes = [];
+
+        foreach ($this->basicInfoData as $key => $newValue) {
+            // Skip keys that shouldn't be logged (like timestamps or unmodified fields)
+            if (in_array($key, ['updated_at', 'modified_by'])) continue;
+
+            // Check if value actually changed
+            if (array_key_exists($key, $oldDataArray) && $oldDataArray[$key] != $newValue) {
+                $changedAttributes[$key] = $newValue;       // Save new value
+                $oldAttributes[$key] = $oldDataArray[$key]; // Save old value
+            }
+        }
+
+        // 3. Update the Database
         DB::table('patients')
             ->where('id', $this->newPatientId)
             ->update($this->basicInfoData);
+
+        // 4. Log ONLY if something actually changed
+        if (!empty($changedAttributes)) {
+            $subject = new \App\Models\Patient();
+            $subject->id = $this->newPatientId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($subject)
+                ->event('patient_updated')
+                ->withProperties([
+                    'old' => $oldAttributes,       // Only the fields that changed (e.g. "John")
+                    'attributes' => $changedAttributes // Only the new values (e.g. "Jane")
+                ])
+                ->log('Updated Patient Demographics');
+        }
 
         $this->dispatch('patient-added');
         $this->isReadOnly = true; 
@@ -240,7 +293,9 @@ class PatientFormModal extends Component
 
         $modifier = $this->getModifier();
         $chartId = null;
+        $wasUpdated = false; // Flag to track if we touched the DB
 
+        // 1. Logic to Find or Create Chart (Existing Code)
         if (!$this->forceNewRecord) {
             $existingToday = DB::table('dental_charts')
                 ->where('patient_id', $this->newPatientId)
@@ -249,15 +304,18 @@ class PatientFormModal extends Component
                 ->first();
 
             if ($existingToday) {
-                DB::table('dental_charts')->where('id', $existingToday->id)->update([
-                    'chart_data' => json_encode($this->dentalChartData),
-                    'modified_by' => $modifier,
-                    'updated_at' => now()
-                ]);
+                // Check if it actually changed to avoid spam
+                if ($existingToday->chart_data !== json_encode($this->dentalChartData)) {
+                    DB::table('dental_charts')->where('id', $existingToday->id)->update([
+                        'chart_data' => json_encode($this->dentalChartData),
+                        'modified_by' => $modifier,
+                        'updated_at' => now()
+                    ]);
+                    $wasUpdated = true;
+                }
                 $chartId = $existingToday->id;
             }
         }
-
 
         if (!$chartId) {
             $chartId = DB::table('dental_charts')->insertGetId([
@@ -267,8 +325,31 @@ class PatientFormModal extends Component
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+            $wasUpdated = true;
             $this->forceNewRecord = false;
         }
+
+        // 2. === LOGGING BLOCK ===
+        if ($wasUpdated) {
+            $subject = new \App\Models\DentalChart();
+            $subject->id = $chartId;
+
+            // Note: We use the Patient as the 'Subject' usually, but here we link the specific Chart 
+            // OR we can link the Patient so it shows on their timeline. Let's link the Patient.
+            $patientSubject = new \App\Models\Patient();
+            $patientSubject->id = $this->newPatientId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($patientSubject)
+                ->event('dental_chart_updated')
+                ->withProperties([
+                    'attributes' => ['Dental Chart' => 'Visual Chart Updated'] 
+                    // We hardcode this message to keep the log clean
+                ])
+                ->log('Updated Dental Chart');
+        }
+        // ========================
 
         $this->currentDentalChartId = $chartId;
         $this->loadDentalChartHistory($this->newPatientId); 
