@@ -144,7 +144,7 @@
                                         @continue(in_array($key, ['updated_at', 'created_at', 'id', 'modified_by', 'password', 'remember_token', 'email_verified_at']))
 
                                         <div class="flex items-center gap-2 text-xs">
-                                            <span class="font-semibold text-gray-500 uppercase tracking-wide w-24 truncate" title="{{ str_replace('_', ' ', $key) }}">
+                                            <span class=" font-semibold text-gray-500 uppercase tracking-wide w-50 truncate" title="{{ str_replace('_', ' ', $key) }}">
                                                 {{ str_replace('_', ' ', $key) }}
                                             </span>
                                             

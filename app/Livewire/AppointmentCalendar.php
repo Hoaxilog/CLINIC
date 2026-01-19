@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use Carbon\Carbon;
+use Livewire\Component;
+use App\Models\Appointment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Carbon\CarbonInterval; // <-- Add this at the top
 
 class AppointmentCalendar extends Component
@@ -197,7 +199,7 @@ class AppointmentCalendar extends Component
     public function saveAppointment()
     {
         if ($this->isViewing) {
-            return; // Prevent saving when in viewing mode
+            return; 
         }
     
         $this->validate();
@@ -211,9 +213,10 @@ class AppointmentCalendar extends Component
             sscanf($service->duration, '%d:%d:%d', $h, $m, $s);
             $durationInMinutes = ($h * 60) + $m;
 
-            // Use appointmentDate here
             $proposedStart = Carbon::parse($this->appointmentDate)->setTimeFromTimeString($this->selectedTime);
             $proposedEnd = $proposedStart->copy()->addMinutes($durationInMinutes);
+            
+            // Conflict Check (Keep your existing logic)
             $conflicts = DB::table('appointments')
                 ->join('services', 'appointments.service_id', '=', 'services.id')
                 ->where(function ($query) use ($proposedStart, $proposedEnd) {
@@ -221,7 +224,8 @@ class AppointmentCalendar extends Component
                     $existingEnd = DB::raw("DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)");
                     
                     $query->where($existingStart, '<', $proposedEnd->toDateTimeString())
-                        ->where($existingEnd, '>', $proposedStart->toDateTimeString());
+                        ->where($existingEnd, '>', $proposedStart->toDateTimeString())
+                        ->where('appointments.status', '!=', 'Cancelled'); // Optional: Ignore cancelled appts in conflict check
                 })
                 ->count(); 
 
@@ -229,22 +233,19 @@ class AppointmentCalendar extends Component
                 $this->addError('conflict', 'This time and duration conflicts with an existing appointment.');
                 return;
             }
-            $patient = DB::table('patients')
-                        ->where('mobile_number', $this->contactNumber)
-                        ->first();
 
+            // Patient Logic (Keep your existing logic)
+            $patient = DB::table('patients')->where('mobile_number', $this->contactNumber)->first();
             $patientId = null;
 
             if ($patient) {
                 $patientId = $patient->id;
-                DB::table('patients')
-                    ->where('id', $patientId)
-                    ->update([
-                        'first_name' => $this->firstName,
-                        'last_name' => $this->lastName,
-                        'middle_name' => $this->middleName,
-                        'birth_date' => $this->birthDate
-                    ]);
+                DB::table('patients')->where('id', $patientId)->update([
+                    'first_name' => $this->firstName,
+                    'last_name' => $this->lastName,
+                    'middle_name' => $this->middleName,
+                    'birth_date' => $this->birthDate
+                ]);
             } else {
                 $patientId = DB::table('patients')->insertGetId([
                     'first_name' => $this->firstName,
@@ -252,7 +253,7 @@ class AppointmentCalendar extends Component
                     'middle_name' => $this->middleName,
                     'mobile_number' => $this->contactNumber,
                     'birth_date' => $this->birthDate,
-                    'modified_by' => 'SYSTEM'
+                    'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM'
                 ]);
             }
 
@@ -260,15 +261,31 @@ class AppointmentCalendar extends Component
                 ->setTimeFromTimeString($this->selectedTime)
                 ->toDateTimeString();
 
-            DB::table('appointments')->insert([
+            // 1. Prepare Data
+            $apptData = [
                 'patient_id' => $patientId, 
                 'service_id' => $this->selectedService,
                 'appointment_date' => $appointmentDateTime,
                 'status' => 'Scheduled',
-                'modified_by' => 'SYSTEM', 
+                'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM', 
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+
+            // 2. Insert and Get ID (Changed from insert to insertGetId)
+            $newApptId = DB::table('appointments')->insertGetId($apptData);
+
+            // 3. === LOGGING BLOCK (Appointment Created) ===
+            $subject = new Appointment();
+            $subject->id = $newApptId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($subject)
+                ->event('appointment_created')
+                ->withProperties(['attributes' => $apptData])
+                ->log('Booked New Appointment');
+            // ===============================================
 
             $this->loadAppointments();
             $this->closeAppointmentModal();
@@ -277,6 +294,7 @@ class AppointmentCalendar extends Component
             // dd($th);
         }
     }
+
     public function isSlotOccupied($date, $time)
     {
         // 1. Kunin ang start time ng slot na tinitingnan (e.g., "16:30")
@@ -363,20 +381,39 @@ class AppointmentCalendar extends Component
     public function updateStatus($newStatus)
     {
         if ($this->viewingAppointmentId) {
+            
+            // 1. Fetch Old Status (For the log)
+            $oldAppt = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
+            $oldStatus = $oldAppt ? $oldAppt->status : 'Unknown';
+
+            // 2. Perform the Update
             DB::table('appointments')
                 ->where('id', $this->viewingAppointmentId)
                 ->update([
                     'status' => $newStatus,
+                    'updated_at' => now(), // Good practice to update timestamp
                 ]);
 
-            // Refresh the calendar to show changes (e.g. color coding if you add it later)
+            // 3. === LOGGING BLOCK (Status Changed) ===
+            // Only log if the status actually changed
+            if ($oldStatus !== $newStatus) {
+                $subject = new Appointment();
+                $subject->id = $this->viewingAppointmentId;
+
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($subject)
+                    ->event('appointment_updated')
+                    ->withProperties([
+                        'old' => ['status' => $oldStatus],
+                        'attributes' => ['status' => $newStatus]
+                    ])
+                    ->log('Updated Appointment Status');
+            }
+            // ==========================================
+
             $this->loadAppointments();
-
-            // Close the modal
             $this->closeAppointmentModal();
-
-            // Optional: Flash a success message
-            // session()->flash('message', "Appointment marked as $newStatus");
         }
     }
 

@@ -29,7 +29,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
-    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs');
 }); 
 
 // Admin-only routes
@@ -44,6 +43,8 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         Route::put('/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
+    
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 });

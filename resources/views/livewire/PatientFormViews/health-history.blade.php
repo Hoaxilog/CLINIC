@@ -1,4 +1,22 @@
 <section>
+    @if(count($historyList) > 0)
+        <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
+            <div>
+                <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wide">Select Record Date</h3>
+                <p class="text-xs text-gray-500">View past medical history records</p>
+            </div>
+            <select wire:model.live="selectedHistoryId" class="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm text-sm w-64">
+                <option value="new">📝 Current / New Entry</option>
+                <optgroup label="Past Records">
+                    @foreach($historyList as $history)
+                        <option value="{{ $history['id'] }}">
+                            📅 {{ $history['label'] }}
+                        </option>
+                    @endforeach
+                </optgroup>
+            </select>
+        </div>
+    @endif
     <!-- Dental History -->
     <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
         <h2 class="text-xl font-bold text-black">Dental History</h2>

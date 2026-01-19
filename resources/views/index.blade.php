@@ -119,73 +119,67 @@
                         <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Patient Records</span>
                     </a>
                 </li>
-                @php
-                    $user = auth()->user();
-                    $role = is_array($user) ? ($user['role'] ?? null) : ($user->role ?? null);
-                    $isAdmin = $role === 1
-                @endphp
-                @auth
-                    @if($isAdmin)
-                        <li>
-                            <a href="{{ route('reports.index') }}"
-                                class="{{ request()->routeIs('reports.*') ? 'active' : '' }}
-                                    nav-item flex items-center gap-5 px-3 py-2 relative w-full
-                                    transition-all duration-300
-                                    text-gray-700 hover:bg-gray-100
-                                    [&.active]:bg-[#0086DA] [&.active]:text-white
-                                    group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
-                                <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M7 18V16M12 18V15M17 18V13M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />
-                                        <path d="M5.99219 11.4863C8.14729 11.5581 13.0341 11.2328 15.8137 6.82132M13.9923 6.28835L15.8678 5.98649C16.0964 5.95738 16.432 6.13785 16.5145 6.35298L17.0104 7.99142" />
-                                    </svg>
-                                </span>
-                                <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
-                                    Reports
-                                </span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('users.index') }}"
-                                class="{{ request()->routeIs('users.*') ? 'active' : '' }}
-                                    nav-item flex items-center gap-5 px-3 py-2 relative w-full
-                                    transition-all duration-300
-                                    text-gray-700 hover:bg-gray-100
-                                    [&.active]:bg-[#0086DA] [&.active]:text-white
-                                    group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
-                                <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z" />
-                                        <path d="M9 12.5C7.61929 12.5 6.5 11.3807 6.5 10C6.5 8.61929 7.61929 7.5 9 7.5C10.3807 7.5 11.5 8.61929 11.5 10C11.5 11.3807 10.3807 12.5 9 12.5ZM9 12.5C11.2091 12.5 13 14.2909 13 16.5M9 12.5C6.79086 12.5 5 14.2909 5 16.5" />
-                                        <path d="M15 9H19" />
-                                        <path d="M15 12H19" />
-                                    </svg>                                
-                                </span>
-                                <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
-                                    User Accounts
-                                </span>
-                            </a>
-                        </li>
-                    @endif
-                @endauth
-                <li>
-                    <a href="{{ route('activity-logs') }}"
-                        class="{{ request()->is('activity-logs') ? 'active' : '' }} 
-                            nav-item flex items-center gap-5 px-3 py-2 relative w-full
-                        transition-all duration-300
-                            text-gray-700 hover:bg-gray-100 
-                            [&.active]:bg-[#0086DA] [&.active]:text-white 
-                            group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
-                        <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M19 10.5V9.99995C19 6.22876 18.9999 4.34311 17.8284 3.17154C16.6568 2 14.7712 2 11 2C7.22889 2 5.34326 2.00006 4.17169 3.17159C3.00015 4.34315 3.00013 6.22872 3.0001 9.99988L3.00006 14.5C3.00003 17.7874 3.00002 19.4312 3.90794 20.5375C4.07418 20.7401 4.25992 20.9258 4.46249 21.0921C5.56883 22 7.21255 22 10.5 22" />
-                                <path d="M7 7H15M7 11H11" />
-                                <path d="M18 18.5L16.5 17.95V15.5M12 17.5C12 19.9853 14.0147 22 16.5 22C18.9853 22 21 19.9853 21 17.5C21 15.0147 18.9853 13 16.5 13C14.0147 13 12 15.0147 12 17.5Z" />
-                            </svg>
-                        </span>
-                        <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Activity Logs</span>
-                    </a>
-                </li>
+                @if (auth()->user()->role === 1)
+                    <li>
+                        <a href="{{ route('reports.index') }}"
+                            class="{{ request()->routeIs('reports.*') ? 'active' : '' }}
+                                nav-item flex items-center gap-5 px-3 py-2 relative w-full
+                                transition-all duration-300
+                                text-gray-700 hover:bg-gray-100
+                                [&.active]:bg-[#0086DA] [&.active]:text-white
+                                group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
+                            <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M7 18V16M12 18V15M17 18V13M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />
+                                    <path d="M5.99219 11.4863C8.14729 11.5581 13.0341 11.2328 15.8137 6.82132M13.9923 6.28835L15.8678 5.98649C16.0964 5.95738 16.432 6.13785 16.5145 6.35298L17.0104 7.99142" />
+                                </svg>
+                            </span>
+                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                                Reports
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('users.index') }}"
+                            class="{{ request()->routeIs('users.*') ? 'active' : '' }}
+                                nav-item flex items-center gap-5 px-3 py-2 relative w-full
+                                transition-all duration-300
+                                text-gray-700 hover:bg-gray-100
+                                [&.active]:bg-[#0086DA] [&.active]:text-white
+                                group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
+                            <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z" />
+                                    <path d="M9 12.5C7.61929 12.5 6.5 11.3807 6.5 10C6.5 8.61929 7.61929 7.5 9 7.5C10.3807 7.5 11.5 8.61929 11.5 10C11.5 11.3807 10.3807 12.5 9 12.5ZM9 12.5C11.2091 12.5 13 14.2909 13 16.5M9 12.5C6.79086 12.5 5 14.2909 5 16.5" />
+                                    <path d="M15 9H19" />
+                                    <path d="M15 12H19" />
+                                </svg>                                
+                            </span>
+                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                                User Accounts
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('activity-logs') }}"
+                            class="{{ request()->is('activity-logs') ? 'active' : '' }} 
+                                nav-item flex items-center gap-5 px-3 py-2 relative w-full
+                            transition-all duration-300
+                                text-gray-700 hover:bg-gray-100 
+                                [&.active]:bg-[#0086DA] [&.active]:text-white 
+                                group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
+                            <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 10.5V9.99995C19 6.22876 18.9999 4.34311 17.8284 3.17154C16.6568 2 14.7712 2 11 2C7.22889 2 5.34326 2.00006 4.17169 3.17159C3.00015 4.34315 3.00013 6.22872 3.0001 9.99988L3.00006 14.5C3.00003 17.7874 3.00002 19.4312 3.90794 20.5375C4.07418 20.7401 4.25992 20.9258 4.46249 21.0921C5.56883 22 7.21255 22 10.5 22" />
+                                    <path d="M7 7H15M7 11H11" />
+                                    <path d="M18 18.5L16.5 17.95V15.5M12 17.5C12 19.9853 14.0147 22 16.5 22C18.9853 22 21 19.9853 21 17.5C21 15.0147 18.9853 13 16.5 13C14.0147 13 12 15.0147 12 17.5Z" />
+                                </svg>
+                            </span>
+                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Activity Logs</span>
+                        </a>
+                    </li>
+                @endif
+
             </ul>
             <form action="{{ route('logout') }}" method="POST">
                 @csrf

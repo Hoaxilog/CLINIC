@@ -33,8 +33,10 @@ class HealthHistory extends Component
 
     public $is_pregnant_q7 = false;
     public $is_breast_feeding_q8 = false;
-    
     public $gender;
+
+    public $historyList = []; 
+    public $selectedHistoryId = '';
     
     public function mount($data = [], $gender = null)
     {
@@ -44,6 +46,19 @@ class HealthHistory extends Component
         if ($gender) {
             $this->gender = $gender;
         }
+    }
+
+    #[On('setHealthHistoryContext')]
+    public function setContext($gender, $historyList, $selectedId) {
+        $this->gender = $gender;
+        $this->historyList = $historyList;
+        $this->selectedHistoryId = $selectedId;
+    }
+
+    public function updatedSelectedHistoryId($value)
+    {
+        // Tell the Parent (Modal) to load the data for this ID
+        $this->dispatch('switchHealthHistory', historyId: $value);
     }
 
     #[On('setGender')]
