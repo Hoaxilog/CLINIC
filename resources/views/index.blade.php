@@ -25,7 +25,7 @@
         <h2 class="ml-4 text-lg font-semibold text-gray-900">Tejada Dent</h2>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 ">
         @livewire('components.notification-bell')
         
         <a href="{{ route('profile.index') }}" 

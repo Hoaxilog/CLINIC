@@ -229,7 +229,7 @@ class AppointmentCalendar extends Component
                 })
                 ->count(); 
 
-            if ($conflicts > 0) {
+            if ($conflicts > 0) {   
                 $this->addError('conflict', 'This time and duration conflicts with an existing appointment.');
                 return;
             }
@@ -285,8 +285,8 @@ class AppointmentCalendar extends Component
                 ->event('appointment_created')
                 ->withProperties(['attributes' => $apptData])
                 ->log('Booked New Appointment');
-            // ===============================================
-
+            // ===============================================  
+            session()->flash('success', 'Appointment booked successfully!');
             $this->loadAppointments();
             $this->closeAppointmentModal();
 
@@ -475,6 +475,75 @@ class AppointmentCalendar extends Component
         $this->selectedDate = $this->currentDate->format('Y-m-d');
         $this->generateWeekDates();
         $this->loadAppointments();
+        
+    }
+
+    public function processPatient() 
+    {
+         if ($this->viewingAppointmentId) {
+            $appt = DB::table('appointments')->find($this->viewingAppointmentId);
+            if ($appt) {
+                // Open Patient Modal (Step 1: Basic Info)
+                $this->dispatch('editPatient', id: $appt->patient_id, startStep: 1);
+                $this->closeAppointmentModal();
+            }
+        }
+    }
+
+    public function openPatientChart()
+    {
+        if ($this->viewingAppointmentId) {
+            $appt = DB::table('appointments')->find($this->viewingAppointmentId);
+            if ($appt) {
+                // Open Patient Modal (Step 3: Dental Chart)
+                $this->dispatch('editPatient', id: $appt->patient_id, startStep: 3);
+                $this->closeAppointmentModal();
+            }
+        }
+    }
+
+    public function admitPatient()
+    {
+        $appointment = DB::table('appointments')->find($this->viewingAppointmentId);
+        $service = DB::table('services')->where('id', $this->selectedService)->first();
+        
+        if (!$appointment || !$service) return;
+
+        // Use Original Time for conflict check (we don't move the slot, just the status)
+        $startTime = Carbon::parse($appointment->appointment_date); 
+        sscanf($service->duration, '%d:%d:%d', $h, $m, $s);
+        $durationMinutes = ($h * 60) + $m;
+        $endTime = $startTime->copy()->addMinutes($durationMinutes);
+
+        // Double-check for conflicts (just in case)
+        $hasConflict = DB::table('appointments')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->where('appointments.id', '!=', $this->viewingAppointmentId)
+            ->whereNotIn('appointments.status', ['Cancelled', 'Waiting', 'Completed'])
+            ->whereDate('appointment_date', $startTime->toDateString())
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where('appointment_date', '<', $endTime)
+                      ->whereRaw("DATE_ADD(appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND) > ?", [$startTime]);
+            })
+            ->exists();
+
+        if ($hasConflict) {
+            // Optional: You can choose to block or just warn. 
+            // For now, we allow it but you might want to add an error message property.
+            // session()->flash('error', 'Warning: Slot conflict detected.');
+        } 
+
+        // Update Status -> Ongoing
+        DB::table('appointments')->where('id', $this->viewingAppointmentId)->update([
+            'status' => 'Ongoing',
+            'updated_at' => now()
+        ]);
+        
+        $this->loadAppointments();
+        $this->closeAppointmentModal();
+        
+        // Immediately open the chart
+        $this->dispatch('editPatient', id: $appointment->patient_id, startStep: 3);
     }
 
     public function render()

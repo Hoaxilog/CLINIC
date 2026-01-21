@@ -4,6 +4,7 @@ namespace App\Livewire\PatientFormController;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Reactive; 
 
 class HealthHistory extends Component
 {
@@ -37,8 +38,12 @@ class HealthHistory extends Component
 
     public $historyList = []; 
     public $selectedHistoryId = '';
+
+    #[Reactive]
+    public $isReadOnly = false;
+    public $isCreating = false;
     
-    public function mount($data = [], $gender = null)
+    public function mount($data = [], $gender = null, $isReadOnly = false)
     {
         if (!empty($data)) {
             $this->fill($data);
@@ -46,6 +51,30 @@ class HealthHistory extends Component
         if ($gender) {
             $this->gender = $gender;
         }
+        // Capture the passed state
+        $this->isReadOnly = $isReadOnly;
+    }
+
+    public function triggerNewHistory()
+    {
+        $this->isCreating = true;
+        $this->selectedHistoryId = 'new';
+
+        $this->reset([
+            'when_last_visit_q1', 'what_last_visit_reason_q1', 'what_seeing_dentist_reason_q2',
+            'is_clicking_jaw_q3a', 'is_pain_jaw_q3b', 'is_difficulty_opening_closing_q3c',
+            'is_locking_jaw_q3d', 'is_clench_grind_q4', 'is_bad_experience_q5',
+            'is_nervous_q6', 'what_nervous_concern_q6',
+            'is_condition_q1', 'what_condition_reason_q1',
+            'is_hospitalized_q2', 'what_hospitalized_reason_q2',
+            'is_serious_illness_operation_q3', 'what_serious_illness_operation_reason_q3',
+            'is_taking_medications_q4', 'what_medications_list_q4',
+            'is_allergic_medications_q5', 'what_allergies_list_q5',
+            'is_allergic_latex_rubber_metals_q6',
+            'is_pregnant_q7', 'is_breast_feeding_q8'
+        ]);
+
+        $this->dispatch('enableEditMode');
     }
 
     #[On('setHealthHistoryContext')]
@@ -53,17 +82,20 @@ class HealthHistory extends Component
         $this->gender = $gender;
         $this->historyList = $historyList;
         $this->selectedHistoryId = $selectedId;
+
+        if ($selectedId !== 'new') {
+            $this->isCreating = false;
+        }
     }
 
     public function updatedSelectedHistoryId($value)
     {
-        // Tell the Parent (Modal) to load the data for this ID
-        $this->dispatch('switchHealthHistory', historyId: $value);
-    }
-
-    #[On('setGender')]
-    public function setGender($gender) {
-        $this->gender = $gender;
+        if ($value === 'new') {
+            $this->triggerNewHistory();
+        } else {
+            $this->isCreating = false;
+            $this->dispatch('switchHealthHistory', historyId: $value); 
+        }
     }
     
     protected $casts = [
@@ -83,6 +115,8 @@ class HealthHistory extends Component
         'is_pregnant_q7' => 'boolean',
         'is_breast_feeding_q8' => 'boolean',
     ];
+
+    
 
 
     public function rules()
@@ -155,6 +189,10 @@ class HealthHistory extends Component
     public function validateForm()
     {
         $validatedData = $this->validate();
+        
+        // FIX: Manually add this ID so the Parent knows if we are creating 'new' or updating
+        $validatedData['selectedHistoryId'] = $this->selectedHistoryId; 
+
         $this->dispatch('healthHistoryValidated', data: $validatedData);
     }
 
@@ -171,7 +209,7 @@ class HealthHistory extends Component
     #[On('resetForm')]
     public function resetForm()
     {
-        $this->reset();
+        $this->resetExcept(['isReadOnly']);
     }
 
     public function render()
