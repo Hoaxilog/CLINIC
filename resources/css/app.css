@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+@font-face {
+  font-display: swap;
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  /* BEFORE (Absolute path, wrong for dev): 
+    src: url('/fonts/montserrat-v31-latin-500.woff2') format('woff2');
+  */
+  /* AFTER (Relative path, correct for Vite): 
+  */
+  src: url('../fonts/montserrat-v31-latin-500.woff2') format('woff2');
+}
+
+/* montserrat-600 - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  /* AFTER (Relative path, correct for Vite): 
+  */
+  src: url('../fonts/montserrat-v31-latin-600.woff2') format('woff2');
+}
+
+/* montserrat-700 - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  /* AFTER (Relative path, correct for Vite): 
+  */
+  src: url('../fonts/montserrat-v31-latin-700.woff2') format('woff2');
+}
+
+
+
+body {
+  font-family: 'Montserrat';
+}
