@@ -1,4 +1,4 @@
-<div class="relative"  @if(!$showAppointmentModal) wire:poll.5s="loadAppointments" @endif">
+<div class="relative" @if(!$showAppointmentModal) wire:poll.5s="loadAppointments" @endif>
     <h1 class="text-3xl lg:text-4xl font-bold text-gray-800">Appointment Calendar</h1>
     <div class="w-full max-w-9xl mx-auto px-2 py-10 lg:px-8 overflow-x-auto bg-white mt-6">
         <div class="flex flex-col md:flex-row max-md:gap-3 items-center justify-between mb-5">
@@ -40,7 +40,6 @@
 
             <div class="hidden sm:grid grid-cols-[120px_repeat(7,1fr)] w-full overflow-x-auto relative pt-4 z-10">           
                 @foreach($timeSlots as $time)
-                    {{-- This is the fixed time slot label cell --}}
                     <div class="relative h-16 lg:h-16 border-t border-r border-gray-200">
                         <span class="absolute top-0 left-2 -mt-2.5 bg-white px-1 text-sm font-semibold text-gray-500">
                             {{ Carbon\Carbon::parse($time)->format('h:i A') }}
@@ -48,53 +47,42 @@
                     </div>
                     @foreach($weekDates as $date)
                         @php
-                            // --- NEW CHECK ---
                             $isOccupied = $this->isSlotOccupied($date->toDateString(), $time);
                         @endphp 
 
                         <div 
-                            {{-- If it's NOT occupied, add the click handler --}}
                             @if(!$isOccupied)
                                 wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')"
                             @endif
                             
-                            {{-- This class logic is UPDATED --}}
                             class="h-16 lg:h-16 p-0.5 md:p-3.5 border-t border-r border-gray-200 transition-all 
                                 @if(!$isOccupied)
                                     hover:bg-stone-100 cursor-default
                                 @endif
                                 "
-                        >
-                            {{-- This is the background cell --}}
-                        </div>
+                        ></div>
                     @endforeach
                 @endforeach
 
                 <div class="absolute inset-x-0 bottom-0 top-4 grid grid-cols-[120px_repeat(7,1fr)] w-full pointer-events-none">                    
-                    <div class="h-full">
-                        {{-- SPACER --}}
-                    </div>
+                    <div class="h-full"></div>
                     
                     @foreach($weekDates as $date)
                         <div class="relative h-full border-r border-gray-200">
                             @php
                                 $dayAppointments = $this->getAppointmentsForDay($date);
-                                $dayStartHour = 9;   // Must match generateTimeSlots()
-                                $slotHeightRem = 4;  // h-16 = 4rem
+                                $dayStartHour = 9;   
+                                $slotHeightRem = 4;  
                             @endphp
 
                             @foreach($dayAppointments as $appointment)
                                 @php
-                                    // Calculate 'top' position
                                     $startCarbon = Carbon\Carbon::parse($appointment->start_time);
                                     $topInMinutes = (($startCarbon->hour - $dayStartHour) * 60) + $startCarbon->minute;
                                     $topPositionRem = ($topInMinutes / 30) * $slotHeightRem;
-                                    
-                                    // Calculate 'height'
                                     $heightInRem = ($appointment->duration_in_minutes / 30) * $slotHeightRem;
                                 @endphp
 
-                                {{-- This is the actual appointment block --}}
                                 <div class="absolute w-full px-1 py-0.5 " 
                                      style="top: {{ $topPositionRem }}rem; height: {{ $heightInRem }}rem; z-index: 10;">
                                      
@@ -123,7 +111,6 @@
                         </div>
                     @endforeach
                 </div>
-
             </div>
         </div>
     </div>
@@ -131,6 +118,7 @@
     {{-- --- APPOINTMENT MODAL --- --}}
     @if($showAppointmentModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            
             <div class="absolute inset-0 bg-black opacity-60" wire:click="closeAppointmentModal"></div>
             <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 z-10 overflow-hidden">
                 
@@ -145,8 +133,10 @@
                     </div>
                 @endif
 
-                <div class="p-6 overflow-y-auto max-h-[85vh]">
+                {{-- [FIX] Changed from DIV to FORM so the submit button works --}}
+                <form class="p-6 overflow-y-auto max-h-[85vh]" wire:submit.prevent="saveAppointment">
                     
+                    {{-- DATE & TIME HEADER --}}
                     <div class="mb-6 bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -161,32 +151,94 @@
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">End Time</label>
                                 <input type="text" value="{{ $endTime }}" class="w-full border-0 bg-transparent p-0 text-xl font-bold text-gray-800" readonly />
                             </div>
-                        </div>
+                        </div>  
                     </div>
 
+                    {{-- SEARCH EXISTING PATIENT --}}
+                    @if(!$isViewing)
+                        <div class="mb-6 relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Search Existing Patient</label>
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    wire:model.live.debounce.300ms="searchQuery"
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10 text-base focus:ring-2 focus:ring-[#0086da] focus:border-[#0086da]" 
+                                    placeholder="Search by name or phone number..." 
+                                />
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+
+                                @if(!empty($searchQuery) && count($patientSearchResults) > 0)
+                                    <div class="absolute z-50 mt-1 w-full bg-white shadow-xl max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                                        @foreach($patientSearchResults as $result)
+                                            <button 
+                                                type="button"
+                                                wire:click="selectPatient({{ $result->id }})"
+                                                class="w-full text-left cursor-pointer select-none relative py-3 pl-3 pr-9 hover:bg-blue-50 transition text-gray-900 group border-b border-gray-100 last:border-0"
+                                            >
+                                                <div class="flex justify-between items-center">
+                                                    <span class="font-semibold block truncate">
+                                                        {{ $result->last_name }}, {{ $result->first_name }} 
+                                                        <span class="font-normal text-gray-500 text-xs ml-1">
+                                                            ({{ $result->birth_date ? \Carbon\Carbon::parse($result->birth_date)->format('M d, Y') : 'No Bday' }})
+                                                        </span>
+                                                    </span>
+                                                    <span class="text-gray-500 text-xs bg-gray-100 px-2 py-1 rounded-full group-hover:bg-white">
+                                                        {{ $result->mobile_number }}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                @elseif(!empty($searchQuery) && strlen($searchQuery) >= 2)
+                                    <div class="absolute z-50 mt-1 w-full bg-white shadow-lg rounded-md py-2 px-4 text-sm text-gray-500 border border-gray-200">
+                                        No patient found. Please fill in the details below.
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- FORM INPUTS --}}
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                            <input wire:model="firstName" type="text" class="w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" readonly/>
+                            <input wire:model="firstName" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
-                            <input wire:model="middleName" type="text" class="w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" readonly/>
+                            <input wire:model="middleName" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                            <input wire:model="lastName" type="text" class="w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" readonly/>
+                            <input wire:model="lastName" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-                            <input wire:model="contactNumber" type="text" class="w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium" readonly/>
+                            <input wire:model="contactNumber" type="text" class="border w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
                         </div>
+                        {{-- BIRTH DATE (Required for Saving) --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+                            <input wire:model="birthDate" type="date" class="border w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
+                        </div>
+                    </div>
+
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Service Required</label>
-                            <select wire:model="selectedService" class="w-full border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" {{ ($appointmentStatus != 'Waiting' && $appointmentStatus != 'Arrived') ? 'disabled' : '' }}>
+                            <select 
+                                wire:model.live="selectedService" 
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" 
+                                {{ ($isViewing && $appointmentStatus != 'Waiting' && $appointmentStatus != 'Arrived') ? 'disabled' : '' }}
+                            >
+                                <option value="" disabled>Select service</option>
                                 @foreach($servicesList as $service)
                                     <option value="{{ $service->id }}">
                                         {{ $service->service_name }} ({{ \Carbon\Carbon::parse($service->duration)->format('H:i') }})
@@ -194,7 +246,7 @@
                                 @endforeach
                             </select>
                         </div>
-                    </div>
+                     </div>
 
                     <div class="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
                         @error('conflict') 
@@ -203,8 +255,6 @@
 
                         @if($isViewing)
                             {{-- === VIEWING MODE (Flow Logic) === --}}
-                            
-                            {{-- Cancel Button (Always visible unless finished) --}}
                             @if(!in_array($appointmentStatus, ['Cancelled', 'Completed']))
                                 <button type="button" 
                                     wire:click="updateStatus('Cancelled')"
@@ -215,9 +265,6 @@
                                 </button>
                             @endif
 
-                            {{-- STATUS SPECIFIC BUTTONS --}}
-                            
-                            {{-- 1. SCHEDULED --}}
                             @if($appointmentStatus === 'Scheduled')
                                 <button type="button" wire:click="processPatient" class="px-6 py-2.5 rounded-lg bg-white border-2 border-blue-600 text-blue-700 font-bold hover:bg-blue-50 transition">
                                     Update Patient Info
@@ -227,7 +274,6 @@
                                     Mark Arrived
                                 </button>
 
-                            {{-- 2. WAITING / ARRIVED --}}
                             @elseif($appointmentStatus === 'Waiting' || $appointmentStatus === 'Arrived')
                                 <button type="button" wire:click="processPatient" class="px-6 py-2.5 rounded-lg bg-white border-2 border-gray-300 text-gray-600 font-bold hover:bg-gray-50 transition">
                                     View Patient Info
@@ -240,7 +286,6 @@
                                     </button>
                                 @endif
 
-                            {{-- 3. ONGOING / IN CHAIR --}}
                             @elseif($appointmentStatus === 'Ongoing')
                                 @if (auth()->user()->role === 1)
                                     <button type="button" wire:click="openPatientChart" class="px-6 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
@@ -253,7 +298,6 @@
                                     Finish & Complete
                                 </button>
 
-                            {{-- 4. HISTORY --}}
                             @elseif($appointmentStatus === 'Completed')
                                 <span class="px-6 py-2.5 rounded-lg bg-green-100 text-green-800 font-bold border border-green-200">
                                     ✅ Completed
@@ -265,14 +309,14 @@
                             @endif
 
                         @else
-                            {{-- === BOOKING MODE (Unchanged) === --}}
+                            {{-- === BOOKING MODE === --}}
                             <button type="button" wire:click="closeAppointmentModal" class="px-5 py-3 rounded bg-gray-200 hover:bg-gray-300 font-medium">Cancel</button>
                             <button type="submit" class="px-6 py-3 rounded bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition">
                                 Save Appointment
                             </button>
                         @endif
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     @endif
@@ -304,7 +348,7 @@
 
         <script>
             setTimeout(function() {
-                var toast = document.getElementById('calendar-toast');p
+                var toast = document.getElementById('calendar-toast');
                 if (toast) {
                     toast.style.opacity = '0';
                     toast.style.transform = 'translateY(10px)';

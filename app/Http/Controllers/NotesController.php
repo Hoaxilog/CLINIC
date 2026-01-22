@@ -22,7 +22,7 @@ class NotesController extends Controller
             DB::table('notes')->insert([
                 'title' => $request->title,
                 'notes' => $request->notes,
-                'user_id' => 2
+                'user_id' => Auth::id(),
             ]);
 
             return redirect()->intended('/dashboard');

@@ -34,8 +34,8 @@
                 </button>
             </div>
         @empty
-            <div>
-                <h1>No notes today</h1>
+            <div class="flex justify-center items-center h-full">
+                <h1>You have no notes</h1>
             </div>
         @endforelse
     </div>

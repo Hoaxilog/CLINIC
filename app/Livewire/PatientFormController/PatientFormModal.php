@@ -38,10 +38,12 @@ class PatientFormModal extends Component
         $this->showModal = true;
         $this->chartKey = uniqid();
         $this->checkAdminRole();
+
+        $this->dispatch('patient-form-opened');
     }
 
     #[On('editPatient')]
-    public function openForEdit($id, $startStep = 1) // <--- Modified Line
+    public function openForEdit($id, $startStep = 1)
     {
         $this->resetState();
         $this->isEditing = true;
@@ -56,28 +58,33 @@ class PatientFormModal extends Component
             $this->loadLatestDentalChart($id);
         }
 
-        $this->currentStep = $startStep; // <--- NEW: Jump to specific step
+        $this->currentStep = $startStep;
         $this->showModal = true;
+        $this->dispatch('patient-form-opened');
     }
 
     public function closeModal()
     {
         $this->showModal = false;
         $this->resetState();
+
+        $this->dispatch('patient-form-opened');
     }
 
     private function resetState()
     {
         $this->reset(); 
         $this->currentStep = 1;
+        // Ensure "Add Patient" button logic resets correctly
+        $this->healthHistoryList = [];
     }
 
     private function checkAdminRole()
     {
         $user = Auth::user();
-        $this->isAdmin = ($user && $user->role === 1);
+        // Allow Role 1 (Admin) AND Role 2 (Dentist) to save charts
+        $this->isAdmin = ($user && in_array($user->role, [1, 2])); 
     }
-
 
     public function nextStep()
     {
@@ -105,7 +112,6 @@ class PatientFormModal extends Component
         if ($this->isReadOnly) return;
         
         $this->isSaving = true;
-        
         $this->triggerStepValidation($this->currentStep);
     }
 
@@ -114,10 +120,11 @@ class PatientFormModal extends Component
         match ($step) {
             1 => $this->dispatch('validateBasicInfo')->to('PatientFormController.basic-info'),
             2 => $this->dispatch('validateHealthHistory')->to('PatientFormController.health-history'),
-            3 => $this->dispatch('requestDentalChartData')->to('PatientFormController.dental-chart'), // Chart requests data instead of validating
+            3 => $this->dispatch('requestDentalChartData')->to('PatientFormController.dental-chart'),
             4 => $this->dispatch('validateTreatmentRecord')->to('PatientFormController.treatment-record'),
         };
     }
+
     #[On('basicInfoValidated')]
     public function handleBasicInfo($data)
     {
@@ -153,67 +160,61 @@ class PatientFormModal extends Component
         }
     }
 
+    // === STEP 3 HANDLER: DO NOT SAVE, JUST MOVE TO STEP 4 ===
     #[On('dentalChartDataProvided')]
     public function handleDentalChart($data)
     {
         $this->dentalChartData = $data;
-
-        if ($this->isSaving) {
-            if ($this->isEditing && $this->isAdmin) {
-                $this->updateDentalChart(); 
-                $this->dispatch('patient-added');
-                $this->isReadOnly = true;
-            }
-        } else {
-            $this->currentStep = 4;
-        }
+        
+        // Force navigation to Step 4 so user can fill Treatment Record
+        $this->currentStep = 4;
+        
+        // Reset saving flag because we haven't saved to DB yet
+        $this->isSaving = false; 
     }
 
+    // === STEP 4 HANDLER: SAVE BOTH CHART AND TREATMENT ===
     #[On('treatmentRecordValidated')]
     public function handleTreatmentRecord($data)
     {
         $this->treatmentRecordData = $data;
 
-        if ($this->isSaving && $this->isEditing && $this->isAdmin) {
-            $this->updateTreatmentRecord();
-            $this->dispatch('patient-added');
-            $this->isReadOnly = true;
+        if ($this->isSaving) {
+            if ($this->isEditing && $this->isAdmin) {
+                
+                // 1. Unified Save Function
+                $this->updateTreatmentRecord(); 
+                
+                $this->dispatch('patient-added');
+                $this->isReadOnly = true;
+                session()->flash('success', 'Dental chart & treatment record saved successfully.');
+            } else {
+                if (!$this->isEditing) session()->flash('error', 'Error: Must be in Edit Mode.');
+                if (!$this->isAdmin) session()->flash('error', 'Access Denied: Permission missing.');
+            }
         }
-        $this->isSaving = false;
+        $this->isSaving = false; // Always unlock the button
     }
+
     private function createFullPatientRecord()
     {
         DB::transaction(function () {
-            // 1. Create Patient & History
             $this->newPatientId = $this->addBasicInfo($this->basicInfoData);
             if (!empty($this->healthHistoryData)) {
                 $this->addHealthHistory($this->newPatientId, $this->healthHistoryData);
             }
-
-            // 2. === SIMPLIFIED WALK-IN LOGIC ===
-            // Just put them in the "Waiting Room". No time check needed yet.
+            // Walk-In Logic (Waiting Room)
             $defaultService = DB::table('services')->first(); 
-            
             if ($defaultService) {
-                $apptId = DB::table('appointments')->insertGetId([
+                DB::table('appointments')->insert([
                     'patient_id' => $this->newPatientId,
                     'service_id' => $defaultService->id,
-                    'appointment_date' => now(), // Placeholder time
-                    'status' => 'Waiting',       // <--- NEW STATUS
+                    'appointment_date' => now(),
+                    'status' => 'Waiting',
                     'created_at' => now(),
                     'updated_at' => now(),
                     'modified_by' => $this->getModifier()
                 ]);
-
-                // Log it
-                $subject = new \App\Models\Appointment();
-                $subject->id = $apptId;
-                activity()
-                    ->causedBy(Auth::user())
-                    ->performedOn($subject)
-                    ->event('appointment_created')
-                    ->withProperties(['type' => 'Walk-In'])
-                    ->log('Registered Walk-In (Waiting Room)');
             }
         });
 
@@ -226,30 +227,12 @@ class PatientFormModal extends Component
     {
         $data['modified_by'] = $this->getModifier();
         $newId = DB::table('patients')->insertGetId($data);
-        
-        $subject = new \App\Models\Patient(); // Fake Model
-        $subject->id = $newId;
-
-        activity()
-            ->causedBy(Auth::user())
-            ->performedOn($subject)
-            ->event('patient_created') // Specific Event
-            ->withProperties([
-                'attributes' => $data
-            ])
-            ->log('Created New Patient Record'); // Specific Description
-        // ========================
-
         return $newId;
-
     }
 
     private function addHealthHistory($patientId, $data)
     {
-        if(isset($data['selectedHistoryId'])) {
-            unset($data['selectedHistoryId']); // <--- REMOVE IT HERE
-        }
-
+        if(isset($data['selectedHistoryId'])) unset($data['selectedHistoryId']);
         $data['patient_id'] = $patientId;
         $data['modified_by'] = $this->getModifier();
         DB::table('health_histories')->insert($data);
@@ -258,162 +241,38 @@ class PatientFormModal extends Component
     private function updateBasicInfo()
     {
         $this->basicInfoData['modified_by'] = $this->getModifier();
-        
-        // 1. Fetch Old Data
-        $oldDataObj = DB::table('patients')->where('id', $this->newPatientId)->first();
-        $oldDataArray = (array) $oldDataObj; // Convert to array for easy comparison
-
-        // 2. === SMART DIFF CHECK (The Fix) ===
-        // We loop through the NEW data and check if it's different from the OLD data.
-        $changedAttributes = [];
-        $oldAttributes = [];
-
-        foreach ($this->basicInfoData as $key => $newValue) {
-            // Skip keys that shouldn't be logged (like timestamps or unmodified fields)
-            if (in_array($key, ['updated_at', 'modified_by'])) continue;
-
-            // Check if value actually changed
-            if (array_key_exists($key, $oldDataArray) && $oldDataArray[$key] != $newValue) {
-                $changedAttributes[$key] = $newValue;       // Save new value
-                $oldAttributes[$key] = $oldDataArray[$key]; // Save old value
-            }
-        }
-
-        // 3. Update the Database
-        DB::table('patients')
-            ->where('id', $this->newPatientId)
-            ->update($this->basicInfoData);
-
-        // 4. Log ONLY if something actually changed
-        if (!empty($changedAttributes)) {
-            $subject = new \App\Models\Patient();
-            $subject->id = $this->newPatientId;
-
-            activity()
-                ->causedBy(Auth::user())
-                ->performedOn($subject)
-                ->event('patient_updated')
-                ->withProperties([
-                    'old' => $oldAttributes,       // Only the fields that changed (e.g. "John")
-                    'attributes' => $changedAttributes // Only the new values (e.g. "Jane")
-                ])
-                ->log('Updated Patient Demographics');
-        }
-
+        DB::table('patients')->where('id', $this->newPatientId)->update($this->basicInfoData);
         $this->dispatch('patient-added');
         $this->isReadOnly = true; 
         $this->isSaving = false;
-        session()->flash('info', 'Patient information updated successfully.');
+        session()->flash('info', 'Patient information updated.');
     }
 
     private function updateHealthHistory()
     {
         $this->healthHistoryData['modified_by'] = $this->getModifier();
-
-        // 1. DETERMINE TARGET: Check if we are targeting a specific ID or 'new'
         $selectedId = $this->healthHistoryData['selectedHistoryId'] ?? $this->selectedHealthHistoryId;
-        $forceNew = ($selectedId === 'new');
-
-        // Clean up data before saving
         unset($this->healthHistoryData['id']); 
         unset($this->healthHistoryData['selectedHistoryId']);
 
-        // 2. FIND RECORD: Try to find the record to update
-        $recordToUpdate = null;
-
-        if (!$forceNew) {
-            // Priority A: Update the specific ID we selected
-            if ($selectedId && is_numeric($selectedId)) {
-                $recordToUpdate = DB::table('health_histories')->where('id', $selectedId)->first();
-            }
-            
-            // Priority B: Fallback to "Today's Record" (Safety check if no ID provided)
-            if (!$recordToUpdate) {
-                $recordToUpdate = DB::table('health_histories')
-                    ->where('patient_id', $this->newPatientId)
-                    ->whereDate('created_at', Carbon::today())
-                    ->first();
-            }
-        }
-
-        // SCENARIO A: UPDATE (Record found)
-        if ($recordToUpdate) {
-            
-            // --- Smart Diff Check ---
-            $oldDataArray = (array) $recordToUpdate;
-            $changedAttributes = [];
-            $oldAttributes = [];
-
-            foreach ($this->healthHistoryData as $key => $newValue) {
-                if (in_array($key, ['updated_at', 'modified_by', 'patient_id', 'created_at'])) continue;
-
-                if (array_key_exists($key, $oldDataArray) && $oldDataArray[$key] != $newValue) {
-                    $changedAttributes[$key] = $newValue;
-                    $oldAttributes[$key] = $oldDataArray[$key];
-                }
-                elseif (!array_key_exists($key, $oldDataArray)) {
-                    $changedAttributes[$key] = $newValue;
-                }
-            }
-
-            // Update DB
-            DB::table('health_histories')
-                ->where('id', $recordToUpdate->id)
-                ->update($this->healthHistoryData);
-
-            // Log Updates
-            if (!empty($changedAttributes)) {
-                $subject = new \App\Models\Patient();
-                $subject->id = $this->newPatientId;
-
-                activity()
-                    ->causedBy(Auth::user())
-                    ->performedOn($subject)
-                    ->event('health_history_updated')
-                    ->withProperties([
-                        'old' => $oldAttributes,
-                        'attributes' => $changedAttributes
-                    ])
-                    ->log('Updated Medical History');
-            }
-            
-            session()->flash('success', 'Health history updated successfully.');
-        } 
-        
-        // SCENARIO B: CREATE (New Entry)
-        else {
-            
+        if ($selectedId && is_numeric($selectedId) && $selectedId !== 'new') {
+            DB::table('health_histories')->where('id', $selectedId)->update($this->healthHistoryData);
+            session()->flash('success', 'Health history updated.');
+        } else {
             $this->healthHistoryData['patient_id'] = $this->newPatientId;
             $this->healthHistoryData['created_at'] = now();
             $this->healthHistoryData['updated_at'] = now();
-
-            $newId = DB::table('health_histories')->insertGetId($this->healthHistoryData);
-
-            $subject = new \App\Models\Patient();
-            $subject->id = $this->newPatientId;
-
-            activity()
-                ->causedBy(Auth::user())
-                ->performedOn($subject)
-                ->event('health_history_created')
-                ->withProperties([
-                    'attributes' => $this->healthHistoryData 
-                ])
-                ->log('Created Medical History (New Visit)');
-                
-            session()->flash('success', 'New health history record created.');
+            DB::table('health_histories')->insert($this->healthHistoryData);
+            session()->flash('success', 'New health history added.');
         }
 
-        // Refresh Data
         $this->loadPatientData($this->newPatientId);
-
-        // Sync Child Component
         $this->dispatch('setHealthHistoryContext', 
             gender: $this->basicInfoData['gender'] ?? null,
             historyList: $this->healthHistoryList,
             selectedId: $this->selectedHealthHistoryId
         )->to('PatientFormController.health-history');
-
+        
         $this->dispatch('patient-added');
         $this->isReadOnly = true; 
         $this->isSaving = false;
@@ -425,9 +284,8 @@ class PatientFormModal extends Component
 
         $modifier = $this->getModifier();
         $chartId = null;
-        $wasUpdated = false; // Flag to track if we touched the DB
 
-        // 1. Logic to Find or Create Chart (Existing Code)
+        // 1. Try to Update Existing (if not forced new)
         if (!$this->forceNewRecord) {
             $existingToday = DB::table('dental_charts')
                 ->where('patient_id', $this->newPatientId)
@@ -436,19 +294,16 @@ class PatientFormModal extends Component
                 ->first();
 
             if ($existingToday) {
-                // Check if it actually changed to avoid spam
-                if ($existingToday->chart_data !== json_encode($this->dentalChartData)) {
-                    DB::table('dental_charts')->where('id', $existingToday->id)->update([
-                        'chart_data' => json_encode($this->dentalChartData),
-                        'modified_by' => $modifier,
-                        'updated_at' => now()
-                    ]);
-                    $wasUpdated = true;
-                }
+                DB::table('dental_charts')->where('id', $existingToday->id)->update([
+                    'chart_data' => json_encode($this->dentalChartData),
+                    'modified_by' => $modifier,
+                    'updated_at' => now()
+                ]);
                 $chartId = $existingToday->id;
             }
         }
 
+        // 2. Create New (if forced or not found)
         if (!$chartId) {
             $chartId = DB::table('dental_charts')->insertGetId([
                 'patient_id' => $this->newPatientId,
@@ -457,32 +312,9 @@ class PatientFormModal extends Component
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            $wasUpdated = true;
-            $this->forceNewRecord = false;
+            $this->forceNewRecord = false; // Reset flag
         }
 
-        // 2. === LOGGING BLOCK ===
-        if ($wasUpdated) {
-            $subject = new \App\Models\DentalChart();
-            $subject->id = $chartId;
-
-            // Note: We use the Patient as the 'Subject' usually, but here we link the specific Chart 
-            // OR we can link the Patient so it shows on their timeline. Let's link the Patient.
-            $patientSubject = new \App\Models\Patient();
-            $patientSubject->id = $this->newPatientId;
-
-            activity()
-                ->causedBy(Auth::user())
-                ->performedOn($patientSubject)
-                ->event('dental_chart_updated')
-                ->withProperties([
-                    'attributes' => ['Dental Chart' => 'Visual Chart Updated'] 
-                    // We hardcode this message to keep the log clean
-                ])
-                ->log('Updated Dental Chart');
-        }
-        // ========================
-        session()->flash('success', 'Dental chart updated successfully.');
         $this->currentDentalChartId = $chartId;
         $this->loadDentalChartHistory($this->newPatientId); 
         return $chartId;
@@ -490,11 +322,10 @@ class PatientFormModal extends Component
 
     private function updateTreatmentRecord()
     {
+        // 1. Save Chart First
         $chartId = $this->updateDentalChart();
 
         if ($chartId && !empty($this->treatmentRecordData)) {
-            
-            // 1. Prepare Data
             $dataToUpdate = [
                 'patient_id' => $this->newPatientId,
                 'dmd' => $this->treatmentRecordData['dmd'] ?? null,
@@ -507,56 +338,16 @@ class PatientFormModal extends Component
                 'updated_at' => now(),
             ];
 
-            // 2. Fetch Old Data
-            $oldData = DB::table('treatment_records')
-                ->where('dental_chart_id', $chartId)
-                ->first();
-            $oldDataArray = $oldData ? (array) $oldData : [];
-
-            // 3. === SMART DIFF CHECK ===
-            $changedAttributes = [];
-            $oldAttributes = [];
-
-            foreach ($dataToUpdate as $key => $newValue) {
-                if (in_array($key, ['updated_at', 'modified_by', 'patient_id'])) continue;
-
-                if (array_key_exists($key, $oldDataArray) && $oldDataArray[$key] != $newValue) {
-                    $changedAttributes[$key] = $newValue;
-                    $oldAttributes[$key] = $oldDataArray[$key];
-                }
-                elseif (!array_key_exists($key, $oldDataArray)) {
-                    $changedAttributes[$key] = $newValue;
-                }
-            }
-
-            // 4. Update DB
             DB::table('treatment_records')->updateOrInsert(
                 ['dental_chart_id' => $chartId], 
                 $dataToUpdate
             );
-
-            // 5. Log if Changed
-            if (!empty($changedAttributes)) {
-                $patientSubject = new \App\Models\Patient();
-                $patientSubject->id = $this->newPatientId;
-
-                activity()
-                    ->causedBy(Auth::user())
-                    ->performedOn($patientSubject)
-                    ->event('treatment_record_updated')
-                    ->withProperties([
-                        'old' => $oldAttributes,
-                        'attributes' => $changedAttributes
-                    ])
-                    ->log('Updated Treatment Record');
-            }
         }
         
         if ($this->currentDentalChartId) {
             $this->loadTreatmentRecordForChart($this->currentDentalChartId);
         }
     }
-
 
     private function getModifier()
     {
@@ -568,20 +359,16 @@ class PatientFormModal extends Component
         $patient = DB::table('patients')->where('id', $id)->first();
         $this->basicInfoData = (array) $patient;
 
-        // A. Load the Dropdown List (All dates)
         $this->healthHistoryList = DB::table('health_histories')
             ->where('patient_id', $id)
             ->orderBy('created_at', 'desc')
             ->select('id', 'created_at')
             ->get()
-            ->map(function($item) {
-                return [
-                    'id' => $item->id,
-                    'label' => Carbon::parse($item->created_at)->format('F j, Y') // e.g., "Jan 19, 2026"
-                ];
-            })->toArray();
+            ->map(fn($item) => [
+                'id' => $item->id,
+                'label' => Carbon::parse($item->created_at)->format('F j, Y')
+            ])->toArray();
 
-        // B. Load the LATEST record by default
         $latest = DB::table('health_histories')
             ->where('patient_id', $id)
             ->orderBy('created_at', 'desc')
@@ -595,34 +382,25 @@ class PatientFormModal extends Component
     public function switchHealthHistory($historyId)
     {
         if ($historyId === 'new') {
-            // User selected "New" - Enable Editing
             $latest = DB::table('health_histories')
                 ->where('patient_id', $this->newPatientId)
                 ->orderBy('created_at', 'desc')
                 ->first();
-            
             $this->healthHistoryData = $latest ? (array)$latest : [];
             $this->selectedHealthHistoryId = 'new';
             $this->isReadOnly = false; 
-            
         } else {
-            // User selected an EXISTING record
             $record = DB::table('health_histories')->where('id', $historyId)->first();
-            
             if ($record) {
                 $this->healthHistoryData = (array)$record;
                 $this->selectedHealthHistoryId = $historyId;
-                
-                // [FIX] Always enforce Read-Only mode when viewing history
                 $this->isReadOnly = true; 
             }
         }
-
-        // Refresh the child component
         $this->dispatch('fillHealthHistory', 
             data: $this->healthHistoryData, 
             gender: $this->basicInfoData['gender'] ?? null
-        );
+        )->to('PatientFormController.health-history');
     }
 
     private function loadDentalChartHistory($patientId)
@@ -655,7 +433,6 @@ class PatientFormModal extends Component
             $this->currentDentalChartId = null;
             $this->treatmentRecordData = [];
         }
-        
         $this->selectedHistoryId = '';
         $this->chartKey = uniqid();
     }
@@ -663,17 +440,14 @@ class PatientFormModal extends Component
     private function loadTreatmentRecordForChart($chartId)
     {
         $record = DB::table('treatment_records')->where('dental_chart_id', $chartId)->first();
-        $this->treatmentRecordData = $record ? $record : [];
+        $this->treatmentRecordData = $record ? (array)$record : [];
     }
 
     private function syncDataToSteps()
     {
-        // Pass gender AND the history list to Step 2
         if ($this->currentStep == 2) {
-            $gender = $this->basicInfoData['gender'] ?? null;
-            
             $this->dispatch('setHealthHistoryContext', 
-                gender: $gender,
+                gender: $this->basicInfoData['gender'] ?? null,
                 historyList: $this->healthHistoryList,
                 selectedId: $this->selectedHealthHistoryId
             )->to('PatientFormController.health-history');
@@ -698,32 +472,18 @@ class PatientFormModal extends Component
             $this->isReadOnly = true;
             $this->forceNewRecord = false;
             
-            // 1. Reload the original data from the Database
             $this->loadPatientData($this->newPatientId);
-
-            // 2. Wipe the Child Components (Clear the "New Record" inputs)
             $this->dispatch('resetForm'); 
-
-            // === FIX: REFILL THE DATA WE JUST WIPED ===
-            
-            // A. Restore Basic Info (So Step 1 isn't blank)
             $this->dispatch('fillBasicInfo', data: $this->basicInfoData);
-
-            // B. Restore Health History Dropdown & Selection
             $this->dispatch('setHealthHistoryContext', 
                 gender: $this->basicInfoData['gender'] ?? null,
                 historyList: $this->healthHistoryList,
                 selectedId: $this->selectedHealthHistoryId
             );
-
-            // C. Restore Health History Answers
             $this->dispatch('fillHealthHistory', 
                 data: $this->healthHistoryData, 
                 gender: $this->basicInfoData['gender'] ?? null
             );
-            
-            // ==========================================
-
             if ($this->isAdmin) {
                 $this->loadLatestDentalChart($this->newPatientId);
             }
@@ -732,7 +492,6 @@ class PatientFormModal extends Component
         }
     }
 
-    // Chart Events
     #[On('switchChartHistory')]
     public function switchChartHistory($chartId)
     {
@@ -747,7 +506,6 @@ class PatientFormModal extends Component
             $this->selectedHistoryId = $chartId;
             $this->currentDentalChartId = $chartId;
             $this->dentalChartData = !empty($chart->chart_data) ? json_decode($chart->chart_data, true) : [];
-            
             $this->loadTreatmentRecordForChart($chartId);
             $this->chartKey = uniqid(); 
         }
@@ -769,4 +527,4 @@ class PatientFormModal extends Component
     {
         return view('livewire.PatientFormViews.patient-form-modal');
     }
-}
+}   

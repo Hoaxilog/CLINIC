@@ -1,21 +1,16 @@
 <div class="relative w-full h-[68vh] bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col lg:flex-row">
     
-    {{-- LOGIC: Show Chart Interface if History Exists OR We are Creating a New Chart --}}
     @if(count($history) > 0 || $isCreating)
 
         <input type="checkbox" id="sidebar-toggle" class="peer sr-only" checked>
-
         <label for="sidebar-toggle" 
                class="absolute top-20 right-10 z-50 p-2 bg-white shadow-md border border-gray-200 rounded-md text-gray-500 hover:text-blue-600 cursor-pointer peer-checked:hidden transition-opacity duration-200">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </label>
 
-        <!-- LEFT PANEL: CHART & FORMS -->
         <div class="flex-1 h-full relative flex flex-col min-w-0 bg-gray-50 transition-all duration-300">
             
-            <!-- HEADER -->
             <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200 sticky top-0 z-20">
-                
                 <div class="flex items-center gap-4">
                     <h2 class="text-xl font-bold text-gray-800">Dental Chart</h2>
                     @if(count($history) > 0)
@@ -35,17 +30,6 @@
                 </div>
                 
                 <div class="flex items-center gap-3">
-                    {{-- @if($selectedHistoryId)
-                        <span class="ml-2 text-sm bg-yellow-100 text-yellow-800 px-3 py-1.5 rounded-full font-medium border border-yellow-200">Viewing History</span>
-                    @else
-                        @if(!$isReadOnly)
-                            <span class="ml-2 text-sm bg-green-100 text-green-800 px-3 py-1.5 rounded-full font-medium border border-green-200">Editable</span>
-                        @else
-                             <span class="ml-2 text-sm bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full font-medium border border-gray-200">Current View</span>
-                        @endif
-                    @endif --}}
-
-                    <!-- Header New Chart Button (Only if history exists and we are viewing) -->
                     @if($isReadOnly && count($history) > 0)
                         <button 
                             wire:click="triggerNewChart" 
@@ -59,12 +43,9 @@
                 </div>
             </div>
 
-            <!-- Main Scrollable Area -->
             <div class="flex-1 overflow-auto p-4 lg:p-10 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-gray-100 scrollbar-thumb-gray-300">
                 
-                <!-- 1. DENTAL CHART (Teeth) -->
                 <div class="min-w-[1000px] max-w-6xl flex flex-col items-center gap-12 mx-auto mb-16">
-                    <!-- Upper Arch -->
                     <div class="flex flex-col items-center">
                         <h3 class="text-gray-400 font-bold tracking-[0.2em] text-sm uppercase mb-4">Upper Arch</h3>
                         <div class="flex items-end gap-1 p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
@@ -82,7 +63,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Lower Arch -->
                     <div class="flex flex-col items-center">
                         <h3 class="text-gray-400 font-bold tracking-[0.2em] text-sm uppercase mb-4">Lower Arch</h3>
                         <div class="flex items-start gap-1 p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
@@ -102,14 +82,14 @@
                     </div>
                 </div> 
 
-                <!-- 2. ORAL EXAM & COMMENTS -->
                 <div class="max-w-6xl mx-auto flex flex-col gap-12">
-                    <!-- Oral Exam Section -->
                     <section class="w-full">
                         <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
                             <h2 class="text-xl font-bold text-black">Oral Exam</h2>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-8">
+                            
+                            {{-- ORAL HYGIENE --}}
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Oral Hygiene Status</label>
                                 <select wire:model="oralExam.oral_hygiene_status" @if($isReadOnly) disabled @endif class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -120,7 +100,10 @@
                                     <option value="Poor">Poor</option>
                                     <option value="Bad">Bad</option>
                                 </select>
+                                @error('oralExam.oral_hygiene_status') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                             </div>
+
+                            {{-- CALCULAR DEPOSITS --}}
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Calcular Deposits</label>
                                 <select wire:model="oralExam.calcular_deposits" @if($isReadOnly) disabled @endif class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -130,7 +113,10 @@
                                     <option value="Moderate">Moderate</option>
                                     <option value="Severe">Severe</option>
                                 </select>
+                                @error('oralExam.calcular_deposits') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                             </div>
+
+                            {{-- GINGIVA --}}
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Gingiva</label>
                                 <select wire:model="oralExam.gingiva" @if($isReadOnly) disabled @endif class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -139,7 +125,10 @@
                                     <option value="Mildly Inflamed">Mildly Inflamed</option>
                                     <option value="Severe Inflamed">Severe Inflamed</option>
                                 </select>
+                                @error('oralExam.gingiva') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                             </div>
+
+                            {{-- STAINS --}}
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Stains</label>
                                 <select wire:model="oralExam.stains" @if($isReadOnly) disabled @endif class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -149,7 +138,10 @@
                                     <option value="Moderate">Moderate</option>
                                     <option value="Severe">Severe</option>
                                 </select>
+                                @error('oralExam.stains') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                             </div>
+
+                            {{-- COMPLETE DENTURE --}}
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Complete Denture</label>
                                 <select wire:model="oralExam.complete_denture" @if($isReadOnly) disabled @endif class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -159,7 +151,10 @@
                                     <option value="Lower">Lower</option>
                                     <option value="Upper & Lower">Upper & Lower</option>
                                 </select>
+                                @error('oralExam.complete_denture') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                             </div>
+
+                            {{-- PARTIAL DENTURE --}}
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Partial Denture</label>
                                 <select wire:model="oralExam.partial_denture" @if($isReadOnly) disabled @endif class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -169,11 +164,11 @@
                                     <option value="Lower">Lower</option>
                                     <option value="Upper & Lower">Upper & Lower</option>
                                 </select>
+                                @error('oralExam.partial_denture') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </section>
 
-                    <!-- Comments / Plan Section -->
                     <section class="w-full">
                         <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
                             <h2 class="text-xl font-bold text-black">Comments / Plan</h2>
@@ -205,7 +200,6 @@
             </div>
         </div>
 
-        <!-- RIGHT PANEL: SIDEBAR -->
         <div class="hidden peer-checked:flex w-full lg:w-72 bg-white border-l border-gray-200 flex-col z-30 shadow-2xl lg:shadow-none absolute lg:relative inset-y-0 right-0 h-full transition-all duration-300 transform">
             <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between flex-shrink-0 h-16">
                 <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Legend & Tools</h3>

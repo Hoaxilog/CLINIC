@@ -23,8 +23,12 @@ class DentalChart extends Component
     public $isCreating = false;
 
     public $oralExam = [
-        'oral_hygiene_status' => '', 'gingiva' => '', 'calcular_deposits' => '',
-        'stains' => '', 'complete_denture' => '', 'partial_denture' => ''
+        'oral_hygiene_status' => '', 
+        'gingiva' => '', 
+        'calcular_deposits' => '',
+        'stains' => '', 
+        'complete_denture' => '', 
+        'partial_denture' => ''
     ];
 
     public $chartComments = [
@@ -90,6 +94,25 @@ class DentalChart extends Component
         }
     }
 
+    // --- [ADDED] VALIDATION RULES ---
+    protected $rules = [
+        'oralExam.oral_hygiene_status' => 'required',
+        'oralExam.gingiva' => 'required',
+        'oralExam.calcular_deposits' => 'required',
+        'oralExam.stains' => 'required',
+        'oralExam.complete_denture' => 'required',
+        'oralExam.partial_denture' => 'required',
+    ];
+
+    protected $validationAttributes = [
+        'oralExam.oral_hygiene_status' => 'Oral Hygiene Status',
+        'oralExam.gingiva' => 'Gingiva',
+        'oralExam.calcular_deposits' => 'Calcular Deposits',
+        'oralExam.stains' => 'Stains',
+        'oralExam.complete_denture' => 'Complete Denture',
+        'oralExam.partial_denture' => 'Partial Denture',
+    ];
+
     public function updatedSelectedHistoryId($value)
     {
         $this->dispatch('switchChartHistory', chartId: $value);
@@ -101,9 +124,13 @@ class DentalChart extends Component
         $this->dispatch('startNewChartSession'); 
     }
 
+    
+
     #[On('requestDentalChartData')]
     public function provideData()
     {
+        $this->validate(); 
+
         $fullData = [
             'teeth' => $this->teeth,
             'oral_exam' => $this->oralExam,

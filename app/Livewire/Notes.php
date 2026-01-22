@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth; // [ADDED] Needed to identify the user
 
 class Notes extends Component
 {
@@ -27,13 +28,23 @@ class Notes extends Component
 
     protected function loadNotes()
     {
-        $this->notesList = DB::table('notes')->orderBy('created_at', 'desc')->get();
+        // [FIX] Only fetch notes belonging to the logged-in user
+        // We check 'user_id' matches Auth::id()
+        $this->notesList = DB::table('notes')
+            ->where('user_id', Auth::id()) 
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function viewNotes($id)
     {
         try {
-            $note = DB::table('notes')->where('id', $id)->first();
+            // [FIX] Ensure the user owns this note before viewing
+            $note = DB::table('notes')
+                ->where('id', $id)
+                ->where('user_id', Auth::id()) 
+                ->first();
+
             if (! $note) {
                 return;
             }
@@ -59,7 +70,10 @@ class Notes extends Component
         DB::table('notes')->insert([
             'title' => $this->title,
             'notes' => $this->content,
-            'user_id' => 2
+            // [FIX] Use dynamic Auth ID instead of hardcoded '2'
+            'user_id' => Auth::id(), 
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
         $this->afterSave('Note created');
@@ -71,11 +85,15 @@ class Notes extends Component
 
         if ($this->noteId) {
             try {
-                DB::table('notes')->where('id', $this->noteId)->update([
-                    'title' => $this->title,
-                    'notes' => $this->content,
-                    'updated_at' => now(),
-                ]);
+                // [FIX] Ensure user owns the note before updating
+                DB::table('notes')
+                    ->where('id', $this->noteId)
+                    ->where('user_id', Auth::id()) 
+                    ->update([
+                        'title' => $this->title,
+                        'notes' => $this->content,
+                        'updated_at' => now(),
+                    ]);
             } catch (\Throwable $th) {
                 // handle/log if needed
             }
@@ -86,7 +104,12 @@ class Notes extends Component
 
     public function delete($id)
     {
-        DB::table('notes')->where('id', $id)->delete();
+        // [FIX] Ensure user owns the note before deleting
+        DB::table('notes')
+            ->where('id', $id)
+            ->where('user_id', Auth::id()) 
+            ->delete();
+
         $this->afterSave('Note deleted');
     }
 
@@ -97,7 +120,7 @@ class Notes extends Component
         $this->loadNotes();
 
         if ($message) {
-        $this->dispatch('browser:notes:flash', ['message' => $message]);
+            $this->dispatch('browser:notes:flash', ['message' => $message]);
         }
     }
 
@@ -108,7 +131,12 @@ class Notes extends Component
     }
 
     public function cancelEdit() {
-        $this->isEditing = false;
+        if ($this->noteId) {
+            $this->isEditing = false;
+        } else {
+            $this->showModal = false;
+            $this->resetForm();
+        }
     }
 
     public function closeNotes()

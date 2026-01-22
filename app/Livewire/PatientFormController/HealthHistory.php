@@ -11,37 +11,37 @@ class HealthHistory extends Component
     public $when_last_visit_q1;
     public $what_last_visit_reason_q1 = '';
     public $what_seeing_dentist_reason_q2 = '';
-    public $is_clicking_jaw_q3a = false;
-    public $is_pain_jaw_q3b = false;
-    public $is_difficulty_opening_closing_q3c = false;
-    public $is_locking_jaw_q3d = false;
-    public $is_clench_grind_q4 = false;
-    public $is_bad_experience_q5 = false;
-    public $is_nervous_q6 = false;
+    public $is_clicking_jaw_q3a = '';
+    public $is_pain_jaw_q3b = '';
+    public $is_difficulty_opening_closing_q3c = '';
+    public $is_locking_jaw_q3d = '';
+    public $is_clench_grind_q4 = '';
+    public $is_bad_experience_q5 = '';
+    public $is_nervous_q6 = '';
     public $what_nervous_concern_q6 = '';
 
-    public $is_condition_q1 = false;
+    public $is_condition_q1 = '';
     public $what_condition_reason_q1 = '';
-    public $is_hospitalized_q2 = false;
+    public $is_hospitalized_q2 = '';
     public $what_hospitalized_reason_q2 = '';
-    public $is_serious_illness_operation_q3 = false;
+    public $is_serious_illness_operation_q3 = '';
     public $what_serious_illness_operation_reason_q3 = '';
-    public $is_taking_medications_q4 = false;
+    public $is_taking_medications_q4 = '';
     public $what_medications_list_q4 = '';
-    public $is_allergic_medications_q5 = false;
+    public $is_allergic_medications_q5 = '';
     public $what_allergies_list_q5 = '';
-    public $is_allergic_latex_rubber_metals_q6 = false;
+    public $is_allergic_latex_rubber_metals_q6 = '';
 
-    public $is_pregnant_q7 = false;
-    public $is_breast_feeding_q8 = false;
+    public $is_pregnant_q7 = '';
+    public $is_breast_feeding_q8 = '';
     public $gender;
 
     public $historyList = []; 
     public $selectedHistoryId = '';
 
     #[Reactive]
-    public $isReadOnly = false;
-    public $isCreating = false;
+    public $isReadOnly = '';
+    public $isCreating = '';
     
     public function mount($data = [], $gender = null, $isReadOnly = false)
     {
@@ -126,7 +126,7 @@ class HealthHistory extends Component
         return [
             'when_last_visit_q1' => 'nullable|date',
             'what_last_visit_reason_q1' => 'nullable|string',
-            'what_seeing_dentist_reason_q2' => 'nullable|string',
+            'what_seeing_dentist_reason_q2' => 'required|string',
             
             'is_clicking_jaw_q3a' => 'required|boolean',
             'is_pain_jaw_q3b' => 'required|boolean',
@@ -190,9 +190,35 @@ class HealthHistory extends Component
     {
         $validatedData = $this->validate();
         
-        // FIX: Manually add this ID so the Parent knows if we are creating 'new' or updating
+        // 1. Sanitize Booleans (Convert '' or null to 0)
+        // This fixes the "Incorrect integer value" error
+        $booleans = [
+            'is_clicking_jaw_q3a', 'is_pain_jaw_q3b', 'is_difficulty_opening_closing_q3c',
+            'is_locking_jaw_q3d', 'is_clench_grind_q4', 'is_bad_experience_q5', 'is_nervous_q6',
+            'is_condition_q1', 'is_hospitalized_q2', 'is_serious_illness_operation_q3',
+            'is_taking_medications_q4', 'is_allergic_medications_q5', 'is_allergic_latex_rubber_metals_q6',
+            'is_pregnant_q7', 'is_breast_feeding_q8'
+        ];
+
+        foreach ($booleans as $field) {
+            // Force to integer: (int)'' becomes 0, (int)'1' becomes 1
+            if (isset($validatedData[$field])) {
+                 $validatedData[$field] = (int) $validatedData[$field];
+            } else {
+                 $validatedData[$field] = 0; // Default to 0 if missing
+            }
+        }
+
+        // 2. Sanitize Date (Convert '' to NULL)
+        // This fixes the "Invalid datetime format" error
+        if (isset($validatedData['when_last_visit_q1']) && $validatedData['when_last_visit_q1'] === '') {
+            $validatedData['when_last_visit_q1'] = null;
+        }
+
+        // 3. Add the Context ID (for your edit logic)
         $validatedData['selectedHistoryId'] = $this->selectedHistoryId; 
 
+        // 4. Send the clean data to the parent
         $this->dispatch('healthHistoryValidated', data: $validatedData);
     }
 

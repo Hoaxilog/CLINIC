@@ -1,7 +1,3 @@
-{{-- 
-    MODIFIED: Added 'h-full flex flex-col'
-    This makes the component fill its parent and become a flex container
---}}
 <div class="h-full flex flex-col"  wire:poll.5s>
         
     <!-- Header (No change) -->

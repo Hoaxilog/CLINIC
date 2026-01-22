@@ -57,8 +57,7 @@
             <div class="space-y-6 mb-10">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-lg font-medium text-gray-700 mb-2">1. Date of last dental
-                            visit:</label>
+                        <label class="block text-lg font-medium text-gray-700 mb-2">1. Date of last dental visit (Optional)</label>
                         <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model="when_last_visit_q1" type="date"
                             class="w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500">
                         @error('when_last_visit_q1')
@@ -66,7 +65,7 @@
                         @enderror
                     </div>
                     <div>
-                        <label class="block text-lg font-medium text-gray-700 mb-2">What was done?</label>
+                        <label class="block text-lg font-medium text-gray-700 mb-2">What was done in your last dental (Optional)</label>
                         <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model="what_last_visit_reason_q1" type="text"
                             class="w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500"
                             placeholder="e.g., Cleaning, Filling...">
@@ -109,6 +108,10 @@
                                         <span class="ml-2 text-sm text-gray-600">NO</span>
                                     </label>
                                 </div>
+                                {{-- ADDED: Validation Error --}}
+                                @error($q['model'])
+                                    <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                @enderror
                             </div>
                         @endforeach
                     </div>
@@ -129,12 +132,23 @@
                                 <span class="ml-2 text-sm text-gray-600">NO</span>
                             </label>
                         </div>
+                        
+                        {{-- ADDED: Validation Error for Radio --}}
+                        @error($item['model'])
+                            <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                        @enderror
+
                         {{-- Conditional Detail Input --}}
                         @if (isset($item['detail']) && $this->{$item['model']})
                             <div class="mt-2 pl-4 border-l-2 border-blue-200">
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model="{{ $item['detail'] }}" type="text"
                                     class="w-full border rounded px-3 py-2 text-sm"
                                     placeholder="{{ $item['placeholder'] }}">
+                                
+                                {{-- ADDED: Validation Error for Detail Input --}}
+                                @error($item['detail'])
+                                    <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                @enderror
                             </div>
                         @endif
                     </div>
@@ -161,11 +175,22 @@
                                 <span class="ml-2 text-sm text-gray-600">NO</span>
                             </label>
                         </div>
+
+                        {{-- ADDED: Validation Error for Radio --}}
+                        @error($med['model'])
+                            <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                        @enderror
+
                         @if (isset($med['detail']) && $this->{$med['model']})
                             <div class="mt-2 pl-4 border-l-2 border-blue-200">
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model="{{ $med['detail'] }}" type="text"
                                     class="w-full border rounded px-3 py-2 text-sm"
                                     placeholder="Please specify details...">
+                                
+                                {{-- ADDED: Validation Error for Detail Input --}}
+                                @error($med['detail'])
+                                    <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                @enderror
                             </div>
                         @endif
                     </div>
@@ -192,6 +217,11 @@
                                     <span class="ml-2 text-sm text-gray-600">NO</span>
                                 </label>
                             </div>
+                            
+                            {{-- ADDED: Validation Error --}}
+                            @error($fem['model'])
+                                <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                            @enderror
                         </div>
                     @endforeach
                 </div>

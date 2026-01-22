@@ -1,4 +1,5 @@
-<div>
+<div @if(!$showAppointmentModal && !$isPatientFormOpen) wire:poll.5s="loadDashboardData" @endif>
+    
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
 
         <div class="bg-white rounded-lg shadow-md flex flex-col border-t-4 border-[#0086da] overflow-hidden">
@@ -34,7 +35,7 @@
 
         <div class="bg-white rounded-lg shadow-md flex flex-col border-t-4 border-red-400 overflow-hidden">
             <div class="flex items-center justify-between p-4 border-b bg-red-50">
-                <h1 class="text-lg font-bold text-gray-800">Waiting Room</h1>
+                <h1 class="text-lg font-bold text-gray-800">Lounge</h1>
                 <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full">{{ count($waitingQueue) }}</span>
             </div>
             <div class="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-thin scrollbar-track-red-100 scrollbar-thumb-red-400">
@@ -58,7 +59,7 @@
 
         <div class="bg-white rounded-lg shadow-md flex flex-col border-t-4 border-green-500 overflow-hidden">
             <div class="flex items-center justify-between p-4 border-b bg-green-50">
-                <h1 class="text-lg font-bold text-gray-800">Under Operation</h1>
+                <h1 class="text-lg font-bold text-gray-800">Session</h1>
                 <span class="relative flex h-3 w-3">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
@@ -122,6 +123,27 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- [ADDED] DENTIST ASSIGNED DISPLAY --}}
+                @if($dentistName && ($appointmentStatus == 'Ongoing' || $appointmentStatus == 'Completed'))
+                    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded shadow-sm">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-blue-900">
+                                    Assigned Dentist
+                                </p>
+                                <p class="text-lg font-bold text-blue-700">
+                                    Dr. {{ $dentistName }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
