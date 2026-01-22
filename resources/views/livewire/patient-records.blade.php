@@ -105,8 +105,11 @@
                         
                         <button 
                             type="button"
-                            wire:click.stop="deletePatient({{ $patient->id }})"
-                            wire:confirm="Are you sure you want to delete this patient? All associated records will be removed permanently."
+                            data-confirm-action="deletePatient"
+                            data-confirm-args='[{{ $patient->id }}]'
+                            data-confirm-title="Delete Patient"
+                            data-confirm-message="Are you sure you want to delete this patient? All associated records will be removed permanently."
+                            data-confirm-text="Delete"
                             class="p-2 rounded-full hover:bg-red-50 transition-colors"
                             title="Delete Patient"
                         >

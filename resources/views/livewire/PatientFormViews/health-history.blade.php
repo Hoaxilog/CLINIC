@@ -7,7 +7,7 @@
                 <h2 class="text-xl font-bold text-gray-800">Health History</h2>
 
                 {{-- History Dropdown: DO NOT DISABLE (User needs to switch views) --}}
-                @if (count($historyList) > 0 && $isReadOnly && !$isCreating)
+                @if (count($historyList) > 1 && $isReadOnly && !$isCreating)
                     <div class="flex items-center gap-2">
                         <select wire:model.live="selectedHistoryId"
                             class="px-3 py-2 border border-gray-300 rounded-md text-sm w-full focus:border-blue-500 focus:ring-blue-500 min-w-[200px]">

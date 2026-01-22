@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Carbon\Carbon;
 use Livewire\Component;
+use App\Models\Appointment;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -73,7 +74,14 @@ class TodaySchedule extends Component
             ->whereDate('appointment_date', $today)
             ->whereIn('status', ['Waiting', 'Arrived']) 
             ->orderBy('created_at', 'asc')
-            ->select('appointments.*', 'patients.first_name', 'patients.last_name', 'services.service_name', 'services.duration')
+            ->select(
+                'appointments.*',
+                'patients.first_name',
+                'patients.last_name',
+                'services.service_name',
+                'services.duration',
+                DB::raw("CASE WHEN appointments.status = 'Arrived' THEN appointments.updated_at ELSE appointments.created_at END as waited_at")
+            )
             ->get();
 
         // 3. RIGHT COLUMN: Now Serving
@@ -133,6 +141,15 @@ class TodaySchedule extends Component
                 'dentist_id' => Auth::id(), 
                 'updated_at' => now()
             ]);
+            
+            $subject = new Appointment();
+            $subject->id = $this->viewingAppointmentId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($subject)
+                ->event('appointment_admitted')
+                ->log('Admitted Patient to Chair');
 
             session()->flash('success', 'Patient admitted to chair successfully!');
             
@@ -208,9 +225,33 @@ class TodaySchedule extends Component
     public function updateStatus($newStatus)
     {
         if ($this->viewingAppointmentId) {
+            $oldAppt = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
+            $oldStatus = $oldAppt ? $oldAppt->status : 'Unknown';
+
             DB::table('appointments')->where('id', $this->viewingAppointmentId)->update([
                 'status' => $newStatus, 'updated_at' => now()
             ]);
+
+            if ($oldStatus !== $newStatus) {
+                $subject = new Appointment();
+                $subject->id = $this->viewingAppointmentId;
+
+                $eventName = $newStatus === 'Cancelled' ? 'appointment_cancelled' : 'appointment_updated';
+                $logMessage = $newStatus === 'Cancelled' ? 'Cancelled Appointment' : 'Updated Appointment Status';
+
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($subject)
+                    ->event($eventName)
+                    ->withProperties([
+                        'old' => ['status' => $oldStatus],
+                        'attributes' => [
+                            'status' => $newStatus,
+                            'patient_name' => trim("{$this->lastName}, {$this->firstName} {$this->middleName}"),
+                        ]
+                    ])
+                    ->log($logMessage);
+            }
 
             session()->flash('success', "Appointment status updated to '$newStatus'.");
             $this->loadDashboardData();

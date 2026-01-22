@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Carbon\Carbon;
 use Livewire\Component;
 use App\Models\Appointment;
+use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\CarbonInterval; // <-- Add this at the top
@@ -254,12 +255,42 @@ class AppointmentCalendar extends Component
 
             if ($patient) {
                 $patientId = $patient->id;
-                DB::table('patients')->where('id', $patientId)->update([
+                $oldPatient = (array) $patient;
+                $patientUpdates = [
                     'first_name' => $this->firstName,
                     'last_name' => $this->lastName,
                     'middle_name' => $this->middleName,
                     'birth_date' => $this->birthDate 
-                ]);
+                ];
+
+                DB::table('patients')->where('id', $patientId)->update($patientUpdates);
+
+                $hasChanges = (
+                    $oldPatient['first_name'] !== $patientUpdates['first_name'] ||
+                    $oldPatient['last_name'] !== $patientUpdates['last_name'] ||
+                    ($oldPatient['middle_name'] ?? null) !== $patientUpdates['middle_name'] ||
+                    $oldPatient['birth_date'] !== $patientUpdates['birth_date']
+                );
+
+                if ($hasChanges) {
+                    $patientSubject = new Patient();
+                    $patientSubject->id = $patientId;
+
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->performedOn($patientSubject)
+                        ->event('patient_updated')
+                        ->withProperties([
+                            'old' => [
+                                'first_name' => $oldPatient['first_name'],
+                                'last_name' => $oldPatient['last_name'],
+                                'middle_name' => $oldPatient['middle_name'] ?? null,
+                                'birth_date' => $oldPatient['birth_date'],
+                            ],
+                            'attributes' => $patientUpdates,
+                        ])
+                        ->log('Updated Patient');
+                }
             } else {
                 $patientId = DB::table('patients')->insertGetId([
                     'first_name' => $this->firstName,
@@ -269,6 +300,24 @@ class AppointmentCalendar extends Component
                     'birth_date' => $this->birthDate,
                     'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM'
                 ]);
+
+                $patientSubject = new Patient();
+                $patientSubject->id = $patientId;
+
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($patientSubject)
+                    ->event('patient_created')
+                    ->withProperties([
+                        'attributes' => [
+                            'first_name' => $this->firstName,
+                            'last_name' => $this->lastName,
+                            'middle_name' => $this->middleName,
+                            'mobile_number' => $this->contactNumber,
+                            'birth_date' => $this->birthDate,
+                        ],
+                    ])
+                    ->log('Created Patient');
             }
 
             $appointmentDateTime = Carbon::parse($this->appointmentDate)
@@ -286,6 +335,24 @@ class AppointmentCalendar extends Component
                 'updated_at' => now(),
             ]);
 
+            $appointmentSubject = new Appointment();
+            $appointmentSubject->id = $newApptId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($appointmentSubject)
+                ->event('appointment_created')
+                ->withProperties([
+                    'attributes' => [
+                        'patient_id' => $patientId,
+                        'patient_name' => trim("{$this->lastName}, {$this->firstName} {$this->middleName}"),
+                        'service_id' => $this->selectedService,
+                        'appointment_date' => $appointmentDateTime,
+                        'status' => 'Scheduled',
+                    ],
+                ])
+                ->log('Created Appointment');
+
             // Success!
             session()->flash('success', 'Appointment booked successfully!'); 
 
@@ -296,6 +363,21 @@ class AppointmentCalendar extends Component
             // 3. FIX: Show the error instead of hiding it!
             session()->flash('error', 'Error saving: ' . $th->getMessage());
         }
+    }
+
+    public function validateAppointmentForConfirm()
+    {
+        $this->validate([
+            'firstName' => 'required|string|max:100',
+            'lastName' => 'required|string|max:100',
+            'contactNumber' => 'required|string|max:20',
+            'selectedService' => 'required',
+            'selectedDate' => 'required',
+            'selectedTime' => 'required',
+            'birthDate' => 'required',
+        ]);
+
+        return true;
     }
 
     public function isSlotOccupied($date, $time)
@@ -544,6 +626,7 @@ class AppointmentCalendar extends Component
         if ($hasConflict) {
             session()->flash('error', 'Cannot admit: This slot is double-booked.');
         } else {
+            $oldAppointment = $appointment;
             // === FIX IS HERE ===
             DB::table('appointments')->where('id', $this->viewingAppointmentId)->update([
                 'status' => 'Ongoing',
@@ -552,6 +635,27 @@ class AppointmentCalendar extends Component
                 'updated_at' => now()
             ]);
             // ===================
+
+            $appointmentSubject = new Appointment();
+            $appointmentSubject->id = $this->viewingAppointmentId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($appointmentSubject)
+                ->event('appointment_admitted')
+                ->withProperties([
+                    'old' => [
+                        'status' => $oldAppointment->status ?? null,
+                        'service_id' => $oldAppointment->service_id ?? null,
+                        'dentist_id' => $oldAppointment->dentist_id ?? null,
+                    ],
+                    'attributes' => [
+                        'status' => 'Ongoing',
+                        'service_id' => $this->selectedService,
+                        'dentist_id' => Auth::id(),
+                    ],
+                ])
+                ->log('Admitted Appointment');
             
             $this->loadDashboardData();
             $this->closeAppointmentModal();

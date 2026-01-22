@@ -10,24 +10,53 @@
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <form method="GET" action="{{ route('activity-logs') }}" class="relative w-full sm:w-72">
-                <input 
-                    type="text" 
-                    name="search" 
-                    value="{{ request('search') }}"
-                    placeholder="Search user, action, or details..." 
-                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm shadow-sm"
-                >
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
+            <form id="activity-log-filter"
+                method="GET"
+                action="{{ route('activity-logs') }}"
+                class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch">
+
+                <!-- Search -->
+                <div class="relative w-full sm:w-72">
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Search user, action, or details..."
+                        class="w-full h-10 pl-10 pr-4 border border-black rounded-lg text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        id="activity-log-search"
+                    >
+
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="#141B34" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />
+                            <path d="M14.8284 14.8284L17 17M16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12Z" />
+                        </svg>
+                    </div>
                 </div>
-                <button type="submit" class="hidden"></button>
+
+                <!-- Action Filter -->
+                <div class="relative w-full sm:w-40">
+                    <select name="action"
+                            id="activity-log-action"
+                            class="w-full h-10 pl-10 pr-4 border border-black rounded-lg text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Actions</option>
+                        <option value="created" @selected(request('action') === 'created')>Created</option>
+                        <option value="updated" @selected(request('action') === 'updated')>Updated</option>
+                        <option value="deleted" @selected(request('action') === 'deleted')>Deleted</option>
+                        <option value="cancelled" @selected(request('action') === 'cancelled')>Cancelled</option>
+                    </select>
+
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8.85746 12.5061C6.36901 10.6456 4.59564 8.59915 3.62734 7.44867C3.3276 7.09253 3.22938 6.8319 3.17033 6.3728C2.96811 4.8008 2.86701 4.0148 3.32795 3.5074C3.7889 3 4.60404 3 6.23433 3H17.7657C19.396 3 20.2111 3 20.672 3.5074C21.133 4.0148 21.0319 4.8008 20.8297 6.37281C20.7706 6.83191 20.6724 7.09254 20.3726 7.44867C19.403 8.60062 17.6261 10.6507 15.1326 12.5135C14.907 12.6821 14.7583 12.9567 14.7307 13.2614C14.4837 15.992 14.2559 17.4876 14.1141 18.2442C13.8853 19.4657 12.1532 20.2006 11.226 20.8563C10.6741 21.2466 10.0043 20.782 9.93278 20.1778C9.79643 19.0261 9.53961 16.6864 9.25927 13.2614C9.23409 12.9539 9.08486 12.6761 8.85746 12.5061Z" />
+                        </svg>
+                    </div>
+                </div>
             </form>
 
-            @if(request('search'))
-                <a href="{{ route('activity.logs') }}" class="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors shadow-sm">
+
+            @if(request('search') || request('event') || request('action'))
+                <a href="{{ route('activity-logs') }}" class="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors shadow-sm">
                     Clear Filter
                 </a>
             @endif
@@ -51,6 +80,7 @@
                     @forelse($activities as $activity)
                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                         
+                        {{-- DATE TIME --}}
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex flex-col">
                                 <span class="text-gray-900 font-medium">
@@ -62,7 +92,8 @@
                                 </span>
                             </div>
                         </td>
-
+                        
+                        {{-- STAFF MEMBER --}}
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($activity->causer)
                                 <div class="flex items-center gap-3">
@@ -89,7 +120,8 @@
                                 </span>
                             @endif
                         </td>
-
+                        
+                        {{-- ACTION --}}
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 // Check keywords inside your new descriptions ("Updated User Account", etc.)
@@ -109,6 +141,7 @@
                             </span>
                         </td>
 
+                        {{-- PERSON --}}
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             <div class="flex flex-col">
                                 <span class="font-bold text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">
@@ -121,6 +154,14 @@
                                             {{ $activity->subject->username }}
                                         @elseif($activity->subject_type == 'App\Models\Patient')
                                             {{ $activity->subject->last_name }}, {{ $activity->subject->first_name }}
+                                        @elseif($activity->subject_type == 'App\\Models\\Appointment')
+                                            @if(optional($activity->subject->patient)->last_name)
+                                                {{ $activity->subject->patient->last_name }}, {{ $activity->subject->patient->first_name }}
+                                            @elseif(isset($activity->properties['attributes']['patient_name']))
+                                                {{ $activity->properties['attributes']['patient_name'] }}
+                                            @else
+                                                ID: {{ $activity->subject_id }}
+                                            @endif
                                         @else
                                             ID: {{ $activity->subject_id }}
                                         @endif
@@ -129,6 +170,8 @@
                                             <span class="line-through decoration-red-500">{{ $activity->properties['attributes']['username'] }}</span>
                                         @elseif(isset($activity->properties['attributes']['last_name']))
                                             <span class="line-through decoration-red-500">{{ $activity->properties['attributes']['last_name'] }}</span>
+                                        @elseif(isset($activity->properties['attributes']['patient_name']))
+                                            <span class="line-through decoration-red-500">{{ $activity->properties['attributes']['patient_name'] }}</span>
                                         @else
                                             ID: {{ $activity->subject_id }} <span class="text-xs text-red-500">(Deleted)</span>
                                         @endif
@@ -201,4 +244,24 @@
         @endif
     </div>
 </main>
+
+<script>
+    (function () {
+        const form = document.getElementById('activity-log-filter');
+        const search = document.getElementById('activity-log-search');
+        const action = document.getElementById('activity-log-action');
+
+        if (action && form) {
+            action.addEventListener('change', () => form.submit());
+        }
+
+        if (search && form) {
+            let timer;
+            search.addEventListener('input', () => {
+                clearTimeout(timer);
+                timer = setTimeout(() => form.submit(), 400);
+            });
+        }
+    })();
+</script>
 @endsection

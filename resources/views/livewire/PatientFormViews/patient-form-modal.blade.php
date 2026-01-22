@@ -46,13 +46,13 @@
 
                     <!-- Scrollable Form Area -->
                     <div class="p-8 overflow-y-auto">
-                        <div @if($currentStep != 1) hidden @endif>
+                        @if($currentStep == 1)
                             <div class="{{ $isReadOnly ? 'pointer-events-none' : '' }}">
                                 <livewire:PatientFormController.basic-info wire:key="basic-info" :data="$basicInfoData" />
                             </div>
-                        </div>
+                        @endif
 
-                        <div @if($currentStep != 2) hidden @endif>
+                        @if($currentStep == 2)
                             <div>
                                 <livewire:PatientFormController.health-history 
                                     wire:key="health-history" 
@@ -61,10 +61,10 @@
                                     :isReadOnly="$isReadOnly" 
                                 />
                             </div>
-                        </div>
+                        @endif
 
                         @if($isAdmin && $isEditing)
-                            <div @if($currentStep != 3) hidden @endif>
+                            @if($currentStep == 3)
                                 <livewire:PatientFormController.dental-chart 
                                     :wire:key="'dental-chart-'.$chartKey" 
                                     :data="$dentalChartData" 
@@ -73,16 +73,16 @@
                                     :selectedHistoryId="$selectedHistoryId" 
                                     :isCreating="$forceNewRecord"
                                 />
-                            </div>
+                            @endif
                             <!-- Step 4: Treatment Record -->
-                            <div @if($currentStep != 4) hidden @endif>
+                            @if($currentStep == 4)
                                 {{-- [UPDATED] Added chartKey to wire:key to force refresh when switching history --}}
                                 <livewire:PatientFormController.treatment-record 
                                     :wire:key="'treatment-record-'.$chartKey" 
                                     :data="$treatmentRecordData ?? []" 
                                     :isReadOnly="$isReadOnly"
                                 />
-                            </div>
+                            @endif
                         @endif
                     </div>
 

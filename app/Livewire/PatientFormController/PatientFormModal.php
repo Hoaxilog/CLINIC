@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Livewire\Attributes\On;
+use App\Models\Patient;
+use App\Models\DentalChart;
+use App\Models\TreatmentRecord;
+use App\Models\Appointment;
 
 class PatientFormModal extends Component
 {
@@ -198,15 +202,21 @@ class PatientFormModal extends Component
 
     private function createFullPatientRecord()
     {
-        DB::transaction(function () {
-            $this->newPatientId = $this->addBasicInfo($this->basicInfoData);
+        $createdPatientId = null;
+        $createdHealthHistoryId = null;
+        $createdAppointmentId = null;
+
+        DB::transaction(function () use (&$createdPatientId, &$createdHealthHistoryId, &$createdAppointmentId) {
+            $createdPatientId = $this->addBasicInfo($this->basicInfoData);
+            $this->newPatientId = $createdPatientId;
+
             if (!empty($this->healthHistoryData)) {
-                $this->addHealthHistory($this->newPatientId, $this->healthHistoryData);
+                $createdHealthHistoryId = $this->addHealthHistory($this->newPatientId, $this->healthHistoryData);
             }
             // Walk-In Logic (Waiting Room)
             $defaultService = DB::table('services')->first(); 
             if ($defaultService) {
-                DB::table('appointments')->insert([
+                $createdAppointmentId = DB::table('appointments')->insertGetId([
                     'patient_id' => $this->newPatientId,
                     'service_id' => $defaultService->id,
                     'appointment_date' => now(),
@@ -217,6 +227,57 @@ class PatientFormModal extends Component
                 ]);
             }
         });
+
+        if ($createdPatientId) {
+            $patientSubject = new Patient();
+            $patientSubject->id = $createdPatientId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($patientSubject)
+                ->event('patient_created')
+                ->withProperties([
+                    'attributes' => $this->basicInfoData,
+                ])
+                ->log('Created Patient');
+        }
+
+        if ($createdHealthHistoryId) {
+            $patientSubject = new Patient();
+            $patientSubject->id = $createdPatientId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($patientSubject)
+                ->event('health_history_created')
+                ->withProperties([
+                    'health_history_id' => $createdHealthHistoryId,
+                    'attributes' => $this->healthHistoryData,
+                ])
+                ->log('Created Health History');
+        }
+
+        if ($createdAppointmentId) {
+            $appointmentSubject = new Appointment();
+            $appointmentSubject->id = $createdAppointmentId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($appointmentSubject)
+                ->event('appointment_created')
+                ->withProperties([
+                    'attributes' => [
+                        'patient_id' => $createdPatientId,
+                        'patient_name' => trim(
+                            ($this->basicInfoData['last_name'] ?? '') . ', ' .
+                            ($this->basicInfoData['first_name'] ?? '') . ' ' .
+                            ($this->basicInfoData['middle_name'] ?? '')
+                        ),
+                        'status' => 'Waiting',
+                    ],
+                ])
+                ->log('Created Walk-in Appointment');
+        }
 
         $this->dispatch('patient-added');
         $this->closeModal();
@@ -235,13 +296,30 @@ class PatientFormModal extends Component
         if(isset($data['selectedHistoryId'])) unset($data['selectedHistoryId']);
         $data['patient_id'] = $patientId;
         $data['modified_by'] = $this->getModifier();
-        DB::table('health_histories')->insert($data);
+        return DB::table('health_histories')->insertGetId($data);
     }
 
     private function updateBasicInfo()
     {
+        $oldPatient = DB::table('patients')->where('id', $this->newPatientId)->first();
         $this->basicInfoData['modified_by'] = $this->getModifier();
         DB::table('patients')->where('id', $this->newPatientId)->update($this->basicInfoData);
+
+        if ($oldPatient) {
+            $patientSubject = new Patient();
+            $patientSubject->id = $this->newPatientId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($patientSubject)
+                ->event('patient_updated')
+                ->withProperties([
+                    'old' => (array) $oldPatient,
+                    'attributes' => $this->basicInfoData,
+                ])
+                ->log('Updated Patient');
+        }
+
         $this->dispatch('patient-added');
         $this->isReadOnly = true; 
         $this->isSaving = false;
@@ -256,13 +334,45 @@ class PatientFormModal extends Component
         unset($this->healthHistoryData['selectedHistoryId']);
 
         if ($selectedId && is_numeric($selectedId) && $selectedId !== 'new') {
+            $oldHistory = DB::table('health_histories')->where('id', $selectedId)->first();
             DB::table('health_histories')->where('id', $selectedId)->update($this->healthHistoryData);
+
+            if ($oldHistory) {
+                $patientSubject = new Patient();
+                $patientSubject->id = $this->newPatientId;
+
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($patientSubject)
+                    ->event('health_history_updated')
+                    ->withProperties([
+                        'health_history_id' => $selectedId,
+                        'old' => (array) $oldHistory,
+                        'attributes' => $this->healthHistoryData,
+                    ])
+                    ->log('Updated Health History');
+            }
+
             session()->flash('success', 'Health history updated.');
         } else {
             $this->healthHistoryData['patient_id'] = $this->newPatientId;
             $this->healthHistoryData['created_at'] = now();
             $this->healthHistoryData['updated_at'] = now();
-            DB::table('health_histories')->insert($this->healthHistoryData);
+            $newHistoryId = DB::table('health_histories')->insertGetId($this->healthHistoryData);
+
+            $patientSubject = new Patient();
+            $patientSubject->id = $this->newPatientId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($patientSubject)
+                ->event('health_history_created')
+                ->withProperties([
+                    'health_history_id' => $newHistoryId,
+                    'attributes' => $this->healthHistoryData,
+                ])
+                ->log('Created Health History');
+
             session()->flash('success', 'New health history added.');
         }
 
@@ -294,12 +404,32 @@ class PatientFormModal extends Component
                 ->first();
 
             if ($existingToday) {
+                $oldChart = DB::table('dental_charts')->where('id', $existingToday->id)->first();
                 DB::table('dental_charts')->where('id', $existingToday->id)->update([
                     'chart_data' => json_encode($this->dentalChartData),
                     'modified_by' => $modifier,
                     'updated_at' => now()
                 ]);
                 $chartId = $existingToday->id;
+
+                if ($oldChart) {
+                    $chartSubject = new DentalChart();
+                    $chartSubject->id = $chartId;
+
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->performedOn($chartSubject)
+                        ->event('dental_chart_updated')
+                        ->withProperties([
+                            'old' => [
+                                'chart_data' => $oldChart->chart_data,
+                            ],
+                            'attributes' => [
+                                'chart_data' => json_encode($this->dentalChartData),
+                            ],
+                        ])
+                        ->log('Updated Dental Chart');
+                }
             }
         }
 
@@ -313,6 +443,21 @@ class PatientFormModal extends Component
                 'updated_at' => now(),
             ]);
             $this->forceNewRecord = false; // Reset flag
+
+            $chartSubject = new DentalChart();
+            $chartSubject->id = $chartId;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($chartSubject)
+                ->event('dental_chart_created')
+                ->withProperties([
+                    'attributes' => [
+                        'patient_id' => $this->newPatientId,
+                        'chart_data' => json_encode($this->dentalChartData),
+                    ],
+                ])
+                ->log('Created Dental Chart');
         }
 
         $this->currentDentalChartId = $chartId;
@@ -326,6 +471,7 @@ class PatientFormModal extends Component
         $chartId = $this->updateDentalChart();
 
         if ($chartId && !empty($this->treatmentRecordData)) {
+            $existingRecord = DB::table('treatment_records')->where('dental_chart_id', $chartId)->first();
             $dataToUpdate = [
                 'patient_id' => $this->newPatientId,
                 'dmd' => $this->treatmentRecordData['dmd'] ?? null,
@@ -342,6 +488,33 @@ class PatientFormModal extends Component
                 ['dental_chart_id' => $chartId], 
                 $dataToUpdate
             );
+
+            $savedRecord = DB::table('treatment_records')->where('dental_chart_id', $chartId)->first();
+            if ($savedRecord) {
+                $recordSubject = new TreatmentRecord();
+                $recordSubject->id = $savedRecord->id;
+
+                if ($existingRecord) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->performedOn($recordSubject)
+                        ->event('treatment_record_updated')
+                        ->withProperties([
+                            'old' => (array) $existingRecord,
+                            'attributes' => $dataToUpdate,
+                        ])
+                        ->log('Updated Treatment Record');
+                } else {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->performedOn($recordSubject)
+                        ->event('treatment_record_created')
+                        ->withProperties([
+                            'attributes' => $dataToUpdate,
+                        ])
+                        ->log('Created Treatment Record');
+                }
+            }
         }
         
         if ($this->currentDentalChartId) {

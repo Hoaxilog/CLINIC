@@ -1,6 +1,6 @@
 <div class="relative w-full h-[68vh] bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col lg:flex-row">
     
-    @if(count($history) > 0 || $isCreating)
+    @if(count($history) > 1 || $isCreating)
 
         <input type="checkbox" id="sidebar-toggle" class="peer sr-only" checked>
         <label for="sidebar-toggle" 

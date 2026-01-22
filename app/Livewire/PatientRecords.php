@@ -6,6 +6,8 @@ use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Patient;
 
 
 class PatientRecords extends Component
@@ -96,6 +98,24 @@ class PatientRecords extends Component
         $patient = DB::table('patients')->where('id', $id)->first();
 
         if ($patient) {
+            $patientSubject = new Patient();
+            $patientSubject->id = $id;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($patientSubject)
+                ->event('patient_deleted')
+                ->withProperties([
+                    'old' => (array) $patient,
+                    'attributes' => [
+                        'first_name' => $patient->first_name ?? null,
+                        'last_name' => $patient->last_name ?? null,
+                        'middle_name' => $patient->middle_name ?? null,
+                        'mobile_number' => $patient->mobile_number ?? null,
+                    ],
+                ])
+                ->log('Deleted Patient');
+
             DB::table('patients')->where('id', $id)->delete();
 
             // Reset selection if the deleted patient was currently being viewed

@@ -162,12 +162,14 @@
                                 <input 
                                     type="text" 
                                     wire:model.live.debounce.300ms="searchQuery"
-                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10 text-base focus:ring-2 focus:ring-[#0086da] focus:border-[#0086da]" 
+                                    class="w-full border-black border
+                                     rounded-lg px-4 py-2 pl-10 text-base focus:ring-2 focus:ring-[#0086da] focus:border-[#0086da]" 
                                     placeholder="Search by name or phone number..." 
                                 />
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />
+                                        <path d="M14.8284 14.8284L17 17M16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12Z" />
                                     </svg>
                                 </div>
 
@@ -207,14 +209,17 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                             <input wire:model="firstName" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
+                            @error('firstName') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
                             <input wire:model="middleName" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
+                            @error('middleName') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                             <input wire:model="lastName" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
+                            @error('lastName') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
@@ -222,11 +227,13 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
                             <input wire:model="contactNumber" type="text" class="border w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
+                            @error('contactNumber') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                         {{-- BIRTH DATE (Required for Saving) --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
                             <input wire:model="birthDate" type="date" class="border w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium" @if($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif/>
+                            @error('birthDate') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
@@ -245,6 +252,8 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('selectedService') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                            
                         </div>
                      </div>
 
@@ -256,9 +265,12 @@
                         @if($isViewing)
                             {{-- === VIEWING MODE (Flow Logic) === --}}
                             @if(!in_array($appointmentStatus, ['Cancelled', 'Completed']))
-                                <button type="button" 
-                                    wire:click="updateStatus('Cancelled')"
-                                    wire:confirm="Are you sure you want to cancel this appointment?"
+                                <button type="button"
+                                    data-confirm-action="updateStatus"
+                                    data-confirm-args='["Cancelled"]'
+                                    data-confirm-title="Cancel Appointment"
+                                    data-confirm-message="Are you sure you want to cancel this appointment?"
+                                    data-confirm-text="Cancel"
                                     class="px-5 py-2.5 rounded-lg text-red-600 font-medium hover:bg-red-50 border border-transparent hover:border-red-100 mr-auto transition"
                                 >
                                     Cancel Appointment
@@ -269,7 +281,13 @@
                                 <button type="button" wire:click="processPatient" class="px-6 py-2.5 rounded-lg bg-white border-2 border-blue-600 text-blue-700 font-bold hover:bg-blue-50 transition">
                                     Update Patient Info
                                 </button>
-                                <button type="button" wire:click="updateStatus('Arrived')" class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                                <button type="button"
+                                    data-confirm-action="updateStatus"
+                                    data-confirm-args='["Arrived"]'
+                                    data-confirm-title="Mark Arrived"
+                                    data-confirm-message="Confirm patient has arrived?"
+                                    data-confirm-text="Mark Arrived"
+                                    class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                     Mark Arrived
                                 </button>
@@ -280,7 +298,12 @@
                                 </button>
                                 
                                 @if (auth()->user()->role === 1)
-                                    <button type="button" wire:click="admitPatient" class="px-6 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                                    <button type="button"
+                                        data-confirm-action="admitPatient"
+                                        data-confirm-title="Admit Patient"
+                                        data-confirm-message="Admit this patient to the chair now?"
+                                        data-confirm-text="Admit"
+                                        class="px-6 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                                         ADMIT PATIENT
                                     </button>
@@ -293,7 +316,13 @@
                                         View Dental Chart
                                     </button>
                                 @endif
-                                <button type="button" wire:click="updateStatus('Completed')" class="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                                <button type="button"
+                                    data-confirm-action="updateStatus"
+                                    data-confirm-args='["Completed"]'
+                                    data-confirm-title="Complete Appointment"
+                                    data-confirm-message="Mark this appointment as completed?"
+                                    data-confirm-text="Complete"
+                                    class="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     Finish & Complete
                                 </button>
@@ -311,7 +340,14 @@
                         @else
                             {{-- === BOOKING MODE === --}}
                             <button type="button" wire:click="closeAppointmentModal" class="px-5 py-3 rounded bg-gray-200 hover:bg-gray-300 font-medium">Cancel</button>
-                            <button type="submit" class="px-6 py-3 rounded bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition">
+                            <button type="button"
+                                data-confirm-action="saveAppointment"
+                                data-confirm-validate="livewire"
+                                data-confirm-validator="validateAppointmentForConfirm"
+                                data-confirm-title="Save Appointment"
+                                data-confirm-message="Save this appointment and patient details?"
+                                data-confirm-text="Save"
+                                class="px-6 py-3 rounded bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition">
                                 Save Appointment
                             </button>
                         @endif
