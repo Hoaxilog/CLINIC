@@ -8,14 +8,52 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\GoogleLoginController;
+use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 USE App\Http\Controllers\ProfileController;
 
 // Public (guest) routes
 Route::middleware(['guest'])->group(function() {
     Route::get('/', [LoginController::class, 'index'])->name('login');
+    Route::get('/login', [LoginController::class, 'index'])->name('login.get');
     Route::post('/login', [LoginController::class, 'login']);
-    Route::get('/forgot-password', [LoginController::class, 'forgotPassword'])->name('password.forgot');
-    Route::post('/forgot-password', [LoginController::class, 'processForgotPassword'])->name('password.process');
+
+    Route::get('/home', function () {
+        return view('home-page');
+    })->name('home');
+
+
+    Route::get('auth/google/redirect', [GoogleLoginController::class, 'redirectToGoogle'])
+        ->name('auth.google.redirect');
+    Route::get('auth/google/callback', [GoogleLoginController::class, 'handleGoogleCallback'])
+        ->name('auth.google.callback');
+
+
+    // Forgot Password Routes
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.forgot');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+
+    Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+
+    
+    // Registration Routes (Manual)
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
+
+    
+    Route::get('/email/verify-notice', [VerificationController::class, 'showNotice'])->name('verification.notice');
+    
+    // 2. The Verification Link (Clicked from email)
+    Route::get('/email/verify/{id}/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
+    Route::get('/email/verified', [VerificationController::class, 'showSuccess'])->name('verification.success');
+
+    
+    Route::get('/book', [AppointmentController::class, 'showBookingForm'])->name('appointment.book');
+    
 });
 
 // Authenticated user routes (visible to all logged-in users)
