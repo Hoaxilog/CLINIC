@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class LoginController extends Controller
@@ -17,30 +18,61 @@ class LoginController extends Controller
     }
 
     // Handle Login Logic
-    public function login(Request $request) {
-        
+    public function login(Request $request) 
+    {
         $request->validate([
             'username' => 'required',
-            'password' => 'required',
+            'password' => 'required'
         ]);
 
-        $user = DB::table('users')
-                    ->where('username', $request->username)
-                    ->first();
-
-        if($user && Hash::check($request->password, $user->password)) {
-            Auth::loginUsingId($user->id);
-            $request->session()->regenerate();
-
-            // If the user hasnt set up a question yet, send them to setup page
-            // if (is_null($user->security_question)) {
-            //     return redirect()->route('security.show'); 
-            // }
-
-            return redirect()->route('dashboard');
+        // RECAPTCHA CHECK
+        $recaptchaToken = $request->input('g-recaptcha-response');
+        if (empty($recaptchaToken)) {
+             return back()->with('failed', 'Please complete the captcha below');
         }
 
-        return back()->with('failed', "Wrong credentials!")->withInput($request->only('username'));
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => env('RECAPTCHA_SECRET_KEY'),
+            'response' => $recaptchaToken,
+            'remoteip' => $request->ip(),
+        ]);
+
+        if (!$response->json()['success']) {
+            return back()->with('failed', 'CAPTCHA verification failed.');
+        }
+
+        // LOGIN ATTEMPT
+        $user = DB::table('users')
+            ->where('username', $request->username)
+            ->orWhere('email', $request->username)
+            ->first();
+        
+        
+        if ($user && Hash::check($request->password, $user->password)) {
+            
+            // --- RELAXED VERIFICATION CHECK ---
+            // Allow login even if unverified, but check status
+            $isUnverified = ($user->email_verified_at === null && $user->google_id === null);
+
+            if ($isUnverified) {
+                // Flash warning for dashboard
+                session()->flash('warning', 'Your email is not verified. You must verify it before booking an appointment.');
+                // Store email for resend functionality
+                session()->put('unverified_email', $user->email);
+            }
+
+            Auth::loginUsingId($user->id);
+            
+            if ($user->role === 1) {
+                return redirect()->intended('/dashboard');
+            } else {
+                // If unverified, FORCE dashboard so they see the warning.
+                // If verified, go to their intended page (e.g. appointment)
+                return $isUnverified ? redirect('/dashboard') : redirect()->intended('/appointment');
+            }
+        }
+
+        return back()->with('failed', 'Invalid username or password.');
     }
 
     // Handle Logout

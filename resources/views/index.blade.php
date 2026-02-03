@@ -6,13 +6,14 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tejada Clinic</title>
     @vite('resources/css/app.css')
+    
     <style>
         @yield("style");
     </style>
     @livewireStyles
 
 </head>
-<body class=" tracking-wide">
+<body class="tracking-wide">
     <header class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-50">
     <div class="flex items-center">
         <button id="toggleBtn" class="p-2 hover:bg-gray-100 rounded-lg">

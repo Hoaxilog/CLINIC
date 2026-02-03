@@ -4,19 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Login </title>
+    <title>Tejadent - login or sign up</title>
     @vite('resources/css/app.css')
+    
+    <!-- 1. ADD THIS SCRIPT FROM GOOGLE -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl flex max-w-4xl w-full overflow-hidden">
-            <div class="w-1/2 relative bg-cover bg-center rounded-l-2xl" style="background-image: url('https://i.imgur.com/your-image-url.jpg');">
-                <img src={{ asset('login-image.png') }} alt="Dental Clinic" class="w-full h-full object-cover rounded-l-2xl">
+            <!-- Left Side: Image -->
+            <div class="w-1/2 relative bg-cover bg-center rounded-l-2xl hidden md:block">
+                <img src="{{ asset('login-image.png') }}" alt="Dental Clinic" class="w-full h-full object-cover rounded-l-2xl">
             </div>
 
+            <!-- Right Side: Form -->
             <form method="POST" action="/login" class="w-full md:w-1/2 p-12 flex flex-col justify-center items-center">
                 @csrf
                 
+                <!-- Logo/Icon Section -->
                 <div class="flex items-center mb-2">
                     <div class="relative w-15 h-15 rounded-full flex items-center justify-center">
                         <svg width="56" height="45" viewBox="0 0 56 45" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,12 +44,7 @@
                     TEJA<span class="text-[#0086DA]">DENT</span>
                 </h1>
 
-                @if (session('success'))
-                    <div class="w-full max-w-xs bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 text-sm">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
+                <!-- Username Field -->
                 <div class="w-full max-w-xs mb-4">
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -55,7 +56,8 @@
                     </div>
                 </div>
 
-                <div class="w-full max-w-xs mb-5">
+                <!-- Password Field -->
+                <div class="w-full max-w-xs mb-6">
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -64,15 +66,14 @@
                         </span>
                         <input type="password" placeholder="Password" name="password" class="@error('password') border-red-500 @enderror w-full pl-10 pr-10 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-200"/>
                     </div>
-                    <div class="flex mt-2">
+                     <!-- Error & Forgot Password Group -->
+                    <div class="flex flex-col mt-2">
                         @if (session('failed'))
-                            <div class="w-full max-w-xs">
-                                <p class="text-red-500 text-sm text-left">
-                                    {{ session('failed') }}
-                                </p>
-                            </div>
+                            <p class="text-red-500 text-sm mb-2 text-left">
+                                {{ session('failed') }}
+                            </p>
                         @endif
-                        <div class="w-full max-w-xs flex justify-end">
+                        <div class="flex justify-end">
                             <a href="{{ route('password.forgot') }}" class="text-sm text-[#0086DA] hover:underline">
                                 Forgot Password?
                             </a>
@@ -80,9 +81,37 @@
                     </div>
                 </div>
 
-                <button class="w-full max-w-xs bg-[#0086DA] hover:bg-[#0073A8] text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-md">
+                <!-- 2. RECAPTCHA WIDGET HERE (Before Sign In Button) -->
+                <!-- Replace 'your-site-key-here' with the actual key in your .env if preferred, or hardcode for dev -->
+                <div class="w-full max-w-xs mb-4 flex justify-center">
+                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+                </div>
+
+                <!-- Manual Sign In Button -->
+                <button type="submit" class="w-full max-w-xs bg-[#0086DA] hover:bg-[#0073A8] text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-md">
                     SIGN IN
                 </button>
+
+                <!-- OR Divider -->
+                <div class="w-full max-w-xs flex items-center my-6">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 text-sm font-light">OR</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <!-- Google Login Link -->
+                <a href="{{ route('auth.google.redirect') }}" class="w-full max-w-xs flex items-center justify-center bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-sm mb-3">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" class="w-6 h-6 mr-3">
+                    Continue with Google
+                </a>
+
+                <div class="mt-6 text-center w-full max-w-xs">
+                    <p class="text-gray-600 text-sm">
+                        Don't have an account? 
+                        <a href="{{ route('register') }}" class="text-[#0086DA] font-bold hover:underline">Sign Up</a>
+                    </p>
+                </div>
+
             </form>
         </div>
     </div>

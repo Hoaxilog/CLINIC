@@ -16,7 +16,7 @@
                     type="button"
                     class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black ml-4 p-2 rounded pointer-events-auto transition hover:bg-[#f56565] group"
                     onclick="if(confirm('Delete this note?')) { @this.delete({{ $note->id }}) }"
-                    title="Delete"
+                    title="Delete"```````````
                 >
                     <svg xmlns="http://www.w3.org/2000/svg"
                         width="24" height="24" viewBox="0 0 24 24"
