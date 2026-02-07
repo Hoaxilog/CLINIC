@@ -6,14 +6,18 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Livewire\appointment\AppointmentController;
 use App\Http\Controllers\Auth\GoogleLoginController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-USE App\Http\Controllers\ProfileController;
+
+
+Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+Route::view('/terms-of-service', 'terms-of-service')->name('terms-of-service');
 
 // Public (guest) routes
 Route::middleware(['guest'])->group(function() {
@@ -52,7 +56,7 @@ Route::middleware(['guest'])->group(function() {
     Route::get('/email/verified', [VerificationController::class, 'showSuccess'])->name('verification.success');
 
     
-    Route::get('/book', [AppointmentController::class, 'showBookingForm'])->name('appointment.book');
+    Route::get('/book', AppointmentController::class)->name('appointment.book');
     
 });
 
