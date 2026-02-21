@@ -73,7 +73,7 @@
                         <th class="px-6 py-4 font-semibold">Staff Member</th>
                         <th class="px-6 py-4 font-semibold">Action</th>
                         <th class="px-6 py-4 font-semibold">Subject (Who/What?)</th>
-                        <th class="px-6 py-4 font-semibold">Changes / Details</th>
+                        <th class="px-6 py-4 font-semibold">Summary</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -180,40 +180,104 @@
                             </div>
                         </td>
 
-                        <td class="px-6 py-4 text-sm">
-                            @if(str_contains(strtolower($activity->event), 'updated'))
-                                <div class="space-y-1">
-                                    @foreach($activity->properties['attributes'] ?? [] as $key => $newValue)
-                                        @continue(in_array($key, ['updated_at', 'created_at', 'id', 'modified_by', 'password', 'remember_token', 'email_verified_at']))
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            @php
+                                $role = optional($activity->causer)->role;
+                                $actor = $role === 1 ? 'Dentist' : ($role === 2 ? 'Staff' : 'User');
 
-                                        <div class="flex items-center gap-2 text-xs">
-                                            <span class=" font-semibold text-gray-500 uppercase tracking-wide w-50 truncate" title="{{ str_replace('_', ' ', $key) }}">
-                                                {{ str_replace('_', ' ', $key) }}
-                                            </span>
-                                            
-                                            <div class="flex items-center gap-1.5 flex-1">
-                                                @if(isset($activity->properties['old'][$key]))
-                                                    <span class="text-red-400 line-through decoration-red-200">
-                                                        {{ $activity->properties['old'][$key] }}
-                                                    </span>
-                                                    <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                                                @endif
-                                                
-                                                <span class="text-gray-900 font-medium bg-yellow-50 px-1 rounded border border-yellow-100">
-                                                    {{ Str::limit($newValue, 25) }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @elseif(str_contains(strtolower($activity->event), 'created'))
-                                <span class="text-gray-400 italic text-xs flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                    New Record Created
-                                </span>
-                            @elseif(str_contains(strtolower($activity->event), 'deleted'))
-                                <span class="text-red-400 italic text-xs">Record permanently removed</span>
-                            @endif
+                                $event = strtolower($activity->event ?? '');
+                                $desc = strtolower($activity->description ?? '');
+                                $subjectType = strtolower(class_basename($activity->subject_type ?? ''));
+
+                                $attrs = $activity->properties['attributes'] ?? [];
+                                $changedKeys = array_keys($attrs);
+
+                                $fieldMap = [
+                                    'mobile_number' => 'phone number',
+                                    'contact' => 'phone number',
+                                    'email' => 'email',
+                                    'email_address' => 'email',
+                                    'home_address' => 'address',
+                                    'address' => 'address',
+                                    'birth_date' => 'birth date',
+                                    'gender' => 'gender',
+                                    'status' => 'status',
+                                ];
+
+                                $basicInfoKeys = [
+                                    'first_name','last_name','middle_name','nickname','occupation','birth_date','gender','civil_status',
+                                    'address','home_address','office_address','home_number','office_number','mobile_number','contact',
+                                    'email','email_address','referral','emergency_contact_name','emergency_contact_number','relationship',
+                                    'who_answering','relationship_to_patient','father_name','father_number','mother_name','mother_number',
+                                    'guardian_name','guardian_number',
+                                ];
+
+                                $humanFields = [];
+                                foreach ($changedKeys as $key) {
+                                    if (in_array($key, ['updated_at', 'created_at', 'id', 'modified_by', 'password', 'remember_token', 'email_verified_at'], true)) {
+                                        continue;
+                                    }
+                                    $humanFields[] = $fieldMap[$key] ?? str_replace('_', ' ', $key);
+                                }
+                                $humanFields = array_values(array_unique($humanFields));
+                                $fieldsText = count($humanFields) ? implode(' and ', $humanFields) : 'details';
+
+                                $summary = null;
+
+                                if (str_contains($event, 'created') || str_contains($desc, 'created')) {
+                                    if (str_contains($event, 'health_history') || str_contains($desc, 'health history')) {
+                                        $summary = "{$actor} added medical history.";
+                                    } elseif (str_contains($event, 'patient') || $subjectType === 'patient') {
+                                        $summary = "{$actor} added basic info.";
+                                    } elseif (str_contains($event, 'appointment') || $subjectType === 'appointment') {
+                                        $summary = "{$actor} created an appointment.";
+                                    } elseif (str_contains($event, 'treatment_record') || str_contains($desc, 'treatment record')) {
+                                        $summary = "{$actor} added a treatment record.";
+                                    } elseif (str_contains($event, 'dental_chart') || str_contains($desc, 'dental chart')) {
+                                        $summary = "{$actor} added a dental chart.";
+                                    } else {
+                                        $summary = "{$actor} created a record.";
+                                    }
+                                } elseif (str_contains($event, 'updated') || str_contains($desc, 'updated')) {
+                                    if (str_contains($event, 'health_history') || str_contains($desc, 'health history')) {
+                                        $summary = "{$actor} updated medical history.";
+                                    } elseif (str_contains($event, 'patient') || $subjectType === 'patient') {
+                                        $basicInfoChanged = count(array_intersect($changedKeys, $basicInfoKeys)) > 0;
+                                        if ($basicInfoChanged) {
+                                            $summary = "{$actor} updated patient basic information.";
+                                        } else {
+                                            $summary = "{$actor} updated patient {$fieldsText}.";
+                                        }
+                                    } elseif (str_contains($event, 'appointment') || $subjectType === 'appointment') {
+                                        $oldStatus = $activity->properties['old']['status'] ?? null;
+                                        $newStatus = $activity->properties['attributes']['status'] ?? null;
+                                        if ($oldStatus && $newStatus && $oldStatus !== $newStatus) {
+                                            $summary = "{$actor} updated appointment status from {$oldStatus} to {$newStatus}.";
+                                        } else {
+                                            $summary = "{$actor} updated appointment {$fieldsText}.";
+                                        }
+                                    } elseif (str_contains($event, 'treatment_record') || str_contains($desc, 'treatment record')) {
+                                        $summary = "{$actor} updated treatment record.";
+                                    } elseif (str_contains($event, 'dental_chart') || str_contains($desc, 'dental chart')) {
+                                        $summary = "{$actor} updated dental chart.";
+                                    } else {
+                                        $summary = "{$actor} updated a record.";
+                                    }
+                                } elseif (str_contains($event, 'deleted') || str_contains($desc, 'deleted')) {
+                                    if (str_contains($event, 'patient') || $subjectType === 'patient') {
+                                        $summary = "{$actor} deleted a patient record.";
+                                    } elseif (str_contains($event, 'appointment') || $subjectType === 'appointment') {
+                                        $summary = "{$actor} deleted an appointment.";
+                                    } else {
+                                        $summary = "{$actor} deleted a record.";
+                                    }
+                                } elseif (str_contains($event, 'cancelled') || str_contains($desc, 'cancelled')) {
+                                    $summary = "{$actor} cancelled an appointment.";
+                                }
+                            @endphp
+                            <span class="text-sm">
+                                {{ $summary ?? 'Activity recorded.' }}
+                            </span>
                         </td>
                     </tr>
                     @empty

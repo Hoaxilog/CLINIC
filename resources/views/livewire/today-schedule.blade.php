@@ -35,8 +35,15 @@
 
         <div class="bg-white rounded-lg shadow-md flex flex-col border-t-4 border-red-400 overflow-hidden">
             <div class="flex items-center justify-between p-4 border-b bg-red-50">
-                <h1 class="text-lg font-bold text-gray-800">Lounge</h1>
-                <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full">{{ count($waitingQueue) }}</span>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-lg font-bold text-gray-800">Ready Queue</h1>
+                    <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full">{{ count($waitingQueue) }}</span>
+                </div>
+                @if(auth()->user()?->role === 1)
+                    <button type="button" wire:click="callNextPatient" class="px-3 py-1.5 text-xs font-bold rounded bg-red-500 text-white hover:bg-red-600 transition">
+                        Call Next
+                    </button>
+                @endif
             </div>
             <div class="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-thin scrollbar-track-red-100 scrollbar-thumb-red-400">
                 @if(count($waitingQueue) > 0)
@@ -44,10 +51,15 @@
                         <div wire:click="viewAppointment({{ $wait->id }})" class="bg-red-50 border border-red-200 p-3 rounded-lg cursor-pointer hover:bg-red-100 transition group">
                             <div class="flex justify-between items-center">
                                 <div>
-                                    <h2 class="text-sm font-bold text-gray-900 uppercase">{{ $wait->first_name }} {{ $wait->last_name }}</h2>
-                                    <p class="text-xs text-gray-500 mt-0.5">Waited: {{ \Carbon\Carbon::parse($wait->created_at)->diffForHumans(null, true) }}</p>
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="text-sm font-bold text-gray-900 uppercase">{{ $wait->first_name }} {{ $wait->last_name }}</h2>
+                                        @if($loop->first)
+                                            <span class="text-[10px] font-bold uppercase bg-red-200 text-red-700 px-2 py-0.5 rounded-full">Next</span>
+                                        @endif
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-0.5">Ready: {{ \Carbon\Carbon::parse($wait->waited_at)->diffForHumans(null, true) }}</p>
                                 </div>
-                                <div class="text-xs font-bold text-red-500 group-hover:underline">Admit →</div>
+                                <div class="text-xs font-bold text-red-500 group-hover:underline">Open →</div>
                             </div>
                         </div>
                     @endforeach
@@ -167,7 +179,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Service Required</label>
-                            <select wire:model="selectedService" class="w-full border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" {{ ($appointmentStatus != 'Waiting' && $appointmentStatus != 'Arrived') ? 'disabled' : '' }}>
+                            <select wire:model="selectedService" class="w-full border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" {{ ($appointmentStatus != 'Waiting') ? 'disabled' : '' }}>
                                 @foreach($servicesList as $service)
                                     <option value="{{ $service->id }}">
                                         {{ $service->service_name }} ({{ \Carbon\Carbon::parse($service->duration)->format('H:i') }})
@@ -189,12 +201,12 @@
                             <button type="button" wire:click="processPatient" class="px-6 py-2.5 rounded-lg bg-white border-2 border-blue-600 text-blue-700 font-bold hover:bg-blue-50 transition">
                                 Update Patient Info
                             </button>
-                            <button type="button" wire:click="updateStatus('Arrived')" class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                            <button type="button" wire:click="updateStatus('Waiting')" class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                Mark Arrived
+                                Mark Ready
                             </button>
 
-                        @elseif($appointmentStatus === 'Waiting' || $appointmentStatus === 'Arrived')
+                        @elseif($appointmentStatus === 'Waiting')
                             <button type="button" wire:click="processPatient" class="px-6 py-2.5 rounded-lg bg-white border-2 border-gray-300 text-gray-600 font-bold hover:bg-gray-50 transition">
                                 View Patient Info
                             </button>
@@ -265,3 +277,4 @@
     </div>
     @endif
 </div>
+

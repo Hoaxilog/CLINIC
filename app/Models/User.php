@@ -11,11 +11,11 @@ class User extends Authenticatable
 {
     public function getRoleLabelAttribute()
     {
-        // These match the IDs in your database (1=admin, 2=staff, 3=user)
+        // These match the IDs in your database (1=admin/dentist, 2=staff, 3=patient)
         return match($this->role) {
-            1 => 'Super Admin',
+            1 => 'Admin/Dentist',
             2 => 'Staff',
-            3 => 'Patient/User',
+            3 => 'Patient',
             default => 'Unknown',
         };
     }

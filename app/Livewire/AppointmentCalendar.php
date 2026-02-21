@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Carbon\CarbonInterval; // <-- Add this at the top
 
 class AppointmentCalendar extends Component
@@ -19,6 +20,8 @@ class AppointmentCalendar extends Component
     public $timeSlots = [];
     /** @var \Illuminate\Support\Collection */
     public $appointments = [];
+    /** @var \Illuminate\Support\Collection */
+    public $occupiedAppointments = [];
     public $showAppointmentModal = false;
     /** @var \Illuminate\Support\Collection */
     public $servicesList = [];
@@ -41,6 +44,7 @@ class AppointmentCalendar extends Component
     public $patientSearchResults = [];
     public $selectedMonthYear; // stores "YYYY-MM" format
     public $selectableMonthYears = [];
+    public $activeTab = 'calendar';
 
     protected $rules = [
         'firstName' => 'required|string|max:100',
@@ -58,6 +62,8 @@ class AppointmentCalendar extends Component
     {
         $this->currentDate = Carbon::now();
         $this->selectedDate = $this->currentDate->format('Y-m-d');
+
+        $this->activeTab = 'calendar';
 
         $this->generateWeekDates(); 
         $this->generateTimeSlots();
@@ -91,11 +97,10 @@ class AppointmentCalendar extends Component
         $startOfWeek = $this->weekDates[0]->startOfDay();
         $endOfWeek = $this->weekDates[6]->endOfDay();
 
-        $this->appointments = DB::table('appointments')
+        $baseQuery = DB::table('appointments')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->whereBetween('appointment_date', [$startOfWeek, $endOfWeek])
-            ->where('appointments.status', '!=', 'Cancelled')
             ->select(
                 'appointments.*', 
                 'patients.first_name', 
@@ -103,7 +108,12 @@ class AppointmentCalendar extends Component
                 'patients.middle_name', 
                 'services.service_name', 
                 'services.duration'
-            )
+            );
+
+        // For display: hide Pending, show everything else except Cancelled
+        $this->appointments = (clone $baseQuery)
+            ->where('appointments.status', '!=', 'Cancelled')
+            ->where('appointments.status', '!=', 'Pending')
             ->get()
             // THIS IS WTF
             ->map(function($appointment) {
@@ -115,6 +125,24 @@ class AppointmentCalendar extends Component
                 $appointment->start_date = $carbonDate->toDateString();
                 $appointment->start_time = $carbonDate->format('H:i');
                 
+                $appointment->end_time = $carbonDate->copy()
+                                 ->addMinutes($appointment->duration_in_minutes)
+                                 ->format('H:i');
+                return $appointment;
+            });
+
+        // For occupancy: count Pending toward capacity (exclude Cancelled/Completed only)
+        $this->occupiedAppointments = (clone $baseQuery)
+            ->whereNotIn('appointments.status', ['Cancelled', 'Completed'])
+            ->get()
+            ->map(function($appointment) {
+                sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);
+                $appointment->duration_in_minutes = ($h * 60) + $m;
+
+                $carbonDate = Carbon::parse($appointment->appointment_date);
+                $appointment->start_date = $carbonDate->toDateString();
+                $appointment->start_time = $carbonDate->format('H:i');
+
                 $appointment->end_time = $carbonDate->copy()
                                  ->addMinutes($appointment->duration_in_minutes)
                                  ->format('H:i');
@@ -392,7 +420,7 @@ class AppointmentCalendar extends Component
         $slotEndInMinutes = $slotStartInMinutes + 30;
 
         // 2. Loop sa lahat ng appointments
-        foreach ($this->appointments as $appointment) 
+        foreach ($this->occupiedAppointments as $appointment) 
         {
             if (Carbon::parse($appointment->start_date)->isSameDay($slotStart)) {
 
@@ -507,8 +535,131 @@ class AppointmentCalendar extends Component
             }
             // ==========================================
 
+            $this->sendStatusEmail($this->viewingAppointmentId, $newStatus);
+
             $this->loadAppointments();
             $this->closeAppointmentModal();
+        }
+    }
+
+    public function setActiveTab($tab)
+    {
+        if ($tab === 'pending' && Auth::user()?->role === 3) {
+            $this->activeTab = 'calendar';
+            return;
+        }
+        $this->activeTab = $tab;
+    }
+
+    public function getPendingApprovals()
+    {
+        if (Auth::user()?->role === 3) {
+            return collect();
+        }
+
+        return DB::table('appointments')
+            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->where('appointments.status', 'Pending')
+            ->orderBy('appointments.appointment_date', 'asc')
+            ->select(
+                'appointments.id',
+                'appointments.appointment_date',
+                'appointments.status',
+                'patients.first_name',
+                'patients.last_name',
+                'patients.mobile_number',
+                'patients.email_address',
+                'services.service_name'
+            )
+            ->get();
+    }
+
+    public function approveAppointment($appointmentId)
+    {
+        if (Auth::user()?->role === 3) {
+            return;
+        }
+
+        $this->updateAppointmentStatusById($appointmentId, 'Scheduled');
+    }
+
+    public function rejectAppointment($appointmentId)
+    {
+        if (Auth::user()?->role === 3) {
+            return;
+        }
+
+        $this->updateAppointmentStatusById($appointmentId, 'Cancelled');
+    }
+
+    protected function updateAppointmentStatusById($appointmentId, $newStatus)
+    {
+        $oldAppt = DB::table('appointments')->where('id', $appointmentId)->first();
+        if (!$oldAppt) {
+            return;
+        }
+
+        DB::table('appointments')
+            ->where('id', $appointmentId)
+            ->update([
+                'status' => $newStatus,
+                'updated_at' => now(),
+            ]);
+
+        if ($oldAppt->status !== $newStatus) {
+            $subject = new Appointment();
+            $subject->id = $appointmentId;
+
+            $eventName = $newStatus === 'Cancelled' ? 'appointment_cancelled' : 'appointment_updated';
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($subject)
+                ->event($eventName)
+                ->withProperties([
+                    'old' => ['status' => $oldAppt->status],
+                    'attributes' => ['status' => $newStatus]
+                ])
+                ->log('Updated Appointment Status');
+        }
+
+        $this->sendStatusEmail($appointmentId, $newStatus);
+
+        $this->loadAppointments();
+    }
+
+    protected function sendStatusEmail($appointmentId, $newStatus)
+    {
+        $appointment = DB::table('appointments')
+            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->select(
+                'appointments.appointment_date',
+                'patients.first_name',
+                'patients.last_name',
+                'patients.email_address',
+                'services.service_name'
+            )
+            ->where('appointments.id', $appointmentId)
+            ->first();
+
+        if (!$appointment || empty($appointment->email_address)) {
+            return;
+        }
+
+        try {
+            Mail::send('appointment.emails.appointment-status-update', [
+                'name' => trim($appointment->first_name . ' ' . $appointment->last_name),
+                'appointment_date' => Carbon::parse($appointment->appointment_date)->format('F j, Y g:i A'),
+                'service_name' => $appointment->service_name,
+                'status' => $newStatus,
+            ], function ($message) use ($appointment) {
+                $message->to($appointment->email_address);
+                $message->subject('Appointment Status Update');
+            });
+        } catch (\Throwable $th) {
+            // Do not break UI if mail fails
         }
     }
 

@@ -32,6 +32,10 @@ class GoogleLoginController extends Controller
                     ]);
 
                 Auth::loginUsingId($user->id);
+                $role = $user->role;
+                if ($role === 3) {
+                    return redirect()->route('patient.dashboard');
+                }
                 return redirect()->route('dashboard');
                 
             } else {
@@ -47,7 +51,7 @@ class GoogleLoginController extends Controller
                 ]);
 
                 Auth::loginUsingId($newUserId);
-                return redirect()->route('dashboard');
+                return redirect()->route('patient.dashboard');
             }
         } catch (Exception $th) {
             return redirect('/login')->with('failed', 'Google Login failed. Please try again.');     

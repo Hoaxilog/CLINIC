@@ -1,6 +1,74 @@
 <div class="relative" @if(!$showAppointmentModal) wire:poll.5s="loadAppointments" @endif>
-    <h1 class="text-3xl lg:text-4xl font-bold text-gray-800">Appointment Calendar</h1>
-    <div class="w-full max-w-9xl mx-auto px-2 py-10 lg:px-8 overflow-x-auto bg-white mt-6">
+    <h1 class="text-3xl lg:text-4xl font-bold text-gray-800">Appointments</h1>
+    <div class="w-full max-w-9xl mx-auto px-2 py-6 lg:px-8 overflow-x-auto bg-white mt-6">
+        <div class="flex items-center gap-2 mb-6">
+            @if(auth()->user()->role !== 3)
+                <button type="button" wire:click="setActiveTab('pending')"
+                    class="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 transition
+                    {{ $activeTab === 'pending' ? 'bg-[#0789da] text-white border-[#0789da] shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
+                    Pending Approvals
+                </button>
+            @endif
+            <button type="button" wire:click="setActiveTab('calendar')"
+                class="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 transition
+                {{ $activeTab === 'calendar' ? 'bg-[#0789da] text-white border-[#0789da] shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
+                Calendar
+            </button>
+        </div>
+
+        @if($activeTab === 'pending' && auth()->user()->role !== 3)
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-[#f7fbff] to-white">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">Pending Approvals</h2>
+                            <p class="text-xs text-gray-500">Review and approve appointment requests.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hidden md:grid grid-cols-5 gap-2 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 bg-gray-50 border-b border-gray-100">
+                    <div>Date & Time</div>
+                    <div>Patient</div>
+                    <div>Service</div>
+                    <div>Contact</div>
+                    <div class="text-right">Actions</div>
+                </div>
+
+                <div class="divide-y divide-gray-100">
+                    @forelse($this->getPendingApprovals() as $pending)
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 px-5 py-4 text-sm items-center hover:bg-gray-50 transition">
+                            <div>
+                                <div class="font-semibold text-gray-900">{{ \Carbon\Carbon::parse($pending->appointment_date)->format('M d, Y') }}</div>
+                                <div class="text-gray-500">{{ \Carbon\Carbon::parse($pending->appointment_date)->format('h:i A') }}</div>
+                            </div>
+                            <div class="font-medium text-gray-900">{{ $pending->last_name }}, {{ $pending->first_name }}</div>
+                            <div class="text-gray-700">{{ $pending->service_name }}</div>
+                            <div class="text-gray-600">
+                                <div>{{ $pending->mobile_number ?? 'N/A' }}</div>
+                                <div class="text-xs text-gray-400">{{ $pending->email_address ?? 'N/A' }}</div>
+                            </div>
+                            <div class="flex md:justify-end gap-2">
+                                <button type="button"
+                                    wire:click="approveAppointment({{ $pending->id }})"
+                                    class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition">
+                                    Approve
+                                </button>
+                                <button type="button"
+                                    wire:click="rejectAppointment({{ $pending->id }})"
+                                    class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition">
+                                    Reject
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-8 text-sm text-gray-500">No pending approvals.</div>
+                    @endforelse
+                </div>
+            </div>
+        @endif
+
+        @if($activeTab === 'calendar')
         <div class="flex flex-col md:flex-row max-md:gap-3 items-center justify-between mb-5">
             <div class="flex items-center gap-4">
                 <input type="date" wire:model.live="selectedDate" wire:change="goToDate" min="{{ now()->subYear()->format('Y-m-d') }}" max="{{ now()->addYears(3)->format('Y-m-d') }}" class="border rounded px-3 py-2 text-sm">
@@ -21,7 +89,7 @@
                         </svg>
                     </button>
                 </div>
-            </div> 
+            </div>
         </div>
 
         <div class="relative">
@@ -73,39 +141,76 @@
                                 $dayAppointments = $this->getAppointmentsForDay($date);
                                 $dayStartHour = 9;   
                                 $slotHeightRem = 4;  
+                                $groupedByTime = $dayAppointments->groupBy('start_time');
                             @endphp
 
-                            @foreach($dayAppointments as $appointment)
+                            @foreach($groupedByTime as $timeKey => $appointmentsAtTime)
                                 @php
-                                    $startCarbon = Carbon\Carbon::parse($appointment->start_time);
+                                    $firstAppt = $appointmentsAtTime->first();
+                                    $startCarbon = Carbon\Carbon::parse($firstAppt->start_time);
                                     $topInMinutes = (($startCarbon->hour - $dayStartHour) * 60) + $startCarbon->minute;
                                     $topPositionRem = ($topInMinutes / 30) * $slotHeightRem;
-                                    $heightInRem = ($appointment->duration_in_minutes / 30) * $slotHeightRem;
+                                    $heightInRem = ($firstAppt->duration_in_minutes / 30) * $slotHeightRem;
+                                    $countAtTime = $appointmentsAtTime->count();
                                 @endphp
 
                                 <div class="absolute w-full px-1 py-0.5 " 
                                      style="top: {{ $topPositionRem }}rem; height: {{ $heightInRem }}rem; z-index: 10;">
                                      
-                                     <div wire:click="viewAppointment({{ $appointment->id }})" class="rounded p-1.5 border-l-4 border-t-4 border-blue-600 bg-blue-50 h-full overflow-hidden pointer-events-auto cursor-pointer">
-                                         <p class="text-md font-semibold text-gray-900 mb-px">
-                                             {{ $appointment->last_name }}, {{ $appointment->first_name }} 
-                                         </p>
-                                         <p class="text-md font-medium text-gray-700 leading-tight mb-1 truncate">
-                                            {{ $appointment->service_name }}
-                                        </p>
-                                        <p class="text-md font-normal text-blue-600">
-                                            {{ $appointment->start_time }} - {{ $appointment->end_time }}
-                                        </p>
-                                        <p class="text-md font-normal 
-                                            @if($appointment->status == 'Ongoing') text-yellow-600
-                                            @elseif($appointment->status == 'Scheduled') text-blue-600
-                                            @elseif($appointment->status == 'Cancelled') text-red-600
-                                            @elseif($appointment->status == 'Completed') text-green-600
-                                            @else text-gray-600
-                                            @endif">
-                                            {{ $appointment->status }}
-                                        </p>
-                                     </div>
+                                    @if($countAtTime === 1)
+                                        <div wire:click="viewAppointment({{ $firstAppt->id }})" class="rounded p-1.5 border-l-4 border-t-4 border-blue-600 bg-blue-50 h-full overflow-hidden pointer-events-auto cursor-pointer">
+                                            <p class="text-md font-semibold text-gray-900 mb-px">
+                                                {{ $firstAppt->last_name }}, {{ $firstAppt->first_name }} 
+                                            </p>
+                                            <p class="text-md font-medium text-gray-700 leading-tight mb-1 truncate">
+                                                {{ $firstAppt->service_name }}
+                                            </p>
+                                            <p class="text-md font-normal text-blue-600">
+                                                {{ $firstAppt->start_time }} - {{ $firstAppt->end_time }}
+                                            </p>
+                                            <p class="text-md font-normal 
+                                                @if($firstAppt->status == 'Ongoing') text-yellow-600
+                                                @elseif($firstAppt->status == 'Scheduled') text-blue-600
+                                                @elseif($firstAppt->status == 'Cancelled') text-red-600
+                                                @elseif($firstAppt->status == 'Waiting') text-orange-600
+                                                @elseif($firstAppt->status == 'Completed') text-green-600
+                                                @else text-gray-600
+                                                @endif">
+                                                {{ $firstAppt->status === 'Waiting' ? 'Ready' : $firstAppt->status }}
+                                            </p>
+                                        </div>
+                                    @else
+                                        <div x-data="{ open: false }" class="h-full pointer-events-auto relative">
+                                            <button type="button"
+                                                @click="open = !open"
+                                                class="rounded p-1.5 border-l-4 border-t-4 border-blue-600 bg-blue-50 h-full w-full overflow-hidden pointer-events-auto cursor-pointer text-left">
+                                                <div class="flex items-center justify-between">
+                                                    <p class="text-md font-semibold text-gray-900 mb-px">
+                                                        {{ $countAtTime }} Appointments
+                                                    </p>
+                                                    <span class="text-xs font-bold bg-black text-white px-2 py-0.5 rounded-full">x{{ $countAtTime }}</span>
+                                                </div>
+                                                <p class="text-md font-normal text-blue-600">
+                                                    {{ $firstAppt->start_time }} - {{ $firstAppt->end_time }}
+                                                </p>
+                                            </button>
+                                            <div x-show="open" @click.away="open = false"
+                                                class="absolute mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-30 pointer-events-auto">
+                                                @foreach($appointmentsAtTime as $apptItem)
+                                                    <button type="button"
+                                                        wire:click="viewAppointment({{ $apptItem->id }})"
+                                                        class="w-full text-left px-4 py-2 hover:bg-gray-50 border-b last:border-b-0">
+                                                        <div class="text-sm font-semibold">
+                                                            {{ $apptItem->last_name }}, {{ $apptItem->first_name }}
+                                                        </div>
+                                                        <div class="text-xs text-gray-600">
+                                                            {{ $apptItem->service_name }}
+                                                        </div>
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -113,6 +218,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     {{-- --- APPOINTMENT MODAL --- --}}
@@ -243,7 +349,7 @@
                             <select 
                                 wire:model.live="selectedService" 
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500" 
-                                {{ ($isViewing && $appointmentStatus != 'Waiting' && $appointmentStatus != 'Arrived') ? 'disabled' : '' }}
+                                {{ ($isViewing && $appointmentStatus != 'Waiting') ? 'disabled' : '' }}
                             >
                                 <option value="" disabled>Select service</option>
                                 @foreach($servicesList as $service)
@@ -277,22 +383,43 @@
                                 </button>
                             @endif
 
-                            @if($appointmentStatus === 'Scheduled')
+                            @if($appointmentStatus === 'Pending')
+                                @if (auth()->user()->role !== 3)
+                                    <button type="button"
+                                        data-confirm-action="updateStatus"
+                                        data-confirm-args='["Scheduled"]'
+                                        data-confirm-title="Approve Appointment"
+                                        data-confirm-message="Approve this appointment request?"
+                                        data-confirm-text="Approve"
+                                        class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition">
+                                        Approve
+                                    </button>
+                                    <button type="button"
+                                        data-confirm-action="updateStatus"
+                                        data-confirm-args='["Cancelled"]'
+                                        data-confirm-title="Reject Appointment"
+                                        data-confirm-message="Reject this appointment request?"
+                                        data-confirm-text="Reject"
+                                        class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold shadow-md hover:shadow-lg transition">
+                                        Reject
+                                    </button>
+                                @endif
+                            @elseif($appointmentStatus === 'Scheduled')
                                 <button type="button" wire:click="processPatient" class="px-6 py-2.5 rounded-lg bg-white border-2 border-blue-600 text-blue-700 font-bold hover:bg-blue-50 transition">
                                     Update Patient Info
                                 </button>
                                 <button type="button"
                                     data-confirm-action="updateStatus"
-                                    data-confirm-args='["Arrived"]'
-                                    data-confirm-title="Mark Arrived"
-                                    data-confirm-message="Confirm patient has arrived?"
-                                    data-confirm-text="Mark Arrived"
+                                    data-confirm-args='["Waiting"]'
+                                    data-confirm-title="Mark Ready"
+                                    data-confirm-message="Confirm patient is ready?"
+                                    data-confirm-text="Mark Ready"
                                     class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    Mark Arrived
+                                    Mark Ready
                                 </button>
 
-                            @elseif($appointmentStatus === 'Waiting' || $appointmentStatus === 'Arrived')
+                            @elseif($appointmentStatus === 'Waiting')
                                 <button type="button" wire:click="processPatient" class="px-6 py-2.5 rounded-lg bg-white border-2 border-gray-300 text-gray-600 font-bold hover:bg-gray-50 transition">
                                     View Patient Info
                                 </button>
@@ -340,13 +467,8 @@
                         @else
                             {{-- === BOOKING MODE === --}}
                             <button type="button" wire:click="closeAppointmentModal" class="px-5 py-3 rounded bg-gray-200 hover:bg-gray-300 font-medium">Cancel</button>
-                            <button type="button"
-                                data-confirm-action="saveAppointment"
-                                data-confirm-validate="livewire"
-                                data-confirm-validator="validateAppointmentForConfirm"
-                                data-confirm-title="Save Appointment"
-                                data-confirm-message="Save this appointment and patient details?"
-                                data-confirm-text="Save"
+                            <button type="submit"
+                                onclick="return confirm('Save this appointment and patient details?')"
                                 class="px-6 py-3 rounded bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition">
                                 Save Appointment
                             </button>

@@ -7,10 +7,11 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PatientDashboardController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Livewire\appointment\AppointmentController;
+use App\Livewire\appointment\BookAppointment;
 use App\Http\Controllers\Auth\GoogleLoginController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -19,15 +20,19 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
 Route::view('/terms-of-service', 'terms-of-service')->name('terms-of-service');
 
+// Public home page
+Route::get('/', function () {
+    return view('home-page');
+})->name('home');
+
 // Public (guest) routes
 Route::middleware(['guest'])->group(function() {
-    Route::get('/', [LoginController::class, 'index'])->name('login');
-    Route::get('/login', [LoginController::class, 'index'])->name('login.get');
+    Route::get('/login', [LoginController::class, 'index'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 
     Route::get('/home', function () {
         return view('home-page');
-    })->name('home');
+    });
 
 
     Route::get('auth/google/redirect', [GoogleLoginController::class, 'redirectToGoogle'])
@@ -55,23 +60,35 @@ Route::middleware(['guest'])->group(function() {
     Route::get('/email/verify/{id}/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
     Route::get('/email/verified', [VerificationController::class, 'showSuccess'])->name('verification.success');
 
-    
-    Route::get('/book', AppointmentController::class)->name('appointment.book');
-    
 });
 
-// Authenticated user routes (visible to all logged-in users)
+// Public booking route (guest or logged-in)
+Route::get('/book', BookAppointment::class)->name('book');
+
+// Authenticated user routes (all logged-in users)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
-    Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
-    Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
     // Logout should be available to all authenticated users
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+});
+
+// Staff/Dentist-only routes
+Route::middleware(['auth', 'staffOrDentist'])->group(function () {
+    Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
+    Route::get('/queue', function () {
+        return view('queue');
+    })->name('queue');
+    Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
+    Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
 }); 
+
+// Patient-only routes
+Route::middleware(['auth', 'isPatient'])->group(function () {
+    Route::get('/patient/dashboard', [PatientDashboardController::class, 'index'])->name('patient.dashboard');
+});
 
 // Admin-only routes
 Route::middleware(['auth', 'isAdmin'])->group(function () {
@@ -90,4 +107,3 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 });
-

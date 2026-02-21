@@ -6,9 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
-class IsAdminMiddleware
+class StaffOrDentistMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
@@ -17,14 +16,11 @@ class IsAdminMiddleware
                 ->withErrors(['email' => 'You must log in first.']);
         }
 
-        $userId = Auth::id();
-        $role = DB::table('users')->where('id', $userId)->value('role');
+        $role = Auth::user()?->role;
+        $isStaff = in_array($role, [1, 2], true);
 
-        $isAdmin = $role === 1;
-
-        if (!$isAdmin) {
+        if (!$isStaff) {
             return abort(403, 'Unauthorized.');
-            // or: return redirect()->route('dashboard');
         }
 
         return $next($request);

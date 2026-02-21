@@ -30,7 +30,12 @@
         style="display: none;"
     >
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-sm font-bold text-gray-800">Upcoming Appointments</h3>
+            <h3 class="text-sm font-bold text-gray-800">Notifications</h3>
+            @if($unreadCount > 0)
+                <span class="text-[10px] font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                    {{ $unreadCount }} new
+                </span>
+            @endif
         </div>
 
         <div class="max-h-80 overflow-y-auto custom-scrollbar">
@@ -43,21 +48,45 @@
 
                             <div class="flex items-start gap-3">
                                 <div class="flex-shrink-0 mt-1">
-                                    <div class="p-1.5 bg-blue-100 rounded-full text-blue-600">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <div class="p-1.5 rounded-full
+                                        @if(($notification->kind ?? '') === 'pending') bg-amber-100 text-amber-700
+                                        @elseif(($notification->kind ?? '') === 'scheduled') bg-blue-100 text-blue-700
+                                        @elseif(($notification->kind ?? '') === 'status') bg-emerald-100 text-emerald-700
+                                        @else bg-slate-100 text-slate-600
+                                        @endif">
+                                        @if(($notification->kind ?? '') === 'pending')
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        @elseif(($notification->kind ?? '') === 'scheduled')
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        @elseif(($notification->kind ?? '') === 'status')
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        @else
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        @endif
                                     </div>
                                 </div>
 
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 truncate">
-                                        {{ $notification->title }}
-                                    </p>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <p class="text-sm font-semibold text-gray-900 truncate">
+                                            {{ $notification->title }}
+                                        </p>
+                                        @if(!empty($notification->meta))
+                                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-gray-200 text-gray-600 bg-white">
+                                                {{ $notification->meta }}
+                                            </span>
+                                        @endif
+                                    </div>
                                     <p class="text-sm text-gray-600 mt-0.5 line-clamp-2">
                                         {{ $notification->message }}
                                     </p>
-                                    <p class="text-xs text-gray-400 mt-1">
-                                        {{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}
-                                    </p>
+                                    <div class="flex items-center gap-2 text-xs text-gray-400 mt-1">
+                                        <span>{{ \Carbon\Carbon::parse($notification->created_at)->diffForHumans() }}</span>
+                                        @if(!empty($notification->status))
+                                            <span class="text-gray-300">•</span>
+                                            <span class="uppercase tracking-wider text-[10px] text-gray-500">{{ $notification->status }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -70,7 +99,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                         </svg>
                     </div>
-                    <p class="text-sm text-gray-500 font-medium">No upcoming appointments</p>
+                    <p class="text-sm text-gray-500 font-medium">No notifications</p>
                 </div>
             @endif
         </div>

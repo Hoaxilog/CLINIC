@@ -44,6 +44,10 @@
   src: url('../fonts/montserrat-v31-latin-700.woff2') format('woff2');
 }
 
+[x-cloak] {
+    display: none !important;
+}
+
 
 
 body {

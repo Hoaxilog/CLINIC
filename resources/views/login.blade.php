@@ -7,8 +7,10 @@
     <title>Tejadent - login or sign up</title>
     @vite('resources/css/app.css')
     
-    <!-- 1. ADD THIS SCRIPT FROM GOOGLE -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    @if(!empty($showCaptcha))
+        <!-- reCAPTCHA (shown after 3 failed attempts) -->
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    @endif
 </head>
 <body>
     <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -81,11 +83,12 @@
                     </div>
                 </div>
 
-                <!-- 2. RECAPTCHA WIDGET HERE (Before Sign In Button) -->
-                <!-- Replace 'your-site-key-here' with the actual key in your .env if preferred, or hardcode for dev -->
-                <div class="w-full max-w-xs mb-4 flex justify-center">
-                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
-                </div>
+                @if(!empty($showCaptcha))
+                    <!-- reCAPTCHA shown only after 3 failed attempts -->
+                    <div class="w-full max-w-xs mb-4 flex justify-center">
+                        <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+                    </div>
+                @endif
 
                 <!-- Manual Sign In Button -->
                 <button type="submit" class="w-full max-w-xs bg-[#0086DA] hover:bg-[#0073A8] text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-md">

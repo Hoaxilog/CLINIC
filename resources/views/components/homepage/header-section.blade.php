@@ -6,7 +6,6 @@
                     <a href="/" class="flex items-center space-x-2">
                         <div class="flex items-center gap-2">
                             <div class="relative w-15 h-15 rounded-full flex items-center justify-center">
-                                <!-- SVG logo here (copy from original) -->
                                 <svg width="56" height="45" viewBox="0 0 56 45" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <mask id="mask0_128_176" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0"

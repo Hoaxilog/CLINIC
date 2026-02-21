@@ -18,6 +18,7 @@ class PatientRecords extends Component
     public $sortOption = 'recent';
     public $selectedPatient;
     public $lastVisit;
+    public $viewMode = 'table';
 
     protected $paginationTheme = 'tailwind';
 
@@ -28,6 +29,17 @@ class PatientRecords extends Component
 
     public function selectPatient($patientId)
     {
+        if (Auth::check() && Auth::user()->role === 3) {
+            $patientId = DB::table('patients')
+                ->where('id', $patientId)
+                ->where('email_address', Auth::user()?->email)
+                ->value('id');
+
+            if (!$patientId) {
+                return;
+            }
+        }
+
         $this->selectedPatient = DB::table('patients')->where('id', $patientId)->first();
 
         $this->lastVisit = DB::table('appointments')
@@ -52,9 +64,19 @@ class PatientRecords extends Component
 
     }
 
+    public function setViewMode($mode)
+    {
+        $this->viewMode = $mode;
+    }
+
     protected function getPatientsQuery()
     {
         $query = DB::table('patients');
+
+        if (Auth::check() && Auth::user()->role === 3) {
+            $query->where('email_address', Auth::user()?->email);
+            return $query;
+        }
 
         if (!empty($this->search)) {
             $query->where('first_name', 'like', '%' . $this->search . '%')
@@ -95,6 +117,11 @@ class PatientRecords extends Component
 
     public function deletePatient($id)
     {
+        if (Auth::check() && Auth::user()->role === 3) {
+            session()->flash('error', 'You do not have permission to delete patient records.');
+            return;
+        }
+
         $patient = DB::table('patients')->where('id', $id)->first();
 
         if ($patient) {

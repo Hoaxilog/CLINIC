@@ -72,7 +72,8 @@ class TodaySchedule extends Component
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->whereDate('appointment_date', $today)
-            ->whereIn('status', ['Waiting', 'Arrived']) 
+            ->where('status', 'Waiting') 
+            ->orderBy('appointment_date', 'asc')
             ->orderBy('created_at', 'asc')
             ->select(
                 'appointments.*',
@@ -80,7 +81,7 @@ class TodaySchedule extends Component
                 'patients.last_name',
                 'services.service_name',
                 'services.duration',
-                DB::raw("CASE WHEN appointments.status = 'Arrived' THEN appointments.updated_at ELSE appointments.created_at END as waited_at")
+                DB::raw("appointments.updated_at as waited_at")
             )
             ->get();
 
@@ -115,6 +116,10 @@ class TodaySchedule extends Component
         $service = DB::table('services')->where('id', $this->selectedService)->first();
         
         if (!$appointment || !$service) return;
+        if ($appointment->status !== 'Waiting') {
+            session()->flash('error', 'Only Ready patients can be admitted.');
+            return;
+        }
 
         $startTime = Carbon::parse($appointment->appointment_date); 
         sscanf($service->duration, '%d:%d:%d', $h, $m, $s);
@@ -157,6 +162,85 @@ class TodaySchedule extends Component
             $this->closeAppointmentModal();
             $this->dispatch('editPatient', id: $appointment->patient_id, startStep: 3);
         }
+    }
+
+    public function callNextPatient()
+    {
+        if (Auth::user()?->role !== 1) {
+            session()->flash('error', 'Only dentists can call the next patient.');
+            return;
+        }
+
+        $today = Carbon::today();
+
+        $next = DB::table('appointments')
+            ->whereDate('appointment_date', $today)
+            ->where('status', 'Waiting')
+            ->orderBy('appointment_date', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        if (!$next) {
+            session()->flash('info', 'No Ready patients in queue.');
+            return;
+        }
+
+        $service = DB::table('services')->where('id', $next->service_id)->first();
+        if (!$service) {
+            session()->flash('error', 'Missing service for selected appointment.');
+            return;
+        }
+
+        $startTime = Carbon::parse($next->appointment_date);
+        sscanf($service->duration, '%d:%d:%d', $h, $m, $s);
+        $durationMinutes = ($h * 60) + $m;
+        $endTime = $startTime->copy()->addMinutes($durationMinutes);
+
+        $hasConflict = DB::table('appointments')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->where('appointments.id', '!=', $next->id)
+            ->whereNotIn('appointments.status', ['Cancelled', 'Waiting', 'Completed'])
+            ->whereDate('appointment_date', $startTime->toDateString())
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where('appointment_date', '<', $endTime)
+                      ->whereRaw("DATE_ADD(appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND) > ?", [$startTime]);
+            })
+            ->exists();
+
+        if ($hasConflict) {
+            session()->flash('error', 'Cannot call next: This slot is double-booked.');
+            return;
+        }
+
+        DB::table('appointments')->where('id', $next->id)->update([
+            'status' => 'Ongoing',
+            'dentist_id' => Auth::id(),
+            'updated_at' => now()
+        ]);
+
+        $subject = new Appointment();
+        $subject->id = $next->id;
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($subject)
+            ->event('appointment_admitted')
+            ->withProperties([
+                'old' => [
+                    'status' => $next->status ?? null,
+                    'service_id' => $next->service_id ?? null,
+                    'dentist_id' => $next->dentist_id ?? null,
+                ],
+                'attributes' => [
+                    'status' => 'Ongoing',
+                    'service_id' => $next->service_id,
+                    'dentist_id' => Auth::id(),
+                ],
+            ])
+            ->log('Admitted Appointment');
+
+        $this->loadDashboardData();
+        $this->viewAppointment($next->id);
     }
 
     public function viewAppointment($appointmentId)

@@ -14,7 +14,16 @@ class LoginController extends Controller
 {   
     // Show Login Page
     public function index() {   
-        return view("login"); // Recommended: Keep inside 'auth' folder
+        if (Auth::check()) {
+            $role = Auth::user()?->role;
+            if ($role === 3) {
+                return redirect()->route('patient.dashboard');
+            }
+            return redirect()->route('dashboard');
+        }
+        // Show captcha only after 3 failed attempts
+        $showCaptcha = session()->get('login_failed_attempts', 0) >= 3;
+        return view("login", compact('showCaptcha')); 
     }
 
     // Handle Login Logic
@@ -25,20 +34,27 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
-        // RECAPTCHA CHECK
-        $recaptchaToken = $request->input('g-recaptcha-response');
-        if (empty($recaptchaToken)) {
-             return back()->with('failed', 'Please complete the captcha below');
-        }
+        $failedAttempts = session()->get('login_failed_attempts', 0);
+        $showCaptcha = $failedAttempts >= 3;
 
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET_KEY'),
-            'response' => $recaptchaToken,
-            'remoteip' => $request->ip(),
-        ]);
+        // RECAPTCHA CHECK (only after 3 failed attempts)
+        if ($showCaptcha) {
+            $recaptchaToken = $request->input('g-recaptcha-response');
+            if (empty($recaptchaToken)) {
+                session()->put('login_failed_attempts', $failedAttempts + 1);
+                return back()->with('failed', 'Please complete the captcha below');
+            }
 
-        if (!$response->json()['success']) {
-            return back()->with('failed', 'CAPTCHA verification failed.');
+            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => env('RECAPTCHA_SECRET_KEY'),
+                'response' => $recaptchaToken,
+                'remoteip' => $request->ip(),
+            ]);
+
+            if (!$response->json()['success']) {
+                session()->put('login_failed_attempts', $failedAttempts + 1);
+                return back()->with('failed', 'CAPTCHA verification failed.');
+            }
         }
 
         // LOGIN ATTEMPT
@@ -49,6 +65,7 @@ class LoginController extends Controller
         
         
         if ($user && Hash::check($request->password, $user->password)) {
+            session()->forget('login_failed_attempts');
             
             // --- RELAXED VERIFICATION CHECK ---
             // Allow login even if unverified, but check status
@@ -63,15 +80,24 @@ class LoginController extends Controller
 
             Auth::loginUsingId($user->id);
             
-            if ($user->role === 1) {
-                return redirect()->intended('/dashboard');
-            } else {
-                // If unverified, FORCE dashboard so they see the warning.
-                // If verified, go to their intended page (e.g. appointment)
+            $role = $user->role;
+
+            if (in_array($role, [1, 2], true)) {
+                if ($role === 1) {
+                    return redirect()->intended('/dashboard');
+                }
                 return $isUnverified ? redirect('/dashboard') : redirect()->intended('/appointment');
             }
+
+            // Patients should only access booking (or their own dashboard when built)
+            if ($role === 3) {
+                return redirect()->intended('/patient/dashboard');
+            }
+
+            return redirect()->intended('/dashboard');
         }
 
+        session()->put('login_failed_attempts', $failedAttempts + 1);
         return back()->with('failed', 'Invalid username or password.');
     }
 
