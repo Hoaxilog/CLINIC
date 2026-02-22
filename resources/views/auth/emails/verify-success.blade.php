@@ -18,7 +18,7 @@
         <h2 class="text-3xl font-extrabold text-gray-800 mb-4">Verified!</h2>
         
         <p class="text-gray-600 mb-8 text-lg">
-            Welcome, <span class="font-bold text-gray-800">{{ session('name') ?? 'Patient' }}</span>! 
+            Welcome, <span class="font-bold text-gray-800">{{ session('verified_email') ?? 'your email' }}</span>!
             <br>
             Your email address has been successfully verified. You can now access your dashboard and book appointments.
         </p>

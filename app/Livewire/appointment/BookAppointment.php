@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class BookAppointment extends Component
 {
@@ -15,6 +17,7 @@ class BookAppointment extends Component
     public $first_name, $last_name, $age, $contact_number, $email, $service_id;
     public $selectedDate, $selectedSlot;
     public $recaptchaToken;
+    protected $usesPatientUserId = null;
     
     // UI data
     public $availableSlots = [];
@@ -26,8 +29,22 @@ class BookAppointment extends Component
             $this->email = $user->email;
 
             $patient = null;
-            if ($user->email) {
+            if ($this->patientsUsesUserId()) {
+                $patient = DB::table('patients')->where('user_id', $user->id)->first();
+            }
+
+            if (!$patient && $user->email) {
                 $patient = DB::table('patients')->where('email_address', $user->email)->first();
+
+                if ($patient && $this->patientsUsesUserId() && empty($patient->user_id)) {
+                    DB::table('patients')
+                        ->where('id', $patient->id)
+                        ->update([
+                            'user_id' => $user->id,
+                            'updated_at' => now(),
+                        ]);
+                    $patient->user_id = $user->id;
+                }
             }
 
             if ($patient) {
@@ -114,9 +131,28 @@ class BookAppointment extends Component
         $appointmentDateTime = Carbon::parse($this->selectedDate . ' ' . $this->selectedSlot)->toDateTimeString();
 
         $patient = null;
-        if (Auth::check() && Auth::user()?->email) {
-            $patient = DB::table('patients')->where('email_address', Auth::user()->email)->first();
+        if (Auth::check()) {
+            $user = Auth::user();
+
+            if ($this->patientsUsesUserId()) {
+                $patient = DB::table('patients')->where('user_id', $user->id)->first();
+            }
+
+            if (!$patient && $user?->email) {
+                $patient = DB::table('patients')->where('email_address', $user->email)->first();
+
+                if ($patient && $this->patientsUsesUserId() && empty($patient->user_id)) {
+                    DB::table('patients')
+                        ->where('id', $patient->id)
+                        ->update([
+                            'user_id' => $user->id,
+                            'updated_at' => now(),
+                        ]);
+                    $patient->user_id = $user->id;
+                }
+            }
         }
+
         if (!$patient && $this->email) {
             $patient = DB::table('patients')->where('email_address', $this->email)->first();
         }
@@ -129,6 +165,10 @@ class BookAppointment extends Component
             'modified_by' => Auth::check() ? Auth::user()->username : 'GUEST',
             'updated_at' => now(),
         ];
+
+        if (Auth::check() && $this->patientsUsesUserId()) {
+            $patientData['user_id'] = Auth::id();
+        }
 
         if ($patient) {
             DB::table('patients')->where('id', $patient->id)->update($patientData);
@@ -174,5 +214,20 @@ class BookAppointment extends Component
         // We render the form view and wrap it in your main layout
         return view('livewire.appointment.book-appointment', compact('services'))
             ->layout('layouts.app'); 
+    }
+
+    protected function patientsUsesUserId(): bool
+    {
+        if ($this->usesPatientUserId !== null) {
+            return $this->usesPatientUserId;
+        }
+
+        try {
+            $this->usesPatientUserId = Schema::hasColumn('patients', 'user_id');
+        } catch (Throwable $e) {
+            $this->usesPatientUserId = false;
+        }
+
+        return $this->usesPatientUserId;
     }
 }

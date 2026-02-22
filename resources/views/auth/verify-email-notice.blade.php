@@ -27,6 +27,13 @@
             Please check your inbox (and spam folder) and click the link to activate your account. You won't be able to log in until you verify.
         </p>
 
+        <p class="text-sm text-gray-600 mb-6">
+            Lost access to your email?
+            <a href="{{ route('account.recovery.request') }}" class="text-[#0086DA] font-semibold hover:underline">
+                Submit an account recovery request
+            </a>
+        </p>
+
         <div class="space-y-4">
             <a href="{{ route('login') }}" class="inline-block w-full bg-white border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition">
                 Return to Login

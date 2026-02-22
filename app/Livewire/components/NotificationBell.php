@@ -5,12 +5,15 @@ namespace App\Livewire\Components;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
+use Throwable;
 
 class NotificationBell extends Component
 {
     public $unreadCount = 0;
     public $notifications = [];
+    protected $usesPatientUserId = null;
 
     public function mount()
     {
@@ -129,8 +132,15 @@ class NotificationBell extends Component
         } else {
             // Patient/User notifications
         $patientIds = collect();
-        if ($user->email) {
-            $patientIds = DB::table('patients')->where('email_address', $user->email)->pluck('id');
+        if ($this->patientsUsesUserId()) {
+            $patientIds = DB::table('patients')
+                ->where('user_id', $user->id)
+                ->pluck('id');
+        }
+        if ($patientIds->isEmpty() && $user->email) {
+            $patientIds = DB::table('patients')
+                ->where('email_address', $user->email)
+                ->pluck('id');
         }
 
             if ($patientIds->isNotEmpty()) {
@@ -221,5 +231,20 @@ class NotificationBell extends Component
     public function render()
     {
         return view('livewire.components.notification-bell');
+    }
+
+    protected function patientsUsesUserId(): bool
+    {
+        if ($this->usesPatientUserId !== null) {
+            return $this->usesPatientUserId;
+        }
+
+        try {
+            $this->usesPatientUserId = Schema::hasColumn('patients', 'user_id');
+        } catch (Throwable $e) {
+            $this->usesPatientUserId = false;
+        }
+
+        return $this->usesPatientUserId;
     }
 }

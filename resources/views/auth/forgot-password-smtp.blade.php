@@ -37,6 +37,11 @@
             </div>
             <button type="submit" class="w-full bg-[#0086DA] text-white font-bold py-3 rounded-lg hover:bg-[#0073A8] transition shadow-md">Send Reset Link</button>
         </form>
+        <div class="mt-4 text-center">
+            <a href="{{ route('account.recovery.request') }}" class="text-sm text-[#0086DA] hover:underline font-semibold">
+                Lost access to this email?
+            </a>
+        </div>
         <div class="mt-6 text-center">
             <a href="{{ route('login') }}" class="text-sm text-gray-500 hover:text-[#0086DA] font-semibold">Back to Login</a>
         </div>

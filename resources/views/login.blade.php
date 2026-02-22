@@ -80,6 +80,11 @@
                                 Forgot Password?
                             </a>
                         </div>
+                        <div class="flex justify-end mt-1">
+                            <a href="{{ route('account.recovery.request') }}" class="text-sm text-[#0086DA] hover:underline">
+                                Lost access to email?
+                            </a>
+                        </div>
                     </div>
                 </div>
 

@@ -140,6 +140,13 @@
                                             </td>
                                             <td class="px-5 py-4 text-xs">
                                                 {{ $patient->email_address ?? 'N/A' }}
+                                                @if (!$isPatientUser && !empty($patient->pending_recovery_request_id))
+                                                    <div class="mt-1">
+                                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                                                            Pending Recovery
+                                                        </span>
+                                                    </div>
+                                                @endif
                                             </td>
                                             <td class="px-5 py-4 text-xs truncate max-w-[240px]" title="{{ $patient->home_address ?? 'N/A' }}">
                                                 {{ $patient->home_address ?? 'N/A' }}
@@ -167,6 +174,20 @@
                                                             onclick="event.stopPropagation();">
                                                             View Full Record
                                                         </button>
+                                                        @if (!$isPatientUser)
+                                                            @if (!empty($patient->pending_recovery_request_id))
+                                                                <a href="{{ route('recovery.index', ['focus' => $patient->pending_recovery_request_id]) }}"
+                                                                    class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
+                                                                    View Recovery Request
+                                                                </a>
+                                                            @endif
+                                                            <button type="button"
+                                                                class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                                                                wire:click="openLinkEmailModal({{ $patient->id }})"
+                                                                onclick="event.stopPropagation();">
+                                                                Link New Email
+                                                            </button>
+                                                        @endif
                                                         @if (!$isPatientUser)
                                                             <button type="button" data-confirm-action="deletePatient"
                                                                 data-confirm-args='[{{ $patient->id }}]'
@@ -319,6 +340,70 @@
                     }
                 }, 3000);
             </script>
+        </div>
+    @endif
+
+    @if ($linkEmailModalOpen)
+        <div class="fixed inset-0 z-[70] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50" wire:click="closeLinkEmailModal"></div>
+            <div class="relative z-[71] w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+                <h3 class="text-xl font-semibold text-gray-800">Link New Email</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                    Patient: <span class="font-semibold">{{ $linkEmailPatientLabel ?: 'N/A' }}</span>
+                </p>
+                <p class="text-sm text-gray-500">
+                    Current email: {{ $linkEmailOldEmail ?: 'N/A' }}
+                </p>
+
+                <form wire:submit.prevent="linkPatientEmail" class="mt-4 space-y-4">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-gray-700">New Email Address</label>
+                        <input type="email" wire:model.defer="newLinkedEmail"
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0086da] focus:outline-none">
+                        @error('newLinkedEmail')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-gray-700">Account Identifier (Optional)</label>
+                        <input type="text" wire:model.defer="linkAccountIdentifier"
+                            placeholder="Username or current email"
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0086da] focus:outline-none">
+                        @error('linkAccountIdentifier')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" wire:model="confirmInPerson">
+                            In-person identity verified by staff
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" wire:model="confirmRecordMatch">
+                            Patient details match clinic records
+                        </label>
+                        @error('confirmInPerson')
+                            <p class="text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('confirmRecordMatch')
+                            <p class="text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" wire:click="closeLinkEmailModal"
+                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="rounded-lg bg-[#0086da] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0073a8]">
+                            Save & Send Verification
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     @endif
 

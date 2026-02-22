@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class PatientDashboardController extends Controller
 {
@@ -13,8 +15,31 @@ class PatientDashboardController extends Controller
         $user = Auth::user();
         $patient = null;
 
-        if ($user?->email) {
-            $patient = DB::table('patients')->where('email_address', $user->email)->first();
+        if ($user) {
+            $usesUserId = false;
+            try {
+                $usesUserId = Schema::hasColumn('patients', 'user_id');
+            } catch (Throwable $e) {
+                $usesUserId = false;
+            }
+
+            if ($usesUserId) {
+                $patient = DB::table('patients')->where('user_id', $user->id)->first();
+            }
+
+            if (!$patient && $user->email) {
+                $patient = DB::table('patients')->where('email_address', $user->email)->first();
+
+                if ($patient && $usesUserId && empty($patient->user_id)) {
+                    DB::table('patients')
+                        ->where('id', $patient->id)
+                        ->update([
+                            'user_id' => $user->id,
+                            'updated_at' => now(),
+                        ]);
+                    $patient->user_id = $user->id;
+                }
+            }
         }
 
         if (!$patient) {

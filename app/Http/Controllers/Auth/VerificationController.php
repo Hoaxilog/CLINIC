@@ -41,8 +41,8 @@ class VerificationController extends Controller
             ]);
 
         // 4. NO AUTO-LOGIN. Redirect to Success Page instead.
-        // We pass the name so we can personalize the success message.
-        return redirect()->route('verification.success')->with('first_name', $user->first_name);
+        // Flash verified email for success page display.
+        return redirect()->route('verification.success')->with('verified_email', $user->email ?? 'your email');
     }
 
     /**
@@ -69,8 +69,8 @@ class VerificationController extends Controller
             ->where('email', $request->email)
             ->update(['verification_token' => $newToken, 'updated_at' => now()]);
 
-        \Illuminate\Support\Facades\Mail::send('auth.emails.verify-email', 
-            ['token' => $newToken, 'id' => $user->id, 'name' => $user->name], 
+        \Illuminate\Support\Facades\Mail::send('auth.emails.verify-email',
+            ['token' => $newToken, 'id' => $user->id, 'name' => 'Patient'],
             function($message) use($request) {
                 $message->to($request->email);
                 $message->subject('Verify Your Email Address - Tejadent');
@@ -80,3 +80,5 @@ class VerificationController extends Controller
         return back()->with('success', 'A fresh verification link has been sent.');
     }
 }
+
+
