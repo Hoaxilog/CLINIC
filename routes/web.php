@@ -4,7 +4,6 @@ use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PatientDashboardController;
@@ -100,7 +99,6 @@ Route::middleware(['auth', 'isPatient'])->group(function () {
 
 // Admin-only routes
 Route::middleware(['auth', 'isAdmin'])->group(function () {
-    Route::get('/admin/backup-database', [BackupController::class, 'downloadBackup'])->name('admin.db.backup');
 
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users.index');

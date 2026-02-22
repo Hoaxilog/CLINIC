@@ -14,51 +14,98 @@
 
 </head>
 <body class="tracking-wide">
+    @php
+        $isPatient = auth()->check() && auth()->user()->role === 3;
+    @endphp
+
+    @if ($isPatient)
+    <header class="border-b border-slate-200 bg-white">
+        <div class="px-4 sm:px-6 py-3">
+            <div class="flex items-center gap-2">
+                <h2 class="text-base sm:text-lg font-bold text-slate-900 whitespace-nowrap shrink-0">Tejada Dent</h2>
+
+                <div class="flex-1 min-w-0 px-1">
+                    <nav class="flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 overflow-x-auto whitespace-nowrap">
+                        <a href="{{ route('patient.dashboard') }}" class="whitespace-nowrap rounded-md px-3 sm:px-4 py-1.5 text-sm font-semibold transition-colors {{ request()->routeIs('patient.dashboard') ? 'bg-[#0086DA] text-white' : 'text-slate-600 hover:bg-white' }}">
+                            Dashboard
+                        </a>
+                        <a href="{{ route('book') }}" class="whitespace-nowrap rounded-md px-3 sm:px-4 py-1.5 text-sm font-semibold transition-colors {{ request()->routeIs('book') ? 'bg-[#0086DA] text-white' : 'text-slate-600 hover:bg-white' }}">
+                            Book Visit
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 shrink-0">
+                    @livewire('components.notification-bell')
+                    <details class="relative">
+                        <summary class="list-none cursor-pointer inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="10" r="3"/>
+                                <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+                            </svg>
+                        </summary>
+                        <div class="absolute right-0 mt-2 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-md z-50">
+                            <a href="{{ route('profile.index') }}" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+                                Profile
+                            </a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full text-left rounded-md px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </header>
+    @else
     <header class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-50">
-    <div class="flex items-center">
-        <button id="toggleBtn" class="p-2 hover:bg-gray-100 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M2 12C2 8.31087 2 6.4663 2.81382 5.15877C3.1149 4.67502 3.48891 4.25427 3.91891 3.91554C5.08116 3 6.72077 3 10 3H14C17.2792 3 18.9188 3 20.0811 3.91554C20.5111 4.25427 20.8851 4.67502 21.1862 5.15877C22 6.4663 22 8.31087 22 12C22 15.6891 22 17.5337 21.1862 18.8412C20.8851 19.325 20.5111 19.7457 20.0811 20.0845C18.9188 21 17.2792 21 14 21H10C6.72077 21 5.08116 21 3.91891 20.0845C3.48891 19.7457 3.1149 19.325 2.81382 18.8412C2 17.5337 2 15.6891 2 12Z" />
-                <path d="M9.5 3L9.5 21" />
-                <path d="M5 7H6M5 10H6" />
-            </svg>        
-        </button>
-        <h2 class="ml-4 text-lg font-semibold text-gray-900">Tejada Dent</h2>
-    </div>
-
-    <div class="flex items-center gap-3 ">
-        @livewire('components.notification-bell')
-        
-        <a href="{{ route('profile.index') }}" 
-        class="{{ request()->routeIs('profile.index') ? 'bg-gray-100' : '' }} 
-                flex items-center gap-2 px-2 py-1 hover:bg-gray-100 rounded-lg transition-all duration-300 group">
-            
-            <div class="flex-shrink-0 text-gray-400 group-hover:text-[#0086DA] transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-icon">
-                    <circle cx="12" cy="12" r="10"/>
-                    <circle cx="12" cy="10" r="3"/>
-                    <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+        <div class="flex items-center">
+            <button id="toggleBtn" class="p-2 hover:bg-gray-100 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M2 12C2 8.31087 2 6.4663 2.81382 5.15877C3.1149 4.67502 3.48891 4.25427 3.91891 3.91554C5.08116 3 6.72077 3 10 3H14C17.2792 3 18.9188 3 20.0811 3.91554C20.5111 4.25427 20.8851 4.67502 21.1862 5.15877C22 6.4663 22 8.31087 22 12C22 15.6891 22 17.5337 21.1862 18.8412C20.8851 19.325 20.5111 19.7457 20.0811 20.0845C18.9188 21 17.2792 21 14 21H10C6.72077 21 5.08116 21 3.91891 20.0845C3.48891 19.7457 3.1149 19.325 2.81382 18.8412C2 17.5337 2 15.6891 2 12Z" />
+                    <path d="M9.5 3L9.5 21" />
+                    <path d="M5 7H6M5 10H6" />
                 </svg>
-            </div>
+            </button>
+            <h2 class="ml-4 text-lg font-semibold text-gray-900">Tejada Dent</h2>
+        </div>
+        <div class="flex items-center gap-3 ">
+            @livewire('components.notification-bell')
+            <a href="{{ route('profile.index') }}"
+            class="{{ request()->routeIs('profile.index') ? 'bg-gray-100' : '' }} 
+                    flex items-center gap-2 px-2 py-1 hover:bg-gray-100 rounded-lg transition-all duration-300 group">
+                <div class="flex-shrink-0 text-gray-400 group-hover:text-[#0086DA] transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-icon">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="10" r="3"/>
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+                    </svg>
+                </div>
+                <div class="hidden md:flex flex-col items-start">
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-[#0086DA] leading-tight">
+                        {{ auth()->user()->username }}
+                    </span>
+                    <span class="text-[10px] text-gray-500 leading-tight">
+                        {{ auth()->user()->role == 1 ? 'Admin' : (auth()->user()->role == 2 ? 'Staff' : 'Patient') }}
+                    </span>
+                </div>
+            </a>
+        </div>
+    </header>
+    @endif
 
-            <div class="hidden md:flex flex-col items-start">
-                <span class="text-sm font-medium text-gray-700 group-hover:text-[#0086DA] leading-tight">
-                    {{ auth()->user()->username }}
-                </span>
-                <span class="text-[10px] text-gray-500 leading-tight">
-                    {{ auth()->user()->role == 1 ? 'Admin' : (auth()->user()->role == 2 ? 'Staff' : 'Patient') }}
-                </span>
-            </div>
-        </a>
-
-    </div>
-</header>
-
-    
+    @if (!$isPatient)
     <aside id="sidebar" class=" peer sidebar bg-white border-r border-gray-200 fixed left-0 top-12 bottom-0 overflow-hidden transition-all duration-300 w-64 flex flex-col [&.collapsed]:w-16 group">
         <nav class="w-full h-full flex flex-col py-10">
             <ul class="space-y-3 w-full h-full">
                 @if (auth()->user()->role === 3)
+                    <li class="px-3 pb-1 nav-text text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 transition-all duration-300 group-[.collapsed]:opacity-0">
+                        Care
+                    </li>
                     <li>
                         <a href="{{ route('patient.dashboard') }}"
                             class="{{ request()->routeIs('patient.dashboard') ? 'active' : '' }}
@@ -67,19 +114,14 @@
                                 text-gray-700 hover:bg-gray-100
                                 [&.active]:bg-[#0086DA] [&.active]:text-white
                                 group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
-
                             <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
-                                    <path d="M10.5 8.75V6.75C10.5 5.10626 10.5 4.28439 10.046 3.73121C9.96291 3.62995 9.87005 3.53709 9.76879 3.45398C9.21561 3 8.39374 3 6.75 3C5.10626 3 4.28439 3 3.73121 3.45398C3.62995 3.53709 3.53709 3.62995 3.45398 3.73121C3 4.28439 3 5.10626 3 6.75V8.75C3 10.3937 3 11.2156 3.45398 11.7688C3.53709 11.8701 3.62995 11.9629 3.73121 12.046C4.28439 12.5 5.10626 12.5 6.75 12.5C8.39374 12.5 9.21561 12.5 9.76879 12.046C9.87005 11.9629 9.96291 11.8701 10.046 11.7688C10.5 11.2156 10.5 10.3937 10.5 8.75Z" />
-                                    <path d="M7.75 15.5H5.75C5.05222 15.5 4.70333 15.5 4.41943 15.5861C3.78023 15.78 3.28002 16.2802 3.08612 16.9194C3 17.2033 3 17.5522 3 18.25C3 18.9478 3 19.2967 3.08612 19.5806C3.28002 20.2198 3.78023 20.72 4.41943 20.9139C4.70333 21 5.05222 21 5.75 21H7.75C8.44778 21 8.79667 21 9.08057 20.9139C9.71977 20.72 10.22 20.2198 10.4139 19.5806C10.5 19.2967 10.5 18.9478 10.5 18.25C10.5 17.5522 10.5 17.2033 10.4139 16.9194C10.22 16.2802 9.71977 15.78 9.08057 15.5861C8.79667 15.5 8.44778 15.5 7.75 15.5Z" />
-                                    <path d="M21 17.25V15.25C21 13.6063 21 12.7844 20.546 12.2312C20.4629 12.1299 20.3701 12.0371 20.2688 11.954C19.7156 11.5 18.8937 11.5 17.25 11.5C15.6063 11.5 14.7844 11.5 14.2312 11.954C14.1299 12.0371 14.0371 12.1299 13.954 12.2312C13.5 12.7844 13.5 13.6063 13.5 15.25V17.25C13.5 18.8937 13.5 19.7156 13.954 20.2688C14.0371 20.3701 14.1299 20.4629 14.2312 20.546C14.7844 21 15.6063 21 17.25 21C18.8937 21 19.7156 21 20.2688 20.546C20.3701 20.4629 20.4629 20.3701 20.546 20.2688C21 19.7156 21 18.8937 21 17.25Z" />
-                                    <path d="M18.25 3H16.25C15.5522 3 15.2033 3 14.9194 3.08612C14.2802 3.28002 13.78 3.78023 13.5861 4.41943C13.5 4.70333 13.5 5.05222 13.5 5.75C13.5 6.44778 13.5 6.79667 13.5861 7.08057C13.78 7.71977 14.2802 8.21998 14.9194 8.41388C15.2033 8.5 15.5522 8.5 16.25 8.5H18.25C18.9478 8.5 19.2967 8.5 19.5806 8.41388C20.2198 8.21998 20.72 7.71977 20.9139 7.08057C21 6.79667 21 6.44778 21 5.75C21 5.05222 21 4.70333 20.9139 4.41943C20.72 3.78023 20.2198 3.28002 19.5806 3.08612C19.2967 3 18.9478 3 18.25 3Z" />
+                                    <path d="M3 10.5C3 6.52166 6.13401 3.25 10 3.25C13.866 3.25 17 6.52166 17 10.5C17 14.4783 13.866 17.75 10 17.75C6.13401 17.75 3 14.4783 3 10.5Z" />
+                                    <path d="M14 14.5L20 20.5" />
                                 </svg>
                             </span>
-
-                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden
-                                transition-all duration-300
-                                group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">My Dashboard
+                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                                My Dashboard
                             </span>
                         </a>
                     </li>
@@ -99,7 +141,28 @@
                                     <path d="M9 16.5C9 16.5 10.5 17 11 18.5C11 18.5 13.1765 14.5 16 13.5" />
                                 </svg>
                             </span>
-                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Book Appointment</span>
+                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                                Book Visit
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('profile.index') }}"
+                            class="{{ request()->routeIs('profile.index') ? 'active' : '' }}
+                                nav-item flex items-center gap-5 px-3 py-2 relative w-full
+                                transition-all duration-300
+                                text-gray-700 hover:bg-gray-100
+                                [&.active]:bg-[#0086DA] [&.active]:text-white
+                                group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
+                            <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21C20 18.7909 18.2091 17 16 17H8C5.79086 17 4 18.7909 4 21" />
+                                    <circle cx="12" cy="9" r="4" />
+                                </svg>
+                            </span>
+                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                                My Profile
+                            </span>
                         </a>
                     </li>
                 @else
@@ -287,6 +350,7 @@
 
         </nav>
     </aside>
+    @endif
 
     @yield("content")
 
@@ -313,3 +377,6 @@
     @livewireScripts
 </body>
 </html>
+
+
+
