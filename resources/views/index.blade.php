@@ -218,14 +218,8 @@
                                 text-gray-700 hover:bg-gray-100
                                 [&.active]:bg-[#0086DA] [&.active]:text-white
                                 group-[.collapsed]:px-5 group-[.collapsed]:gap-0">
-                            <span class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 7H21" />
-                                    <path d="M3 12H21" />
-                                    <path d="M3 17H21" />
-                                </svg>
-                            </span>
-                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Queue</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy-icon lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">Lobby Flow</span>
                         </a>
                     </li>
                 @endif

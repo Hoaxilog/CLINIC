@@ -204,16 +204,16 @@ class BookAppointment extends Component
             // Do not block booking if email fails
         }
 
-        session()->flash('success', 'Appointment requested!');
+        session()->flash('success', 'Appointment requested! Please check your email for the details of your appointment.');
         return redirect()->to('/book');
     }
 
     public function render()
     {
         $services = DB::table('services')->get();
-        // We render the form view and wrap it in your main layout
+        $layout = (Auth::check() && Auth::user()?->role === 3) ? 'layouts.patient-portal' : 'layouts.app';
         return view('livewire.appointment.book-appointment', compact('services'))
-            ->layout('layouts.app'); 
+            ->layout($layout);
     }
 
     protected function patientsUsesUserId(): bool

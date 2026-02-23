@@ -20,6 +20,9 @@ class StaffOrDentistMiddleware
         $isStaff = in_array($role, [1, 2], true);
 
         if (!$isStaff) {
+            if ($role === 3) {
+                return redirect()->route('patient.dashboard');
+            }
             return abort(403, 'Unauthorized.');
         }
 

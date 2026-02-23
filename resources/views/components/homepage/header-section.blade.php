@@ -31,15 +31,47 @@
                     </a>
                 </div>
                 <div class="hidden md:flex items-center space-x-10">
-                    <a href="/home#about" class="text-sm font-bold text-black hover:underline underline-offset-4">About</a>
-                    <a href="/home#services"
-                        class="text-sm font-bold text-black hover:underline underline-offset-4">Services</a>
-                    <a href="/home#contact"
-                        class="text-sm font-bold text-black hover:underline underline-offset-4">Contact</a>
+                    @if (auth()->check() && auth()->user()->role === 3)
+                        <a href="{{ route('patient.dashboard') }}"
+                            class="text-sm font-bold text-black hover:underline underline-offset-4">Dashboard</a>
+                        <a href="{{ route('book') }}"
+                            class="text-sm font-bold text-black hover:underline underline-offset-4">Book</a>
+                        <a href="{{ route('profile.index') }}"
+                            class="text-sm font-bold text-black hover:underline underline-offset-4">Profile</a>
+                    @else
+                        <a href="/home#about"
+                            class="text-sm font-bold text-black hover:underline underline-offset-4">About</a>
+                        <a href="/home#services"
+                            class="text-sm font-bold text-black hover:underline underline-offset-4">Services</a>
+                        <a href="/home#contact"
+                            class="text-sm font-bold text-black hover:underline underline-offset-4">Contact</a>
+                    @endif
                 </div>
                 <div class="flex items-center gap-5">
-                    <a href="/login"
-                        class="hidden md:flex md:items-center md:gap-2 md:block px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da]  hover:text-white hover:bg-[#0789da] transition-all">
+                    @if (auth()->check() && auth()->user()->role === 3)
+                        <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
+                            @csrf
+                            <button type="submit"
+                                class="px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da] hover:text-white hover:bg-[#0789da] transition-all">
+                                Logout
+                            </button>
+                        </form>
+                        <a href="{{ route('book') }}"
+                            class="hidden md:flex md:items-center md:gap-2 md:block px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-black text-white hover:scale-105 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+                                color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 2V6M8 2V6" />
+                                <path
+                                    d="M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4Z" />
+                                <path d="M3 10H21" />
+                                <path d="M11.9955 14H12.0045M11.9955 18H12.0045M15.991 14H16M8 14H8.00897M8 18H8.00897" />
+                            </svg>
+                            Book Now
+                        </a>
+                    @else
+                        <a href="/login"
+                            class="hidden md:flex md:items-center md:gap-2 md:block px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da]  hover:text-white hover:bg-[#0789da] transition-all">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"
                             color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -52,8 +84,8 @@
                         </svg>
                         LOGIN
                     </a>
-                    <a href="/book"
-                        class="hidden md:flex md:items-center md:gap-2 md:block px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-blac text-white  hover:scale-105 transition-all">
+                        <a href="/book"
+                            class="hidden md:flex md:items-center md:gap-2 md:block px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-blac text-white  hover:scale-105 transition-all">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
                             color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -63,8 +95,9 @@
                             <path d="M3 10H21" />
                             <path d="M11.9955 14H12.0045M11.9955 18H12.0045M15.991 14H16M8 14H8.00897M8 18H8.00897" />
                         </svg>
-                        Book Now
-                    </a>
+                            Book Now
+                        </a>
+                    @endif
                     <button id="menu-btn"
                         class="md:hidden p-2 border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                         aria-controls="mobile-menu" aria-expanded="false" aria-label="Toggle menu">
@@ -91,17 +124,36 @@
                     </button>
                 </div>
                 <div class="px-4 py-6 space-y-4">
-                    <a href="/#about"
-                        class="block text-sm font-bold text-black hover:underline underline-offset-4">About</a>
-                    <a href="/#services"
-                        class="block text-sm font-bold text-black hover:underline underline-offset-4">Services</a>
-                    <a href="/#contact"
-                        class="block text-sm font-bold text-black hover:underline underline-offset-4">Contact</a>
-                    <a href="/login"
-                        class="block w-full text-center px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da] hover:text-white hover:bg-[#0789da] transition-all">Login</a>
-                    <a href="/book"
-                        class="block w-full text-center px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-black text-white hover:scale-105 transition-all">Book
-                        Now</a>
+                    @if (auth()->check() && auth()->user()->role === 3)
+                        <a href="{{ route('patient.dashboard') }}"
+                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Dashboard</a>
+                        <a href="{{ route('book') }}"
+                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Book</a>
+                        <a href="{{ route('profile.index') }}"
+                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Profile</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="block w-full text-center px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da] hover:text-white hover:bg-[#0789da] transition-all">
+                                Logout
+                            </button>
+                        </form>
+                        <a href="{{ route('book') }}"
+                            class="block w-full text-center px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-black text-white hover:scale-105 transition-all">Book
+                            Now</a>
+                    @else
+                        <a href="/#about"
+                            class="block text-sm font-bold text-black hover:underline underline-offset-4">About</a>
+                        <a href="/#services"
+                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Services</a>
+                        <a href="/#contact"
+                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Contact</a>
+                        <a href="/login"
+                            class="block w-full text-center px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da] hover:text-white hover:bg-[#0789da] transition-all">Login</a>
+                        <a href="/book"
+                            class="block w-full text-center px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-black text-white hover:scale-105 transition-all">Book
+                            Now</a>
+                    @endif
                 </div>
             </div>
         </div>

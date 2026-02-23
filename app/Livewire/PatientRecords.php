@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
@@ -22,7 +23,9 @@ class PatientRecords extends Component
     public $sortOption = 'recent';
     public $selectedPatient;
     public $lastVisit;
-    public $viewMode = 'table';
+    public $viewMode = 'cards';
+    public $showProfile = false;
+    public $treatmentRecords = [];
     public $linkEmailModalOpen = false;
     public $linkEmailPatientId = null;
     public $linkEmailPatientLabel = '';
@@ -88,6 +91,43 @@ class PatientRecords extends Component
                             ->where('status', 'Completed')
                             ->orderBy('appointment_date', 'desc')
                             ->first();
+
+        $this->treatmentRecords = DB::table('treatment_records')
+            ->where('patient_id', $patientId)
+            ->orderBy('created_at', 'desc')
+            ->limit(6)
+            ->get();
+
+        $latestStatus = DB::table('appointments')
+            ->where('patient_id', $patientId)
+            ->orderBy('appointment_date', 'desc')
+            ->value('status');
+
+        $lastAppointmentAt = DB::table('appointments')
+            ->where('patient_id', $patientId)
+            ->orderBy('appointment_date', 'desc')
+            ->value('appointment_date');
+
+        $activeCutoff = Carbon::now()->subYears(2);
+
+        if ($this->selectedPatient) {
+            $this->selectedPatient->last_completed_at = $this->lastVisit?->appointment_date;
+            $this->selectedPatient->latest_status = $latestStatus;
+            $this->selectedPatient->patient_type = $lastAppointmentAt && Carbon::parse($lastAppointmentAt)->gte($activeCutoff)
+                ? 'Active'
+                : 'Inactive';
+        }
+    }
+
+    public function openProfile($patientId)
+    {
+        $this->selectPatient($patientId);
+        $this->showProfile = true;
+    }
+
+    public function backToList()
+    {
+        $this->showProfile = false;
     }
 
     public function updatedSearch()
@@ -361,6 +401,42 @@ class PatientRecords extends Component
     {
         $patients = $this->getPatientsQuery()->paginate(10);
         $recoveryMap = $this->buildPendingRecoveryMap($patients->getCollection());
+        $patientIds = $patients->getCollection()->pluck('id')->filter()->values();
+
+        $lastCompletedMap = collect();
+        $latestStatusMap = collect();
+        $lastAppointmentMap = collect();
+
+        if ($patientIds->isNotEmpty()) {
+            $lastCompletedMap = DB::table('appointments')
+                ->select('patient_id', DB::raw('MAX(appointment_date) as last_completed_at'))
+                ->whereIn('patient_id', $patientIds->all())
+                ->where('status', 'Completed')
+                ->groupBy('patient_id')
+                ->get()
+                ->keyBy('patient_id');
+
+            $latestSub = DB::table('appointments')
+                ->select('patient_id', DB::raw('MAX(appointment_date) as last_appointment_at'))
+                ->whereIn('patient_id', $patientIds->all())
+                ->groupBy('patient_id');
+
+            $lastAppointmentMap = (clone $latestSub)
+                ->get()
+                ->keyBy('patient_id');
+
+            $latestStatusMap = DB::table('appointments as a')
+                ->joinSub($latestSub, 'latest', function ($join) {
+                    $join->on('a.patient_id', '=', 'latest.patient_id')
+                        ->on('a.appointment_date', '=', 'latest.last_appointment_at');
+                })
+                ->select('a.patient_id', 'a.status')
+                ->get()
+                ->groupBy('patient_id')
+                ->map(function ($rows) {
+                    return $rows->first()->status ?? null;
+                });
+        }
 
         $patients->setCollection(
             $patients->getCollection()->map(function ($patient) use ($recoveryMap) {
@@ -379,6 +455,20 @@ class PatientRecords extends Component
 
                 $patient->pending_recovery_request_id = $pending['id'] ?? null;
                 $patient->pending_recovery_requested_at = $pending['created_at'] ?? null;
+                return $patient;
+            })
+        );
+
+        $patients->setCollection(
+            $patients->getCollection()->map(function ($patient) use ($lastCompletedMap, $latestStatusMap, $lastAppointmentMap) {
+                $activeCutoff = Carbon::now()->subYears(2);
+                $patient->last_completed_at = $lastCompletedMap[$patient->id]->last_completed_at ?? null;
+                $latestStatus = $latestStatusMap[$patient->id] ?? null;
+                $patient->latest_status = $latestStatus;
+                $lastAppointmentAt = $lastAppointmentMap[$patient->id]->last_appointment_at ?? null;
+                $patient->patient_type = $lastAppointmentAt && Carbon::parse($lastAppointmentAt)->gte($activeCutoff)
+                    ? 'Active'
+                    : 'Inactive';
                 return $patient;
             })
         );

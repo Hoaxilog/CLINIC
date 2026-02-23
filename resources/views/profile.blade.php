@@ -179,7 +179,7 @@
                             </div>
                             <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200">
                                 <span class="text-xs text-slate-500">Contact</span>
-                                <span class="text-sm font-semibold text-slate-900">{{ $user->contact ?? 'N/A' }}</span>
+                                <span class="text-sm font-semibold text-slate-900">{{ data_get($user, 'contact') ?? 'N/A' }}</span>
                             </div>
                             <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200">
                                 <span class="text-xs text-slate-500">Position</span>

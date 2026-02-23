@@ -23,8 +23,10 @@ class IsAdminMiddleware
         $isAdmin = $role === 1;
 
         if (!$isAdmin) {
-            return abort(403, 'Unauthorized.');
-            // or: return redirect()->route('dashboard');
+            if ($role === 3) {
+                return redirect()->route('patient.dashboard');
+            }
+            return redirect()->route('dashboard');
         }
 
         return $next($request);

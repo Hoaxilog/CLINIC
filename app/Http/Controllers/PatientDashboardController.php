@@ -47,6 +47,7 @@ class PatientDashboardController extends Controller
                 'patient' => null,
                 'upcomingAppointment' => null,
                 'appointmentHistory' => collect(),
+                'appointmentRequests' => collect(),
                 'treatmentRecords' => collect(),
             ]);
         }
@@ -76,6 +77,19 @@ class PatientDashboardController extends Controller
             )
             ->get();
 
+        $appointmentRequests = DB::table('appointments')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->where('appointments.patient_id', $patient->id)
+            ->whereIn('appointments.status', ['Pending', 'Waiting', 'Ongoing', 'Scheduled'])
+            ->orderBy('appointments.appointment_date', 'desc')
+            ->limit(6)
+            ->select(
+                'appointments.appointment_date',
+                'appointments.status',
+                'services.service_name'
+            )
+            ->get();
+
         $treatmentRecords = DB::table('treatment_records')
             ->where('patient_id', $patient->id)
             ->orderBy('updated_at', 'desc')
@@ -92,6 +106,7 @@ class PatientDashboardController extends Controller
             'patient' => $patient,
             'upcomingAppointment' => $upcomingAppointment,
             'appointmentHistory' => $appointmentHistory,
+            'appointmentRequests' => $appointmentRequests,
             'treatmentRecords' => $treatmentRecords,
         ]);
     }

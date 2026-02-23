@@ -45,6 +45,8 @@ class AppointmentCalendar extends Component
     public $selectedMonthYear; // stores "YYYY-MM" format
     public $selectableMonthYears = [];
     public $activeTab = 'calendar';
+    public $prefillPatientId = null;
+    public $prefillPatientLabel = null;
 
     protected $rules = [
         'firstName' => 'required|string|max:100',
@@ -69,6 +71,17 @@ class AppointmentCalendar extends Component
         $this->generateTimeSlots();
         $this->loadAppointments();
         $this->servicesList = DB::table('services')->get();
+
+        $prefillId = request()->query('patient_id');
+        if (!empty($prefillId)) {
+            $patient = DB::table('patients')->find($prefillId);
+            if ($patient) {
+                $this->prefillPatientId = (int) $prefillId;
+                $this->prefillPatientLabel = trim(
+                    ($patient->first_name ?? '') . ' ' . ($patient->last_name ?? '')
+                );
+            }
+        }
     }
 
     public function generateWeekDates()
@@ -203,6 +216,10 @@ class AppointmentCalendar extends Component
         $this->appointmentDate = $date;   // NEW: Use this in modal
         $this->selectedTime = $time;
         $this->showAppointmentModal = true;
+
+        if ($this->prefillPatientId) {
+            $this->selectPatient($this->prefillPatientId);
+        }
     }
 
     public function closeAppointmentModal()
@@ -722,6 +739,12 @@ class AppointmentCalendar extends Component
         $this->generateWeekDates();
         $this->loadAppointments();
         
+    }
+
+    public function clearPrefill()
+    {
+        $this->prefillPatientId = null;
+        $this->prefillPatientLabel = null;
     }
 
     public function processPatient() 

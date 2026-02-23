@@ -20,6 +20,9 @@ class IsPatientMiddleware
         $isPatient = $role === 3;
 
         if (!$isPatient) {
+            if (in_array($role, [1, 2], true)) {
+                return redirect()->route('dashboard');
+            }
             return abort(403, 'Unauthorized.');
         }
 

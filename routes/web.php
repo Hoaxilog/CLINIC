@@ -25,14 +25,14 @@ Route::get('/', function () {
     return view('home-page');
 })->name('home');
 
+Route::get('/home', function () {
+    return view('home-page');
+});
+
 // Public (guest) routes
 Route::middleware(['guest'])->group(function() {
     Route::get('/login', [LoginController::class, 'index'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
-
-    Route::get('/home', function () {
-        return view('home-page');
-    });
 
 
     Route::get('auth/google/redirect', [GoogleLoginController::class, 'redirectToGoogle'])
