@@ -18,6 +18,7 @@ class BookAppointment extends Component
     public $selectedDate, $selectedSlot;
     public $recaptchaToken;
     protected $usesPatientUserId = null;
+    protected $appointmentStatuses = null;
     
     // UI data
     public $availableSlots = [];
@@ -130,6 +131,17 @@ class BookAppointment extends Component
 
         $appointmentDateTime = Carbon::parse($this->selectedDate . ' ' . $this->selectedSlot)->toDateTimeString();
 
+        $activeSlotBookings = DB::table('appointments')
+            ->where('appointment_date', $appointmentDateTime)
+            ->whereNotIn('status', ['Cancelled', 'Completed'])
+            ->count();
+
+        if ($activeSlotBookings >= 2) {
+            $this->addError('selectedSlot', 'This time slot is already full. Please choose another time.');
+            $this->availableSlots = $this->generateSlots($this->selectedDate);
+            return;
+        }
+
         $patient = null;
         if (Auth::check()) {
             $user = Auth::user();
@@ -183,7 +195,7 @@ class BookAppointment extends Component
             'patient_id' => $patientId,
             'service_id' => $this->service_id,
             'appointment_date' => $appointmentDateTime,
-            'status' => 'Pending',
+            'status' => $this->resolveNewAppointmentStatus(),
             'modified_by' => Auth::check() ? Auth::user()->username : 'GUEST',
             'created_at' => now(),
             'updated_at' => now(),
@@ -229,5 +241,50 @@ class BookAppointment extends Component
         }
 
         return $this->usesPatientUserId;
+    }
+
+    protected function resolveNewAppointmentStatus(): string
+    {
+        $preferred = 'Pending';
+        $statuses = $this->getAppointmentStatuses();
+
+        if (empty($statuses)) {
+            return $preferred;
+        }
+
+        if (in_array($preferred, $statuses, true)) {
+            return $preferred;
+        }
+
+        foreach (['Scheduled', 'Waiting'] as $fallback) {
+            if (in_array($fallback, $statuses, true)) {
+                return $fallback;
+            }
+        }
+
+        return $statuses[0];
+    }
+
+    protected function getAppointmentStatuses(): array
+    {
+        if (is_array($this->appointmentStatuses)) {
+            return $this->appointmentStatuses;
+        }
+
+        try {
+            $column = DB::selectOne("SHOW COLUMNS FROM appointments LIKE 'status'");
+            $type = $column->Type ?? $column->type ?? '';
+
+            if (preg_match("/^enum\\((.*)\\)$/i", $type, $matches) === 1) {
+                $rawValues = str_getcsv($matches[1], ',', "'");
+                $this->appointmentStatuses = array_values(array_filter($rawValues, fn ($v) => $v !== null && $v !== ''));
+                return $this->appointmentStatuses;
+            }
+        } catch (Throwable $e) {
+            // Fall back to app default when schema inspection is unavailable.
+        }
+
+        $this->appointmentStatuses = [];
+        return $this->appointmentStatuses;
     }
 }

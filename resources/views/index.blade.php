@@ -30,7 +30,7 @@
                             Dashboard
                         </a>
                         <a href="{{ route('book') }}" class="whitespace-nowrap rounded-md px-3 sm:px-4 py-1.5 text-sm font-semibold transition-colors {{ request()->routeIs('book') ? 'bg-[#0086DA] text-white' : 'text-slate-600 hover:bg-white' }}">
-                            Book Visit
+                            Appointment
                         </a>
                     </nav>
                 </div>
@@ -142,7 +142,7 @@
                                 </svg>
                             </span>
                             <span class="nav-text whitespace-nowrap text-xl overflow-hidden transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
-                                Book Visit
+                                Appointment
                             </span>
                         </a>
                     </li>

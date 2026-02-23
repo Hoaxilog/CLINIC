@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 21, 2026 at 03:29 AM
+-- Generation Time: Feb 22, 2026 at 01:11 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,34 @@ SET time_zone = "+00:00";
 --
 -- Database: `clinic_online`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `account_recovery_requests`
+--
+
+CREATE TABLE `account_recovery_requests` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `lookup_identifier` varchar(255) NOT NULL,
+  `new_email` varchar(255) NOT NULL,
+  `reason` text DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'pending',
+  `identity_verified_at` timestamp NULL DEFAULT NULL,
+  `reviewed_by` int(11) DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `reviewer_notes` text DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `account_recovery_requests`
+--
+
+INSERT INTO `account_recovery_requests` (`id`, `user_id`, `lookup_identifier`, `new_email`, `reason`, `status`, `identity_verified_at`, `reviewed_by`, `reviewed_at`, `reviewer_notes`, `created_at`, `updated_at`) VALUES
+(1, NULL, 'romebernacer123@gmail.com', 'renzzluigi@gmail.com', NULL, 'pending', NULL, NULL, NULL, NULL, '2026-02-22 07:54:44', '2026-02-22 07:54:44');
 
 -- --------------------------------------------------------
 
@@ -262,7 +290,9 @@ INSERT INTO `appointments` (`id`, `appointment_date`, `status`, `service_id`, `p
 (89, '2026-02-15 09:00:00', 'Ongoing', 2, 25, 2, 'sample', '2026-02-15 15:33:46', '2026-02-15 15:42:23'),
 (90, '2026-02-18 10:30:00', 'Ongoing', 1, 110, 2, 'sample', '2026-02-17 16:05:16', '2026-02-17 16:05:28'),
 (91, '2026-02-19 18:30:00', 'Scheduled', 2, 101, NULL, 'sample', '2026-02-19 09:21:57', '2026-02-19 09:21:57'),
-(92, '2026-02-19 15:00:00', 'Scheduled', 2, 66, NULL, 'sample', '2026-02-19 11:17:59', '2026-02-19 11:17:59');
+(92, '2026-02-19 15:00:00', 'Scheduled', 2, 66, NULL, 'sample', '2026-02-19 11:17:59', '2026-02-19 11:17:59'),
+(93, '2026-02-26 09:00:00', 'Pending', 1, 109, NULL, 'romebernacer123@gmail.com', '2026-02-22 07:38:16', '2026-02-22 07:38:16'),
+(94, '2026-02-26 09:00:00', 'Pending', 1, 109, NULL, 'romebernacer123@gmail.com', '2026-02-22 07:38:19', '2026-02-22 07:38:19');
 
 -- --------------------------------------------------------
 
@@ -500,7 +530,7 @@ INSERT INTO `patients` (`id`, `last_name`, `first_name`, `mobile_number`, `middl
 (105, 'WALKIN', 'WALK', '', 'IN', '', '', NULL, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'sample', '2026-01-21 14:14:49', '2026-01-21 14:14:49'),
 (107, 'legaspoijkln', 'davestaff', '12354324234', 'ad', NULL, NULL, '2026-01-17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'staff', '2026-01-22 01:18:34', '2026-01-22 01:18:34'),
 (108, 'k;aklwel', 'staff', '12351123123', 'dave', NULL, NULL, '2020-06-09', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'staff', '2026-01-22 01:19:30', '2026-01-22 01:19:30'),
-(109, 'Morada', 'Christian Ace', '09494642734', 'Parungao', 'kura', 'student', '2004-03-25', NULL, 'widowed', 'fairview', 'makati', 'asdasd', 'dadsa', 'romebernacer123@gmail.com', '123321', 'ASD', '213', 'asd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample1', '2026-01-22 01:42:26', '2026-01-22 01:43:19'),
+(109, 'Bernacer', 'Jerome', '0912345678', 'Parungao', 'kura', 'student', '2004-03-25', NULL, 'widowed', 'fairview', 'makati', 'asdasd', 'dadsa', 'romebernacer123@gmail.com', '123321', 'ASD', '213', 'asd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'romebernacer123@gmail.com', '2026-01-22 01:42:26', '2026-02-22 07:38:19'),
 (110, 'Legaspina', 'MDave', '0912345678', 'Dela Vega', NULL, 'Tech Support', '2003-07-08', 'Male', 'Married', 'San Bartolome', 'Datamex', '123456789', '123456789', 'romick@GMAIL.COM', 'ACE', 'SUSAN', '019231313', 'Mother', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Jerome_123', '2026-01-22 04:22:07', '2026-01-22 14:23:21'),
 (111, 'Legaspina', 'MDave', '0912345678', 'Dela Vega', 'MCDave', 'UTI', '2003-07-08', 'Male', 'Married', 'Winston', 'Datamex', '0912345678', '0912345678', 'dave@GMAIL.COM', 'ACE', 'NANAY', '926099304', 'Mother', '', '', '', '', '', '', '', '', 'sample', '2026-01-22 04:56:43', '2026-01-22 04:56:43'),
 (112, 'sadsads', 'fgdgd', '213231213', 'gfdfggfd', NULL, 'fsdfsd', '2026-01-21', 'Male', 'sdasa', '321321', NULL, NULL, NULL, NULL, NULL, 'Rosales', '321321321', 'sadsa', 'asdsasdsa', 'qewqew', NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-22 05:19:46', '2026-01-22 05:45:26'),
@@ -508,7 +538,7 @@ INSERT INTO `patients` (`id`, `last_name`, `first_name`, `mobile_number`, `middl
 (114, 'Rosales', 'Dale', '0997727222', 'Salumbides', 'DAASDDAS', 'Construction Worker', '2000-01-22', 'Male', 'Single', '2107 Rosal St Batasan Hills Quezon City', NULL, NULL, NULL, NULL, NULL, 'Luis Rosales', '77237832782378', 'Father', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-22 16:32:07', '2026-01-22 19:25:26'),
 (115, 'ZCX', 'GHJK', '099873278', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'renzzluigi@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-07 16:25:23', '2026-02-07 16:28:37'),
 (116, 'DSA', 'ASD', '213', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sdjklsdfjkl@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-07 16:35:49', '2026-02-07 16:35:49'),
-(117, 'dasasdsda', 'sdaasd', '21', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'dasasd@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-07 17:14:19', '2026-02-07 17:15:08');
+(117, 'dasasdsda', 'sdaasd', '21', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'renzzluigi@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-02-07 17:14:19', '2026-02-22 00:41:09');
 
 -- --------------------------------------------------------
 
@@ -652,11 +682,22 @@ INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `verificati
 (28, 'sampleDAS@SDFSD', 'sampleDAS@SDFSD', NULL, 'p6j3sX0A1rhGIICLua07moCeLhC93yb2ZqNwIcimcRe1RY8hZLC07X3YpLXHT5qE', '$2y$12$.JZ8qP.R5ct.99wREDUSEeJ/N5cKvBDi8FUq/Mw1ddqv6EpZ45d6K', NULL, 3, NULL, NULL, '2026-01-31 20:07:05', '2026-01-31 20:07:05'),
 (29, 'asdasdasdasd@SDFSD', 'asdasdasdasd@SDFSD', NULL, 'tWHRug3RnKdNvcq81yiM8mC0gmpTGlzhEfeLZa7wR0tABWsQD348XGbHkX5Exb0m', '$2y$12$3LuJ55u.K4LccFFhXglQ.e7ntbAQSbUWPQgYJUSHVyWwMblmuQivW', NULL, 3, NULL, NULL, '2026-01-31 20:10:10', '2026-01-31 20:10:10'),
 (30, 'ertertert@SDFSD', 'ertertert@SDFSD', NULL, 'Axr2AAdjB5WKobOZUY4JA8VfErgBX8y1Gv999lSBJfTfSVOonaBHZCmAp5McDDxr', '$2y$12$SvAd2D3A1MeptEAxtpsBEOY2NpYTMVpB.qFGDlehttB2K8kNhYxXW', NULL, 3, NULL, NULL, '2026-01-31 20:15:08', '2026-01-31 20:15:08'),
-(31, 'xcvrewwercvx@SDFSD', 'xcvrewwercvx@SDFSD', NULL, 'zoarjeers8XDf57Tmx0h6wPM5gOozrzt81ZntW1ImpIYAMLj90ktoooHgQzxejfa', '$2y$12$FGU.47Sj.yPdu35MnTS6s.Km3LuirVuqKTTn6xKMYW2PKJStPb8jO', NULL, 3, NULL, NULL, '2026-01-31 20:15:25', '2026-01-31 20:15:25');
+(31, 'xcvrewwercvx@SDFSD', 'xcvrewwercvx@SDFSD', NULL, 'zoarjeers8XDf57Tmx0h6wPM5gOozrzt81ZntW1ImpIYAMLj90ktoooHgQzxejfa', '$2y$12$FGU.47Sj.yPdu35MnTS6s.Km3LuirVuqKTTn6xKMYW2PKJStPb8jO', NULL, 3, NULL, NULL, '2026-01-31 20:15:25', '2026-01-31 20:15:25'),
+(38, 'romebernacer123@gmail.com', 'romebernacer123@gmail.com', '2026-02-22 07:06:15', NULL, '$2y$12$7JGDwFWPeCw/xOC6kiOyxOyJDuMgQf7xX99E7cHOYaLS7Yy.4co1W', '110245913908251152122', 3, NULL, NULL, '2026-02-22 13:16:48', '2026-02-22 15:06:15');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `account_recovery_requests`
+--
+ALTER TABLE `account_recovery_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `arr_status_created_idx` (`status`,`created_at`),
+  ADD KEY `arr_lookup_identifier_idx` (`lookup_identifier`),
+  ADD KEY `arr_user_id_idx` (`user_id`),
+  ADD KEY `arr_reviewed_by_idx` (`reviewed_by`);
 
 --
 -- Indexes for table `activity_log`
@@ -754,6 +795,12 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `account_recovery_requests`
+--
+ALTER TABLE `account_recovery_requests`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
@@ -763,7 +810,7 @@ ALTER TABLE `activity_log`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `dental_charts`
@@ -817,11 +864,18 @@ ALTER TABLE `treatment_records`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `account_recovery_requests`
+--
+ALTER TABLE `account_recovery_requests`
+  ADD CONSTRAINT `arr_reviewed_by_fk` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `arr_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `appointments`

@@ -11,24 +11,24 @@
         $headingClass = $isPatientUser
             ? 'text-xl md:text-2xl font-semibold mb-6 flex items-center gap-3 text-slate-900'
             : 'text-xl md:text-2xl font-semibold mb-6 flex items-center gap-3 text-[#111827]';
-        $badgeClass = $isPatientUser ? 'bg-sky-600' : 'bg-[#0F766E]';
+        $badgeClass = 'bg-sky-600';
         $inputClass = $isPatientUser
             ? 'w-full border border-slate-200 rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-sky-500 focus:border-sky-500'
-            : 'w-full border border-[#D1D5DB] rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-[#0F766E] focus:border-[#0F766E]';
+            : 'w-full border border-[#D1D5DB] rounded-lg p-3 text-sm md:text-base focus:ring-2 focus:ring-sky-500 focus:border-sky-500';
         $selectClass = $isPatientUser
             ? 'w-full border border-slate-200 rounded-lg p-3 mb-6 text-sm md:text-base bg-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500'
-            : 'w-full border border-[#D1D5DB] rounded-lg p-3 mb-6 text-sm md:text-base bg-white focus:ring-2 focus:ring-[#0F766E] focus:border-[#0F766E]';
+            : 'w-full border border-[#D1D5DB] rounded-lg p-3 mb-6 text-sm md:text-base bg-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500';
         $mutedLabelClass = $isPatientUser
             ? 'text-xs uppercase tracking-[0.2em] text-slate-500 mb-3'
             : 'text-xs uppercase tracking-[0.2em] text-[#6B7280] mb-3';
         $primaryButtonClass = $isPatientUser
             ? 'w-full mt-8 py-3.5 bg-sky-600 text-white text-sm md:text-base font-semibold rounded-lg hover:bg-sky-700 transition'
-            : 'w-full mt-8 py-3.5 bg-[#0F766E] text-white text-sm md:text-base font-semibold rounded-lg hover:bg-[#0B5F59] transition';
-        $successRingClass = $isPatientUser ? 'bg-sky-50 text-sky-700' : 'bg-emerald-50 text-emerald-700';
-        $successBorderClass = $isPatientUser ? 'border-sky-100' : 'border-emerald-100';
+            : 'w-full mt-8 py-3.5 bg-sky-600 text-white text-sm md:text-base font-semibold rounded-lg hover:bg-sky-700 transition';
+        $successRingClass = $isPatientUser ? 'bg-sky-50 text-sky-700' : 'bg-sky-50 text-sky-700';
+        $successBorderClass = $isPatientUser ? 'border-sky-100' : 'border-sky-100';
         $successButtonClass = $isPatientUser
             ? 'mt-6 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 transition'
-            : 'mt-6 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0B5F59] transition';
+            : 'mt-6 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 transition';
     @endphp
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <section class="{{ $sectionClass }}">
@@ -134,24 +134,32 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
                             <p class="{{ $mutedLabelClass }}">Pick a Date</p>
-                            <div class="border border-[#E5E7EB] p-4 rounded-xl bg-white" wire:ignore>
-                            <div class="flex justify-between items-center mb-4">
-                                <button type="button" id="prevMonth"
-                                    class="w-8 h-8 rounded-full border border-[#E5E7EB] text-[#374151] hover:bg-[#F3F4F6] transition">
-                                    &lsaquo;
-                                </button>
-                                <h4 id="monthYear"
-                                    class="text-sm font-semibold uppercase tracking-[0.2em] text-[#111827]"></h4>
-                                <button type="button" id="nextMonth"
-                                    class="w-8 h-8 rounded-full border border-[#E5E7EB] text-[#374151] hover:bg-[#F3F4F6] transition">
-                                    &rsaquo;
-                                </button>
+                            <div class="md:hidden">
+                                <input
+                                    type="date"
+                                    wire:model.live="selectedDate"
+                                    min="{{ now()->toDateString() }}"
+                                    class="{{ $inputClass }}"
+                                >
                             </div>
-                            <div id="calendarDays" class="grid grid-cols-7 gap-1.5"></div>
+                            <div class="hidden md:block border border-[#E5E7EB] p-4 rounded-xl bg-white" wire:ignore>
+                                <div class="flex justify-between items-center mb-4">
+                                    <button type="button" id="prevMonth"
+                                        class="w-8 h-8 rounded-full border border-[#E5E7EB] text-[#374151] hover:bg-[#F3F4F6] transition">
+                                        &lsaquo;
+                                    </button>
+                                    <h4 id="monthYear"
+                                        class="text-sm font-semibold uppercase tracking-[0.2em] text-[#111827]"></h4>
+                                    <button type="button" id="nextMonth"
+                                        class="w-8 h-8 rounded-full border border-[#E5E7EB] text-[#374151] hover:bg-[#F3F4F6] transition">
+                                        &rsaquo;
+                                    </button>
+                                </div>
+                                <div id="calendarDays" class="grid grid-cols-7 gap-1.5"></div>
+                            </div>
                             @error('selectedDate')
                                 <div class="text-sm text-red-600 mt-2">{{ $message }}</div>
                             @enderror
-                            </div>
                         </div>
 
                         <div>
@@ -159,10 +167,10 @@
                             <div class="grid grid-cols-2 gap-2">
                                 @forelse ($availableSlots as $slot)
                                     <label class="cursor-pointer">
-                                        <input type="radio" wire:model="selectedSlot" value="{{ $slot['value'] }}"
+                                        <input type="radio" name="selectedSlot" wire:model="selectedSlot" value="{{ $slot['value'] }}"
                                             class="peer sr-only">
                                         <div
-                                            class="text-center py-2 rounded-lg border border-[#E5E7EB] text-sm font-medium text-[#374151] {{ $isPatientUser ? 'peer-checked:bg-sky-600' : 'peer-checked:bg-[#0F766E]' }} peer-checked:text-white transition-all">
+                                            class="text-center py-2 rounded-lg border border-[#E5E7EB] text-sm font-medium text-[#374151] {{ $isPatientUser ? 'peer-checked:bg-sky-600' : 'peer-checked:bg-sky-600' }} peer-checked:text-white transition-all">
                                             {{ $slot['time'] }}
                                         </div>
                                     </label>
@@ -219,7 +227,7 @@
     <script>
         let currentDate = new Date();
         let selectedDate = null;
-        const selectedDayClass = @json($isPatientUser ? 'bg-sky-600 text-white' : 'bg-[#0F766E] text-white');
+        const selectedDayClass = @json($isPatientUser ? 'bg-sky-600 text-white' : 'bg-sky-600 text-white');
         const activeDayClass = @json($isPatientUser ? 'bg-white text-slate-700 hover:bg-slate-100' : 'bg-white text-[#374151] hover:bg-[#F3F4F6]');
         const disabledDayClass = @json($isPatientUser ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-[#F9FAFB] text-[#C7CCD1] cursor-not-allowed');
 
@@ -231,6 +239,10 @@
         }
 
         function renderCalendar() {
+            const monthYearEl = document.getElementById('monthYear');
+            const calendarDays = document.getElementById('calendarDays');
+            if (!monthYearEl || !calendarDays) return;
+
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             const today = new Date();
@@ -239,14 +251,13 @@
                 year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth());
             const viewingIsFutureMonth =
                 year > today.getFullYear() || (year === today.getFullYear() && month > today.getMonth());
-            document.getElementById('monthYear').textContent = currentDate.toLocaleDateString('en-US', {
+            monthYearEl.textContent = currentDate.toLocaleDateString('en-US', {
                 month: 'long',
                 year: 'numeric'
             }).toUpperCase();
 
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const calendarDays = document.getElementById('calendarDays');
             calendarDays.innerHTML = '';
 
             for (let i = 0; i < firstDay; i++) {
@@ -282,14 +293,26 @@
             }
         }
 
-        document.getElementById('prevMonth').addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
-        });
-        document.getElementById('nextMonth').addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-        });
+        function bindCalendarNavigation() {
+            const prevMonthBtn = document.getElementById('prevMonth');
+            const nextMonthBtn = document.getElementById('nextMonth');
+
+            if (prevMonthBtn && !prevMonthBtn.dataset.bound) {
+                prevMonthBtn.dataset.bound = '1';
+                prevMonthBtn.addEventListener('click', () => {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderCalendar();
+                });
+            }
+
+            if (nextMonthBtn && !nextMonthBtn.dataset.bound) {
+                nextMonthBtn.dataset.bound = '1';
+                nextMonthBtn.addEventListener('click', () => {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderCalendar();
+                });
+            }
+        }
 
         function ensureRecaptcha() {
             if (typeof grecaptcha === 'undefined' || typeof grecaptcha.render !== 'function') return;
@@ -326,6 +349,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             selectTodayIfEmpty();
+            bindCalendarNavigation();
             renderCalendar();
             ensureRecaptcha();
         });
@@ -333,6 +357,9 @@
         document.addEventListener('livewire:initialized', () => {
             selectTodayIfEmpty();
             Livewire.hook('message.processed', () => {
+                selectedDate = @this.get('selectedDate') || selectedDate;
+                bindCalendarNavigation();
+                renderCalendar();
                 ensureRecaptcha();
             });
         });
