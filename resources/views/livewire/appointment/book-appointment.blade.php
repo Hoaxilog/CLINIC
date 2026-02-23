@@ -139,8 +139,11 @@
                                     type="date"
                                     wire:model.live="selectedDate"
                                     min="{{ now()->toDateString() }}"
+                                    placeholder="Select a date"
+                                    aria-label="Pick a date"
                                     class="{{ $inputClass }}"
                                 >
+                                <p class="mt-1 text-xs text-slate-500">Tap to select a date.</p>
                             </div>
                             <div class="hidden md:block border border-[#E5E7EB] p-4 rounded-xl bg-white" wire:ignore>
                                 <div class="flex justify-between items-center mb-4">
@@ -155,6 +158,15 @@
                                         &rsaquo;
                                     </button>
                                 </div>
+                                <div class="grid grid-cols-7 gap-1.5 mb-2 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                    <div>Sun</div>
+                                    <div>Mon</div>
+                                    <div>Tue</div>
+                                    <div>Wed</div>
+                                    <div>Thu</div>
+                                    <div>Fri</div>
+                                    <div>Sat</div>
+                                </div>
                                 <div id="calendarDays" class="grid grid-cols-7 gap-1.5"></div>
                             </div>
                             @error('selectedDate')
@@ -166,12 +178,18 @@
                             <p class="{{ $mutedLabelClass }}">Select a Time</p>
                             <div class="grid grid-cols-2 gap-2">
                                 @forelse ($availableSlots as $slot)
-                                    <label class="cursor-pointer">
+                                    @php
+                                        $isFull = !empty($slot['is_full']);
+                                        $isPastSlot = !empty($slot['is_past']);
+                                        $isDisabled = $isFull || $isPastSlot;
+                                    @endphp
+                                    <label class="{{ $isDisabled ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                                         <input type="radio" name="selectedSlot" wire:model="selectedSlot" value="{{ $slot['value'] }}"
+                                            @disabled($isDisabled)
                                             class="peer sr-only">
                                         <div
-                                            class="text-center py-2 rounded-lg border border-[#E5E7EB] text-sm font-medium text-[#374151] {{ $isPatientUser ? 'peer-checked:bg-sky-600' : 'peer-checked:bg-sky-600' }} peer-checked:text-white transition-all">
-                                            {{ $slot['time'] }}
+                                            class="text-center py-2 rounded-lg border text-sm font-medium transition-all {{ $isDisabled ? 'border-[#E5E7EB] text-[#C7CCD1] bg-[#F9FAFB]' : 'border-[#E5E7EB] text-[#374151] peer-checked:bg-sky-600 peer-checked:text-white' }}">
+                                            {{ $slot['time'] }}{{ $isFull ? ' (Full)' : '' }}
                                         </div>
                                     </label>
                                 @empty
@@ -183,12 +201,12 @@
                                             '12:00 PM',
                                             '01:00 PM',
                                             '02:00 PM',
-                                            '01:00 PM',
                                             '03:00 PM',
                                             '04:00 PM',
                                             '05:00 PM',
                                             '06:00 PM',
                                             '07:00 PM',
+                                            '08:00 PM',
                                         ];
                                     @endphp
                                     @foreach ($placeholderSlots as $placeholder)

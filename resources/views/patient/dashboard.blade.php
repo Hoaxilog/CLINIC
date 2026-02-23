@@ -56,7 +56,7 @@
                                     <p class="text-sm font-semibold text-slate-900">{{ $request->service_name ?? 'Service' }}</p>
                                     <p class="mt-0.5 text-xs text-slate-500">
                                         {{ \Carbon\Carbon::parse($request->appointment_date)->format('M d, Y') }}
-                                        · {{ \Carbon\Carbon::parse($request->appointment_date)->format('h:i A') }}
+                                        Â· {{ \Carbon\Carbon::parse($request->appointment_date)->format('h:i A') }}
                                     </p>
                                 </div>
                                 <span class="inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold {{ $reqBadge }}">

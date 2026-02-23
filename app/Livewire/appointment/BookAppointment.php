@@ -25,6 +25,9 @@ class BookAppointment extends Component
 
     public function mount()
     {
+        $this->selectedDate = now()->toDateString();
+        $this->availableSlots = $this->generateSlots($this->selectedDate);
+
         if (Auth::check()) {
             $user = Auth::user();
             $this->email = $user->email;
@@ -67,8 +70,8 @@ class BookAppointment extends Component
         $date = Carbon::parse($dateString);
         // Default hours since schedules table does not exist
         $startTime = Carbon::parse($dateString . ' 09:00:00');
-        $endTime = Carbon::parse($dateString . ' 17:00:00');
-        $duration = 30; // minutes per slot
+        $endTime = Carbon::parse($dateString . ' 20:00:00');
+        $duration = 60; // minutes per slot
 
         $bookedCounts = DB::table('appointments')
             ->whereDate('appointment_date', $dateString)
@@ -80,15 +83,17 @@ class BookAppointment extends Component
 
         $slots = [];
 
-        while ($startTime->lt($endTime)) {
+        while ($startTime->lte($endTime)) {
             $slotTime = $startTime->format('H:i:00');
             $currentCount = $bookedCounts[$slotTime] ?? 0;
-            if ($currentCount < 2) {
-                $slots[] = [
-                    'time' => $startTime->format('h:i A'),
-                    'value' => $slotTime,
-                ];
-            }
+            $slotDateTime = Carbon::parse($dateString . ' ' . $slotTime);
+            $isPast = $slotDateTime->lt(now());
+            $slots[] = [
+                'time' => $startTime->format('h:i A'),
+                'value' => $slotTime,
+                'is_full' => $currentCount >= 2,
+                'is_past' => $isPast,
+            ];
             $startTime->addMinutes($duration);
         }
         return $slots;
