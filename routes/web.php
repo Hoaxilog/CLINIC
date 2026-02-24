@@ -10,7 +10,6 @@ use App\Http\Controllers\PatientDashboardController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\EmailRecoveryController;
 use App\Http\Controllers\ServiceController;
 use App\Livewire\appointment\BookAppointment;
 use App\Http\Controllers\Auth\GoogleLoginController;
@@ -69,9 +68,6 @@ Route::middleware(['guest'])->group(function() {
     Route::get('/email/verify/{id}/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
     Route::get('/email/verified', [VerificationController::class, 'showSuccess'])->name('verification.success');
 
-    Route::get('/account-recovery', [EmailRecoveryController::class, 'showRequestForm'])->name('account.recovery.request');
-    Route::post('/account-recovery', [EmailRecoveryController::class, 'submitRequest'])->name('account.recovery.submit');
-
 });
 
 // Public booking route (guest or logged-in)
@@ -90,15 +86,12 @@ Route::middleware(['auth'])->group(function () {
 // Staff/Dentist-only routes
 Route::middleware(['auth', 'staffOrDentist'])->group(function () {
     Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/patient-stats', [Dashboard::class, 'patientStats'])->name('dashboard.patient-stats');
     Route::get('/queue', function () {
         return view('queue');
     })->name('queue');
     Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
     Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
-    Route::get('/recovery-requests', [EmailRecoveryController::class, 'index'])->name('recovery.index');
-    Route::post('/recovery-requests/{id}/link-user', [EmailRecoveryController::class, 'linkUser'])->name('recovery.link-user');
-    Route::post('/recovery-requests/{id}/approve', [EmailRecoveryController::class, 'approve'])->name('recovery.approve');
-    Route::post('/recovery-requests/{id}/reject', [EmailRecoveryController::class, 'reject'])->name('recovery.reject');
 }); 
 
 // Patient-only routes

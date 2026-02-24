@@ -400,7 +400,6 @@ class PatientRecords extends Component
     public function render()
     {
         $patients = $this->getPatientsQuery()->paginate(10);
-        $recoveryMap = $this->buildPendingRecoveryMap($patients->getCollection());
         $patientIds = $patients->getCollection()->pluck('id')->filter()->values();
 
         $lastCompletedMap = collect();
@@ -439,27 +438,6 @@ class PatientRecords extends Component
         }
 
         $patients->setCollection(
-            $patients->getCollection()->map(function ($patient) use ($recoveryMap) {
-                $emailKey = $patient->email_address ? Str::lower(trim($patient->email_address)) : null;
-                $userKey = null;
-                if ($this->patientsUsesUserId() && !empty(data_get($patient, 'user_id'))) {
-                    $userKey = 'user:' . (int) data_get($patient, 'user_id');
-                }
-
-                $pending = null;
-                if ($userKey && isset($recoveryMap[$userKey])) {
-                    $pending = $recoveryMap[$userKey];
-                } elseif ($emailKey && isset($recoveryMap[$emailKey])) {
-                    $pending = $recoveryMap[$emailKey];
-                }
-
-                $patient->pending_recovery_request_id = $pending['id'] ?? null;
-                $patient->pending_recovery_requested_at = $pending['created_at'] ?? null;
-                return $patient;
-            })
-        );
-
-        $patients->setCollection(
             $patients->getCollection()->map(function ($patient) use ($lastCompletedMap, $latestStatusMap, $lastAppointmentMap) {
                 $activeCutoff = Carbon::now()->subYears(2);
                 $patient->last_completed_at = $lastCompletedMap[$patient->id]->last_completed_at ?? null;
@@ -474,102 +452,6 @@ class PatientRecords extends Component
         );
 
         return view('livewire.patient-records', compact('patients'));
-    }
-
-    protected function buildPendingRecoveryMap($patientsCollection): array
-    {
-        $userIds = collect();
-        if ($this->patientsUsesUserId()) {
-            $userIds = collect($patientsCollection)
-                ->map(fn ($patient) => data_get($patient, 'user_id'))
-                ->filter()
-                ->unique()
-                ->values();
-        }
-
-        $emails = collect($patientsCollection)
-            ->pluck('email_address')
-            ->filter()
-            ->map(fn ($email) => Str::lower(trim((string) $email)))
-            ->unique()
-            ->values();
-
-        if ($emails->isEmpty() && $userIds->isEmpty()) {
-            return [];
-        }
-
-        try {
-            $requests = DB::table('account_recovery_requests as arr')
-                ->leftJoin('users as target', 'arr.user_id', '=', 'target.id')
-                ->select(
-                    'arr.id',
-                    'arr.user_id as linked_user_id',
-                    'arr.lookup_identifier',
-                    'arr.new_email',
-                    'arr.created_at',
-                    'target.email as current_email'
-                )
-                ->where('arr.status', 'pending')
-                ->where(function ($q) use ($emails, $userIds) {
-                    $hasPreviousCondition = false;
-
-                    if ($userIds->isNotEmpty()) {
-                        $q->whereIn('arr.user_id', $userIds->all());
-                        $hasPreviousCondition = true;
-                    }
-
-                    if ($emails->isNotEmpty()) {
-                        $emailMatcher = function ($sub) use ($emails) {
-                            $sub->whereIn(DB::raw('LOWER(COALESCE(target.email, ""))'), $emails->all())
-                                ->orWhereIn(DB::raw('LOWER(COALESCE(arr.new_email, ""))'), $emails->all())
-                                ->orWhereIn(DB::raw('LOWER(COALESCE(arr.lookup_identifier, ""))'), $emails->all());
-                        };
-
-                        if ($hasPreviousCondition) {
-                            $q->orWhere($emailMatcher);
-                        } else {
-                            $q->where($emailMatcher);
-                        }
-                    }
-                })
-                ->orderBy('arr.created_at', 'desc')
-                ->get();
-        } catch (Throwable $e) {
-            return [];
-        }
-
-        $map = [];
-        foreach ($requests as $req) {
-            if (!empty($req->linked_user_id)) {
-                $userKey = 'user:' . (int) $req->linked_user_id;
-                if (!isset($map[$userKey])) {
-                    $map[$userKey] = [
-                        'id' => $req->id,
-                        'created_at' => $req->created_at,
-                    ];
-                }
-            }
-
-            $keys = collect([
-                $req->current_email ?? null,
-                $req->new_email ?? null,
-                $req->lookup_identifier ?? null,
-            ])
-                ->filter()
-                ->map(fn ($v) => Str::lower(trim((string) $v)))
-                ->values();
-
-            foreach ($keys as $key) {
-                if (!isset($map[$key])) {
-                    $map[$key] = [
-                        'id' => $req->id,
-                        'created_at' => $req->created_at,
-                    ];
-                }
-            }
-        }
-
-        return $map;
     }
 
     protected function patientsUsesUserId(): bool

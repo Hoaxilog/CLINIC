@@ -62,7 +62,16 @@ class BookAppointment extends Component
     // This runs automatically when $selectedDate is updated via JavaScript
     public function updatedSelectedDate($date)
     {
+        if (empty($date) || !$this->isValidSelectedDate($date)) {
+            $this->availableSlots = [];
+            $this->selectedSlot = null;
+            $this->selectedDate = null;
+            $this->dispatch('book-calendar-refresh', selectedDate: null);
+            return;
+        }
+
         $this->availableSlots = $this->generateSlots($date);
+        $this->dispatch('book-calendar-refresh', selectedDate: $date);
     }
 
     public function generateSlots($dateString)
@@ -106,7 +115,7 @@ class BookAppointment extends Component
             'last_name' => 'required',
             'email' => 'required|email',
             'service_id' => 'required',
-            'selectedDate' => 'required|date',
+            'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
             'selectedSlot' => 'required',
             'contact_number' => 'required',
         ]);
@@ -291,5 +300,18 @@ class BookAppointment extends Component
 
         $this->appointmentStatuses = [];
         return $this->appointmentStatuses;
+    }
+
+    protected function isValidSelectedDate(string $date): bool
+    {
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return false;
+        }
+
+        try {
+            return Carbon::createFromFormat('Y-m-d', $date)->format('Y-m-d') === $date;
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 }

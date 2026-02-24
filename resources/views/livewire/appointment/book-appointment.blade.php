@@ -77,6 +77,9 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">
+                                First Name <span class="text-red-600">*</span>
+                            </label>
                             <input type="text" wire:model="first_name" placeholder="First Name"
                                 class="{{ $inputClass }}">
                             @error('first_name')
@@ -84,6 +87,9 @@
                             @enderror
                         </div>
                         <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">
+                                Last Name <span class="text-red-600">*</span>
+                            </label>
                             <input type="text" wire:model="last_name" placeholder="Last Name"
                                 class="{{ $inputClass }}">
                             @error('last_name')
@@ -92,6 +98,9 @@
                         </div>
 
                         <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">
+                                Age
+                            </label>
                             <input type="text" wire:model="age" placeholder="Age" class="{{ $inputClass }}">
                             @error('age')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
@@ -99,6 +108,9 @@
                         </div>
 
                         <div>
+                            <label class="mb-1 block text-sm font-medium text-slate-700">
+                                Contact Number <span class="text-red-600">*</span>
+                            </label>
                             <input type="text" wire:model="contact_number" placeholder="Contact number"
                                 class="{{ $inputClass }}">
                             @error('contact_number')
@@ -107,6 +119,9 @@
                         </div>
 
                         <div class="md:col-span-2">
+                            <label class="mb-1 block text-sm font-medium text-slate-700">
+                                Email <span class="text-red-600">*</span>
+                            </label>
                             <input type="email" wire:model="email" placeholder="Email" class="{{ $inputClass }}">
                             @error('email')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
@@ -121,6 +136,9 @@
                             class="{{ $badgeClass }} text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
                         Select Appointment
                     </h3>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">
+                        Service <span class="text-red-600">*</span>
+                    </label>
                     <select wire:model="service_id" class="{{ $selectClass }}">
                         <option value="">Select Service</option>
                         @foreach ($services as $service)
@@ -133,13 +151,12 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <p class="{{ $mutedLabelClass }}">Pick a Date</p>
+                            <p class="{{ $mutedLabelClass }}">Pick a Date <span class="text-red-600">*</span></p>
                             <div class="md:hidden">
                                 <input
                                     type="date"
                                     wire:model.live="selectedDate"
                                     min="{{ now()->toDateString() }}"
-                                    placeholder="Select a date"
                                     aria-label="Pick a date"
                                     class="{{ $inputClass }}"
                                 >
@@ -175,7 +192,7 @@
                         </div>
 
                         <div>
-                            <p class="{{ $mutedLabelClass }}">Select a Time</p>
+                            <p class="{{ $mutedLabelClass }}">Select a Time <span class="text-red-600">*</span></p>
                             <div class="grid grid-cols-2 gap-2">
                                 @forelse ($availableSlots as $slot)
                                     @php
@@ -244,7 +261,7 @@
 
     <script>
         let currentDate = new Date();
-        let selectedDate = null;
+        let selectedDate = @js($selectedDate);
         const selectedDayClass = @json($isPatientUser ? 'bg-sky-600 text-white' : 'bg-sky-600 text-white');
         const activeDayClass = @json($isPatientUser ? 'bg-white text-slate-700 hover:bg-slate-100' : 'bg-white text-[#374151] hover:bg-[#F3F4F6]');
         const disabledDayClass = @json($isPatientUser ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-[#F9FAFB] text-[#C7CCD1] cursor-not-allowed');
@@ -254,6 +271,14 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
+        }
+
+        function syncCalendarToSelectedDate() {
+            if (!selectedDate) return;
+            const parsed = new Date(`${selectedDate}T00:00:00`);
+            if (!Number.isNaN(parsed.getTime())) {
+                currentDate = new Date(parsed.getFullYear(), parsed.getMonth(), 1);
+            }
         }
 
         function renderCalendar() {
@@ -357,29 +382,19 @@
             }
         }
 
-        function selectTodayIfEmpty() {
-            if (selectedDate) return;
-            selectedDate = formatDateLocal(new Date());
-            if (typeof @this !== 'undefined' && @this.set) {
-                @this.set('selectedDate', selectedDate);
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            selectTodayIfEmpty();
+            syncCalendarToSelectedDate();
             bindCalendarNavigation();
             renderCalendar();
             ensureRecaptcha();
         });
 
-        document.addEventListener('livewire:initialized', () => {
-            selectTodayIfEmpty();
-            Livewire.hook('message.processed', () => {
-                selectedDate = @this.get('selectedDate') || selectedDate;
-                bindCalendarNavigation();
-                renderCalendar();
-                ensureRecaptcha();
-            });
+        document.addEventListener('book-calendar-refresh', (event) => {
+            selectedDate = event.detail?.selectedDate || null;
+            syncCalendarToSelectedDate();
+            bindCalendarNavigation();
+            renderCalendar();
+            ensureRecaptcha();
         });
     </script>
 </div>

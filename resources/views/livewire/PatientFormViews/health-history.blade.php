@@ -77,7 +77,7 @@
 
                 <div>
                     <label class="block text-lg font-medium text-gray-700 mb-2">2. Reason for seeing dentist
-                        today?</label>
+                        today? <span class="text-red-600">*</span></label>
                     <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model="what_seeing_dentist_reason_q2" type="text"
                         class="w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500"
                         placeholder="e.g., Check-up...">
@@ -87,7 +87,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-lg font-medium text-gray-700 mb-2">3. Have you experienced:</label>
+                    <label class="block text-lg font-medium text-gray-700 mb-2">3. Have you experienced? <span class="text-red-600">*</span></label>
                     <div
                         class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pl-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
 
@@ -119,7 +119,7 @@
 
                 @foreach ([['q' => '4. Do you clench or grind your teeth?', 'model' => 'is_clench_grind_q4'], ['q' => '5. Bad experience in dental office?', 'model' => 'is_bad_experience_q5'], ['q' => '6. Feel nervous about treatment?', 'model' => 'is_nervous_q6', 'detail' => 'what_nervous_concern_q6', 'placeholder' => 'What is your concern?']] as $item)
                     <div class="border-b border-gray-100 pb-4">
-                        <label class="block text-lg font-medium text-gray-700">{{ $item['q'] }}</label>
+                        <label class="block text-lg font-medium text-gray-700">{{ $item['q'] }} <span class="text-red-600">*</span></label>
                         <div class="flex gap-x-6 mt-2">
                             <label class="flex items-center cursor-pointer">
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.live="{{ $item['model'] }}"
@@ -162,7 +162,7 @@
             <div class="space-y-6">
                 @foreach ([['q' => '1. Treated for medical condition (present/past 2 years)?', 'model' => 'is_condition_q1', 'detail' => 'what_condition_reason_q1'], ['q' => '2. Ever been hospitalized?', 'model' => 'is_hospitalized_q2', 'detail' => 'what_hospitalized_reason_q2'], ['q' => '3. Serious illness or operation?', 'model' => 'is_serious_illness_operation_q3', 'detail' => 'what_serious_illness_operation_reason_q3'], ['q' => '4. Taking any medications?', 'model' => 'is_taking_medications_q4', 'detail' => 'what_medications_list_q4'], ['q' => '5. Allergic to medications?', 'model' => 'is_allergic_medications_q5', 'detail' => 'what_allergies_list_q5'], ['q' => '6. Allergic to latex/rubber/metals?', 'model' => 'is_allergic_latex_rubber_metals_q6']] as $med)
                     <div class="border-b border-gray-100 pb-4">
-                        <label class="block text-lg font-medium text-gray-700">{{ $med['q'] }}</label>
+                        <label class="block text-lg font-medium text-gray-700">{{ $med['q'] }} <span class="text-red-600">*</span></label>
                         <div class="flex gap-x-6 mt-2">
                             <label class="flex items-center cursor-pointer">
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.live="{{ $med['model'] }}"
@@ -204,7 +204,7 @@
                 <div class="space-y-4">
                     @foreach ([['q' => '7. Are you pregnant?', 'model' => 'is_pregnant_q7'], ['q' => '8. Are you breast feeding?', 'model' => 'is_breast_feeding_q8']] as $fem)
                         <div>
-                            <label class="block text-lg font-medium text-gray-700">{{ $fem['q'] }}</label>
+                            <label class="block text-lg font-medium text-gray-700">{{ $fem['q'] }} <span class="text-red-600">*</span></label>
                             <div class="flex gap-x-6 mt-2">
                                 <label class="flex items-center cursor-pointer">
                                     <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.live="{{ $fem['model'] }}"

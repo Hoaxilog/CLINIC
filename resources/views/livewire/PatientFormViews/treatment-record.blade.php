@@ -8,7 +8,7 @@
         <div class="lg:col-span-7 space-y-5">
             
             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                <label for="dmd" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">DMD :</label>
+                <label for="dmd" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">DMD <span class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
                     <input wire:model="dmd" type="text" id="dmd" 
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"
@@ -20,7 +20,7 @@
             </div>
 
             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                <label for="treatment" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Treatment :</label>
+                <label for="treatment" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Treatment <span class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
                     <input wire:model="treatment" type="text" id="treatment" 
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"
@@ -32,7 +32,7 @@
             </div>
 
             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                <label for="cost_of_treatment" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Cost :</label>
+                <label for="cost_of_treatment" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Cost <span class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
                     <input wire:model="cost_of_treatment" type="number" id="cost_of_treatment" 
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"
@@ -45,7 +45,7 @@
             </div>
 
             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                <label for="amount_charged" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Charged :</label>
+                <label for="amount_charged" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Charged <span class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
                     <input wire:model="amount_charged" type="number" id="amount_charged" 
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"

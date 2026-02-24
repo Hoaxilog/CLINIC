@@ -27,8 +27,8 @@
                 <div>
                     <div class="text-4xl font-bold text-gray-900">{{ $todayAppointmentsCount ?? 0 }}</div>
                     <div class="text-xs text-gray-500 mt-2 font-medium">
-                        <span class="text-emerald-600">{{ $todayCompletedCount ?? 0 }} completed</span> ·
-                        <span class="text-rose-500">{{ $todayCancelledCount ?? 0 }} cancelled</span> ·
+                        <span class="text-emerald-600">{{ $todayCompletedCount ?? 0 }} completed</span> &middot;
+                        <span class="text-rose-500">{{ $todayCancelledCount ?? 0 }} cancelled</span> &middot;
                         <span>{{ $todayUpcomingCount ?? 0 }} upcoming</span>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
                 <div>
                     <div id="profitValue" class="text-4xl font-bold text-gray-900">PHP
                         {{ number_format($todayProfit ?? 0, 2) }}</div>
-                    <div id="profitChange" class="text-xs mt-2 font-semibold text-gray-400">—</div>
+                    <div id="profitChange" class="text-xs mt-2 font-semibold text-gray-400">&mdash;</div>
                 </div>
             </section>
 
@@ -169,9 +169,8 @@
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
             <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col">
                 <div class="mb-6">
-                    <h2 class="text-lg font-bold text-gray-900">Appointments Trend ({{ $rangeLabel ?? 'Last 7 Days' }})
+                    <h2 class="text-lg font-bold text-gray-900">Appointments Trend ({{ $rangeLabel ?? 'Last 15 Days' }})
                     </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Smooth daily progression</p>
                 </div>
                 <div class="relative flex-1 w-full min-h-[250px]">
                     <canvas id="dashboardAppointmentsChart"></canvas>
@@ -182,17 +181,15 @@
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h2 class="text-lg font-bold text-gray-900">Patients Statistics</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Monthly new vs returning</p>
+                        <p id="patientStatsSubtitle" class="text-xs text-gray-500 mt-0.5">{{ $patientStatsLabel ?? 'Monthly new patient vs returning patient' }}</p>
                     </div>
-                    <button
-                        class="text-xs font-semibold text-gray-700 border border-gray-200 rounded-md px-3 py-1.5 hover:border-gray-300 hover:text-gray-900 transition">
-                        View All
-                    </button>
+                    <select id="patientStatsRangeSelect"
+                        class="text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-100 outline-none">
+                        <option value="weekly" {{ ($patientStatsRange ?? 'monthly') === 'weekly' ? 'selected' : '' }}>Weekly</option>
+                        <option value="monthly" {{ ($patientStatsRange ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                    </select>
                 </div>
-                <div class="flex items-center justify-between mb-4">
-                    <div class="text-sm font-semibold text-gray-800">
-                        Total No of Patients : {{ $patientStatsTotal ?? 0 }}
-                    </div>
+                <div class="flex items-center justify-end mb-4">
                     <div class="flex items-center gap-4 text-xs font-semibold text-gray-600">
                         <span class="flex items-center gap-2">
                             <span class="h-2 w-2 rounded-full bg-blue-600"></span>
@@ -200,7 +197,7 @@
                         </span>
                         <span class="flex items-center gap-2">
                             <span class="h-2 w-2 rounded-full bg-blue-200"></span>
-                            Old Patients
+                            Returning Patients
                         </span>
                     </div>
                 </div>
@@ -244,6 +241,7 @@
             data-patient-stats-dates="{{ json_encode($patientStatsDates ?? []) }}"
             data-new-patient-counts="{{ json_encode($newPatientCounts ?? []) }}"
             data-returning-patient-counts="{{ json_encode($returningPatientCounts ?? []) }}"
+            data-patient-stats-endpoint="{{ route('dashboard.patient-stats') }}"
             data-top-procedure-names="{{ json_encode($topProcedureNames ?? []) }}"
             data-top-procedure-counts="{{ json_encode($topProcedureCounts ?? []) }}"
             data-today-profit="{{ $todayProfit }}" data-yesterday-profit="{{ $yesterdayProfit }}"
@@ -266,6 +264,7 @@
             const patientStatsDates = JSON.parse(dataEl.dataset.patientStatsDates || '[]');
             const newPatientCounts = JSON.parse(dataEl.dataset.newPatientCounts || '[]');
             const returningPatientCounts = JSON.parse(dataEl.dataset.returningPatientCounts || '[]');
+            const patientStatsEndpoint = dataEl.dataset.patientStatsEndpoint || '';
             const topProcedureNames = JSON.parse(dataEl.dataset.topProcedureNames || '[]');
             const topProcedureCounts = JSON.parse(dataEl.dataset.topProcedureCounts || '[]');
             const todayProfit = Number(dataEl.dataset.todayProfit || 0);
@@ -278,6 +277,43 @@
             Chart.defaults.font.family =
                 "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
             Chart.defaults.color = '#64748b';
+
+            // Position tooltip outward from the hovered doughnut slice direction.
+            Chart.Tooltip.positioners.patientStatsRadial = function(elements) {
+                const first = elements?.[0];
+                if (!first) {
+                    return false;
+                }
+
+                const chart = this.chart;
+                const {
+                    left,
+                    right,
+                    top,
+                    bottom
+                } = chart.chartArea;
+                const centerX = (left + right) / 2;
+                const centerY = (top + bottom) / 2;
+                const anchor = first.element.tooltipPosition();
+
+                const dx = anchor.x - centerX;
+                const dy = anchor.y - centerY;
+                const length = Math.hypot(dx, dy) || 1;
+                const offset = 36;
+
+                let x = anchor.x + (dx / length) * offset;
+                let y = anchor.y + (dy / length) * offset;
+
+                x = Math.max(left + 12, Math.min(right - 12, x));
+                y = Math.max(top + 12, Math.min(bottom - 12, y));
+
+                return {
+                    x,
+                    y,
+                    xAlign: dx >= 0 ? 'left' : 'right',
+                    yAlign: dy >= 0 ? 'top' : 'bottom'
+                };
+            };
 
             const apptCtx = document.getElementById('dashboardAppointmentsChart');
             if (apptCtx) {
@@ -336,79 +372,92 @@
             }
 
             const patientStatsCtx = document.getElementById('dashboardPatientsStatsChart');
+            const patientStatsSubtitle = document.getElementById('patientStatsSubtitle');
+            let patientStatsChart = null;
             if (patientStatsCtx) {
-                new Chart(patientStatsCtx.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: patientStatsDates,
-                        datasets: [{
-                                label: 'New Patients',
-                                data: newPatientCounts,
-                                backgroundColor: '#2563eb',
-                                borderRadius: 8,
-                                barThickness: 18
-                            },
-                            {
-                                label: 'Old Patients',
-                                data: returningPatientCounts,
-                                backgroundColor: '#bfdbfe',
-                                borderRadius: 8,
-                                barThickness: 18
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: '#ffffff',
-                                titleColor: '#0f172a',
-                                bodyColor: '#0f172a',
-                                borderColor: '#e2e8f0',
+                const patientStatsCenterTextPlugin = {
+                    id: 'patientStatsCenterText',
+                    afterDraw(chart) {
+                        const { ctx, chartArea: { left, right, top, bottom } } = chart;
+                        const centerX = (left + right) / 2;
+                        const centerY = (top + bottom) / 2;
+                        const totalNewPatients = Number(chart.data.datasets?.[0]?.data?.[0] || 0);
+
+                        ctx.save();
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        ctx.fillStyle = '#0f172a';
+                        ctx.font = '700 24px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont';
+                        ctx.fillText(totalNewPatients.toString(), centerX, centerY - 8);
+
+                        ctx.fillStyle = '#64748b';
+                        ctx.font = '600 11px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont';
+                        ctx.fillText('Total New Patient Acquire', centerX, centerY + 12);
+
+                        ctx.restore();
+                    }
+                };
+
+                const renderPatientStats = (newCounts, returningCounts) => {
+                    const totalNewPatients = newCounts.reduce((sum, value) => sum + Number(value || 0), 0);
+                    const totalReturningPatients = returningCounts.reduce((sum, value) => sum + Number(value || 0), 0);
+                    const totals = [totalNewPatients, totalReturningPatients];
+
+                    if (patientStatsChart) {
+                        patientStatsChart.data.datasets[0].data = totals;
+                        patientStatsChart.update();
+                        return;
+                    }
+
+                    patientStatsChart = new Chart(patientStatsCtx.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['New Patients', 'Returning Patients'],
+                            datasets: [{
+                                data: totals,
+                                backgroundColor: ['#2563eb', '#bfdbfe'],
+                                borderColor: ['#2563eb', '#bfdbfe'],
                                 borderWidth: 1,
-                                padding: 10,
-                                usePointStyle: true,
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.dataset.label || '';
-                                        const value = context.parsed.y ?? 0;
-                                        return `${label}: ${value}`;
+                                hoverOffset: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '58%',
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    position: 'patientStatsRadial',
+                                    backgroundColor: '#ffffff',
+                                    titleColor: '#0f172a',
+                                    bodyColor: '#0f172a',
+                                    borderColor: '#e2e8f0',
+                                    borderWidth: 1,
+                                    caretSize: 8,
+                                    caretPadding: 8,
+                                    padding: 10,
+                                    usePointStyle: true,
+                                    callbacks: {
+                                        label: function(context) {
+                                            const value = Number(context.parsed ?? 0);
+                                            const values = (context.dataset.data || []).map((item) => Number(item || 0));
+                                            const total = values.reduce((sum, item) => sum + item, 0);
+                                            const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+                                            return `${context.label}: ${value} (${pct}%)`;
+                                        }
                                     }
                                 }
                             }
                         },
-                        scales: {
-                            x: {
-                                stacked: true,
-                                grid: {
-                                    display: false
-                                },
-                                border: {
-                                    display: false
-                                }
-                            },
-                            y: {
-                                stacked: true,
-                                beginAtZero: true,
-                                grid: {
-                                    color: '#f1f5f9',
-                                    borderDash: [4, 4]
-                                },
-                                border: {
-                                    display: false
-                                },
-                                ticks: {
-                                    stepSize: 20,
-                                    precision: 0
-                                }
-                            }
-                        }
-                    }
-                });
+                        plugins: [patientStatsCenterTextPlugin]
+                    });
+                };
+
+                renderPatientStats(newPatientCounts, returningPatientCounts);
             }
 
             const topCtx = document.getElementById('dashboardTopProceduresChart');
@@ -535,6 +584,46 @@
             if (profitRangeSelect) {
                 profitRangeSelect.addEventListener('change', (e) => setProfitDisplay(e.target.value));
                 setProfitDisplay('today');
+            }
+
+            const patientStatsRangeSelect = document.getElementById('patientStatsRangeSelect');
+            if (patientStatsRangeSelect && patientStatsEndpoint) {
+                patientStatsRangeSelect.addEventListener('change', async function(e) {
+                    const selectedRange = e.target.value;
+                    patientStatsRangeSelect.disabled = true;
+
+                    try {
+                        const url = new URL(patientStatsEndpoint, window.location.origin);
+                        url.searchParams.set('patient_stats_range', selectedRange);
+
+                        const response = await fetch(url.toString(), {
+                            headers: {
+                                Accept: 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed to load patient statistics');
+                        }
+
+                        const payload = await response.json();
+                        if (patientStatsSubtitle && payload.patientStatsLabel) {
+                            patientStatsSubtitle.textContent = payload.patientStatsLabel;
+                        }
+                        if (patientStatsChart) {
+                            const freshNew = Array.isArray(payload.newPatientCounts) ? payload.newPatientCounts : [];
+                            const freshReturning = Array.isArray(payload.returningPatientCounts) ? payload.returningPatientCounts : [];
+                            const totalNewPatients = freshNew.reduce((sum, value) => sum + Number(value || 0), 0);
+                            const totalReturningPatients = freshReturning.reduce((sum, value) => sum + Number(value || 0), 0);
+                            patientStatsChart.data.datasets[0].data = [totalNewPatients, totalReturningPatients];
+                            patientStatsChart.update();
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        patientStatsRangeSelect.disabled = false;
+                    }
+                });
             }
         });
     </script>

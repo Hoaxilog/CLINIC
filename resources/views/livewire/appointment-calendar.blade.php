@@ -347,7 +347,7 @@
                     {{-- FORM INPUTS --}}
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name <span class="text-red-600">*</span></label>
                             <input wire:model="firstName" type="text"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500"
                                 @if ($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
@@ -365,7 +365,7 @@
                             @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name <span class="text-red-600">*</span></label>
                             <input wire:model="lastName" type="text"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500"
                                 @if ($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
@@ -377,7 +377,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number <span class="text-red-600">*</span></label>
                             <input wire:model="contactNumber" type="text"
                                 class="border w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium"
                                 @if ($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
@@ -387,7 +387,7 @@
                         </div>
                         {{-- BIRTH DATE (Required for Saving) --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Birth Date <span class="text-red-600">*</span></label>
                             <input wire:model="birthDate" type="date"
                                 class="border w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium"
                                 @if ($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
@@ -399,7 +399,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Service Required</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Service Required <span class="text-red-600">*</span></label>
                             <select wire:model.live="selectedService"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 font-medium focus:ring-blue-500 focus:border-blue-500"
                                 {{ $isViewing && $appointmentStatus != 'Waiting' ? 'disabled' : '' }}>

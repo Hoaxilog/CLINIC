@@ -23,6 +23,7 @@
         const menuPanel = document.getElementById('mobile-menu-panel');
         const menuBackdrop = document.getElementById('mobile-menu-backdrop');
         const menuClose = document.getElementById('menu-close');
+        if (!menuBtn || !mobileMenu || !menuIcon || !menuPanel || !menuBackdrop || !menuClose) return;
         function openMenu() {
             mobileMenu.classList.remove('hidden');
             mobileMenu.setAttribute('aria-hidden', 'false');
@@ -33,10 +34,14 @@
                     menuBackdrop.classList.remove('opacity-0');
                     menuBackdrop.classList.add('opacity-100');
                     menuPanel.classList.remove('translate-x-full');
+                    menuClose.focus();
                 });
             });
         }
         function closeMenu() {
+            if (mobileMenu.contains(document.activeElement)) {
+                menuBtn.focus();
+            }
             menuPanel.classList.add('translate-x-full');
             menuBackdrop.classList.remove('opacity-100');
             menuBackdrop.classList.add('opacity-0');

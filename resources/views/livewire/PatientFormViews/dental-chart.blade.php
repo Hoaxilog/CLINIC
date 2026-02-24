@@ -50,7 +50,7 @@
 
                             {{-- ORAL HYGIENE --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Oral Hygiene Status</label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Oral Hygiene Status <span class="text-red-600">*</span></label>
                                 <select wire:model="oralExam.oral_hygiene_status"
                                     @if ($isReadOnly) disabled @endif
                                     class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -68,7 +68,7 @@
 
                             {{-- CALCULAR DEPOSITS --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Calcular Deposits</label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Calcular Deposits <span class="text-red-600">*</span></label>
                                 <select wire:model="oralExam.calcular_deposits"
                                     @if ($isReadOnly) disabled @endif
                                     class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -85,7 +85,7 @@
 
                             {{-- GINGIVA --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Gingiva</label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Gingiva <span class="text-red-600">*</span></label>
                                 <select wire:model="oralExam.gingiva" @if ($isReadOnly) disabled @endif
                                     class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
                                     <option value="" disabled>Select...</option>
@@ -100,7 +100,7 @@
 
                             {{-- STAINS --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Stains</label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Stains <span class="text-red-600">*</span></label>
                                 <select wire:model="oralExam.stains" @if ($isReadOnly) disabled @endif
                                     class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
                                     <option value="" disabled>Select...</option>
@@ -116,7 +116,7 @@
 
                             {{-- COMPLETE DENTURE --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Complete Denture</label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Complete Denture <span class="text-red-600">*</span></label>
                                 <select wire:model="oralExam.complete_denture"
                                     @if ($isReadOnly) disabled @endif
                                     class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
@@ -133,7 +133,7 @@
 
                             {{-- PARTIAL DENTURE --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Partial Denture</label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Partial Denture <span class="text-red-600">*</span></label>
                                 <select wire:model="oralExam.partial_denture"
                                     @if ($isReadOnly) disabled @endif
                                     class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">

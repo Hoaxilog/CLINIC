@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 use Livewire\Component;
 use App\Models\Appointment;
 use App\Models\Patient;
@@ -258,7 +259,7 @@ class AppointmentCalendar extends Component
             'selectedService' => 'required',
             'selectedDate' => 'required',
             'selectedTime' => 'required',
-            'birthDate' => 'required', // <--- REQUIRED FIELD
+            'birthDate' => 'required',
         ]);
 
         try {
@@ -297,6 +298,7 @@ class AppointmentCalendar extends Component
             // Patient Logic
             $patient = DB::table('patients')->where('mobile_number', $this->contactNumber)->first();
             $patientId = null;
+            $normalizedBirthDate = $this->normalizeBirthDate($this->birthDate);
 
             if ($patient) {
                 $patientId = $patient->id;
@@ -305,7 +307,7 @@ class AppointmentCalendar extends Component
                     'first_name' => $this->firstName,
                     'last_name' => $this->lastName,
                     'middle_name' => $this->middleName,
-                    'birth_date' => $this->birthDate 
+                    'birth_date' => $normalizedBirthDate
                 ];
 
                 DB::table('patients')->where('id', $patientId)->update($patientUpdates);
@@ -342,7 +344,7 @@ class AppointmentCalendar extends Component
                     'last_name' => $this->lastName,
                     'middle_name' => $this->middleName,
                     'mobile_number' => $this->contactNumber,
-                    'birth_date' => $this->birthDate,
+                    'birth_date' => $normalizedBirthDate,
                     'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM'
                 ]);
 
@@ -359,7 +361,7 @@ class AppointmentCalendar extends Component
                             'last_name' => $this->lastName,
                             'middle_name' => $this->middleName,
                             'mobile_number' => $this->contactNumber,
-                            'birth_date' => $this->birthDate,
+                            'birth_date' => $normalizedBirthDate,
                         ],
                     ])
                     ->log('Created Patient');
@@ -423,6 +425,24 @@ class AppointmentCalendar extends Component
         ]);
 
         return true;
+    }
+
+    protected function normalizeBirthDate(?string $value): string
+    {
+        if (!is_string($value)) {
+            throw new InvalidFormatException('Birth date is required.');
+        }
+
+        $value = trim($value);
+        if ($value === '') {
+            throw new InvalidFormatException('Birth date is required.');
+        }
+
+        try {
+            return Carbon::parse($value)->format('Y-m-d');
+        } catch (\Throwable $e) {
+            throw new InvalidFormatException('Birth date is not a valid date.');
+        }
     }
 
     public function isSlotOccupied($date, $time)

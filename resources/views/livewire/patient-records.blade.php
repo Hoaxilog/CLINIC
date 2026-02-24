@@ -518,12 +518,6 @@
                                                                 View Full Record
                                                             </button>
                                                             @if (!$isPatientUser)
-                                                                @if (!empty($patient->pending_recovery_request_id))
-                                                                    <a href="{{ route('recovery.index', ['focus' => $patient->pending_recovery_request_id]) }}"
-                                                                        class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                                                                        View Recovery Request
-                                                                    </a>
-                                                                @endif
                                                                 <button type="button"
                                                                     class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
                                                                     wire:click="openLinkEmailModal({{ $patient->id }})"
