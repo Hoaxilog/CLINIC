@@ -39,14 +39,9 @@
                         </p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-sm lg:max-w-none lg:flex lg:flex-row">
-                            <a href="#"
+                            <a href="/register"
                                 class="inline-flex items-center justify-center min-w-[180px] px-8 py-4 bg-black text-white text-base font-bold border-2 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
                                 Join Our Platform <span class="ml-2">→</span>
-                            </a>
-
-                            <a href="#"
-                                class="inline-flex items-center justify-center min-w-[180px] px-8 py-4 bg-[#E5E7EB] text-black text-base font-bold border-2 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
-                                View Services <span class="ml-2">→</span>
                             </a>
                         </div>
                     </div>
@@ -189,7 +184,7 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
                     <div
                         class="group bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all overflow-hidden flex flex-col">
@@ -204,7 +199,7 @@
                                 condition.
                             </p>
                             <div class="flex items-center justify-between mt-auto">
-                                <a href="#"
+                                <a href="/services/general-checkup"
                                     class="font-black text-sm uppercase underline decoration-2 underline-offset-4 hover:text-[#0789da] transition-colors">Learn
                                     More</a>
 
@@ -224,7 +219,7 @@
                                 Modern braces and aligners to correct your smile and improve long-term dental health.
                             </p>
                             <div class="flex items-center justify-between mt-auto">
-                                <a href="#"
+                                <a href="/services/orthodontics"
                                     class="font-black text-sm uppercase underline decoration-2 underline-offset-4 hover:text-[#0789da] transition-colors">Learn
                                     More</a>
                             </div>
@@ -243,7 +238,26 @@
                                 Advance teeth whitening to brighten your smile up to 8 shades in a single session.
                             </p>
                             <div class="flex items-center justify-between mt-auto">
-                                <a href="#"
+                                <a href="/services/teeth-whitening"
+                                    class="font-black text-sm uppercase underline decoration-2 underline-offset-4 hover:text-[#0789da] transition-colors">Learn
+                                    More</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="group bg-white border-2 border-black  shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all overflow-hidden flex flex-col">
+                        <div class="h-48 border-b-4 border-black overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80"
+                                alt="Oral Surgery" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-2xl font-black text-black mb-3">Oral Surgery</h3>
+                            <p class="text-gray-600 font-medium text-sm mb-6 flex-grow leading-relaxed">
+                                Safe and precise procedures for impacted teeth, severe decay, and advanced oral health concerns.
+                            </p>
+                            <div class="flex items-center justify-between mt-auto">
+                                <a href="/services/oral-surgery"
                                     class="font-black text-sm uppercase underline decoration-2 underline-offset-4 hover:text-[#0789da] transition-colors">Learn
                                     More</a>
                             </div>
@@ -261,7 +275,7 @@
                         <p class="text-gray-700 mb-10 font-medium text-lg max-w-2xl mx-auto">
                             Tell us your goals and we'll recommend the best options for your smile.
                         </p>
-                        <a href="/bookings"
+                        <a href="/book"
                             class="inline-flex items-center bg-[#0789da] text-white font-black px-10 py-4 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all uppercase tracking-widest text-sm">
                             Get a Consultation <span class="ml-3">→</span>
                         </a>

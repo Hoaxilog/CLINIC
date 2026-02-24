@@ -11,6 +11,7 @@ use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\EmailRecoveryController;
+use App\Http\Controllers\ServiceController;
 use App\Livewire\appointment\BookAppointment;
 use App\Http\Controllers\Auth\GoogleLoginController;
 use App\Http\Controllers\Auth\VerificationController;
@@ -27,6 +28,14 @@ Route::get('/', function () {
 
 Route::get('/home', function () {
     return view('home-page');
+});
+
+// Service pages
+Route::prefix('services')->group(function () {
+    Route::get('/general-checkup', [ServiceController::class, 'generalCheckup'])->name('services.general-checkup');
+    Route::get('/orthodontics', [ServiceController::class, 'orthodontics'])->name('services.orthodontics');
+    Route::get('/teeth-whitening', [ServiceController::class, 'teethWhitening'])->name('services.teeth-whitening');
+    Route::get('/oral-surgery', [ServiceController::class, 'oralSurgery'])->name('services.oral-surgery');
 });
 
 // Public (guest) routes

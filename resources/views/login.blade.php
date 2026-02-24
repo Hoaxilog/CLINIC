@@ -12,7 +12,20 @@
         <!-- reCAPTCHA (shown after 3 failed attempts) -->
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     @endif
-</head>
+
+    <script>
+        function toggleLoginPassword() {
+            const passwordField = document.getElementById('login-password');
+            const eyeOpen = document.getElementById('login-eye-open');
+            const eyeClosed = document.getElementById('login-eye-closed');
+
+            const isHidden = passwordField.type === 'password';
+            passwordField.type = isHidden ? 'text' : 'password';
+
+            eyeClosed.classList.toggle('hidden', isHidden);
+            eyeOpen.classList.toggle('hidden', !isHidden);
+        }
+    </script>
 
 <body>
     <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -81,8 +94,21 @@
                                 </path>
                             </svg>
                         </span>
-                        <input type="password" placeholder="Password" name="password"
+                        <input type="password" id="login-password" placeholder="Password" name="password"
                             class="@error('password') border-red-500 @enderror w-full pl-10 pr-10 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-200" />
+                        <button type="button" onclick="toggleLoginPassword()"
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 transition"
+                            aria-label="Toggle password visibility">
+                            <svg id="login-eye-closed" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            <svg id="login-eye-open" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.58 10.58a2 2 0 102.83 2.83"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.88 5.09A10.94 10.94 0 0112 5c5 0 9.27 3.11 11 7a12.62 12.62 0 01-3.04 4.19M6.1 6.1A12.84 12.84 0 001 12c1.73 3.89 6 7 11 7 1.65 0 3.23-.34 4.66-.95"></path>
+                            </svg>
+                        </button>
                     </div>
                     <!-- Error & Forgot Password Group -->
                     <div class="flex flex-col mt-2">

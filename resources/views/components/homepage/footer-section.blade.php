@@ -11,7 +11,8 @@
                     patient-first approach.
                 </p>
                 <div class="flex space-x-4">
-                    <a href="#"
+                    <a href="https://facebook.com/TejaDentClinic" target="_blank" rel="noopener noreferrer"
+                        aria-label="Visit our Facebook page"
                         class="p-2 border-2 border-black bg-white shadow-[3px_3px_0px_0px_rgba(24,119,242,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
                         <svg class="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
                             <path
@@ -24,10 +25,10 @@
                 <h4 class="font-black uppercase text-sm tracking-widest mb-6 underline decoration-2 underline-offset-4">
                     Quick Links</h4>
                 <ul class="space-y-4 text-sm font-bold">
-                    <li><a href="#about" class="hover:text-[bg-[#0789da]] transition-colors">About Us</a></li>
-                    <li><a href="#services" class="hover:text-[bg-[#0789da]] transition-colors">Our Services</a></li>
-                    <li><a href="#contact" class="hover:text-[bg-[#0789da]] transition-colors">Location</a></li>
-                    <li><a href="/bookings" class="hover:text-[bg-[#0789da]] transition-colors">Book Appointment</a>
+                    <li><a href="#about" class="hover:text-[#0789da] transition-colors">About Us</a></li>
+                    <li><a href="#services" class="hover:text-[#0789da] transition-colors">Our Services</a></li>
+                    <li><a href="#contact" class="hover:text-[#0789da] transition-colors">Location</a></li>
+                    <li><a href="/book" class="hover:text-[#0789da] transition-colors">Book Appointment</a>
                     </li>
                 </ul>
             </div>
@@ -35,10 +36,14 @@
                 <h4 class="font-black uppercase text-sm tracking-widest mb-6 underline decoration-2 underline-offset-4">
                     Services</h4>
                 <ul class="space-y-4 text-sm font-bold text-gray-600">
-                    <li>General Dentistry</li>
-                    <li>Orthodontics</li>
-                    <li>Teeth Whitening</li>
-                    <li>Oral Surgery</li>
+                    <li><a href="/services/general-checkup" class="hover:text-[#0789da] transition-colors">General
+                            Dentistry</a></li>
+                    <li><a href="/services/orthodontics" class="hover:text-[#0789da] transition-colors">Orthodontics</a>
+                    </li>
+                    <li><a href="/services/teeth-whitening" class="hover:text-[#0789da] transition-colors">Teeth
+                            Whitening</a></li>
+                    <li><a href="/services/oral-surgery" class="hover:text-[#0789da] transition-colors">Oral Surgery</a>
+                    </li>
                 </ul>
             </div>
             <div>
