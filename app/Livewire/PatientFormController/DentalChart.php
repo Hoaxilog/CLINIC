@@ -4,6 +4,7 @@ namespace App\Livewire\PatientFormController;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
+use Illuminate\Validation\ValidationException;
 
 class DentalChart extends Component
 {
@@ -88,9 +89,18 @@ class DentalChart extends Component
     #[On('requestDentalChartData')]
     public function provideData()
     {
-        $this->validate(); 
+        try {
+            $this->validate();
+        } catch (ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
+            $field = $e->validator->errors()->keys()[0] ?? null;
+            if ($field) {
+                $this->dispatch('scroll-to-error', field: $field);
+            }
+            return;
+        }
 
-        if (!(count($this->history) > 1 || $this->isCreating)) {
+        if (!(count($this->history) > 0 || $this->isCreating)) {
             $fullData = [
                 'teeth' => $this->teeth,
                 'oral_exam' => $this->oralExam,
@@ -120,4 +130,3 @@ class DentalChart extends Component
         return view('livewire.PatientFormViews.dental-chart');
     }
 }
-

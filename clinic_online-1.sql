@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 22, 2026 at 01:11 PM
+-- Generation Time: Feb 24, 2026 at 11:43 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -198,7 +198,11 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_type`, `ev
 (132, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 90, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\",\"patient_name\":\"Legaspina, MDave Dela Vega\"}}', NULL, '2026-02-17 16:05:27', '2026-02-17 16:05:27'),
 (133, 'default', 'Admitted Appointment', 'App\\Models\\Appointment', 'appointment_admitted', 90, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Waiting\",\"service_id\":1,\"dentist_id\":null},\"attributes\":{\"status\":\"Ongoing\",\"service_id\":1,\"dentist_id\":2}}', NULL, '2026-02-17 16:05:28', '2026-02-17 16:05:28'),
 (134, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 91, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":101,\"patient_name\":\"JOELQWE, JOEL JOEL\",\"service_id\":\"2\",\"appointment_date\":\"2026-02-19 18:30:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-19 09:21:58', '2026-02-19 09:21:58'),
-(135, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 92, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":66,\"patient_name\":\"QWEQWE, ASDASDASD QWEQWE\",\"service_id\":\"2\",\"appointment_date\":\"2026-02-19 15:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-19 11:18:00', '2026-02-19 11:18:00');
+(135, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 92, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":66,\"patient_name\":\"QWEQWE, ASDASDASD QWEQWE\",\"service_id\":\"2\",\"appointment_date\":\"2026-02-19 15:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-19 11:18:00', '2026-02-19 11:18:00'),
+(136, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 25, 'App\\Models\\User', 2, '{\"old\":{\"first_name\":\"CLARENZ LUIGI\",\"last_name\":\"ROSALES\",\"middle_name\":\"SALUMBIDES\",\"birth_date\":\"2003-04-29\"},\"attributes\":{\"first_name\":\"CLARENZ LUIGI\",\"last_name\":\"ROSALES\",\"middle_name\":\"SALUMBIDES\",\"birth_date\":\"2026-02-24\"}}', NULL, '2026-02-23 18:29:11', '2026-02-23 18:29:11'),
+(137, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 95, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":25,\"patient_name\":\"ROSALES, CLARENZ LUIGI SALUMBIDES\",\"service_id\":\"2\",\"appointment_date\":\"2026-02-24 09:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-23 18:29:11', '2026-02-23 18:29:11'),
+(138, 'default', 'Created Patient', 'App\\Models\\Patient', 'patient_created', 118, 'App\\Models\\User', 2, '{\"attributes\":{\"first_name\":\"SDAXCXZZ\",\"last_name\":\"CZXXXXXXXXX\",\"middle_name\":\"ZZZZZZC\",\"mobile_number\":\"21333\",\"birth_date\":\"2026-02-24\"}}', NULL, '2026-02-23 18:33:30', '2026-02-23 18:33:30'),
+(139, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 96, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"patient_name\":\"CZXXXXXXXXX, SDAXCXZZ ZZZZZZC\",\"service_id\":\"2\",\"appointment_date\":\"2026-02-24 10:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-23 18:33:31', '2026-02-23 18:33:31');
 
 -- --------------------------------------------------------
 
@@ -292,7 +296,9 @@ INSERT INTO `appointments` (`id`, `appointment_date`, `status`, `service_id`, `p
 (91, '2026-02-19 18:30:00', 'Scheduled', 2, 101, NULL, 'sample', '2026-02-19 09:21:57', '2026-02-19 09:21:57'),
 (92, '2026-02-19 15:00:00', 'Scheduled', 2, 66, NULL, 'sample', '2026-02-19 11:17:59', '2026-02-19 11:17:59'),
 (93, '2026-02-26 09:00:00', 'Pending', 1, 109, NULL, 'romebernacer123@gmail.com', '2026-02-22 07:38:16', '2026-02-22 07:38:16'),
-(94, '2026-02-26 09:00:00', 'Pending', 1, 109, NULL, 'romebernacer123@gmail.com', '2026-02-22 07:38:19', '2026-02-22 07:38:19');
+(94, '2026-02-26 09:00:00', 'Pending', 1, 109, NULL, 'romebernacer123@gmail.com', '2026-02-22 07:38:19', '2026-02-22 07:38:19'),
+(95, '2026-02-24 09:00:00', 'Scheduled', 2, 25, NULL, 'sample', '2026-02-23 18:29:11', '2026-02-23 18:29:11'),
+(96, '2026-02-24 10:00:00', 'Scheduled', 2, 118, NULL, 'sample', '2026-02-23 18:33:31', '2026-02-23 18:33:31');
 
 -- --------------------------------------------------------
 
@@ -493,7 +499,7 @@ INSERT INTO `patients` (`id`, `last_name`, `first_name`, `mobile_number`, `middl
 (21, 'u', 'u', '45', 'u', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SYSTEM', '2025-11-16 15:25:43', '2025-11-16 15:25:43'),
 (22, 'N', 'N', '23411', 'N', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SYSTEM', '2025-11-16 17:31:44', '2025-11-16 17:31:44'),
 (24, 'ROSALES', 'RENZ ', '67', 'SALUMBIDES', NULL, NULL, NULL, NULL, NULL, '2107 Rosal Street, Batasan Hills Quezon City', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SYSTEM', '2025-11-17 01:30:45', '2025-11-17 08:41:18'),
-(25, 'ROSALES', 'CLARENZ LUIGI', '092259951316', 'SALUMBIDES', NULL, NULL, '2003-04-29', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SYSTEM', '2025-11-17 03:53:26', '2025-11-17 03:53:26'),
+(25, 'ROSALES', 'CLARENZ LUIGI', '092259951316', 'SALUMBIDES', NULL, NULL, '2026-02-24', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SYSTEM', '2025-11-17 03:53:26', '2026-02-23 18:29:11'),
 (26, 'LAARA', 'LAARA', '543333434', 'LAARA', NULL, NULL, '2025-11-17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SYSTEM', '2025-11-17 14:40:33', '2025-11-17 14:40:33'),
 (27, 'ROSALES', 'LUIS', '0951316', '', '', 'ELECTRICIAN', '2003-04-29', 'Male', 'SINGLE', '2107 ROSAL STREET', '', '', '', '', '', 'LAARA ROSALES', '0997', 'DAUGHTER', '', '', '', '', '', '', '', '', 'SYSTEM', '2025-11-18 08:07:06', '2025-11-18 08:07:06'),
 (28, 'THIS IS FIRST', 'THIS IS FIRST', '78437843', 'THIS IS FIRST', NULL, NULL, '2003-04-29', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SYSTEM', '2025-11-18 22:41:05', '2025-11-18 22:41:05'),
@@ -538,7 +544,8 @@ INSERT INTO `patients` (`id`, `last_name`, `first_name`, `mobile_number`, `middl
 (114, 'Rosales', 'Dale', '0997727222', 'Salumbides', 'DAASDDAS', 'Construction Worker', '2000-01-22', 'Male', 'Single', '2107 Rosal St Batasan Hills Quezon City', NULL, NULL, NULL, NULL, NULL, 'Luis Rosales', '77237832782378', 'Father', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-22 16:32:07', '2026-01-22 19:25:26'),
 (115, 'ZCX', 'GHJK', '099873278', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'renzzluigi@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-07 16:25:23', '2026-02-07 16:28:37'),
 (116, 'DSA', 'ASD', '213', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sdjklsdfjkl@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-07 16:35:49', '2026-02-07 16:35:49'),
-(117, 'dasasdsda', 'sdaasd', '21', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'renzzluigi@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-02-07 17:14:19', '2026-02-22 00:41:09');
+(117, 'dasasdsda', 'sdaasd', '21', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'renzzluigi@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-02-07 17:14:19', '2026-02-22 00:41:09'),
+(118, 'CZXXXXXXXXX', 'SDAXCXZZ', '21333', 'ZZZZZZC', NULL, NULL, '2026-02-24', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-02-23 18:33:30', '2026-02-23 18:33:30');
 
 -- --------------------------------------------------------
 
@@ -683,7 +690,10 @@ INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `verificati
 (29, 'asdasdasdasd@SDFSD', 'asdasdasdasd@SDFSD', NULL, 'tWHRug3RnKdNvcq81yiM8mC0gmpTGlzhEfeLZa7wR0tABWsQD348XGbHkX5Exb0m', '$2y$12$3LuJ55u.K4LccFFhXglQ.e7ntbAQSbUWPQgYJUSHVyWwMblmuQivW', NULL, 3, NULL, NULL, '2026-01-31 20:10:10', '2026-01-31 20:10:10'),
 (30, 'ertertert@SDFSD', 'ertertert@SDFSD', NULL, 'Axr2AAdjB5WKobOZUY4JA8VfErgBX8y1Gv999lSBJfTfSVOonaBHZCmAp5McDDxr', '$2y$12$SvAd2D3A1MeptEAxtpsBEOY2NpYTMVpB.qFGDlehttB2K8kNhYxXW', NULL, 3, NULL, NULL, '2026-01-31 20:15:08', '2026-01-31 20:15:08'),
 (31, 'xcvrewwercvx@SDFSD', 'xcvrewwercvx@SDFSD', NULL, 'zoarjeers8XDf57Tmx0h6wPM5gOozrzt81ZntW1ImpIYAMLj90ktoooHgQzxejfa', '$2y$12$FGU.47Sj.yPdu35MnTS6s.Km3LuirVuqKTTn6xKMYW2PKJStPb8jO', NULL, 3, NULL, NULL, '2026-01-31 20:15:25', '2026-01-31 20:15:25'),
-(38, 'romebernacer123@gmail.com', 'romebernacer123@gmail.com', '2026-02-22 07:06:15', NULL, '$2y$12$7JGDwFWPeCw/xOC6kiOyxOyJDuMgQf7xX99E7cHOYaLS7Yy.4co1W', '110245913908251152122', 3, NULL, NULL, '2026-02-22 13:16:48', '2026-02-22 15:06:15');
+(38, 'romebernacer123@gmail.com', 'romebernacer123@gmail.com', '2026-02-22 07:06:15', NULL, '$2y$12$7JGDwFWPeCw/xOC6kiOyxOyJDuMgQf7xX99E7cHOYaLS7Yy.4co1W', '110245913908251152122', 3, NULL, NULL, '2026-02-22 13:16:48', '2026-02-22 15:06:15'),
+(39, 'cerineo123@gmail.com', 'cerineo123@gmail.com', '2026-02-24 03:11:20', NULL, '$2y$12$HR1QGNDxHQbxYXTwUypEU.IuXfVOWu//YxwtvDHX3Wm4uDdUeZqa2', '113587128745289601695', 3, NULL, NULL, '2026-02-23 13:55:10', '2026-02-24 11:11:20'),
+(40, 'johnrickgalor9@gmail.com', 'johnrickgalor9@gmail.com', NULL, 'kyezi7ollWDxDUu8bHrNhXNbgT4ZZ7EyIqrZUeH9SUjZSgabuzNW1FzSdSsLP4LB', '$2y$12$QT0Z1oyi5qoZZk3SuayKY.aV2ze5sSzNKLH0d1kFmphuj9pNNF/gS', NULL, 3, NULL, NULL, '2026-02-23 23:05:43', '2026-02-23 23:05:43'),
+(41, 'LJKASDKSJKLAJKL@GMAIL.COM', 'LJKASDKSJKLAJKL@GMAIL.COM', NULL, 'R22xH6qDFffuJKf0FbHWXCDj2h7Gykb7VwHsOEHG31rmh0CrwrF1GiCLdeVQoKRt', '$2y$12$C0b/4Ui.Un0QUs5ciGhSKObQ39/w1tA5kEeAH8jvn7mgrhyqvErfq', NULL, 3, NULL, NULL, '2026-02-24 03:12:24', '2026-02-24 03:12:24');
 
 --
 -- Indexes for dumped tables
@@ -804,13 +814,13 @@ ALTER TABLE `account_recovery_requests`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=140;
 
 --
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT for table `dental_charts`
@@ -834,7 +844,7 @@ ALTER TABLE `notes`
 -- AUTO_INCREMENT for table `patients`
 --
 ALTER TABLE `patients`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
 
 --
 -- AUTO_INCREMENT for table `patient_records`
@@ -864,7 +874,7 @@ ALTER TABLE `treatment_records`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- Constraints for dumped tables

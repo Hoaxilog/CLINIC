@@ -25,6 +25,10 @@ class BookAppointment extends Component
 
     public function mount()
     {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
         $this->selectedDate = now()->toDateString();
         $this->availableSlots = $this->generateSlots($this->selectedDate);
 

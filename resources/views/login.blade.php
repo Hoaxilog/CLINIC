@@ -27,7 +27,10 @@
         }
     </script>
 
-<body>
+<body class="bg-gray-50 min-h-screen">
+    @include('components.homepage.header-section')
+
+    <main>
     <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl flex max-w-4xl w-full overflow-hidden">
             <!-- Left Side: Image -->
@@ -163,6 +166,10 @@
             </form>
         </div>
     </div>
+    </main>
+
+    @include('components.homepage.footer-section')
+    @include('components.homepage.scripts-section')
 </body>
 
 </html>

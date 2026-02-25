@@ -4,53 +4,77 @@
         <h2 class="text-xl font-bold text-black">Patient Information</h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        
+
         <!-- Last Name -->
         <div>
-            <label for="last_name" class="block text-lg font-medium text-gray-700 mb-2">Last Name <span class="text-red-600">*</span></label>
-            <input wire:model.defer="last_name" type="text" id="last_name" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Dela Cruz">
-            @error('last_name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="last_name" class="block text-lg font-medium text-gray-700 mb-2">Last Name <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="last_name" type="text" id="last_name"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Dela Cruz">
+            @error('last_name')
+                <span data-error-for="last_name" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
-        
+
         <!-- First Name -->
         <div>
-            <label for="first_name" class="block text-lg font-medium text-gray-700 mb-2">First Name <span class="text-red-600">*</span></label>
-            <input wire:model.defer="first_name" type="text" id="first_name" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Juan">
-            @error('first_name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="first_name" class="block text-lg font-medium text-gray-700 mb-2">First Name <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="first_name" type="text" id="first_name"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Juan">
+            @error('first_name')
+                <span data-error-for="first_name" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Middle Name -->
         <div>
-            <label for="middle_name" class="block text-lg font-medium text-gray-700 mb-2">Middle Name <span class="text-red-600">*</span></label>
-            <input wire:model.defer="middle_name" type="text" id="middle_name" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Reyes">
-            @error('middle_name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="middle_name" class="block text-lg font-medium text-gray-700 mb-2">Middle Name <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="middle_name" type="text" id="middle_name"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Reyes">
+            @error('middle_name')
+                <span data-error-for="middle_name" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Nickname -->
         <div>
             <label for="nickname" class="block text-lg font-medium text-gray-700 mb-2">Nickname</label>
-            <input wire:model.defer="nickname" type="text" id="nickname" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Juan">
-            @error('nickname') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <input wire:model.defer="nickname" type="text" id="nickname"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Juan">
+            @error('nickname')
+                <span data-error-for="nickname" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Occupation -->
         <div>
-            <label for="occupation" class="block text-lg font-medium text-gray-700 mb-2">Occupation <span class="text-red-600">*</span></label>
-            <input wire:model.defer="occupation" type="text" id="occupation" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Engineer">
-            @error('occupation') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="occupation" class="block text-lg font-medium text-gray-700 mb-2">Occupation <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="occupation" type="text" id="occupation"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Engineer">
+            @error('occupation')
+                <span data-error-for="occupation" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Date of Birth -->
         <div>
-            <label for="birth_date" class="block text-lg font-medium text-gray-700 mb-2">Date of Birth <span class="text-red-600">*</span></label>
-            <input wire:model.live="birth_date" type="date" id="birth_date" class="w-full border rounded px-4 py-3 text-base">
-            @error('birth_date') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="birth_date" class="block text-lg font-medium text-gray-700 mb-2">Date of Birth <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.live="birth_date" type="date" id="birth_date"
+                class="w-full border rounded px-4 py-3 text-base">
+            @error('birth_date')
+                <span data-error-for="birth_date" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
-        
+
         <!-- Age (Readonly) -->
         <div>
             <label class="block text-lg font-medium text-gray-700 mb-2">Age</label>
-            <input type="text" value="{{ $this->age }}" readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100" placeholder="Age">
+            <input type="text" value="{{ $this->age }}" readonly
+                class="w-full border rounded px-4 py-3 text-base bg-gray-100" placeholder="Age">
         </div>
 
         <!-- Sex (Select) -->
@@ -61,65 +85,97 @@
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
             </select>
-            @error('gender') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            @error('gender')
+                <span data-error-for="gender" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
 
         </div>
 
         <!-- Civil Status -->
         <div>
-            <label for="civil_status" class="block text-lg font-medium text-gray-700 mb-2">Civil Status <span class="text-red-600">*</span></label>
-            <input wire:model.defer="civil_status" type="text" id="civil_status" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Single">
-            @error('civil_status') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-        </div>
-        
-        <!-- Home Address -->
-        <div class="col-span-1 md:col-span-2">
-            <label for="home_address" class="block text-lg font-medium text-gray-700 mb-2">Home Address <span class="text-red-600">*</span></label>
-            <input wire:model.defer="home_address" type="text" id="home_address" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 123 Rizal St, Brgy. 1, Manila">
-            @error('home_address') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="civil_status" class="block text-lg font-medium text-gray-700 mb-2">Civil Status <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="civil_status" type="text" id="civil_status"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Single">
+            @error('civil_status')
+                <span data-error-for="civil_status" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
-        
+        <!-- Home Address -->
+        <div class="col-span-1 md:col-span-2">
+            <label for="home_address" class="block text-lg font-medium text-gray-700 mb-2">Home Address <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="home_address" type="text" id="home_address"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 123 Rizal St, Brgy. 1, Manila">
+            @error('home_address')
+                <span data-error-for="home_address" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
+        </div>
+
+
         <!-- Home Phone Number -->
         <div>
             <label for="home_number" class="block text-lg font-medium text-gray-700 mb-2">Home Phone Number</label>
-            <input wire:model.defer="home_number" type="text" id="home_number" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., (02) 8123 4567">
-            @error('home_number') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <input wire:model.defer="home_number" type="number" id="home_number"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., (02) 8123 4567">
+            @error('home_number')
+                <span data-error-for="home_number" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
-        
+
         <!-- Office Address -->
         <div class="col-span-1 md:col-span-2">
             <label for="office_address" class="block text-lg font-medium text-gray-700 mb-2">Office Address</label>
-            <input wire:model.defer="office_address" type="text" id="office_address" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 456 Ayala Ave, Makati">
-            @error('office_address') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <input wire:model.defer="office_address" type="text" id="office_address"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 456 Ayala Ave, Makati">
+            @error('office_address')
+                <span data-error-for="office_address" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
-        
+
         <!-- Office Phone Number -->
         <div>
-            <label for="office_number" class="block text-lg font-medium text-gray-700 mb-2">Office Phone Number</label>
-            <input wire:model.defer="office_number" type="text" id="office_number" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., (02) 8888 8888">
-            @error('office_number') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="office_number" class="block text-lg font-medium text-gray-700 mb-2">Office Phone
+                Number</label>
+            <input wire:model.defer="office_number" type="number" id="office_number"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., (02) 8888 8888">
+            @error('office_number')
+                <span data-error-for="office_number" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Mobile Number -->
         <div>
-            <label for="mobile_number" class="block text-lg font-medium text-gray-700 mb-2">Mobile Number <span class="text-red-600">*</span></label>
-            <input wire:model.defer="mobile_number" type="text" id="mobile_number" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0917 123 4567">
-            @error('mobile_number') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="mobile_number" class="block text-lg font-medium text-gray-700 mb-2">Mobile Number <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="mobile_number" type="number" id="mobile_number"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0917 123 4567">
+            @error('mobile_number')
+                <span data-error-for="mobile_number" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- E-mail Address -->
         <div>
-            <label for="email_address" class="block text-lg font-medium text-gray-700 mb-2">E-mail Address</label>
-            <input wire:model.defer="email_address" type="email" id="email_address" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., juan.delacruz@gmail.com">
-            @error('email_address') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="email_address" class="block text-lg font-medium text-gray-700 mb-2">E-mail Address <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="email_address" type="email" id="email_address"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., juan.delacruz@gmail.com">
+            @error('email_address')
+                <span data-error-for="email_address" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Referral -->
         <div class="col-span-1 md:col-span-3">
-            <label for="referral" class="block text-lg font-medium text-gray-700 mb-2">Whom may we thank for referring you?</label>
-            <input wire:model.defer="referral" type="text" id="referral" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Dr. Santos / Maria Lim">
-            @error('referral') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="referral" class="block text-lg font-medium text-gray-700 mb-2">Whom may we thank for referring
+                you?</label>
+            <input wire:model.defer="referral" type="text" id="referral"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Dr. Santos / Maria Lim">
+            @error('referral')
+                <span data-error-for="referral" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
     </div>
 
@@ -128,91 +184,134 @@
         <h2 class="text-xl font-bold text-black">Person to Contact in Case of Emergency</h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        
+
         <!-- Emergency Contact Name -->
         <div>
-            <label for="emergency_contact_name" class="block text-lg font-medium text-gray-700 mb-2">Name <span class="text-red-600">*</span></label>
-            <input wire:model.defer="emergency_contact_name" type="text" id="emergency_contact_name" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Maria Dela Cruz">
-            @error('emergency_contact_name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="emergency_contact_name" class="block text-lg font-medium text-gray-700 mb-2">Name <span
+                    class="text-red-600">*</span></label>
+            <input wire:model.defer="emergency_contact_name" type="text" id="emergency_contact_name"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Maria Dela Cruz">
+            @error('emergency_contact_name')
+                <span data-error-for="emergency_contact_name" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Emergency Contact Number -->
         <div>
-            <label for="emergency_contact_number" class="block text-lg font-medium text-gray-700 mb-2">Contact Number <span class="text-red-600">*</span></label>
-            <input wire:model.defer="emergency_contact_number" type="text" id="emergency_contact_number" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0918 765 4321">
-            @error('emergency_contact_number') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="emergency_contact_number" class="block text-lg font-medium text-gray-700 mb-2">Contact Number
+                <span class="text-red-600">*</span></label>
+            <input wire:model.defer="emergency_contact_number" type="number" id="emergency_contact_number"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0918 765 4321">
+            @error('emergency_contact_number')
+                <span data-error-for="emergency_contact_number" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Relationship to Patient -->
         <div>
-            <label for="relationship" class="block text-lg font-medium text-gray-700 mb-2">Relationship to Patient <span class="text-red-600">*</span></label>
-            <input wire:model.defer="relationship" type="text" id="relationship" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Spouse">
-            @error('relationship') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+            <label for="relationship" class="block text-lg font-medium text-gray-700 mb-2">Relationship to Patient
+                <span class="text-red-600">*</span></label>
+            <input wire:model.defer="relationship" type="text" id="relationship"
+                class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Spouse">
+            @error('relationship')
+                <span data-error-for="relationship" class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
     </div>
 
     <!-- Below 18 -->
-    @if($this->age < 18 && $this->age !== null)
+    @if ($this->age < 18 && $this->age !== null)
         <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
             <h2 class="text-xl font-bold text-black">For Patient's Below 18 Years Old</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+
             <!-- Who is Answering -->
             <div>
-                <label for="who_answering" class="block text-lg font-medium text-gray-700 mb-2">Who is Answering this form on behalf of the patient? <span class="text-red-600">*</span></label>
-                <input wire:model.defer="who_answering" type="text" id="who_answering" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Maria Dela Cruz">
-                @error('who_answering') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <label for="who_answering" class="block text-lg font-medium text-gray-700 mb-2">Who is Answering this
+                    form on behalf of the patient? <span class="text-red-600">*</span></label>
+                <input wire:model.defer="who_answering" type="text" id="who_answering"
+                    class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Maria Dela Cruz">
+                @error('who_answering')
+                    <span data-error-for="who_answering" class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Relationship to Patient -->
             <div>
-                <label for="relationship_to_patient" class="block text-lg font-medium text-gray-700 mb-2">Relationship to Patient <span class="text-red-600">*</span></label>
-                <input wire:model.defer="relationship_to_patient" type="text" id="relationship_to_patient" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Mother">
-                @error('relationship_to_patient') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <label for="relationship_to_patient" class="block text-lg font-medium text-gray-700 mb-2">Relationship
+                    to Patient <span class="text-red-600">*</span></label>
+                <input wire:model.defer="relationship_to_patient" type="text" id="relationship_to_patient"
+                    class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Mother">
+                @error('relationship_to_patient')
+                    <span data-error-for="relationship_to_patient"
+                        class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Father's Name -->
             <div>
                 <label for="father_name" class="block text-lg font-medium text-gray-700 mb-2">Father's Name</label>
-                <input wire:model.defer="father_name" type="text" id="father_name" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Pedro Dela Cruz">
-                @error('father_name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <input wire:model.defer="father_name" type="text" id="father_name"
+                    class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Pedro Dela Cruz">
+                @error('father_name')
+                    <span data-error-for="father_name" class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Father's Contact Number -->
             <div>
-                <label for="father_number" class="block text-lg font-medium text-gray-700 mb-2">Father's Contact Number</label>
-                <input wire:model.defer="father_number" type="text" id="father_number" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0915 111 2222">
-                @error('father_number') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <label for="father_number" class="block text-lg font-medium text-gray-700 mb-2">Father's Contact
+                    Number</label>
+                <input wire:model.defer="father_number" type="number" id="father_number"
+                    class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0915 111 2222">
+                @error('father_number')
+                    <span data-error-for="father_number" class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Mother's Name -->
             <div>
                 <label for="mother_name" class="block text-lg font-medium text-gray-700 mb-2">Mother's Name</label>
-                <input wire:model.defer="mother_name" type="text" id="mother_name" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Maria Dela Cruz">
-                @error('mother_name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <input wire:model.defer="mother_name" type="text" id="mother_name"
+                    class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Maria Dela Cruz">
+                @error('mother_name')
+                    <span data-error-for="mother_name" class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Mother's Contact Number -->
             <div>
-                <label for="mother_number" class="block text-lg font-medium text-gray-700 mb-2">Mother's Contact Number</label>
-                <input wire:model.defer="mother_number" type="text" id="mother_number" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0916 333 4444">
-                @error('mother_number') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <label for="mother_number" class="block text-lg font-medium text-gray-700 mb-2">Mother's Contact
+                    Number</label>
+                <input wire:model.defer="mother_number" type="number" id="mother_number"
+                    class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0916 333 4444">
+                @error('mother_number')
+                    <span data-error-for="mother_number" class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Guardian's Name -->
             <div>
-                <label for="guardian_name" class="block text-lg font-medium text-gray-700 mb-2">Guardian's Name</label>
-                <input wire:model.defer="guardian_name" type="text" id="guardian_name" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Jose Santos">
-                @error('guardian_name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <label for="guardian_name" class="block text-lg font-medium text-gray-700 mb-2">Guardian's
+                    Name</label>
+                <input wire:model.defer="guardian_name" type="text" id="guardian_name"
+                    class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., Jose Santos">
+                @error('guardian_name')
+                    <span data-error-for="guardian_name" class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Guardian's Contact Number -->
             <div>
-                <label for="guardian_number" class="block text-lg font-medium text-gray-700 mb-2">Guardian's Contact Number</label>
-                <input wire:model.defer="guardian_number" type="text" id="guardian_number" class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0917 555 6666">
-                @error('guardian_number') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <label for="guardian_number" class="block text-lg font-medium text-gray-700 mb-2">Guardian's Contact
+                    Number</label>
+                <input wire:model.defer="guardian_number" type="number" id="guardian_number"
+                    class="w-full border rounded px-4 py-3 text-base" placeholder="e.g., 0917 555 6666">
+                @error('guardian_number')
+                    <span data-error-for="guardian_number" class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
         </div>
     @endif

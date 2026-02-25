@@ -378,7 +378,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number <span class="text-red-600">*</span></label>
-                            <input wire:model="contactNumber" type="text"
+                            <input wire:model="contactNumber" type="number"
                                 class="border w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium"
                                 @if ($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
                             @error('contactNumber')
@@ -426,10 +426,8 @@
                         @if ($isViewing)
                             {{-- === VIEWING MODE (Flow Logic) === --}}
                             @if (!in_array($appointmentStatus, ['Cancelled', 'Completed']))
-                                <button type="button" data-confirm-action="updateStatus"
-                                    data-confirm-args='["Cancelled"]' data-confirm-title="Cancel Appointment"
-                                    data-confirm-message="Are you sure you want to cancel this appointment?"
-                                    data-confirm-text="Cancel"
+                                <button type="button" wire:click="updateStatus('Cancelled')"
+                                    wire:confirm="Are you sure you want to cancel this appointment?"
                                     class="px-5 py-2.5 rounded-lg text-red-600 font-medium hover:bg-red-50 border border-transparent hover:border-red-100 mr-auto transition">
                                     Cancel Appointment
                                 </button>
@@ -437,17 +435,13 @@
 
                             @if ($appointmentStatus === 'Pending')
                                 @if (auth()->user()->role !== 3)
-                                    <button type="button" data-confirm-action="updateStatus"
-                                        data-confirm-args='["Scheduled"]' data-confirm-title="Approve Appointment"
-                                        data-confirm-message="Approve this appointment request?"
-                                        data-confirm-text="Approve"
+                                    <button type="button" wire:click="updateStatus('Scheduled')"
+                                        wire:confirm="Approve this appointment request?"
                                         class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition">
                                         Approve
                                     </button>
-                                    <button type="button" data-confirm-action="updateStatus"
-                                        data-confirm-args='["Cancelled"]' data-confirm-title="Reject Appointment"
-                                        data-confirm-message="Reject this appointment request?"
-                                        data-confirm-text="Reject"
+                                    <button type="button" wire:click="updateStatus('Cancelled')"
+                                        wire:confirm="Reject this appointment request?"
                                         class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold shadow-md hover:shadow-lg transition">
                                         Reject
                                     </button>
@@ -457,9 +451,8 @@
                                     class="px-6 py-2.5 rounded-lg bg-white border-2 border-blue-600 text-blue-700 font-bold hover:bg-blue-50 transition">
                                     Update Patient Info
                                 </button>
-                                <button type="button" data-confirm-action="updateStatus"
-                                    data-confirm-args='["Waiting"]' data-confirm-title="Mark Ready"
-                                    data-confirm-message="Confirm patient is ready?" data-confirm-text="Mark Ready"
+                                <button type="button" wire:click="updateStatus('Waiting')"
+                                    wire:confirm="Confirm patient is ready?"
                                     class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -477,10 +470,8 @@
                                 </button>
 
                                 @if (auth()->user()->role === 1)
-                                    <button type="button" data-confirm-action="admitPatient"
-                                        data-confirm-title="Admit Patient"
-                                        data-confirm-message="Admit this patient to the chair now?"
-                                        data-confirm-text="Admit"
+                                    <button type="button" wire:click="admitPatient"
+                                        wire:confirm="Admit this patient to the chair now?"
                                         class="px-6 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -503,10 +494,8 @@
                                         View Dental Chart
                                     </button>
                                 @endif
-                                <button type="button" data-confirm-action="updateStatus"
-                                    data-confirm-args='["Completed"]' data-confirm-title="Complete Appointment"
-                                    data-confirm-message="Mark this appointment as completed?"
-                                    data-confirm-text="Complete"
+                                <button type="button" wire:click="updateStatus('Completed')"
+                                    wire:confirm="Mark this appointment as completed?"
                                     class="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -542,54 +531,7 @@
     @endif
     <livewire:patient-form-controller.patient-form-modal />
 
-    @if (session()->has('success') || session()->has('error') || session()->has('info'))
-        <div id="calendar-toast"
-            class="fixed bottom-5 right-5 z-[70] flex items-center gap-3 px-6 py-4 rounded-lg shadow-xl border transform transition-all duration-300 ease-in-out translate-y-0 opacity-100
-        @if (session('success')) bg-green-50 border-green-200 text-green-800 
-        @elseif(session('error')) bg-red-50 border-red-200 text-red-800 
-        @else bg-blue-50 border-blue-200 text-blue-800 @endif">
-            @if (session('success'))
-                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            @elseif(session('error'))
-                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            @else
-                <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            @endif
-
-            <div class="font-medium text-sm">
-                {{ session('success') ?? (session('error') ?? session('info')) }}
-            </div>
-
-            <button onclick="document.getElementById('calendar-toast').remove()"
-                class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none">
-                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clip-rule="evenodd" />
-                </svg>
-            </button>
-
-            <script>
-                setTimeout(function() {
-                    var toast = document.getElementById('calendar-toast');
-                    if (toast) {
-                        toast.style.opacity = '0';
-                        toast.style.transform = 'translateY(10px)';
-                        setTimeout(function() {
-                            toast.remove();
-                        }, 500);
-                    }
-                }, 5000);
-            </script>
-        </div>
-    @endif
+    @include('components.flash-toast')
 </div>
+
+

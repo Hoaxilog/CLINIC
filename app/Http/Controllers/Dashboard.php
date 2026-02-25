@@ -94,6 +94,18 @@ class Dashboard extends Controller
             $rangeDays = $today->diffInDays($rangeStart) + 1;
         }
 
+        $last30Start = $today->copy()->subDays(29)->startOfDay();
+        $last30End = $today->copy()->endOfDay();
+
+        $bookedLast30 = DB::table('appointments')
+            ->whereBetween('appointment_date', [$last30Start, $last30End])
+            ->count();
+
+        $cancelledLast30 = DB::table('appointments')
+            ->whereBetween('appointment_date', [$last30Start, $last30End])
+            ->where('status', 'Cancelled')
+            ->count();
+
         $todayAppointmentsCount = DB::table('appointments')
             ->whereDate('appointment_date', $today)
             ->count();
@@ -293,6 +305,8 @@ class Dashboard extends Controller
             'trendProfit'            => $trendProfit,
             'statusLabels'           => $statusLabels,
             'statusCounts'           => $statusCounts,
+            'bookedLast30'           => $bookedLast30,
+            'cancelledLast30'        => $cancelledLast30,
             'nextAppointments'       => $nextAppointments,
             'pendingApprovalsCount'  => $pendingApprovalsCount,
             'totalPatients'          => $totalPatients,

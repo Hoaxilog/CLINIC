@@ -527,13 +527,8 @@
                                                             @endif
                                                             @if (!$isPatientUser)
                                                                 <button type="button"
-                                                                    data-confirm-action="deletePatient"
-                                                                    data-confirm-args='[{{ $patient->id }}]'
-                                                                    data-confirm-title="Delete Patient"
-                                                                    data-confirm-message="Are you sure you want to delete this patient? All associated records will be removed permanently."
-                                                                    data-confirm-text="Delete"
                                                                     class="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                                                                    onclick="event.stopPropagation();">
+                                                                    onclick="event.stopPropagation(); if (confirm('Delete this patient? This cannot be undone.')) { @this.deletePatient({{ $patient->id }}) }">
                                                                     Delete
                                                                 </button>
                                                             @endif
@@ -582,13 +577,10 @@
                                         {{ $patient->patient_type ?? 'Inactive' }}
                                     </span>
                                     @if (!$isPatientUser)
-                                        <button type="button" data-confirm-action="deletePatient"
-                                            data-confirm-args='[{{ $patient->id }}]'
-                                            data-confirm-title="Delete Patient"
-                                            data-confirm-message="Are you sure you want to delete this patient? All associated records will be removed permanently."
-                                            data-confirm-text="Delete"
+                                        <button type="button"
                                             class="p-2 rounded-full hover:bg-red-50 transition-colors"
-                                            title="Delete Patient">
+                                            title="Delete Patient"
+                                            onclick="event.stopPropagation(); if (confirm('Delete this patient? This cannot be undone.')) { @this.deletePatient({{ $patient->id }}) }">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                                 width="20" height="20" color="#f56e6e" fill="none"
                                                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -660,63 +652,7 @@
 
     @endif
 
-    {{-- ========================================== --}}
-    {{-- GLOBAL NOTIFICATION TOAST (Add this block) --}}
-    {{-- ========================================== --}}
-    @if (session()->has('success') || session()->has('error') || session()->has('info'))
-        <div id="notification-toast"
-            class="fixed bottom-5 right-5 z-[60] flex items-center gap-3 px-6 py-4 rounded-lg shadow-xl border transform transition-all duration-300 ease-in-out translate-y-0 opacity-100
-        @if (session('success')) bg-green-50 border-green-200 text-green-800 
-        @elseif(session('error')) bg-red-50 border-red-200 text-red-800 
-        @else bg-blue-50 border-blue-200 text-blue-800 @endif">
-            {{-- Icons --}}
-            @if (session('success'))
-                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            @elseif(session('error'))
-                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            @else
-                <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            @endif
-
-            {{-- Message --}}
-            <div class="font-medium text-sm">
-                {{ session('success') ?? (session('error') ?? session('info')) }}
-            </div>
-
-            {{-- Close Button --}}
-            <button onclick="document.getElementById('notification-toast').remove()"
-                class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none">
-                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clip-rule="evenodd" />
-                </svg>
-            </button>
-
-            {{-- Auto-Hide Script --}}
-            <script>
-                setTimeout(function() {
-                    var toast = document.getElementById('notification-toast');
-                    if (toast) {
-                        toast.style.opacity = '0';
-                        toast.style.transform = 'translateY(10px)';
-                        setTimeout(function() {
-                            toast.remove();
-                        }, 500);
-                    }
-                }, 3000);
-            </script>
-        </div>
-    @endif
+    @include('components.flash-toast')
 
     @if ($linkEmailModalOpen)
         <div class="fixed inset-0 z-[70] flex items-center justify-center p-4">

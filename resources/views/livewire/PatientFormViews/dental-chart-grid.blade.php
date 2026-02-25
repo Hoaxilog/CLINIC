@@ -109,6 +109,7 @@
         } else {
             Object.assign(existing, base);
         }
+        $nextTick(() => { $dispatch('dental-chart-ready'); });
     ">
     <div class="flex flex-col items-center">
         <h3 class="text-gray-400 font-bold tracking-[0.2em] text-sm uppercase mb-4">Upper Arch</h3>

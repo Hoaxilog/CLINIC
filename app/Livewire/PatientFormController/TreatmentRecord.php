@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
 use Livewire\WithFileUploads;
+use Illuminate\Validation\ValidationException;
 
 class TreatmentRecord extends Component
 {
@@ -17,7 +18,9 @@ class TreatmentRecord extends Component
     public $amount_charged = '';
     public $remarks = '';
     
-    public $image; 
+    public $beforeImages = [];
+    public $afterImages = [];
+    public $existingImages = [];
 
     #[Reactive] 
     public $isReadOnly = false;
@@ -26,14 +29,16 @@ class TreatmentRecord extends Component
     {
         $this->isReadOnly = $isReadOnly;
         if (!empty($data)) {
+            if (!empty($data['image_list'])) {
+                $this->existingImages = $data['image_list'];
+                unset($data['image_list']);
+            }
             $this->fill($data);
         }
     }
 
     public function rules()
     {
-        $isNewUpload = is_object($this->image);
-
         return [
             // [UPDATED] Made these fields Required
             'dmd' => 'required|string',
@@ -42,7 +47,10 @@ class TreatmentRecord extends Component
             'amount_charged' => 'required|numeric|min:0',
             
             'remarks' => 'nullable|string',
-            'image' => $isNewUpload ? 'nullable|image|max:10240' : 'nullable', 
+            'beforeImages' => 'nullable|array|max:4',
+            'beforeImages.*' => 'image|max:10240',
+            'afterImages' => 'nullable|array|max:4',
+            'afterImages.*' => 'image|max:10240',
         ];
     }
 
@@ -58,17 +66,43 @@ class TreatmentRecord extends Component
     public function validateForm()
     {
         // This will now fail and stop if fields are empty
-        $validatedData = $this->validate();
-        
-        if (isset($this->image) && is_object($this->image)) {
-            $imageContent = file_get_contents($this->image->getRealPath());
-            $base64 = base64_encode($imageContent);
-            $mimeType = $this->image->getMimeType();
-            
-            $validatedData['image'] = 'data:' . $mimeType . ';base64,' . $base64;
+        try {
+            $validatedData = $this->validate();
+        } catch (ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
+            $field = $e->validator->errors()->keys()[0] ?? null;
+            if ($field) {
+                $this->dispatch('scroll-to-error', field: $field);
+            }
+            return;
+        }
+
+        $beforeCount = is_array($this->beforeImages) ? count($this->beforeImages) : 0;
+        $afterCount = is_array($this->afterImages) ? count($this->afterImages) : 0;
+        if (($beforeCount + $afterCount) > 4) {
+            $this->addError('beforeImages', 'You can upload up to 4 images total.');
+            return;
+        }
+
+        $payloads = [];
+        if (!empty($this->beforeImages)) {
+            foreach ($this->beforeImages as $image) {
+                $path = $image->store('treatment-records/before/' . now()->format('Y/m'), 'public');
+                $payloads[] = ['path' => $path, 'type' => 'before'];
+            }
+        }
+        if (!empty($this->afterImages)) {
+            foreach ($this->afterImages as $image) {
+                $path = $image->store('treatment-records/after/' . now()->format('Y/m'), 'public');
+                $payloads[] = ['path' => $path, 'type' => 'after'];
+            }
+        }
+        if (!empty($payloads)) {
+            $validatedData['image_payloads'] = $payloads;
         }
 
         $this->dispatch('treatmentRecordValidated', data: $validatedData);
+        $this->reset(['beforeImages', 'afterImages']);
     }
 
     public function render()

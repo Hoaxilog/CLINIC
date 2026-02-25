@@ -101,7 +101,7 @@
                             <label class="mb-1 block text-sm font-medium text-slate-700">
                                 Age
                             </label>
-                            <input type="text" wire:model="age" placeholder="Age" class="{{ $inputClass }}">
+                            <input type="number" wire:model="age" placeholder="Age" class="{{ $inputClass }}">
                             @error('age')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
                             @enderror
@@ -111,7 +111,7 @@
                             <label class="mb-1 block text-sm font-medium text-slate-700">
                                 Contact Number <span class="text-red-600">*</span>
                             </label>
-                            <input type="text" wire:model="contact_number" placeholder="Contact number"
+                            <input type="number" wire:model="contact_number" placeholder="Contact number"
                                 class="{{ $inputClass }}">
                             @error('contact_number')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
@@ -398,3 +398,4 @@
         });
     </script>
 </div>
+

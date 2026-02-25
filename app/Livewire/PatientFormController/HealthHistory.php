@@ -5,6 +5,7 @@ namespace App\Livewire\PatientFormController;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive; 
+use Illuminate\Validation\ValidationException;
 
 class HealthHistory extends Component
 {
@@ -188,7 +189,16 @@ class HealthHistory extends Component
     #[On('validateHealthHistory')]
     public function validateForm()
     {
-        $validatedData = $this->validate();
+        try {
+            $validatedData = $this->validate();
+        } catch (ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
+            $field = $e->validator->errors()->keys()[0] ?? null;
+            if ($field) {
+                $this->dispatch('scroll-to-error', field: $field);
+            }
+            return;
+        }
         
         // 1. Sanitize Booleans (Convert '' or null to 0)
         // This fixes the "Incorrect integer value" error

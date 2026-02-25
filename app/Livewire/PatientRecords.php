@@ -247,7 +247,7 @@ class PatientRecords extends Component
                 $this->selectedPatient = null;
                 $this->lastVisit = null;
             }
-            session()->flash('error', 'Patient deleted successfully.');
+            session()->flash('success', 'Patient deleted successfully.');
         }
     }
 

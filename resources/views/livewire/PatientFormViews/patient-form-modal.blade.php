@@ -1,6 +1,6 @@
 <div>
     @if ($showModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70" x-data="{}">
+        <div data-patient-form-modal class="fixed inset-0 z-50 flex items-center justify-center bg-black/70" x-data="{}">
             
             <div class="bg-white rounded-lg shadow-xl w-full max-w-[105rem] mx-auto m-8">
                 <!-- Modal Content -->
@@ -45,7 +45,7 @@
                     </div>
 
                     <!-- Scrollable Form Area -->
-                    <div class="p-8 overflow-y-auto">
+                    <div data-form-scroll class="p-8 overflow-y-auto">
                         @if($currentStep == 1)
                             <div class="{{ $isReadOnly ? 'pointer-events-none' : '' }}">
                                 <livewire:PatientFormController.basic-info wire:key="basic-info" :data="$basicInfoData" />
@@ -65,14 +65,23 @@
 
                         @if($isAdmin && $isEditing)
                             @if($currentStep == 3)
-                                <livewire:PatientFormController.dental-chart 
-                                    :wire:key="'dental-chart-'.$chartKey" 
-                                    :data="$dentalChartData" 
-                                    :isReadOnly="$isReadOnly"
-                                    :history="$chartHistory"
-                                    :selectedHistoryId="$selectedHistoryId" 
-                                    :isCreating="$forceNewRecord"
-                                />
+                                <div class="relative">
+                                    <div wire:loading.flex wire:target="startNewChartSession,switchChartHistory"
+                                        class="absolute inset-0 z-30 items-center justify-center bg-white/70 backdrop-blur-sm text-center">
+                                        <div class="flex flex-col items-center gap-3">
+                                            <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
+                                            <div class="text-sm font-semibold text-gray-700">Loading dental chart...</div>
+                                        </div>
+                                    </div>
+                                    <livewire:PatientFormController.dental-chart 
+                                        :wire:key="'dental-chart-'.$chartKey" 
+                                        :data="$dentalChartData" 
+                                        :isReadOnly="$isReadOnly"
+                                        :history="$chartHistory"
+                                        :selectedHistoryId="$selectedHistoryId" 
+                                        :isCreating="$forceNewRecord"
+                                    />
+                                </div>
                             @endif
                             <!-- Step 4: Treatment Record -->
                             @if($currentStep == 4)
@@ -116,8 +125,9 @@
                                     }
                                 @endphp
 
-                                @if($shouldShowSave)
-                                    <button wire:click="save" type="button" class="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-green-600 hover:bg-green-700 shadow-sm">
+                                    @if($shouldShowSave)
+                                    <button data-trigger-scroll wire:click="save" type="button"
+                                        class="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-green-600 hover:bg-green-700 shadow-sm">
                                         {{ (!$isEditing && $currentStep == 2) ? 'Save Patient' : (($currentStep == 4) ? 'Save Record' : 'Update & Save') }}
                                     </button>
                                 @endif
@@ -170,14 +180,20 @@
                             @endphp
 
                             @if ($showBack)
-                                <button wire:click="previousStep" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
-                                    Back
+                                <button data-trigger-scroll wire:click="previousStep" type="button" wire:loading.attr="disabled"
+                                    wire:target="previousStep,nextStep,save"
+                                    class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <span wire:loading.remove wire:target="previousStep">Back</span>
+                                    <span wire:loading wire:target="previousStep">Loading...</span>
                                 </button>
                             @endif
 
                             @if ($showNext)
-                                <button wire:click="nextStep" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0086da] hover:bg-blue-500">
-                                    Next
+                                <button data-trigger-scroll wire:click="nextStep" type="button" wire:loading.attr="disabled"
+                                    wire:target="nextStep,previousStep,save"
+                                    class="px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0086da] hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <span wire:loading.remove wire:target="nextStep">Next</span>
+                                    <span wire:loading wire:target="nextStep">Loading...</span>
                                 </button>
                             @endif
 
@@ -189,44 +205,52 @@
         </div>
     @endif
 
-    @if (session()->has('success') || session()->has('error') || session()->has('info'))
-    <div 
-        id="modal-notification-toast"
-        class="fixed bottom-5 right-5 z-[100] flex items-center gap-3 px-6 py-4 rounded-lg shadow-xl border transform transition-all duration-300 ease-in-out translate-y-0 opacity-100
-        @if(session('success')) bg-green-50 border-green-200 text-green-800 
-        @elseif(session('error')) bg-red-50 border-red-200 text-red-800 
-        @else bg-blue-50 border-blue-200 text-blue-800 @endif"
-    >
-        {{-- Icons --}}
-        @if(session('success'))
-            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        @elseif(session('error'))
-            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        @else
-            <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        @endif
+    @include('components.flash-toast')
 
-        {{-- Message --}}
-        <div class="font-medium text-sm">
-            {{ session('success') ?? session('error') ?? session('info') }}
-        </div>
-
-        {{-- Close Button --}}
-        <button onclick="document.getElementById('modal-notification-toast').remove()" class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none">
-            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-        </button>
-
-        {{-- Auto-Hide Script --}}
+    @push('script')
         <script>
-            setTimeout(function() {
-                var toast = document.getElementById('modal-notification-toast');
-                if (toast) {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateY(10px)';
-                    setTimeout(function() { toast.remove(); }, 500);
-                }
-            }, 3000); 
+            (function () {
+                const scrollToField = (field) => {
+                    const modal = document.querySelector('[data-patient-form-modal]');
+                    if (!modal) return;
+
+                    const errorTarget = field
+                        ? modal.querySelector('[data-error-for="' + field + '"]')
+                        : null;
+
+                    const inputSelector = field
+                        ? [
+                              '[wire\\:model="' + field + '"]',
+                              '[wire\\:model\\.defer="' + field + '"]',
+                              '[wire\\:model\\.live="' + field + '"]',
+                              '[name="' + field + '"]',
+                              '#' + CSS.escape(field)
+                          ].join(',')
+                        : null;
+
+                    const inputTarget = inputSelector ? modal.querySelector(inputSelector) : null;
+                    const target = errorTarget || inputTarget;
+
+                    if (!target) return;
+
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    const scrollContainer =
+                        target.closest('[data-form-scroll]') || modal.querySelector('[data-form-scroll]');
+
+                    if (scrollContainer) {
+                        const containerRect = scrollContainer.getBoundingClientRect();
+                        const targetRect = target.getBoundingClientRect();
+                        const targetTop = targetRect.top - containerRect.top + scrollContainer.scrollTop - 20;
+                        scrollContainer.scrollTo({ top: targetTop, behavior: 'smooth' });
+                    }
+                };
+
+                document.addEventListener('scroll-to-error', (event) => {
+                    const field = event?.detail?.field || null;
+                    scrollToField(field);
+                });
+            })();
         </script>
-    </div>
-    @endif
+    @endpush
 </div>

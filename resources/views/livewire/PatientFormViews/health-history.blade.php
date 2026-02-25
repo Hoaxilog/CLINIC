@@ -1,15 +1,26 @@
-<div class="relative w-full h-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+<div class="relative w-full h-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col"
+    x-data="{ historyLoading: {{ (count($historyList) > 0 || $isCreating) ? 'true' : 'false' }} }"
+    x-on:show-health-history-loading.window="historyLoading = true"
+    x-on:health-history-ready.window="historyLoading = false">
+    <div x-cloak x-show="historyLoading"
+        class="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-sm text-center">
+        <div class="flex flex-col items-center gap-3">
+            <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
+            <div class="text-sm font-semibold text-gray-700">Loading health history...</div>
+        </div>
+    </div>
     {{-- CONDITION: Show Form if History Exists OR We are Creating a New One --}}
     @if (count($historyList) > 0 || $isCreating)
 
-        <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200 sticky top-0 z-20">
+        <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200 sticky top-0 z-20"
+            x-init="$nextTick(() => { $dispatch('health-history-ready'); })">
             <div class="flex items-center gap-4">
                 <h2 class="text-xl font-bold text-gray-800">Health History</h2>
 
                 {{-- History Dropdown: DO NOT DISABLE (User needs to switch views) --}}
                 @if (count($historyList) > 1 && $isReadOnly && !$isCreating)
                     <div class="flex items-center gap-2">
-                        <select wire:model.live="selectedHistoryId"
+                        <select wire:model.live="selectedHistoryId" x-on:change="$dispatch('show-health-history-loading')"
                             class="px-3 py-2 border border-gray-300 rounded-md text-sm w-full focus:border-blue-500 focus:ring-blue-500 min-w-[200px]">
                             
                             @if($isCreating)
@@ -33,7 +44,7 @@
             <div class="flex items-center gap-3">
                 {{-- New Record Button: ALWAYS CLICKABLE --}}
                 @if (count($historyList) > 0 && $isReadOnly && !$isCreating)
-                    <button wire:click="triggerNewHistory"
+                    <button wire:click="triggerNewHistory" x-on:click="$dispatch('show-health-history-loading')"
                         class="flex items-center gap-2 px-3 py-2 bg-[#0086da] text-white text-sm font-medium rounded hover:bg-blue-600 transition shadow-sm"
                         title="Start a fresh health record">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -47,7 +58,7 @@
             </div>
         </div>
 
-        <div
+        <div data-health-history-scroll data-form-scroll
             class="flex-1 overflow-y-auto p-4 lg:p-8 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-gray-100 scrollbar-thumb-gray-300">
 
             <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
@@ -61,7 +72,7 @@
                         <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model="when_last_visit_q1" type="date"
                             class="w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500">
                         @error('when_last_visit_q1')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                            <span data-error-for="when_last_visit_q1" class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
                     </div>
                     <div>
@@ -70,7 +81,7 @@
                             class="w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500"
                             placeholder="e.g., Cleaning, Filling...">
                         @error('what_last_visit_reason_q1')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                            <span data-error-for="what_last_visit_reason_q1" class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
                     </div>
                 </div>
@@ -82,7 +93,7 @@
                         class="w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500"
                         placeholder="e.g., Check-up...">
                     @error('what_seeing_dentist_reason_q2')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                        <span data-error-for="what_seeing_dentist_reason_q2" class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -110,7 +121,7 @@
                                 </div>
                                 {{-- ADDED: Validation Error --}}
                                 @error($q['model'])
-                                    <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                    <span data-error-for="{{ $q['model'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
                         @endforeach
@@ -135,7 +146,7 @@
                         
                         {{-- ADDED: Validation Error for Radio --}}
                         @error($item['model'])
-                            <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                            <span data-error-for="{{ $item['model'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                         @enderror
 
                         {{-- Conditional Detail Input --}}
@@ -147,7 +158,7 @@
                                 
                                 {{-- ADDED: Validation Error for Detail Input --}}
                                 @error($item['detail'])
-                                    <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                    <span data-error-for="{{ $item['detail'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
                         @endif
@@ -178,7 +189,7 @@
 
                         {{-- ADDED: Validation Error for Radio --}}
                         @error($med['model'])
-                            <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                            <span data-error-for="{{ $med['model'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                         @enderror
 
                         @if (isset($med['detail']) && $this->{$med['model']})
@@ -189,7 +200,7 @@
                                 
                                 {{-- ADDED: Validation Error for Detail Input --}}
                                 @error($med['detail'])
-                                    <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                    <span data-error-for="{{ $med['detail'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
                         @endif
@@ -220,7 +231,7 @@
                             
                             {{-- ADDED: Validation Error --}}
                             @error($fem['model'])
-                                <span class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                <span data-error-for="{{ $fem['model'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                             @enderror
                         </div>
                     @endforeach
@@ -241,7 +252,7 @@
                 <p class="text-gray-500 mt-2 max-w-md mx-auto">This patient does not have any medical records yet.
                     Please add a record before proceeding.</p>
             </div>
-            <button wire:click="triggerNewHistory"
+            <button wire:click="triggerNewHistory" x-on:click="$dispatch('show-health-history-loading')"
                 class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"

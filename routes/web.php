@@ -70,9 +70,6 @@ Route::middleware(['guest'])->group(function() {
 
 });
 
-// Public booking route (guest or logged-in)
-Route::get('/book', BookAppointment::class)->name('book');
-
 // Authenticated user routes (all logged-in users)
 Route::middleware(['auth'])->group(function () {
     // Logout should be available to all authenticated users
@@ -81,6 +78,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+    Route::get('/book', BookAppointment::class)->name('book');
 });
 
 // Staff/Dentist-only routes
@@ -115,3 +114,4 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 });
+

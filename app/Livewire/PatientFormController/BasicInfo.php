@@ -5,6 +5,7 @@ namespace App\Livewire\PatientFormController;
 use Livewire\Component;
 use Carbon\Carbon;
 use Livewire\Attributes\On;
+use Illuminate\Validation\ValidationException;
 
 class BasicInfo extends Component
 {
@@ -110,24 +111,24 @@ class BasicInfo extends Component
             'civil_status' => 'required|string',
             'home_address' => 'required|string',
             'office_address' => 'nullable|string',
-            'home_number' => 'nullable|string',
-            'office_number' => 'nullable|string',
-            'mobile_number' => 'required|string',
-            'email_address' => 'nullable|email',
+            'home_number' => 'nullable|numeric',
+            'office_number' => 'nullable|numeric',
+            'mobile_number' => 'required|numeric',
+            'email_address' => 'required|email',
             'referral' => 'nullable|string',
             
             'emergency_contact_name' => 'required|string',
-            'emergency_contact_number' => 'required|string',
+            'emergency_contact_number' => 'required|numeric',
             'relationship' => 'required|string',
 
             'who_answering' => 'nullable|string',
             'relationship_to_patient' => 'nullable|string',
             'father_name' => 'nullable|string',
-            'father_number' => 'nullable|string',
+            'father_number' => 'nullable|numeric',
             'mother_name' => 'nullable|string',
-            'mother_number' => 'nullable|string',
+            'mother_number' => 'nullable|numeric',
             'guardian_name' => 'nullable|string',
-            'guardian_number' => 'nullable|string',
+            'guardian_number' => 'nullable|numeric',
         ];
 
         if ($this->age !== null && $this->age < 18) {
@@ -158,7 +159,17 @@ class BasicInfo extends Component
     #[On('validateBasicInfo')]
     public function validateForm()
     {
-        $validatedData = $this->validate();
+        try {
+            $validatedData = $this->validate();
+        } catch (ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
+            $field = $e->validator->errors()->keys()[0] ?? null;
+            if ($field) {
+                $this->dispatch('scroll-to-error', field: $field);
+            }
+            return;
+        }
+
         $this->dispatch('basicInfoValidated', data: $validatedData);
     }
 

@@ -1,6 +1,16 @@
-<div class="relative w-full h-[68vh] bg-white border border-gray-200 rounded-lg flex flex-col lg:flex-row">
+<div class="relative w-full h-[68vh] bg-white border border-gray-200 rounded-lg flex flex-col lg:flex-row"
+    x-data="{ chartLoading: {{ (count($history) > 0 || $isCreating) ? 'true' : 'false' }} }"
+    x-on:show-dental-loading.window="chartLoading = true"
+    x-on:dental-chart-ready.window="chartLoading = false">
+    <div x-cloak x-show="chartLoading"
+        class="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-sm text-center">
+        <div class="flex flex-col items-center gap-3">
+            <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
+            <div class="text-sm font-semibold text-gray-700">Loading dental chart...</div>
+        </div>
+    </div>
 
-    @if (count($history) > 1 || $isCreating)
+    @if (count($history) > 0 || $isCreating)
 
         <div class="flex-1 h-full relative flex flex-col min-w-0 bg-gray-50 transition-all duration-300">
 
@@ -10,7 +20,7 @@
                     <h2 class="text-xl font-bold text-gray-800">Dental Chart</h2>
                     @if (count($history) > 0)
                         <div class="flex items-center gap-2">
-                            <select wire:model.live="selectedHistoryId"
+                            <select wire:model.live="selectedHistoryId" x-on:change="$dispatch('show-dental-loading')"
                                 class="px-3 py-2 border border-gray-300 rounded-md text-sm w-full focus:border-blue-500 focus:ring-blue-500 min-w-[200px] disabled:bg-gray-100 disabled:text-gray-400"
                                 @if (!$isReadOnly) disabled @endif>
                                 <option value="" disabled>Select History Record...</option>
@@ -24,7 +34,7 @@
 
                 <div class="flex items-center gap-3">
                     @if ($isReadOnly && count($history) > 0)
-                        <button wire:click="triggerNewChart"
+                        <button wire:click="triggerNewChart" x-on:click="$dispatch('show-dental-loading')"
                             class="flex items-center gap-2 px-3 py-2 bg-[#0086da] text-white text-sm font-medium rounded hover:bg-blue-600 transition shadow-sm"
                             title="Start a fresh chart for today">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -32,13 +42,14 @@
                                 stroke-linejoin="round">
                                 <path d="M12 5v14M5 12h14" />
                             </svg>
-                            New Chart
+                            <span wire:loading.remove wire:target="triggerNewChart">New Chart</span>
+                            <span wire:loading wire:target="triggerNewChart">Loading...</span>
                         </button>
                     @endif
                 </div>
             </div>
 
-            <div
+            <div data-form-scroll
                 class="flex-1 overflow-auto p-4 px-15 sm:px-8 lg:px-6 xl:p-10 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-gray-100 scrollbar-thumb-gray-300">
                 <livewire:PatientFormController.dental-chart-grid :teeth="$teeth" :isReadOnly="$isReadOnly" />
                 <div class="max-w-6xl mx-auto flex flex-col gap-12">
@@ -62,7 +73,7 @@
                                     <option value="Bad">Bad</option>
                                 </select>
                                 @error('oralExam.oral_hygiene_status')
-                                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.oral_hygiene_status" class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
@@ -79,7 +90,7 @@
                                     <option value="Severe">Severe</option>
                                 </select>
                                 @error('oralExam.calcular_deposits')
-                                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.calcular_deposits" class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
@@ -94,7 +105,7 @@
                                     <option value="Severe Inflamed">Severe Inflamed</option>
                                 </select>
                                 @error('oralExam.gingiva')
-                                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.gingiva" class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
@@ -110,7 +121,7 @@
                                     <option value="Severe">Severe</option>
                                 </select>
                                 @error('oralExam.stains')
-                                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.stains" class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
@@ -127,7 +138,7 @@
                                     <option value="Upper & Lower">Upper & Lower</option>
                                 </select>
                                 @error('oralExam.complete_denture')
-                                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.complete_denture" class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
@@ -144,7 +155,7 @@
                                     <option value="Upper & Lower">Upper & Lower</option>
                                 </select>
                                 @error('oralExam.partial_denture')
-                                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.partial_denture" class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
@@ -186,7 +197,7 @@
                 <p class="text-gray-500 mt-2 max-w-md mx-auto">This patient does not have any dental records yet. Click
                     the button below to create the first chart.</p>
             </div>
-            <button wire:click="triggerNewChart"
+            <button wire:click="triggerNewChart" x-on:click="$dispatch('show-dental-loading')"
                 class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -198,3 +209,5 @@
         </div>
     @endif
 </div>
+
+
