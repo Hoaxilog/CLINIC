@@ -806,10 +806,12 @@ class AppointmentCalendar extends Component
         $endTime = $startTime->copy()->addMinutes($durationMinutes);
 
         // Conflict Check
+        $dentistId = Auth::id();
         $hasConflict = DB::table('appointments')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.id', '!=', $this->viewingAppointmentId)
-            ->whereNotIn('appointments.status', ['Cancelled', 'Waiting', 'Completed'])
+            ->where('appointments.status', 'Ongoing')
+            ->where('appointments.dentist_id', $dentistId)
             ->whereDate('appointment_date', $startTime->toDateString())
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where('appointment_date', '<', $endTime)
@@ -822,12 +824,20 @@ class AppointmentCalendar extends Component
         } else {
             $oldAppointment = $appointment;
             // === FIX IS HERE ===
-            DB::table('appointments')->where('id', $this->viewingAppointmentId)->update([
-                'status' => 'Ongoing',
-                'service_id' => $this->selectedService,
-                'dentist_id' => Auth::id(), // <--- ADD THIS LINE TO CLAIM THE PATIENT
-                'updated_at' => now()
-            ]);
+            $updated = DB::table('appointments')
+                ->where('id', $this->viewingAppointmentId)
+                ->where('status', 'Waiting')
+                ->update([
+                    'status' => 'Ongoing',
+                    'service_id' => $this->selectedService,
+                    'dentist_id' => $dentistId, // <--- ADD THIS LINE TO CLAIM THE PATIENT
+                    'updated_at' => now()
+                ]);
+
+            if (!$updated) {
+                session()->flash('error', 'This appointment was already admitted or updated. Please refresh.');
+                return;
+            }
             // ===================
 
             $appointmentSubject = new Appointment();

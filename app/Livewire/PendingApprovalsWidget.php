@@ -91,6 +91,20 @@ class PendingApprovalsWidget extends Component
         }
     }
 
+    public function rejectAppointment($appointmentId)
+    {
+        if (Auth::user()?->role === 3) {
+            return;
+        }
+
+        $this->updateAppointmentStatusById($appointmentId, 'Cancelled');
+        $this->loadPendingApprovals();
+
+        if ($this->selectedApproval && $this->selectedApproval->id === $appointmentId) {
+            $this->selectedApproval->status = 'Cancelled';
+        }
+    }
+
     protected function updateAppointmentStatusById($appointmentId, $newStatus)
     {
         $oldAppt = DB::table('appointments')->where('id', $appointmentId)->first();
@@ -109,10 +123,12 @@ class PendingApprovalsWidget extends Component
             $subject = new Appointment();
             $subject->id = $appointmentId;
 
+            $eventName = $newStatus === 'Cancelled' ? 'appointment_cancelled' : 'appointment_updated';
+
             activity()
                 ->causedBy(Auth::user())
                 ->performedOn($subject)
-                ->event('appointment_updated')
+                ->event($eventName)
                 ->withProperties([
                     'old' => ['status' => $oldAppt->status],
                     'attributes' => ['status' => $newStatus],

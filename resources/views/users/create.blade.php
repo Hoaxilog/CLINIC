@@ -67,16 +67,6 @@
                         @error('role') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
                     </div>
 
-                    {{-- Contact --}}
-                    <div class="col-span-1 md:col-span-2">
-                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Contact Number</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-bold border-r border-gray-300 pr-2 my-2 bg-gray-50 rounded-l-md">+63</span>
-                            <input type="tel" name="contact" value="{{ old('contact') }}" placeholder="917 123 4567" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                class="w-full pl-16 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
-                        </div>
-                        @error('contact') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
-                    </div>
                 </div>
 
                 {{-- SECTION 2: PASSWORD --}}
@@ -100,46 +90,6 @@
                             </span>
                             <input type="password" name="password_confirmation" placeholder="Re-enter password" required
                                 class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
-                        </div>
-                    </div>
-                </div>
-
-                {{-- SECTION 3: SECURITY RECOVERY (AT BOTTOM) --}}
-                <div class="mb-10 bg-blue-50 rounded-xl p-6 border border-blue-100">
-                    <div class="mb-4">
-                        <h3 class="text-sm font-extrabold text-[#0086DA] uppercase tracking-wide">Security Recovery <span class="text-gray-400 font-normal ml-1">(Optional)</span></h3>
-                        <p class="text-xs text-gray-500 mt-1 font-medium">If skipped, the user must set this up on their first login.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-4">
-                        {{-- Question --}}
-                        <div>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                </span>
-                                <select name="security_question" class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-blue-200 focus:outline-none focus:border-[#0086DA] appearance-none bg-white transition duration-200 text-gray-700 font-medium text-sm">
-                                    <option value="">-- Let user set this later --</option>
-                                    <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
-                                    <option value="What was the name of your first pet?">What was the name of your first pet?</option>
-                                    <option value="What city were you born in?">What city were you born in?</option>
-                                    <option value="What is your favorite color?">What is your favorite color?</option>
-                                    <option value="What is the name of your elementary school?">What is the name of your elementary school?</option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        {{-- Answer --}}
-                        <div>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                </span>
-                                <input type="text" name="security_answer" placeholder="Type answer here..."
-                                    class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-blue-200 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-700 font-medium text-sm placeholder-gray-400">
-                            </div>
                         </div>
                     </div>
                 </div>

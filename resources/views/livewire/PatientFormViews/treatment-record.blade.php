@@ -35,7 +35,7 @@
 
             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                 <label for="cost_of_treatment"
-                    class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Cost <span
+                    class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Estimated Cost <span
                         class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
                     <input wire:model="cost_of_treatment" type="number" id="cost_of_treatment"
@@ -51,7 +51,7 @@
 
             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                 <label for="amount_charged"
-                    class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Charged <span
+                    class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Payment <span
                         class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
                     <input wire:model="amount_charged" type="number" id="amount_charged"

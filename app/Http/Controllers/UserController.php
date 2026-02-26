@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -59,8 +58,6 @@ class UserController extends Controller
             'contact'  => ['nullable', 'string', 'max:225'],
             'password' => ['required', 'confirmed', 'min:8'],
             'role'     => ['required', 'integer', 'exists:roles,id'],
-            'security_question' => ['nullable', 'string'],
-            'security_answer'   => ['nullable', 'required_with:security_question', 'string'],
         ]);
 
         // 2. Prepare Data
@@ -72,11 +69,6 @@ class UserController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ];
-
-        if ($request->filled('security_question') && $request->filled('security_answer')) {
-            $insertData['security_question'] = $request->security_question;
-            $insertData['security_answer'] = Hash::make(Str::lower(trim($request->security_answer)));
-        }
 
         // 3. Insert and Get ID (We need the ID for the log)
         DB::table('users')->insert($insertData);
@@ -129,8 +121,6 @@ class UserController extends Controller
             'contact'  => ['nullable', 'string', 'max:225'],
             'role'     => ['required', 'integer', 'exists:roles,id'],
             'password' => ['nullable', 'confirmed', 'min:8'],
-            'security_question' => ['nullable', 'string'],
-            'security_answer'   => ['nullable', 'string'],
         ]);
 
         // 3. Prepare the New Data
@@ -144,12 +134,6 @@ class UserController extends Controller
         // Handle Password (only if provided)
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
-        }
-
-        // Handle Security Question (only if provided)
-        if ($request->filled('security_answer') && $request->filled('security_question')) {
-            $updateData['security_question'] = $request->security_question;
-            $updateData['security_answer']   = Hash::make(Str::lower(trim($request->security_answer)));
         }
 
         // 4. === SMART DIFF CHECK (The Fix) ===

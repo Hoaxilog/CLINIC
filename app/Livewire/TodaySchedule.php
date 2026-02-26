@@ -126,10 +126,12 @@ class TodaySchedule extends Component
         $durationMinutes = ($h * 60) + $m;
         $endTime = $startTime->copy()->addMinutes($durationMinutes);
 
+        $dentistId = Auth::id();
         $hasConflict = DB::table('appointments')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.id', '!=', $this->viewingAppointmentId)
-            ->whereNotIn('appointments.status', ['Cancelled', 'Waiting', 'Completed'])
+            ->where('appointments.status', 'Ongoing')
+            ->where('appointments.dentist_id', $dentistId)
             ->whereDate('appointment_date', $startTime->toDateString())
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where('appointment_date', '<', $endTime)
@@ -140,12 +142,20 @@ class TodaySchedule extends Component
         if ($hasConflict) {
             session()->flash('error', 'Cannot admit: This slot is double-booked.');
         } else {
-            DB::table('appointments')->where('id', $this->viewingAppointmentId)->update([
-                'status' => 'Ongoing',
-                'service_id' => $this->selectedService,
-                'dentist_id' => Auth::id(), 
-                'updated_at' => now()
-            ]);
+            $updated = DB::table('appointments')
+                ->where('id', $this->viewingAppointmentId)
+                ->where('status', 'Waiting')
+                ->update([
+                    'status' => 'Ongoing',
+                    'service_id' => $this->selectedService,
+                    'dentist_id' => $dentistId, 
+                    'updated_at' => now()
+                ]);
+
+            if (!$updated) {
+                session()->flash('error', 'This appointment was already admitted or updated. Please refresh.');
+                return;
+            }
             
             $subject = new Appointment();
             $subject->id = $this->viewingAppointmentId;
