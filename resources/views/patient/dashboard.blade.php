@@ -10,7 +10,7 @@
 <main id="mainContent" class="min-h-screen bg-slate-50 p-4 pb-10 sm:p-6 lg:p-8">
     <div class="mb-6">
         <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Patient Portal</p>
-        <h1 class="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">Welcome back, {{ $patientName }}.</h1>
+        <h1 class="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">Welcome, {{ $patientName }}.</h1>
         <p class="mt-2 max-w-2xl text-sm text-slate-600">
             @if($hasUpcoming)
                 You are scheduled for {{ $upcomingAt->format('l, M d') }} at {{ $upcomingAt->format('h:i A') }}.

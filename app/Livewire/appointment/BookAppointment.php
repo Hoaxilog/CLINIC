@@ -160,6 +160,27 @@ class BookAppointment extends Component
             return;
         }
 
+        // Block booking if the patient already has a pending/active appointment
+        $existingPatient = null;
+        if (Auth::check() && $this->patientsUsesUserId()) {
+            $existingPatient = DB::table('patients')->where('user_id', Auth::id())->first();
+        }
+        if (!$existingPatient && $this->email) {
+            $existingPatient = DB::table('patients')->where('email_address', $this->email)->first();
+        }
+
+        if ($existingPatient) {
+            $hasActiveAppointment = DB::table('appointments')
+                ->where('patient_id', $existingPatient->id)
+                ->whereNotIn('status', ['Cancelled', 'Completed'])
+                ->exists();
+
+            if ($hasActiveAppointment) {
+                $this->addError('selectedSlot', 'You already have a pending or upcoming appointment. Please wait until your current appointment is completed before booking a new one.');
+                return;
+            }
+        }
+
         $patient = null;
         if (Auth::check()) {
             $user = Auth::user();

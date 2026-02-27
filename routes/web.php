@@ -53,8 +53,7 @@ Route::middleware(['guest'])->group(function() {
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.forgot');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 
-    Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+    // (Reset routes moved below to allow both guests and authenticated users)
 
     
     // Registration Routes (Manual)
@@ -70,6 +69,10 @@ Route::middleware(['guest'])->group(function() {
 
 });
 
+// Allow both guests and authenticated users to reset password via emailed token
+Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+
 // Authenticated user routes (all logged-in users)
 Route::middleware(['auth'])->group(function () {
     // Logout should be available to all authenticated users
@@ -78,6 +81,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::post('/profile/password/reset-link', [ProfileController::class, 'sendPasswordResetLink'])->name('profile.password.reset-link');
 
     Route::get('/book', BookAppointment::class)->name('book');
 });
