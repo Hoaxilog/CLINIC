@@ -479,7 +479,6 @@ class PatientFormModal extends Component
                 'cost_of_treatment' => $this->treatmentRecordData['cost_of_treatment'] ?? null,
                 'amount_charged' => $this->treatmentRecordData['amount_charged'] ?? null,
                 'remarks' => $this->treatmentRecordData['remarks'] ?? null,
-                'image' => $this->treatmentRecordData['image'] ?? null,
                 'modified_by' => $this->getModifier(),
                 'updated_at' => now(),
             ];
@@ -493,6 +492,7 @@ class PatientFormModal extends Component
             if ($savedRecord) {
                 $recordSubject = new TreatmentRecord();
                 $recordSubject->id = $savedRecord->id;
+                $this->saveTreatmentRecordImages($savedRecord->id, $this->treatmentRecordData['image_payloads'] ?? []);
 
                 if ($existingRecord) {
                     activity()
@@ -519,6 +519,40 @@ class PatientFormModal extends Component
         
         if ($this->currentDentalChartId) {
             $this->loadTreatmentRecordForChart($this->currentDentalChartId);
+        }
+    }
+
+    private function saveTreatmentRecordImages($recordId, $imagePayloads)
+    {
+        if (empty($imagePayloads)) {
+            return;
+        }
+
+        $currentMax = DB::table('treatment_record_images')
+            ->where('treatment_record_id', $recordId)
+            ->max('sort_order');
+
+        $nextOrder = is_null($currentMax) ? 0 : ($currentMax + 1);
+        $now = now();
+        $rows = [];
+
+        foreach ($imagePayloads as $index => $payload) {
+            $path = $payload['path'] ?? null;
+            if (empty($path)) {
+                continue;
+            }
+            $rows[] = [
+                'treatment_record_id' => $recordId,
+                'image_path' => $path,
+                'image_type' => $payload['type'] ?? 'other',
+                'sort_order' => $nextOrder + $index,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if (!empty($rows)) {
+            DB::table('treatment_record_images')->insert($rows);
         }
     }
 
@@ -614,6 +648,16 @@ class PatientFormModal extends Component
     {
         $record = DB::table('treatment_records')->where('dental_chart_id', $chartId)->first();
         $this->treatmentRecordData = $record ? (array)$record : [];
+
+        if ($record) {
+            $images = DB::table('treatment_record_images')
+                ->where('treatment_record_id', $record->id)
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn($img) => (array) $img)
+                ->toArray();
+            $this->treatmentRecordData['image_list'] = $images;
+        }
     }
 
     private function syncDataToSteps()

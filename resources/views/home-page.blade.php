@@ -524,6 +524,7 @@
             const menuPanel = document.getElementById('mobile-menu-panel');
             const menuBackdrop = document.getElementById('mobile-menu-backdrop');
             const menuClose = document.getElementById('menu-close');
+            if (!menuBtn || !mobileMenu || !menuIcon || !menuPanel || !menuBackdrop || !menuClose) return;
 
             if (!menuBtn || !mobileMenu) return; // Exit if elements not found
 
@@ -539,11 +540,15 @@
                         menuBackdrop.classList.remove('opacity-0', 'pointer-events-none');
                         menuBackdrop.classList.add('opacity-100', 'pointer-events-auto');
                         menuPanel.classList.remove('translate-x-full');
+                        menuClose.focus();
                     });
                 });
             }
 
             function closeMenu() {
+                if (mobileMenu.contains(document.activeElement)) {
+                    menuBtn.focus();
+                }
                 menuPanel.classList.add('translate-x-full');
                 menuBackdrop.classList.remove('opacity-100', 'pointer-events-auto');
                 menuBackdrop.classList.add('opacity-0', 'pointer-events-none');

@@ -13,16 +13,17 @@
     <div class="divide-y divide-gray-100">
         @forelse($pendingApprovals as $pending)
             <div class="flex flex-col md:flex-row md:items-center justify-between p-5 hover:bg-gray-50 transition gap-4">
-                
+
                 <div class="flex items-center gap-4 flex-1 min-w-0 cursor-pointer"
                     wire:click="viewApproval({{ $pending->id }})" title="Click to view details">
-                    
+
                     <img src="https://ui-avatars.com/api/?name={{ urlencode($pending->first_name . ' ' . $pending->last_name) }}&background=f3f4f6&color=374151"
                         alt="Avatar" class="w-12 h-12 rounded-lg object-cover border border-gray-200 shrink-0">
 
                     <div class="min-w-0">
-                        <h4 class="font-semibold text-gray-900 text-base truncate">{{ $pending->first_name }} {{ $pending->last_name }}</h4>
-                        
+                        <h4 class="font-semibold text-gray-900 text-base truncate">{{ $pending->first_name }}
+                            {{ $pending->last_name }}</h4>
+
                         <div class="flex items-center text-[11px] text-gray-500 mt-0.5 gap-2 flex-nowrap">
                             <div class="flex items-center gap-1.5 whitespace-nowrap">
                                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24"
@@ -32,9 +33,9 @@
                                 </svg>
                                 {{ \Carbon\Carbon::parse($pending->appointment_date)->format('d M Y') }}
                             </div>
-                            
+
                             <span class="text-gray-300 shrink-0">|</span>
-                            
+
                             <div class="flex items-center gap-1.5 whitespace-nowrap">
                                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor" stroke-width="2">
@@ -54,20 +55,20 @@
                 </div>
 
                 <div class="flex items-center shrink-0 gap-2">
-                    <button type="button" wire:click="viewApproval({{ $pending->id }})"
-                        class="p-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition flex items-center justify-center"
-                        title="View request">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </button>
-
                     <button type="button" wire:click="approveAppointment({{ $pending->id }})"
                         class="p-2.5 rounded-lg bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-700 transition flex items-center justify-center"
                         title="Approve request">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+
+                    <button type="button" wire:click="rejectAppointment({{ $pending->id }})"
+                        wire:confirm="Reject this appointment request?"
+                        class="p-2.5 rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 transition flex items-center justify-center"
+                        title="Reject request">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
@@ -150,6 +151,11 @@
                     <div class="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="closeDetails"
                             class="px-5 py-3 rounded bg-gray-200 hover:bg-gray-300 font-medium">Close</button>
+                        <button type="button" wire:click="rejectAppointment({{ $selectedApproval->id }})"
+                            wire:confirm="Reject this appointment request?"
+                            class="px-6 py-3 rounded bg-red-600 text-white text-lg font-bold shadow-md hover:bg-red-700 transition">
+                            Reject Appointment
+                        </button>
                         <button type="button" wire:click="approveAppointment({{ $selectedApproval->id }})"
                             class="px-6 py-3 rounded bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition">
                             Approve Appointment

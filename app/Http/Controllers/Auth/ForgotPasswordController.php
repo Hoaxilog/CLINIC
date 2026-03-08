@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Auth;
 
 class ForgotPasswordController extends Controller
 {
@@ -106,6 +107,19 @@ class ForgotPasswordController extends Controller
      */
     public function showResetForm($token)
     {
+        $resetRecord = DB::table('password_reset_tokens')
+            ->where('token', $token)
+            ->first();
+
+        if (!$resetRecord) {
+            return redirect('/forgot-password')->with('failed', 'The reset password link has expired.');
+        }
+
+        if (Carbon::parse($resetRecord->created_at)->addMinutes(60)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $resetRecord->email)->delete();
+            return redirect('/forgot-password')->with('failed', 'The reset password link has expired.');
+        }
+
         return view('auth.reset-password', ['token' => $token]);
     }
 
@@ -127,7 +141,7 @@ class ForgotPasswordController extends Controller
             ->first();
 
         if (!$resetRecord) {
-            return back()->with('failed', 'Invalid token!');
+            return back()->with('failed', 'This reset link has expired.');
         }
 
         // Check if token is older than 60 minutes
@@ -147,6 +161,12 @@ class ForgotPasswordController extends Controller
         // Delete the used token
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
-        return redirect('/login')->with('success', 'Your password has been changed! You can now login.');
+        if (Auth::check()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        return redirect('/login')->with('success', 'Your password has been changed. Please log in again.');
     }
 }

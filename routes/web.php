@@ -3,17 +3,15 @@
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PatientDashboardController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\EmailRecoveryController;
 use App\Http\Controllers\ServiceController;
 use App\Livewire\appointment\BookAppointment;
-use App\Http\Controllers\Auth\GoogleLoginController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 
@@ -42,11 +40,14 @@ Route::prefix('services')->group(function () {
 Route::middleware(['guest'])->group(function() {
     Route::get('/login', [LoginController::class, 'index'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/login/otp', [LoginController::class, 'showOtpForm'])->name('login.otp');
+    Route::post('/login/otp', [LoginController::class, 'verifyOtp'])->name('login.otp.verify');
+    Route::post('/login/otp/resend', [LoginController::class, 'resendOtp'])->name('login.otp.resend');
 
 
-    Route::get('auth/google/redirect', [GoogleLoginController::class, 'redirectToGoogle'])
+    Route::get('auth/google/redirect', [LoginController::class, 'redirectToGoogle'])
         ->name('auth.google.redirect');
-    Route::get('auth/google/callback', [GoogleLoginController::class, 'handleGoogleCallback'])
+    Route::get('auth/google/callback', [LoginController::class, 'handleGoogleCallback'])
         ->name('auth.google.callback');
 
 
@@ -54,8 +55,7 @@ Route::middleware(['guest'])->group(function() {
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.forgot');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 
-    Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+    // (Reset routes moved below to allow both guests and authenticated users)
 
     
     // Registration Routes (Manual)
@@ -69,13 +69,11 @@ Route::middleware(['guest'])->group(function() {
     Route::get('/email/verify/{id}/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
     Route::get('/email/verified', [VerificationController::class, 'showSuccess'])->name('verification.success');
 
-    Route::get('/account-recovery', [EmailRecoveryController::class, 'showRequestForm'])->name('account.recovery.request');
-    Route::post('/account-recovery', [EmailRecoveryController::class, 'submitRequest'])->name('account.recovery.submit');
-
 });
 
-// Public booking route (guest or logged-in)
-Route::get('/book', BookAppointment::class)->name('book');
+// Allow both guests and authenticated users to reset password via emailed token
+Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
 
 // Authenticated user routes (all logged-in users)
 Route::middleware(['auth'])->group(function () {
@@ -85,20 +83,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::post('/profile/password/reset-link', [ProfileController::class, 'sendPasswordResetLink'])->name('profile.password.reset-link');
+
+    Route::get('/book', BookAppointment::class)->name('book');
 });
 
 // Staff/Dentist-only routes
 Route::middleware(['auth', 'staffOrDentist'])->group(function () {
     Route::get('/dashboard', [Dashboard::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/patient-stats', [Dashboard::class, 'patientStats'])->name('dashboard.patient-stats');
     Route::get('/queue', function () {
         return view('queue');
     })->name('queue');
     Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
     Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
-    Route::get('/recovery-requests', [EmailRecoveryController::class, 'index'])->name('recovery.index');
-    Route::post('/recovery-requests/{id}/link-user', [EmailRecoveryController::class, 'linkUser'])->name('recovery.link-user');
-    Route::post('/recovery-requests/{id}/approve', [EmailRecoveryController::class, 'approve'])->name('recovery.approve');
-    Route::post('/recovery-requests/{id}/reject', [EmailRecoveryController::class, 'reject'])->name('recovery.reject');
 }); 
 
 // Patient-only routes
@@ -122,3 +120,4 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 });
+

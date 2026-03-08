@@ -23,7 +23,7 @@
             @csrf
             <div class="">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                <input type="email" name="email" class="@error('email') border-red-500 @else border-gray-200 @enderror w-full border-2 rounded-lg px-4 py-3 focus:outline-none focus:border-[#0086DA] transition" placeholder="patient@example.com" required>
+                <input type="email" name="email" class="@error('email') border-red-500 @else border-gray-200 @enderror w-full border-2 rounded-lg px-4 py-3 focus:outline-none focus:border-[#0086DA] transition" placeholder="yourgmail@gmail.com" required>
                 @error('email')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
@@ -37,11 +37,6 @@
             </div>
             <button type="submit" class="w-full bg-[#0086DA] text-white font-bold py-3 rounded-lg hover:bg-[#0073A8] transition shadow-md">Send Reset Link</button>
         </form>
-        <div class="mt-4 text-center">
-            <a href="{{ route('account.recovery.request') }}" class="text-sm text-[#0086DA] hover:underline font-semibold">
-                Lost access to this email?
-            </a>
-        </div>
         <div class="mt-6 text-center">
             <a href="{{ route('login') }}" class="text-sm text-gray-500 hover:text-[#0086DA] font-semibold">Back to Login</a>
         </div>

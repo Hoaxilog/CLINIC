@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 use Livewire\Component;
 use App\Models\Appointment;
 use App\Models\Patient;
@@ -258,7 +259,7 @@ class AppointmentCalendar extends Component
             'selectedService' => 'required',
             'selectedDate' => 'required',
             'selectedTime' => 'required',
-            'birthDate' => 'required', // <--- REQUIRED FIELD
+            'birthDate' => 'required',
         ]);
 
         try {
@@ -297,6 +298,7 @@ class AppointmentCalendar extends Component
             // Patient Logic
             $patient = DB::table('patients')->where('mobile_number', $this->contactNumber)->first();
             $patientId = null;
+            $normalizedBirthDate = $this->normalizeBirthDate($this->birthDate);
 
             if ($patient) {
                 $patientId = $patient->id;
@@ -305,7 +307,7 @@ class AppointmentCalendar extends Component
                     'first_name' => $this->firstName,
                     'last_name' => $this->lastName,
                     'middle_name' => $this->middleName,
-                    'birth_date' => $this->birthDate 
+                    'birth_date' => $normalizedBirthDate
                 ];
 
                 DB::table('patients')->where('id', $patientId)->update($patientUpdates);
@@ -342,7 +344,7 @@ class AppointmentCalendar extends Component
                     'last_name' => $this->lastName,
                     'middle_name' => $this->middleName,
                     'mobile_number' => $this->contactNumber,
-                    'birth_date' => $this->birthDate,
+                    'birth_date' => $normalizedBirthDate,
                     'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM'
                 ]);
 
@@ -359,7 +361,7 @@ class AppointmentCalendar extends Component
                             'last_name' => $this->lastName,
                             'middle_name' => $this->middleName,
                             'mobile_number' => $this->contactNumber,
-                            'birth_date' => $this->birthDate,
+                            'birth_date' => $normalizedBirthDate,
                         ],
                     ])
                     ->log('Created Patient');
@@ -423,6 +425,24 @@ class AppointmentCalendar extends Component
         ]);
 
         return true;
+    }
+
+    protected function normalizeBirthDate(?string $value): string
+    {
+        if (!is_string($value)) {
+            throw new InvalidFormatException('Birth date is required.');
+        }
+
+        $value = trim($value);
+        if ($value === '') {
+            throw new InvalidFormatException('Birth date is required.');
+        }
+
+        try {
+            return Carbon::parse($value)->format('Y-m-d');
+        } catch (\Throwable $e) {
+            throw new InvalidFormatException('Birth date is not a valid date.');
+        }
     }
 
     public function isSlotOccupied($date, $time)
@@ -786,10 +806,12 @@ class AppointmentCalendar extends Component
         $endTime = $startTime->copy()->addMinutes($durationMinutes);
 
         // Conflict Check
+        $dentistId = Auth::id();
         $hasConflict = DB::table('appointments')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.id', '!=', $this->viewingAppointmentId)
-            ->whereNotIn('appointments.status', ['Cancelled', 'Waiting', 'Completed'])
+            ->where('appointments.status', 'Ongoing')
+            ->where('appointments.dentist_id', $dentistId)
             ->whereDate('appointment_date', $startTime->toDateString())
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where('appointment_date', '<', $endTime)
@@ -802,12 +824,20 @@ class AppointmentCalendar extends Component
         } else {
             $oldAppointment = $appointment;
             // === FIX IS HERE ===
-            DB::table('appointments')->where('id', $this->viewingAppointmentId)->update([
-                'status' => 'Ongoing',
-                'service_id' => $this->selectedService,
-                'dentist_id' => Auth::id(), // <--- ADD THIS LINE TO CLAIM THE PATIENT
-                'updated_at' => now()
-            ]);
+            $updated = DB::table('appointments')
+                ->where('id', $this->viewingAppointmentId)
+                ->where('status', 'Waiting')
+                ->update([
+                    'status' => 'Ongoing',
+                    'service_id' => $this->selectedService,
+                    'dentist_id' => $dentistId, // <--- ADD THIS LINE TO CLAIM THE PATIENT
+                    'updated_at' => now()
+                ]);
+
+            if (!$updated) {
+                session()->flash('error', 'This appointment was already admitted or updated. Please refresh.');
+                return;
+            }
             // ===================
 
             $appointmentSubject = new Appointment();

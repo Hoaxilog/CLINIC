@@ -117,50 +117,77 @@
                         <div class="flex items-center justify-between mb-6">
                             <div>
                                 <h2 class="text-lg font-bold text-[color:var(--profile-ink)]">Security</h2>
-                                <p class="text-sm text-[color:var(--profile-muted)]">Change your password.</p>
+                                <p class="text-sm text-[color:var(--profile-muted)]">Manage your password.</p>
+                                @if (!empty($isGoogleUser))
+                                    <p class="text-xs text-slate-500 mt-1">
+                                        Your account uses Google Login. We will email you a secure link to set a password.
+                                    </p>
+                                @endif
                             </div>
                         </div>
 
-                        <form action="{{ route('profile.password') }}" method="POST" class="space-y-4">
-                            @csrf
-                            @method('PUT')
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div class="space-y-1 md:col-span-2">
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Current
-                                        Password</label>
-                                    <input type="password" name="current_password" placeholder="Enter current password"
-                                        class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
-                                    @error('current_password')
-                                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                                    @enderror
-                                </div>
-
-                                <div class="space-y-1">
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">New
-                                        Password</label>
-                                    <input type="password" name="password" placeholder="Enter new password"
-                                        class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
-                                    @error('password')
-                                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                                    @enderror
-                                </div>
-
-                                <div class="space-y-1">
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm
-                                        Password</label>
-                                    <input type="password" name="password_confirmation" placeholder="Confirm new password"
-                                        class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
-                                </div>
-                            </div>
-
-                            <div class="flex justify-end pt-2">
-                                <button type="submit"
+                        @if (!empty($isGoogleUser))
+                            <form action="{{ route('profile.password.reset-link') }}" method="POST" class="space-y-3">
+                                @csrf
+                                @if (session('success'))
+                                    <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+                                        {{ session('success') }}
+                                    </div>
+                                @endif
+                                @if (session('failed'))
+                                    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                        {{ session('failed') }}
+                                    </div>
+                                @endif
+                                <button type="button"
+                                    onclick="this.disabled=true; this.classList.add('opacity-60','cursor-not-allowed'); this.form.submit();"
                                     class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition">
-                                    Update Password
+                                    Send Reset Link
                                 </button>
-                            </div>
-                        </form>
+                            </form>
+                        @else
+                            <form action="{{ route('profile.password') }}" method="POST" class="space-y-4">
+                                @csrf
+                                @method('PUT')
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div class="space-y-1 md:col-span-2">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                            Current Password
+                                        </label>
+                                        <input type="password" name="current_password" placeholder="Enter current password"
+                                            class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
+                                        @error('current_password')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="space-y-1">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">New
+                                            Password</label>
+                                        <input type="password" name="password" placeholder="Enter new password"
+                                            class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
+                                        @error('password')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="space-y-1">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm
+                                            Password</label>
+                                        <input type="password" name="password_confirmation" placeholder="Confirm new password"
+                                            class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end pt-2">
+                                    <button type="submit"
+                                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition">
+                                        Update Password
+                                    </button>
+                                </div>
+                            </form>
+                        @endif
                     </div>
                 </div>
 

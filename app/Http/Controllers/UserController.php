@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -46,41 +48,51 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = DB::table('roles')->get();
+        $roles = DB::table('roles')
+            ->whereIn('role_name', ['admin', 'staff'])
+            ->orderBy('id')
+            ->get();
 
         return view('users.create', compact('roles'));
     }
 
     public function store(Request $request)
     {
-        // 1. Validation (Keep your existing validation)
+        $allowedRoleIds = $this->allowedStaffRoleIds();
+
+        if (empty($allowedRoleIds)) {
+            return redirect()->route('users.index')->with('error', 'Admin/Staff roles are not configured.');
+        }
+
         $request->validate([
-            'username' => ['required', 'string', 'max:50', 'unique:users'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email'), Rule::unique('users', 'username')],
             'contact'  => ['nullable', 'string', 'max:225'],
-            'password' => ['required', 'confirmed', 'min:8'],
-            'role'     => ['required', 'integer', 'exists:roles,id'],
-            'security_question' => ['nullable', 'string'],
-            'security_answer'   => ['nullable', 'required_with:security_question', 'string'],
+            'password' => ['required', 'confirmed', 'min:12', 'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/'],
+            'role'     => ['required', 'integer', Rule::in($allowedRoleIds)],
+        ], [
+            'password.regex' => 'Password must include at least one letter, one number, and one symbol.',
         ]);
 
-        // 2. Prepare Data
+        $token = Str::random(64);
         $insertData = [
-            'username'   => $request->username,
+            'username'   => $request->email,
+            'email'      => $request->email,
             'contact'    => $request->contact,
             'password'   => Hash::make($request->password),
             'role'       => $request->role,
+            'verification_token' => $token,
+            'email_verified_at' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ];
 
-        if ($request->filled('security_question') && $request->filled('security_answer')) {
-            $insertData['security_question'] = $request->security_question;
-            $insertData['security_answer'] = Hash::make(Str::lower(trim($request->security_answer)));
-        }
+        $newUserId = DB::table('users')->insertGetId($insertData);
+        $newUser = DB::table('users')->where('id', $newUserId)->first();
 
-        // 3. Insert and Get ID (We need the ID for the log)
-        DB::table('users')->insert($insertData);
-        $newUser = DB::table('users')->where('username', $request->username)->first();
+        Mail::send('auth.emails.verify-email', ['token' => $token, 'id' => $newUserId, 'name' => 'Team Member'], function($message) use($request) {
+            $message->to($request->email);
+            $message->subject('Verify Your Email Address - Tejadent');
+        });
 
         // 4. === LOGGING (Create) ===
         // No "Diff Check" needed because everything is new.
@@ -92,7 +104,7 @@ class UserController extends Controller
             ->performedOn($subject)
             ->event('user_created') // Specific Event
             ->withProperties([
-                'attributes' => $insertData // Log all the new info
+                'attributes' => $this->sanitizeAuditAttributes($insertData)
             ])
             ->log('Created User Account'); // Specific Description
         // ===========================
@@ -108,7 +120,10 @@ class UserController extends Controller
             abort(404);
         }
 
-        $roles = DB::table('roles')->get();
+        $roles = DB::table('roles')
+            ->whereIn('role_name', ['admin', 'staff'])
+            ->orderBy('id')
+            ->get();
 
         return view('users.edit', compact('user', 'roles'));
     }
@@ -125,17 +140,24 @@ class UserController extends Controller
 
         // 2. Validate Inputs
         $request->validate([
-            'username' => ['required', 'string', 'max:50', 'unique:users,username,' . $id . ',id'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($id),
+                Rule::unique('users', 'username')->ignore($id),
+            ],
             'contact'  => ['nullable', 'string', 'max:225'],
-            'role'     => ['required', 'integer', 'exists:roles,id'],
-            'password' => ['nullable', 'confirmed', 'min:8'],
-            'security_question' => ['nullable', 'string'],
-            'security_answer'   => ['nullable', 'string'],
+            'role'     => ['required', 'integer', Rule::in($this->allowedStaffRoleIds())],
+            'password' => ['nullable', 'confirmed', 'min:12', 'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/'],
+        ], [
+            'password.regex' => 'Password must include at least one letter, one number, and one symbol.',
         ]);
 
         // 3. Prepare the New Data
         $updateData = [
-            'username'   => $request->username,
+            'username'   => $request->email,
+            'email'      => $request->email,
             'contact'    => $request->contact,
             'role'       => $request->role,
             'updated_at' => now(),
@@ -144,12 +166,6 @@ class UserController extends Controller
         // Handle Password (only if provided)
         if ($request->filled('password')) {
             $updateData['password'] = Hash::make($request->password);
-        }
-
-        // Handle Security Question (only if provided)
-        if ($request->filled('security_answer') && $request->filled('security_question')) {
-            $updateData['security_question'] = $request->security_question;
-            $updateData['security_answer']   = Hash::make(Str::lower(trim($request->security_answer)));
         }
 
         // 4. === SMART DIFF CHECK (The Fix) ===
@@ -186,8 +202,8 @@ class UserController extends Controller
                 ->performedOn($subject)
                 ->event('user_updated')
                 ->withProperties([
-                    'old' => $oldAttributes,       // e.g. "Staff"
-                    'attributes' => $changedAttributes // e.g. "Admin"
+                    'old' => $this->sanitizeAuditAttributes($oldAttributes),
+                    'attributes' => $this->sanitizeAuditAttributes($changedAttributes)
                 ])
                 ->log('Updated User Account');
         }
@@ -221,7 +237,7 @@ class UserController extends Controller
             ->performedOn($subject)
             ->event('user_deleted') // Specific Event
             ->withProperties([
-                'attributes' => (array) $user // Save the backup here
+                'attributes' => $this->sanitizeAuditAttributes((array) $user)
             ])
             ->log('Deleted User Account'); // Specific Description
         // ===========================
@@ -231,5 +247,25 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', 'User deleted successfully.');
+    }
+
+    private function allowedStaffRoleIds(): array
+    {
+        return DB::table('roles')
+            ->whereIn('role_name', ['admin', 'staff'])
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    private function sanitizeAuditAttributes(array $attributes): array
+    {
+        unset(
+            $attributes['password'],
+            $attributes['remember_token'],
+            $attributes['verification_token']
+        );
+
+        return $attributes;
     }
 }

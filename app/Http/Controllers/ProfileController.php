@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 use Throwable;
 
 class ProfileController extends Controller
@@ -14,15 +18,16 @@ class ProfileController extends Controller
     public function index()
     {
         $user = DB::table('users')->where('id', Auth::id())->first();
+        $isGoogleUser = $user && !empty($user->google_id);
         if ($user && (int) $user->role === 3) {
             $patient = $this->resolvePatientForUser($user);
-            return view('patient.profile', compact('user', 'patient'));
+            return view('patient.profile', compact('user', 'patient', 'isGoogleUser'));
         }
 
         // Fetch role name for display
         $roleName = DB::table('roles')->where('id', $user->role)->value('role_name');
 
-        return view('profile', compact('user', 'roleName'));
+        return view('profile', compact('user', 'roleName', 'isGoogleUser'));
     }
 
     public function update(Request $request)
@@ -47,10 +52,22 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request)
     {
-        $request->validate([
-            'current_password' => ['required', 'current_password'],
+        $user = DB::table('users')->where('id', Auth::id())->first();
+        $isGoogleUser = $user && !empty($user->google_id);
+
+        $rules = [
             'password' => ['required', 'confirmed', 'min:8'],
-        ]);
+        ];
+
+        if ($isGoogleUser) {
+            if ($request->filled('current_password')) {
+                $rules['current_password'] = ['current_password'];
+            }
+        } else {
+            $rules['current_password'] = ['required', 'current_password'];
+        }
+
+        $request->validate($rules);
 
         DB::table('users')->where('id', Auth::id())->update([
             'password' => Hash::make($request->password),
@@ -58,6 +75,41 @@ class ProfileController extends Controller
         ]);
 
         return back()->with('success', 'Password changed successfully.');
+    }
+
+    public function sendPasswordResetLink(Request $request)
+    {
+        $user = DB::table('users')->where('id', Auth::id())->first();
+
+        if (!$user || empty($user->email)) {
+            return back()->with('failed', 'We could not find an email address for your account.');
+        }
+
+        $key = 'profile-reset:' . Str::lower($user->email) . '|' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            $seconds = RateLimiter::availableIn($key);
+            $minutes = max(1, ceil($seconds / 60));
+            return back()->with('failed', "Too many requests. Try again in {$minutes} minute(s).");
+        }
+
+        RateLimiter::hit($key, 300);
+
+        $token = Str::random(64);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => $token,
+                'created_at' => Carbon::now(),
+            ]
+        );
+
+        Mail::send('auth.emails.password-reset', ['token' => $token, 'email' => $user->email], function ($message) use ($user) {
+            $message->to($user->email);
+            $message->subject('Reset Password Request - Tejadent');
+        });
+
+        return back()->with('success', 'We sent a password reset link to your email.');
     }
 
     private function resolvePatientForUser($user)

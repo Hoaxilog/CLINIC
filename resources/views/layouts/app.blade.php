@@ -18,6 +18,7 @@
     </main>
 
     @include('components.homepage.footer-section')
+    @include('components.homepage.scripts-section')
     @livewireScripts
 </body>
 

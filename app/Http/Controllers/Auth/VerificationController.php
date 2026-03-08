@@ -39,8 +39,7 @@ class VerificationController extends Controller
                 'verification_token' => null,
                 'updated_at' => now()
             ]);
-
-        // 4. NO AUTO-LOGIN. Redirect to Success Page instead.
+            
         // Flash verified email for success page display.
         return redirect()->route('verification.success')->with('verified_email', $user->email ?? 'your email');
     }
@@ -80,5 +79,4 @@ class VerificationController extends Controller
         return back()->with('success', 'A fresh verification link has been sent.');
     }
 }
-
 

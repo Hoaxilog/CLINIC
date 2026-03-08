@@ -125,44 +125,68 @@
 
         <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 class="text-lg font-semibold text-slate-900">Security</h2>
-            <form action="{{ route('profile.password') }}" method="POST" class="mt-4 space-y-3">
-                @csrf
-                @method('PUT')
-
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Current Password</label>
-                    <input type="password" name="current_password"
-                        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
-                        placeholder="Enter current password">
-                    @error('current_password')
-                        <span class="text-xs text-rose-600">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">New Password</label>
-                    <input type="password" name="password"
-                        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
-                        placeholder="Enter new password">
-                    @error('password')
-                        <span class="text-xs text-rose-600">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Confirm Password</label>
-                    <input type="password" name="password_confirmation"
-                        class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
-                        placeholder="Confirm new password">
-                </div>
-
-                <div class="pt-1">
-                    <button type="submit"
+            @if (!empty($isGoogleUser))
+                <p class="mt-1 text-xs text-slate-500">
+                    Your account uses Google Login. We will email you a secure link to set a password.
+                </p>
+                <form action="{{ route('profile.password.reset-link') }}" method="POST" class="mt-4 space-y-3">
+                    @csrf
+                    @if (session('success'))
+                        <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if (session('failed'))
+                        <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {{ session('failed') }}
+                        </div>
+                    @endif
+                    <button type="button"
+                        onclick="this.disabled=true; this.classList.add('opacity-60','cursor-not-allowed'); this.form.submit();"
                         class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-                        Update Password
+                        Send Reset Link
                     </button>
-                </div>
-            </form>
+                </form>
+            @else
+                <form action="{{ route('profile.password') }}" method="POST" class="mt-4 space-y-3">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Current Password</label>
+                        <input type="password" name="current_password"
+                            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                            placeholder="Enter current password">
+                        @error('current_password')
+                            <span class="text-xs text-rose-600">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">New Password</label>
+                        <input type="password" name="password"
+                            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                            placeholder="Enter new password">
+                        @error('password')
+                            <span class="text-xs text-rose-600">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Confirm Password</label>
+                        <input type="password" name="password_confirmation"
+                            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                            placeholder="Confirm new password">
+                    </div>
+
+                    <div class="pt-1">
+                        <button type="submit"
+                            class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+                            Update Password
+                        </button>
+                    </div>
+                </form>
+            @endif
         </article>
     </section>
 </main>
