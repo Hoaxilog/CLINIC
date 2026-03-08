@@ -3,7 +3,7 @@
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PatientDashboardController;
@@ -12,7 +12,6 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ServiceController;
 use App\Livewire\appointment\BookAppointment;
-use App\Http\Controllers\Auth\GoogleLoginController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 
@@ -41,11 +40,14 @@ Route::prefix('services')->group(function () {
 Route::middleware(['guest'])->group(function() {
     Route::get('/login', [LoginController::class, 'index'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/login/otp', [LoginController::class, 'showOtpForm'])->name('login.otp');
+    Route::post('/login/otp', [LoginController::class, 'verifyOtp'])->name('login.otp.verify');
+    Route::post('/login/otp/resend', [LoginController::class, 'resendOtp'])->name('login.otp.resend');
 
 
-    Route::get('auth/google/redirect', [GoogleLoginController::class, 'redirectToGoogle'])
+    Route::get('auth/google/redirect', [LoginController::class, 'redirectToGoogle'])
         ->name('auth.google.redirect');
-    Route::get('auth/google/callback', [GoogleLoginController::class, 'handleGoogleCallback'])
+    Route::get('auth/google/callback', [LoginController::class, 'handleGoogleCallback'])
         ->name('auth.google.callback');
 
 

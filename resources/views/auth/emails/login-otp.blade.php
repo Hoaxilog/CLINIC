@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Appointment Confirmation</title>
+    <title>Your Login OTP</title>
     <style>
         body {
             margin: 0;
@@ -51,7 +51,7 @@
         }
         .hero-copy {
             margin: 12px 0 0;
-            max-width: 450px;
+            max-width: 440px;
             font-size: 15px;
             line-height: 1.7;
             color: #dff4ff;
@@ -71,46 +71,27 @@
             line-height: 1.8;
             color: #486175;
         }
-        .details {
-            margin: 26px 0;
-            padding: 12px 20px;
-            border: 1px solid #d7e7f3;
+        .otp-box {
+            margin: 28px 0 22px;
+            padding: 20px;
             border-radius: 20px;
-            background: linear-gradient(180deg, #f7fbfe 0%, #eef8fd 100%);
+            background: linear-gradient(180deg, #f7fbfe 0%, #ecf7fd 100%);
+            border: 1px solid #d7e7f3;
+            text-align: center;
         }
-        .row {
-            padding: 14px 0;
-            border-bottom: 1px solid #deedf7;
-        }
-        .row.last {
-            border-bottom: none;
-        }
-        .label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #7e97aa;
-        }
-        .value {
-            display: block;
-            font-size: 16px;
-            line-height: 1.6;
-            font-weight: 700;
-            color: #10283b;
-        }
-        .status-pill {
+        .otp-code {
             display: inline-block;
-            padding: 8px 14px;
-            border-radius: 999px;
-            background: #fff3cd;
-            color: #9a6700;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 0.34em;
+            color: #0d7cc2;
+            text-indent: 0.34em;
+        }
+        .note {
+            margin: 0 0 16px;
             font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            line-height: 1.7;
+            color: #6d8598;
         }
         .footer {
             padding: 0 40px 36px;
@@ -129,6 +110,11 @@
             .title {
                 font-size: 24px !important;
             }
+            .otp-code {
+                font-size: 30px !important;
+                letter-spacing: 0.24em !important;
+                text-indent: 0.24em !important;
+            }
         }
     </style>
 </head>
@@ -138,30 +124,19 @@
             <div class="hero">
                 <div class="eyebrow">Tejadent Clinic</div>
                 <h1 class="brand">TEJADENT</h1>
-                <p class="hero-copy">Your appointment request has been received. We will review it and notify you once the schedule is confirmed.</p>
+                <p class="hero-copy">Use this one-time code to complete your sign-in securely. Never share this code with anyone.</p>
             </div>
 
             <div class="content">
-                <h2 class="title">Appointment request received</h2>
-                <p class="text">Hi {{ $name }}, thank you for booking with Tejadent Clinic. Here are the details of your submitted appointment request.</p>
+                <h2 class="title">Your one-time login code</h2>
+                <p class="text">Use the code below to finish signing in to your Tejadent account for <strong>{{ $email }}</strong>.</p>
 
-                <div class="details">
-                    <div class="row">
-                        <span class="label">Service</span>
-                        <span class="value">{{ $service_name }}</span>
-                    </div>
-                    <div class="row">
-                        <span class="label">Date and Time</span>
-                        <span class="value">{{ $appointment_date }}</span>
-                    </div>
-                    <div class="row last">
-                        <span class="label">Status</span>
-                        <span class="status-pill">Pending</span>
-                    </div>
+                <div class="otp-box">
+                    <span class="otp-code">{{ $otp }}</span>
                 </div>
 
-                <p class="text">We will send another update as soon as the clinic approves or adjusts your appointment.</p>
-                <p class="text" style="margin-bottom: 0;">If you did not request this appointment, you can ignore this email.</p>
+                <p class="text">This code expires at <strong>{{ \Carbon\Carbon::parse($expiresAt)->format('g:i A') }}</strong>.</p>
+                <p class="note">If you did not attempt to sign in, you can ignore this email and your account will remain secure.</p>
             </div>
 
             <div class="footer">

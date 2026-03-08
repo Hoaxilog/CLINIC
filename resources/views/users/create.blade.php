@@ -31,18 +31,18 @@
 
                 {{-- SECTION 1: ACCOUNT DETAILS --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    {{-- Username --}}
+                    {{-- Email --}}
                     <div>
-                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Username</label>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Email</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 {{-- User Icon --}}
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             </span>
-                            <input type="text" name="username" value="{{ old('username') }}" placeholder="e.g. dr_smith" required
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="e.g. staff@tejadent.com" required
                                 class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                         </div>
-                        @error('username') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                        @error('email') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Role --}}
@@ -77,7 +77,7 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             </span>
-                            <input type="password" name="password" placeholder="Min. 8 characters" required
+                            <input type="password" name="password" placeholder="Min. 12 chars with letter, number, symbol" required
                                 class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                         </div>
                         @error('password') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror

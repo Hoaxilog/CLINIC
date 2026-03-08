@@ -73,11 +73,17 @@ class Dashboard extends Controller
 
     public function index() {
         $today = Carbon::today();
+        $nextAppointmentCutoff = Carbon::now()->subMinutes(90);
         $range = request('range', '15d');
         $patientStatsRange = request('patient_stats_range', 'monthly');
+        $cancellationRange = request('cancellation_range', 'monthly');
 
         if (!in_array($patientStatsRange, ['weekly', 'monthly'], true)) {
             $patientStatsRange = 'monthly';
+        }
+
+        if (!in_array($cancellationRange, ['weekly', 'monthly'], true)) {
+            $cancellationRange = 'monthly';
         }
 
         $rangeStart = $today->copy()->subDays(14)->startOfDay();
@@ -96,13 +102,18 @@ class Dashboard extends Controller
 
         $last30Start = $today->copy()->subDays(29)->startOfDay();
         $last30End = $today->copy()->endOfDay();
+        $cancellationStart = $cancellationRange === 'weekly'
+            ? $today->copy()->startOfWeek()->startOfDay()
+            : $today->copy()->startOfMonth()->startOfDay();
+        $cancellationEnd = $today->copy()->endOfDay();
+        $cancellationLabel = $cancellationRange === 'weekly' ? 'This Week' : 'This Month';
 
         $bookedLast30 = DB::table('appointments')
-            ->whereBetween('appointment_date', [$last30Start, $last30End])
+            ->whereBetween('appointment_date', [$cancellationStart, $cancellationEnd])
             ->count();
 
         $cancelledLast30 = DB::table('appointments')
-            ->whereBetween('appointment_date', [$last30Start, $last30End])
+            ->whereBetween('appointment_date', [$cancellationStart, $cancellationEnd])
             ->where('status', 'Cancelled')
             ->count();
 
@@ -125,19 +136,6 @@ class Dashboard extends Controller
         $rangeEnd = $today->copy()->endOfDay();
         $prevRangeEnd = $rangeStart->copy()->subDay()->endOfDay();
         $prevRangeStart = $prevRangeEnd->copy()->subDays($rangeDays - 1)->startOfDay();
-
-        $rangeAppointmentsCount = DB::table('appointments')
-            ->whereBetween('appointment_date', [$rangeStart, $rangeEnd])
-            ->count();
-
-        $prevRangeAppointmentsCount = DB::table('appointments')
-            ->whereBetween('appointment_date', [$prevRangeStart, $prevRangeEnd])
-            ->count();
-
-        $rangeAppointmentsDiff = $rangeAppointmentsCount - $prevRangeAppointmentsCount;
-        $rangeAppointmentsPct = $prevRangeAppointmentsCount > 0
-            ? round(($rangeAppointmentsDiff / $prevRangeAppointmentsCount) * 100)
-            : null;
 
         $todayProfit = (float) (DB::table('treatment_records')
             ->whereDate('created_at', $today)
@@ -197,34 +195,6 @@ class Dashboard extends Controller
             ? round((($monthProfit - $prevMonthProfit) / $prevMonthProfit) * 100)
             : null;
 
-        $rangeProfit = (float) (DB::table('treatment_records')
-            ->whereBetween('created_at', [$rangeStart, $rangeEnd])
-            ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0) - COALESCE(cost_of_treatment,0)), 0) as profit')
-            ->value('profit') ?? 0);
-
-        $rangeRevenue = (float) (DB::table('treatment_records')
-            ->whereBetween('created_at', [$rangeStart, $rangeEnd])
-            ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0)), 0) as revenue')
-            ->value('revenue') ?? 0);
-
-        $prevRangeProfit = (float) (DB::table('treatment_records')
-            ->whereBetween('created_at', [$prevRangeStart, $prevRangeEnd])
-            ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0) - COALESCE(cost_of_treatment,0)), 0) as profit')
-            ->value('profit') ?? 0);
-
-        $prevRangeRevenue = (float) (DB::table('treatment_records')
-            ->whereBetween('created_at', [$prevRangeStart, $prevRangeEnd])
-            ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0)), 0) as revenue')
-            ->value('revenue') ?? 0);
-
-        $rangeProfitPct = $prevRangeProfit > 0
-            ? round((($rangeProfit - $prevRangeProfit) / $prevRangeProfit) * 100)
-            : null;
-
-        $rangeRevenuePct = $prevRangeRevenue > 0
-            ? round((($rangeRevenue - $prevRangeRevenue) / $prevRangeRevenue) * 100)
-            : null;
-
         $trendDates = [];
         $trendAppointments = [];
         $trendProfit = [];
@@ -260,6 +230,7 @@ class Dashboard extends Controller
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->whereDate('appointments.appointment_date', $today)
+            ->where('appointments.appointment_date', '>=', $nextAppointmentCutoff)
             ->whereNotIn('appointments.status', ['Cancelled', 'Completed'])
             ->orderBy('appointments.appointment_date', 'asc')
             ->select(
@@ -274,6 +245,22 @@ class Dashboard extends Controller
 
         $pendingApprovalsCount = DB::table('appointments')->where('status', 'Pending')->count();
         $totalPatients = DB::table('patients')->count();
+        $revenueByTreatment = DB::table('treatment_records')
+            ->selectRaw('COALESCE(NULLIF(TRIM(treatment), \'\'), \'Unspecified Treatment\') as treatment_name')
+            ->selectRaw('COALESCE(SUM(COALESCE(amount_charged, 0)), 0) as total_revenue')
+            ->whereBetween('created_at', [$last30Start, $last30End])
+            ->groupBy('treatment_name')
+            ->orderByDesc('total_revenue')
+            ->limit(6)
+            ->get();
+
+        $topRevenueTreatmentNames = $revenueByTreatment->pluck('treatment_name')->values()->all();
+        $topRevenueTreatmentAmounts = $revenueByTreatment
+            ->pluck('total_revenue')
+            ->map(fn ($amount) => (float) $amount)
+            ->values()
+            ->all();
+        $topRevenueTotal = array_sum($topRevenueTreatmentAmounts);
 
         $patientStats = $this->buildPatientStats($patientStatsRange);
 
@@ -282,10 +269,6 @@ class Dashboard extends Controller
             'todayCompletedCount'    => $todayCompletedCount,
             'todayCancelledCount'    => $todayCancelledCount,
             'todayUpcomingCount'     => max(0, $todayUpcomingCount),
-            'rangeAppointmentsCount'  => $rangeAppointmentsCount,
-            'prevRangeAppointmentsCount' => $prevRangeAppointmentsCount,
-            'rangeAppointmentsDiff'   => $rangeAppointmentsDiff,
-            'rangeAppointmentsPct'    => $rangeAppointmentsPct,
             'todayProfit'            => $todayProfit,
             'todayRevenue'           => $todayRevenue,
             'yesterdayProfit'        => $yesterdayProfit,
@@ -294,12 +277,6 @@ class Dashboard extends Controller
             'weekProfitPct'          => $weekProfitPct,
             'monthProfit'            => $monthProfit,
             'monthProfitPct'         => $monthProfitPct,
-            'rangeProfit'            => $rangeProfit,
-            'rangeRevenue'           => $rangeRevenue,
-            'prevRangeProfit'        => $prevRangeProfit,
-            'prevRangeRevenue'       => $prevRangeRevenue,
-            'rangeProfitPct'         => $rangeProfitPct,
-            'rangeRevenuePct'        => $rangeRevenuePct,
             'trendDates'             => $trendDates,
             'trendAppointments'      => $trendAppointments,
             'trendProfit'            => $trendProfit,
@@ -316,6 +293,11 @@ class Dashboard extends Controller
             'returningPatientCounts' => $patientStats['returningPatientCounts'],
             'patientStatsRange'      => $patientStats['patientStatsRange'],
             'patientStatsLabel'      => $patientStats['patientStatsLabel'],
+            'topRevenueTreatmentNames' => $topRevenueTreatmentNames,
+            'topRevenueTreatmentAmounts' => $topRevenueTreatmentAmounts,
+            'topRevenueTotal'        => $topRevenueTotal,
+            'cancellationRange'      => $cancellationRange,
+            'cancellationLabel'      => $cancellationLabel,
             'range'                  => $range,
             'rangeLabel'             => $rangeLabel,
         ]);

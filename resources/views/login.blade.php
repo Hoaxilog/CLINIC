@@ -71,7 +71,7 @@
                     TEJA<span class="text-[#0086DA]">DENT</span>
                 </h1>
 
-                <!-- Username Field -->
+                <!-- Email Field -->
                 <div class="w-full max-w-xs mb-4">
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -81,8 +81,8 @@
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
                         </span>
-                        <input value="{{ old('username') }}" type="text" placeholder="Username" name="username"
-                            class="@error('username') border-red-500 @enderror w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-200" />
+                        <input value="{{ old('email') }}" type="email" placeholder="Email address" name="email"
+                            class="@error('email') border-red-500 @enderror w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-200" />
                     </div>
                 </div>
 
