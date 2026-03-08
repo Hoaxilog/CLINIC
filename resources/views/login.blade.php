@@ -12,20 +12,7 @@
         <!-- reCAPTCHA (shown after 3 failed attempts) -->
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     @endif
-
-    <script>
-        function toggleLoginPassword() {
-            const passwordField = document.getElementById('login-password');
-            const eyeOpen = document.getElementById('login-eye-open');
-            const eyeClosed = document.getElementById('login-eye-closed');
-
-            const isHidden = passwordField.type === 'password';
-            passwordField.type = isHidden ? 'text' : 'password';
-
-            eyeClosed.classList.toggle('hidden', isHidden);
-            eyeOpen.classList.toggle('hidden', !isHidden);
-        }
-    </script>
+</head>
 
 <body>
     <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -94,7 +81,7 @@
                                 </path>
                             </svg>
                         </span>
-                        <input type="password" id="login-password" placeholder="Password" name="password"
+<input type="password" id="login-password" placeholder="Password" name="password"
                             class="@error('password') border-red-500 @enderror w-full pl-10 pr-10 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-200" />
                         <button type="button" onclick="toggleLoginPassword()"
                             class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 transition"

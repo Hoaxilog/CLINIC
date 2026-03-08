@@ -109,11 +109,11 @@
                 </div>
             </div>
         </div>
-        <div id="mobile-menu" class="md:hidden fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="mobile-menu" class="md:hidden fixed inset-0 z-50 hidden pointer-events-none" aria-hidden="true">
             <div id="mobile-menu-backdrop"
-                class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 ease-out"></div>
+                class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 ease-out pointer-events-none"></div>
             <div id="mobile-menu-panel"
-                class="absolute right-0 top-0 h-full w-72 max-w-[85%] bg-[#FCFCFC] border-l-2 border-black shadow-[8px_0_0px_0px_rgba(0,0,0,1)] transform translate-x-full transition-transform duration-300 ease-out will-change-transform">
+                class="absolute right-0 top-0 h-full w-72 max-w-[85%] bg-[#FCFCFC] border-l-2 border-black shadow-[8px_0_0px_0px_rgba(0,0,0,1)] transform translate-x-full transition-transform duration-300 ease-out will-change-transform pointer-events-auto">
                 <div class="flex items-center justify-between px-4 h-16 border-b-2 border-black">
                     <p class="text-sm font-black tracking-widest">MENU</p>
                     <button id="menu-close" class="p-2 border-2 border-black bg-white" aria-label="Close menu">
@@ -159,3 +159,60 @@
         </div>
     </nav>
 </header>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const menuPanel = document.getElementById('mobile-menu-panel');
+        const menuBackdrop = document.getElementById('mobile-menu-backdrop');
+        const menuClose = document.getElementById('menu-close');
+
+        if (!menuBtn || !mobileMenu) return; // Exit if elements not found
+
+        function openMenu() {
+            mobileMenu.classList.remove('hidden');
+            mobileMenu.classList.add('pointer-events-auto');
+            mobileMenu.setAttribute('aria-hidden', 'false');
+            menuBtn.setAttribute('aria-expanded', 'true');
+            menuIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    menuBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    menuBackdrop.classList.add('opacity-100', 'pointer-events-auto');
+                    menuPanel.classList.remove('translate-x-full');
+                });
+            });
+        }
+
+        function closeMenu() {
+            menuPanel.classList.add('translate-x-full');
+            menuBackdrop.classList.remove('opacity-100', 'pointer-events-auto');
+            menuBackdrop.classList.add('opacity-0', 'pointer-events-none');
+            menuBtn.setAttribute('aria-expanded', 'false');
+            menuIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />`;
+            setTimeout(() => {
+                mobileMenu.classList.add('hidden', 'pointer-events-none');
+                mobileMenu.classList.remove('pointer-events-auto');
+                mobileMenu.setAttribute('aria-hidden', 'true');
+            }, 300);
+        }
+
+        menuBtn.addEventListener('click', function() {
+            if (mobileMenu.classList.contains('hidden')) {
+                openMenu();
+            } else {
+                closeMenu();
+            }
+        });
+
+        menuBackdrop.addEventListener('click', closeMenu);
+        menuClose.addEventListener('click', closeMenu);
+
+        // Close menu on link clicks
+        const menuLinks = mobileMenu.querySelectorAll('a');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', closeMenu);
+        });
+    });
+</script>

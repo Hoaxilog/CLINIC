@@ -525,16 +525,19 @@
             const menuBackdrop = document.getElementById('mobile-menu-backdrop');
             const menuClose = document.getElementById('menu-close');
 
+            if (!menuBtn || !mobileMenu) return; // Exit if elements not found
+
             function openMenu() {
                 mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.add('pointer-events-auto');
                 mobileMenu.setAttribute('aria-hidden', 'false');
                 menuBtn.setAttribute('aria-expanded', 'true');
                 menuIcon.innerHTML =
                     `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`;
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        menuBackdrop.classList.remove('opacity-0');
-                        menuBackdrop.classList.add('opacity-100');
+                        menuBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+                        menuBackdrop.classList.add('opacity-100', 'pointer-events-auto');
                         menuPanel.classList.remove('translate-x-full');
                     });
                 });
@@ -542,13 +545,14 @@
 
             function closeMenu() {
                 menuPanel.classList.add('translate-x-full');
-                menuBackdrop.classList.remove('opacity-100');
-                menuBackdrop.classList.add('opacity-0');
+                menuBackdrop.classList.remove('opacity-100', 'pointer-events-auto');
+                menuBackdrop.classList.add('opacity-0', 'pointer-events-none');
                 menuBtn.setAttribute('aria-expanded', 'false');
                 menuIcon.innerHTML =
                     `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />`;
                 setTimeout(() => {
-                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.add('hidden', 'pointer-events-none');
+                    mobileMenu.classList.remove('pointer-events-auto');
                     mobileMenu.setAttribute('aria-hidden', 'true');
                 }, 300);
             }
@@ -563,8 +567,9 @@
 
             menuBackdrop.addEventListener('click', closeMenu);
             menuClose.addEventListener('click', closeMenu);
-        });
-    </script>
-</body>
 
-</html>
+            // Close menu on link clicks
+            const menuLinks = mobileMenu.querySelectorAll('a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', closeMenu);
+            });
