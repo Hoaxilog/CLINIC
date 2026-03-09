@@ -11,7 +11,7 @@
                 <label for="dmd" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">DMD <span
                         class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
-                    <input wire:model="dmd" type="text" id="dmd"
+                    <input wire:model.defer="dmd" type="text" id="dmd"
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"
                         placeholder="e.g., Dr. Name" @if ($isReadOnly) disabled @endif>
                     @error('dmd')
@@ -24,7 +24,7 @@
                 <label for="treatment" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Treatment
                     <span class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
-                    <input wire:model="treatment" type="text" id="treatment"
+                    <input wire:model.defer="treatment" type="text" id="treatment"
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"
                         placeholder="e.g., Extraction" @if ($isReadOnly) disabled @endif>
                     @error('treatment')
@@ -38,7 +38,7 @@
                     class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Estimated Cost <span
                         class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
-                    <input wire:model="cost_of_treatment" type="number" id="cost_of_treatment"
+                    <input wire:model.defer="cost_of_treatment" type="number" id="cost_of_treatment"
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"
                         placeholder="0.00" @if ($isReadOnly) disabled @endif>
                     {{-- [ADDED] Error Message --}}
@@ -54,7 +54,7 @@
                     class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4">Payment <span
                         class="text-red-600">*</span> :</label>
                 <div class="flex-1 w-full">
-                    <input wire:model="amount_charged" type="number" id="amount_charged"
+                    <input wire:model.defer="amount_charged" type="number" id="amount_charged"
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"
                         placeholder="0.00" @if ($isReadOnly) disabled @endif>
                     {{-- [ADDED] Error Message --}}
@@ -69,7 +69,7 @@
                 <label for="remarks" class="sm:w-1/3 text-lg font-medium text-gray-700 sm:text-right pr-4 pt-3">Remarks
                     :</label>
                 <div class="flex-1 w-full">
-                    <textarea wire:model="remarks" id="remarks" rows="5"
+                    <textarea wire:model.defer="remarks" id="remarks" rows="5"
                         class="w-full border rounded px-4 py-3 text-base disabled:bg-gray-100 disabled:text-gray-500"
                         placeholder="Enter notes here..." @if ($isReadOnly) disabled @endif></textarea>
                     {{-- [ADDED] Error Message --}}

@@ -92,13 +92,13 @@
             display: inline-block;
             padding: 15px 30px;
             border-radius: 999px;
-            background: #f59e0b;
+            background: #0086DA;
             color: #ffffff !important;
             text-decoration: none;
             font-size: 15px;
             font-weight: 700;
             letter-spacing: 0.01em;
-            box-shadow: 0 10px 24px rgba(245, 158, 11, 0.28);
+            box-shadow: 0 10px 24px rgba(0, 134, 218, 0.28);
         }
         .note {
             margin: 0 0 24px;

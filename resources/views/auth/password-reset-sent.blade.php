@@ -26,7 +26,7 @@
             </p>
             <p style="margin:0 auto 30px;max-width:440px;font-size:14px;line-height:1.7;color:#6d8598;">Check your inbox and follow the instructions in the email to set a new password.</p>
 
-            <a href="{{ route('login') }}" style="display:inline-block;padding:15px 30px;border-radius:999px;background:#f59e0b;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;letter-spacing:0.01em;box-shadow:0 10px 24px rgba(245,158,11,0.28);">Back to Login</a>
+            <a href="{{ route('login') }}" style="display:inline-block;padding:15px 30px;border-radius:999px;background:#0086DA;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;letter-spacing:0.01em;box-shadow:0 10px 24px rgba(0,134,218,0.28);">Back to Login</a>
         </div>
     </div>
 </body>

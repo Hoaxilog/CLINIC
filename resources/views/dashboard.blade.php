@@ -97,19 +97,6 @@
                             <option value="weekly" {{ ($cancellationRange ?? 'monthly') === 'weekly' ? 'selected' : '' }}>Weekly</option>
                             <option value="monthly" {{ ($cancellationRange ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Monthly</option>
                         </select>
-                        <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 2v6" />
-                                <path d="M12 16v6" />
-                                <path d="M6 12H2" />
-                                <path d="M22 12h-4" />
-                                <path d="M5 5l3 3" />
-                                <path d="M19 19l-3-3" />
-                                <path d="M19 5l-3 3" />
-                                <path d="M5 19l3-3" />
-                            </svg>
-                        </span>
                     </div>
                 </div>
                 <div>

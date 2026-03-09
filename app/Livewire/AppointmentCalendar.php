@@ -14,6 +14,9 @@ use Carbon\CarbonInterval; // <-- Add this at the top
 
 class AppointmentCalendar extends Component
 {
+    protected const SLOT_CAPACITY = 2;
+    protected const APPROVED_SLOT_STATUSES = ['Scheduled', 'Waiting', 'Ongoing'];
+
     // ... (All other properties and methods are unchanged) ...
     public $currentDate;
     public $viewType = 'week';
@@ -48,6 +51,7 @@ class AppointmentCalendar extends Component
     public $activeTab = 'calendar';
     public $prefillPatientId = null;
     public $prefillPatientLabel = null;
+    public $pendingFilterDate = null;
 
     protected $rules = [
         'firstName' => 'required|string|max:100',
@@ -145,9 +149,9 @@ class AppointmentCalendar extends Component
                 return $appointment;
             });
 
-        // For occupancy: count Pending toward capacity (exclude Cancelled/Completed only)
+        // For occupancy: only approved appointments consume slot capacity.
         $this->occupiedAppointments = (clone $baseQuery)
-            ->whereNotIn('appointments.status', ['Cancelled', 'Completed'])
+            ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES)
             ->get()
             ->map(function($appointment) {
                 sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);
@@ -199,7 +203,7 @@ class AppointmentCalendar extends Component
         $this->contactNumber = '';
         $this->birthDate = null; 
         $this->selectedService = '';
-        $this->appointmentDate = null;  // Reset this instead
+        $this->appointmentDate = null;  
         $this->selectedTime = null;
         $this->endTime = null;
         $this->isViewing = false; 
@@ -213,8 +217,8 @@ class AppointmentCalendar extends Component
     public function openAppointmentModal($date, $time)
     {
         $this->resetForm();
-        $this->selectedDate = $date;      // Keep for date picker
-        $this->appointmentDate = $date;   // NEW: Use this in modal
+        $this->selectedDate = $date;      
+        $this->appointmentDate = $date;   
         $this->selectedTime = $time;
         $this->showAppointmentModal = true;
 
@@ -234,7 +238,6 @@ class AppointmentCalendar extends Component
         $service = $this->servicesList->firstWhere('id', $serviceId);
 
         if ($service) {
-            // This logic was already correct, as it's used in the modal
             list($hours, $minutes, $seconds) = explode(':', $service->duration);
             $this->endTime = Carbon::parse($this->selectedTime)
                                    ->addHours((int)$hours)
@@ -251,7 +254,6 @@ class AppointmentCalendar extends Component
             return; 
         }
     
-        // 1. Validation: This will STOP everything if 'birthDate' is empty!
         $this->validate([
             'firstName' => 'required|string|max:100',
             'lastName' => 'required|string|max:100',
@@ -263,7 +265,6 @@ class AppointmentCalendar extends Component
         ]);
 
         try {
-            // 2. FIX: Wrap servicesList in collect() to prevent the "500 Error" crash
             $service = collect($this->servicesList)->firstWhere('id', $this->selectedService);
             
             if (!$service) {
@@ -277,7 +278,7 @@ class AppointmentCalendar extends Component
             $proposedStart = Carbon::parse($this->appointmentDate)->setTimeFromTimeString($this->selectedTime);
             $proposedEnd = $proposedStart->copy()->addMinutes($durationInMinutes);
             
-            // Conflict Check
+            // Conflict Check: allow up to two approved appointments per overlapping slot.
             $conflicts = DB::table('appointments')
                 ->join('services', 'appointments.service_id', '=', 'services.id')
                 ->where(function ($query) use ($proposedStart, $proposedEnd) {
@@ -286,12 +287,12 @@ class AppointmentCalendar extends Component
                     
                     $query->where($existingStart, '<', $proposedEnd->toDateTimeString())
                         ->where($existingEnd, '>', $proposedStart->toDateTimeString())
-                        ->where('appointments.status', '!=', 'Cancelled');
+                        ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES);
                 })
                 ->count(); 
-
-            if ($conflicts > 0) {
-                $this->addError('conflict', 'This time and duration conflicts with an existing appointment.');
+ 
+            if ($conflicts >= self::SLOT_CAPACITY) {
+                $this->addError('conflict', 'This time slot already has two approved appointments.');
                 return;
             }
 
@@ -447,23 +448,14 @@ class AppointmentCalendar extends Component
 
     public function isSlotOccupied($date, $time)
     {
-        // 1. Kunin ang start time ng slot na tinitingnan (e.g., "16:30")
         $slotStart = Carbon::parse($date . ' ' . $time);
-
-        // Convert sa "total minutes from start of day" (e.g., 16:30 -> 16*60 + 30 = 990)
         $slotStartInMinutes = $slotStart->hour * 60 + $slotStart->minute;
-        
-        // Ang bawat slot ay 30 minutes ang haba
         $slotEndInMinutes = $slotStartInMinutes + 30;
+        $overlappingAppointments = 0;
 
-        // 2. Loop sa lahat ng appointments
-        foreach ($this->occupiedAppointments as $appointment) 
-        {
+        foreach ($this->occupiedAppointments as $appointment) {
             if (Carbon::parse($appointment->start_date)->isSameDay($slotStart)) {
-
                 $existingStart = Carbon::parse($appointment->start_date . ' ' . $appointment->start_time);
-                
-                // Convert sa "total minutes from start of day"
                 $existingStartInMinutes = $existingStart->hour * 60 + $existingStart->minute;
                 $existingEndInMinutes = $existingStartInMinutes + $appointment->duration_in_minutes;
 
@@ -473,7 +465,11 @@ class AppointmentCalendar extends Component
                 );
 
                 if ($isOverlapping) {
-                    return true; 
+                    $overlappingAppointments++;
+
+                    if ($overlappingAppointments >= self::SLOT_CAPACITY) {
+                        return true;
+                    }
                 }
             }
         }
@@ -598,6 +594,9 @@ class AppointmentCalendar extends Component
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.status', 'Pending')
+            ->when($this->pendingFilterDate, function ($query) {
+                $query->whereDate('appointments.appointment_date', $this->pendingFilterDate);
+            })
             ->orderBy('appointments.appointment_date', 'asc')
             ->select(
                 'appointments.id',
@@ -610,6 +609,11 @@ class AppointmentCalendar extends Component
                 'services.service_name'
             )
             ->get();
+    }
+
+    public function clearPendingFilterDate()
+    {
+        $this->pendingFilterDate = null;
     }
 
     public function approveAppointment($appointmentId)

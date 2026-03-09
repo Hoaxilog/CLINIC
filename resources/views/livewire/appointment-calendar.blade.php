@@ -35,6 +35,16 @@
                             <h2 class="text-lg font-semibold text-gray-900">Pending Approvals</h2>
                             <p class="text-xs text-gray-500">Review and approve appointment requests.</p>
                         </div>
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <input type="date" wire:model.live="pendingFilterDate"
+                                class="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700">
+                            @if ($pendingFilterDate)
+                                <button type="button" wire:click="clearPendingFilterDate"
+                                    class="px-3 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                    Clear
+                                </button>
+                            @endif
+                        </div>
                     </div>
                 </div>
 

@@ -13,6 +13,9 @@ use Throwable;
 
 class BookAppointment extends Component
 {
+    protected const SLOT_CAPACITY = 2;
+    protected const APPROVED_SLOT_STATUSES = ['Scheduled', 'Waiting', 'Ongoing'];
+
     // Form data
     public $first_name, $last_name, $age, $contact_number, $email, $service_id;
     public $selectedDate, $selectedSlot;
@@ -88,7 +91,7 @@ class BookAppointment extends Component
 
         $bookedCounts = DB::table('appointments')
             ->whereDate('appointment_date', $dateString)
-            ->whereNotIn('status', ['Cancelled', 'Completed'])
+            ->whereIn('status', self::APPROVED_SLOT_STATUSES)
             ->selectRaw('TIME(appointment_date) as time_slot, COUNT(*) as total')
             ->groupBy('time_slot')
             ->pluck('total', 'time_slot')
@@ -104,7 +107,7 @@ class BookAppointment extends Component
             $slots[] = [
                 'time' => $startTime->format('h:i A'),
                 'value' => $slotTime,
-                'is_full' => $currentCount >= 2,
+                'is_full' => $currentCount >= self::SLOT_CAPACITY,
                 'is_past' => $isPast,
             ];
             $startTime->addMinutes($duration);
@@ -151,10 +154,10 @@ class BookAppointment extends Component
 
         $activeSlotBookings = DB::table('appointments')
             ->where('appointment_date', $appointmentDateTime)
-            ->whereNotIn('status', ['Cancelled', 'Completed'])
+            ->whereIn('status', self::APPROVED_SLOT_STATUSES)
             ->count();
 
-        if ($activeSlotBookings >= 2) {
+        if ($activeSlotBookings >= self::SLOT_CAPACITY) {
             $this->addError('selectedSlot', 'This time slot is already full. Please choose another time.');
             $this->availableSlots = $this->generateSlots($this->selectedDate);
             return;
