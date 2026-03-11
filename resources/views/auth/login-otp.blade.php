@@ -94,6 +94,8 @@
         }
 
         if (otpInput && otpDigits.length) {
+            fillDigits(@json(old('otp', '')));
+
             otpDigits.forEach((input, index) => {
                 input.addEventListener('input', function () {
                     this.value = this.value.replace(/\D/g, '').slice(0, 1);
@@ -124,7 +126,8 @@
             });
 
             otpGroup.addEventListener('paste', handlePaste);
-            otpDigits[0].focus();
+            const firstEmptyIndex = otpDigits.findIndex((input) => input.value === '');
+            otpDigits[firstEmptyIndex === -1 ? otpDigits.length - 1 : firstEmptyIndex].focus();
         }
     </script>
 </body>

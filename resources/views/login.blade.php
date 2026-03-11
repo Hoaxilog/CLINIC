@@ -12,6 +12,24 @@
         <!-- reCAPTCHA (shown after 3 failed attempts) -->
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     @endif
+
+    <script>
+        function toggleLoginPassword() {
+            const passwordField = document.getElementById('login-password');
+            const eyeOpen = document.getElementById('login-eye-open');
+            const eyeClosed = document.getElementById('login-eye-closed');
+
+            if (!passwordField || !eyeOpen || !eyeClosed) {
+                return;
+            }
+
+            const isHidden = passwordField.type === 'password';
+            passwordField.type = isHidden ? 'text' : 'password';
+
+            eyeClosed.classList.toggle('hidden', isHidden);
+            eyeOpen.classList.toggle('hidden', !isHidden);
+        }
+    </script>
 </head>
 
 <body class="bg-gray-50 min-h-screen">

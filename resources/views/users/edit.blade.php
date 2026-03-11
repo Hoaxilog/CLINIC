@@ -1,6 +1,19 @@
 @extends('index') 
 
 @section('content')
+<script>
+    function toggleAdminEditPassword(fieldId, eyeOpenId, eyeClosedId) {
+        const passwordField = document.getElementById(fieldId);
+        const eyeOpen = document.getElementById(eyeOpenId);
+        const eyeClosed = document.getElementById(eyeClosedId);
+
+        const isHidden = passwordField.type === 'password';
+        passwordField.type = isHidden ? 'text' : 'password';
+
+        eyeClosed.classList.toggle('hidden', isHidden);
+        eyeOpen.classList.toggle('hidden', !isHidden);
+    }
+</script>
 <main id="mainContent" class="min-h-screen bg-gray-50 p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
     
     <div class="max-w-3xl mx-auto">
@@ -77,8 +90,22 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             </span>
-                            <input type="password" name="password" placeholder="Leave blank to keep current"
+                            <input type="password" id="admin-edit-password" name="password" placeholder="Leave blank to keep current"
                                 class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                            <button type="button"
+                                onclick="toggleAdminEditPassword('admin-edit-password','admin-edit-eye-open','admin-edit-eye-closed')"
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 transition"
+                                aria-label="Toggle password visibility">
+                                <svg id="admin-edit-eye-closed" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <svg id="admin-edit-eye-open" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.58 10.58a2 2 0 102.83 2.83"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.88 5.09A10.94 10.94 0 0112 5c5 0 9.27 3.11 11 7a12.62 12.62 0 01-3.04 4.19M6.1 6.1A12.84 12.84 0 001 12c1.73 3.89 6 7 11 7 1.65 0 3.23-.34 4.66-.95"></path>
+                                </svg>
+                            </button>
                         </div>
                         @error('password') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
                     </div>
@@ -88,8 +115,22 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             </span>
-                            <input type="password" name="password_confirmation" placeholder="Confirm new password"
+                            <input type="password" id="admin-edit-password-confirmation" name="password_confirmation" placeholder="Confirm new password"
                                 class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                            <button type="button"
+                                onclick="toggleAdminEditPassword('admin-edit-password-confirmation','admin-edit-confirm-eye-open','admin-edit-confirm-eye-closed')"
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 transition"
+                                aria-label="Toggle confirm password visibility">
+                                <svg id="admin-edit-confirm-eye-closed" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <svg id="admin-edit-confirm-eye-open" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.58 10.58a2 2 0 102.83 2.83"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.88 5.09A10.94 10.94 0 0112 5c5 0 9.27 3.11 11 7a12.62 12.62 0 01-3.04 4.19M6.1 6.1A12.84 12.84 0 001 12c1.73 3.89 6 7 11 7 1.65 0 3.23-.34 4.66-.95"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>

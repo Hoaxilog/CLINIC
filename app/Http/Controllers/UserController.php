@@ -66,18 +66,14 @@ class UserController extends Controller
 
         $request->validate([
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email'), Rule::unique('users', 'username')],
-            'contact'  => ['nullable', 'string', 'max:225'],
-            'password' => ['required', 'confirmed', 'min:12', 'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/'],
+            'password' => ['required', 'confirmed', 'min:8'],
             'role'     => ['required', 'integer', Rule::in($allowedRoleIds)],
-        ], [
-            'password.regex' => 'Password must include at least one letter, one number, and one symbol.',
         ]);
 
         $token = Str::random(64);
         $insertData = [
             'username'   => $request->email,
             'email'      => $request->email,
-            'contact'    => $request->contact,
             'password'   => Hash::make($request->password),
             'role'       => $request->role,
             'verification_token' => $token,
@@ -147,18 +143,14 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->ignore($id),
                 Rule::unique('users', 'username')->ignore($id),
             ],
-            'contact'  => ['nullable', 'string', 'max:225'],
             'role'     => ['required', 'integer', Rule::in($this->allowedStaffRoleIds())],
-            'password' => ['nullable', 'confirmed', 'min:12', 'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/'],
-        ], [
-            'password.regex' => 'Password must include at least one letter, one number, and one symbol.',
+            'password' => ['nullable', 'confirmed', 'min:8'],
         ]);
 
         // 3. Prepare the New Data
         $updateData = [
             'username'   => $request->email,
             'email'      => $request->email,
-            'contact'    => $request->contact,
             'role'       => $request->role,
             'updated_at' => now(),
         ];
@@ -269,3 +261,5 @@ class UserController extends Controller
         return $attributes;
     }
 }
+
+

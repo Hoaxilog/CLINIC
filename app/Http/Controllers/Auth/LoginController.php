@@ -82,9 +82,8 @@ class LoginController extends Controller
 
         if ($user && !empty($user->password) && Hash::check($request->password, $user->password)) {
             $isUnverified = ($user->email_verified_at === null && $user->google_id === null);
-            $requiresVerification = in_array((int) $user->role, [1, 2], true);
 
-            if ($isUnverified && $requiresVerification) {
+            if ($isUnverified) {
                 RateLimiter::hit($throttleKey, 300);
                 return redirect()
                     ->route('verification.notice')
@@ -221,7 +220,9 @@ class LoginController extends Controller
         if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
             $seconds = RateLimiter::availableIn($verifyKey);
             $minutes = max(1, (int) ceil($seconds / 60));
-            return back()->with('failed', "Too many OTP attempts. Try again in {$minutes} minute(s).");
+            return back()->withErrors([
+                'otp' => "Too many OTP attempts. Try again in {$minutes} minute(s).",
+            ])->withInput($request->only('otp'));
         }
 
         if (now()->greaterThan($pendingOtp['expires_at'])) {
@@ -231,7 +232,9 @@ class LoginController extends Controller
 
         if (!Hash::check($request->otp, $pendingOtp['code_hash'])) {
             RateLimiter::hit($verifyKey, 300);
-            return back()->with('failed', 'Invalid OTP code.');
+            return back()->withErrors([
+                'otp' => 'Invalid OTP code.',
+            ])->withInput($request->only('otp'));
         }
 
         $user = DB::table('users')->where('id', $pendingOtp['user_id'])->first();
