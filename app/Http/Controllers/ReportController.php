@@ -11,18 +11,23 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        $range = $request->query('range', '30d');
-        $allowed = ['7d', '30d', 'month', 'year'];
+        $range = $request->query('range', 'month');
+        $allowed = ['today', 'week', 'month', 'year', 'custom'];
         if (!in_array($range, $allowed, true)) {
-            $range = '30d';
+            $range = 'month';
         }
 
         $now = Carbon::now();
         switch ($range) {
-            case '7d':
-                $startDate = $now->copy()->subDays(6)->startOfDay();
+            case 'today':
+                $startDate = $now->copy()->startOfDay();
                 $endDate = $now->copy()->endOfDay();
-                $rangeLabel = 'Last 7 Days';
+                $rangeLabel = 'Today';
+                break;
+            case 'week':
+                $startDate = $now->copy()->startOfWeek()->startOfDay();
+                $endDate = $now->copy()->endOfDay();
+                $rangeLabel = 'This Week';
                 break;
             case 'month':
                 $startDate = $now->copy()->startOfMonth();
@@ -34,16 +39,35 @@ class ReportController extends Controller
                 $endDate = $now->copy()->endOfDay();
                 $rangeLabel = 'This Year';
                 break;
-            case '30d':
+            case 'custom':
+                $fromDate = $request->query('from_date');
+                $toDate = $request->query('to_date');
+                if ($fromDate && $toDate) {
+                    $startDate = Carbon::parse($fromDate)->startOfDay();
+                    $endDate = Carbon::parse($toDate)->endOfDay();
+                    if ($startDate->gt($endDate)) {
+                        [$startDate, $endDate] = [$endDate->copy()->startOfDay(), $startDate->copy()->endOfDay()];
+                    }
+                } else {
+                    $startDate = $now->copy()->startOfMonth();
+                    $endDate = $now->copy()->endOfDay();
+                }
+                $rangeLabel = 'Custom Range: ' . $startDate->format('M d, Y') . ' - ' . $endDate->format('M d, Y');
+                break;
             default:
-                $startDate = $now->copy()->subDays(29)->startOfDay();
+                $startDate = $now->copy()->startOfMonth();
                 $endDate = $now->copy()->endOfDay();
-                $rangeLabel = 'Last 30 Days';
+                $rangeLabel = 'This Month';
                 break;
         }
 
+        $fromDate = $request->query('from_date') ?: $startDate->toDateString();
+        $toDate = $request->query('to_date') ?: $endDate->toDateString();
+
+        $totalPatients = (int) DB::table('patients')->count();
+
         $driver = DB::getDriverName();
-        $groupByMonth = $range === 'year';
+        $groupByMonth = $range === 'year' || $startDate->diffInDays($endDate) > 120;
         if ($groupByMonth) {
             switch ($driver) {
                 case 'pgsql':
@@ -76,7 +100,7 @@ class ReportController extends Controller
             }
         }
 
-        $dailyRaw = DB::table('appointments')
+        $appointmentTrendRaw = DB::table('appointments')
             ->select(DB::raw($bucketExpr . ' as bucket'), DB::raw('count(*) as total'))
             ->whereBetween('appointment_date', [$startDate, $endDate])
             ->groupBy('bucket')
@@ -90,14 +114,14 @@ class ReportController extends Controller
             foreach ($period as $date) {
                 $key = $date->format('Y-m');
                 $dates[] = $date->format('M Y');
-                $totals[] = (int) ($dailyRaw[$key] ?? 0);
+                $totals[] = (int) ($appointmentTrendRaw[$key] ?? 0);
             }
         } else {
             $period = CarbonPeriod::create($startDate, '1 day', $endDate);
             foreach ($period as $date) {
                 $key = $date->format('Y-m-d');
                 $dates[] = $date->format('M d');
-                $totals[] = (int) ($dailyRaw[$key] ?? 0);
+                $totals[] = (int) ($appointmentTrendRaw[$key] ?? 0);
             }
         }
 
@@ -107,8 +131,11 @@ class ReportController extends Controller
             ->groupBy('status')
             ->get();
 
-        $statusLabels = $statusData->pluck('status');
-        $statusCounts = $statusData->pluck('total');
+        $statusOrder = ['Scheduled', 'Arrived', 'Ongoing', 'Completed', 'Cancelled'];
+        $statusLabels = collect($statusOrder);
+        $statusCounts = $statusLabels
+            ->map(fn ($status) => (int) ($statusData->firstWhere('status', $status)->total ?? 0))
+            ->values();
 
         $serviceData = DB::table('appointments')
             ->join('services', 'appointments.service_id', '=', 'services.id')
@@ -123,9 +150,111 @@ class ReportController extends Controller
         $serviceCounts = $serviceData->pluck('total');
 
         $totalAppointments = array_sum($totals);
-        $completedCount = $statusData->firstWhere('status', 'Completed')->total ?? 0;
+        $completedCount = (int) ($statusData->firstWhere('status', 'Completed')->total ?? 0);
+        $cancelledCount = (int) ($statusData->firstWhere('status', 'Cancelled')->total ?? 0);
         $completionRate = $totalAppointments > 0 ? round(($completedCount / $totalAppointments) * 100) : 0;
         $topServiceName = $serviceNames->first() ?? 'N/A';
+
+        $walkInCount = (int) DB::table('activity_log')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where(function ($query) {
+                $query->whereRaw('LOWER(event) LIKE ?', ['%walk%'])
+                    ->orWhereRaw('LOWER(description) LIKE ?', ['%walk%'])
+                    ->orWhereRaw('LOWER(log_name) LIKE ?', ['%walk%']);
+            })
+            ->count();
+        $scheduledCount = max($totalAppointments - $walkInCount, 0);
+
+        $genderData = DB::table('patients')
+            ->select('gender', DB::raw('count(*) as total'))
+            ->groupBy('gender')
+            ->get();
+        $genderLabels = collect(['Male', 'Female', 'Other', 'Unspecified']);
+        $genderCounts = $genderLabels
+            ->map(fn ($gender) => $gender === 'Unspecified'
+                ? (int) ($genderData->firstWhere('gender', null)->total ?? 0)
+                : (int) ($genderData->firstWhere('gender', $gender)->total ?? 0))
+            ->values();
+
+        $patientRegistrationRaw = DB::table('patients')
+            ->select(DB::raw(match ($driver) {
+                'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
+                'sqlite' => "strftime('%Y-%m', created_at)",
+                'sqlsrv' => "FORMAT(created_at, 'yyyy-MM')",
+                default => "DATE_FORMAT(created_at, '%Y-%m')",
+            } . ' as bucket'), DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('bucket')
+            ->orderBy('bucket')
+            ->pluck('total', 'bucket');
+
+        $patientRegMonths = [];
+        $patientRegCounts = [];
+        $regPeriod = CarbonPeriod::create($startDate->copy()->startOfMonth(), '1 month', $endDate);
+        foreach ($regPeriod as $month) {
+            $key = $month->format('Y-m');
+            $patientRegMonths[] = $month->format('M Y');
+            $patientRegCounts[] = (int) ($patientRegistrationRaw[$key] ?? 0);
+        }
+
+        $patientGender = $request->query('patient_gender');
+        $patientRegFrom = $request->query('patient_from') ?: $startDate->toDateString();
+        $patientRegTo = $request->query('patient_to') ?: $endDate->toDateString();
+        $patientRows = DB::table('patients')
+            ->select('id', 'first_name', 'middle_name', 'last_name', 'gender', 'birth_date', 'mobile_number', 'created_at')
+            ->when($patientGender, fn ($query) => $query->where('gender', $patientGender))
+            ->whereBetween('created_at', [
+                Carbon::parse($patientRegFrom)->startOfDay(),
+                Carbon::parse($patientRegTo)->endOfDay(),
+            ])
+            ->orderByDesc('created_at')
+            ->limit(25)
+            ->get();
+
+        $appointmentFrom = $request->query('appointment_from') ?: $startDate->toDateString();
+        $appointmentTo = $request->query('appointment_to') ?: $endDate->toDateString();
+        $appointmentStatus = $request->query('appointment_status');
+        $appointmentService = $request->query('appointment_service');
+
+        $appointmentBase = DB::table('appointments')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('services', 'appointments.service_id', '=', 'services.id')
+            ->select(
+                'appointments.id',
+                'appointments.appointment_date',
+                'appointments.status',
+                'services.service_name',
+                'patients.first_name',
+                'patients.middle_name',
+                'patients.last_name'
+            )
+            ->whereBetween('appointments.appointment_date', [
+                Carbon::parse($appointmentFrom)->startOfDay(),
+                Carbon::parse($appointmentTo)->endOfDay(),
+            ]);
+
+        $appointmentRows = (clone $appointmentBase)
+            ->when($appointmentStatus, fn ($query) => $query->where('appointments.status', $appointmentStatus))
+            ->when($appointmentService, fn ($query) => $query->where('appointments.service_id', $appointmentService))
+            ->orderByDesc('appointments.appointment_date')
+            ->limit(25)
+            ->get();
+
+        $completedRows = (clone $appointmentBase)
+            ->where('appointments.status', 'Completed')
+            ->orderByDesc('appointments.appointment_date')
+            ->limit(25)
+            ->get();
+
+        $cancelledRows = (clone $appointmentBase)
+            ->where('appointments.status', 'Cancelled')
+            ->orderByDesc('appointments.appointment_date')
+            ->limit(25)
+            ->get();
+
+        $serviceOptions = DB::table('services')
+            ->orderBy('service_name')
+            ->pluck('service_name', 'id');
 
         $completionBadge = [
             'text' => $totalAppointments === 0 ? 'No Data' : ($completionRate < 50 ? 'Needs Attention' : 'On Track'),
@@ -143,12 +272,35 @@ class ReportController extends Controller
             'statusCounts',
             'serviceNames',
             'serviceCounts',
+            'totalPatients',
             'totalAppointments',
+            'completedCount',
+            'cancelledCount',
             'completionRate',
             'topServiceName',
+            'walkInCount',
+            'scheduledCount',
+            'genderLabels',
+            'genderCounts',
+            'patientRegMonths',
+            'patientRegCounts',
+            'patientRows',
+            'appointmentRows',
+            'completedRows',
+            'cancelledRows',
+            'serviceOptions',
+            'patientGender',
+            'patientRegFrom',
+            'patientRegTo',
+            'appointmentFrom',
+            'appointmentTo',
+            'appointmentStatus',
+            'appointmentService',
             'completionBadge',
             'range',
-            'rangeLabel'
+            'rangeLabel',
+            'fromDate',
+            'toDate'
         ));
     }
 }

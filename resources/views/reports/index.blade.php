@@ -1,440 +1,512 @@
 @extends('index')
 
-@section('style')
-    /* Page-specific styles */
-    header { background-color: #ffffff !important; z-index: 999 !important; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-    aside { z-index: 998 !important; }
-
-    @media print {
-    header, aside, #dateDropdownBtn, button { display: none !important; }
-    .p-6 { padding: 0 !important; margin: 0 !important; }
-    .sm\:ml-64 { margin-left: 0 !important; }
-    .mt-14 { margin-top: 0 !important; }
-    .print\:block { display: block !important; }
-    body { -webkit-print-color-adjust: exact; }
-    }
-@endsection
-
 @section('content')
-    <!-- ==================== MAIN CONTENT ==================== -->
     <main id="mainContent"
-        class="mt-14 ml-64 transition-all duration-300 peer-[.collapsed]:ml-16 min-h-screen p-6 lg:p-8 bg-slate-50">
+        class="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8 ml-0 md:ml-64 mt-14 transition-all duration-300 md:peer-[.collapsed]:ml-16">
+        <style>
+            .reports-wrap {
+                display: grid;
+                gap: 1rem;
+            }
+            .report-card {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 14px;
+                padding: 1rem;
+                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+            }
+            .grid-4 {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 1rem;
+            }
+            .grid-2 {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1rem;
+            }
+            .title {
+                margin: 0 0 .5rem;
+                font-size: 12px;
+                font-weight: 700;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+            }
+            .value {
+                margin: 0;
+                font-size: 2rem;
+                line-height: 1.1;
+                color: #111827;
+                font-weight: 700;
+            }
+            .sub {
+                margin: .45rem 0 0;
+                color: #6b7280;
+                font-size: .85rem;
+            }
+            .heading {
+                margin: 0;
+                font-size: 1.02rem;
+                font-weight: 700;
+                color: #111827;
+            }
+            .desc {
+                margin: .2rem 0 0;
+                color: #6b7280;
+                font-size: .85rem;
+            }
+            .chart-300 {
+                height: 300px;
+                margin-top: .8rem;
+            }
+            .chart-340 {
+                height: 340px;
+                margin-top: .8rem;
+            }
+            .toolbar {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr auto;
+                gap: .6rem;
+                align-items: end;
+            }
+            .input {
+                width: 100%;
+                border: 1px solid #d1d5db;
+                border-radius: 10px;
+                padding: .55rem .65rem;
+                background: #fff;
+                color: #111827;
+            }
+            .btn {
+                border: 1px solid #0f766e;
+                border-radius: 10px;
+                color: #fff;
+                background: #0f766e;
+                padding: .56rem .9rem;
+                font-weight: 600;
+            }
+            .table-wrap {
+                overflow: auto;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                background: #fff;
+            }
+            .r-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: .86rem;
+            }
+            .r-table th, .r-table td {
+                border-bottom: 1px solid #f1f5f9;
+                padding: .65rem .75rem;
+                text-align: left;
+                white-space: nowrap;
+            }
+            .r-table th {
+                background: #f8fafc;
+                color: #334155;
+                font-size: .75rem;
+                text-transform: uppercase;
+                letter-spacing: .06em;
+            }
+            @media (max-width: 1280px) {
+                .grid-4 {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+            @media (max-width: 768px) {
+                .grid-2, .grid-4 {
+                    grid-template-columns: 1fr;
+                }
+                .toolbar {
+                    grid-template-columns: 1fr;
+                }
+                .value {
+                    font-size: 1.6rem;
+                }
+                .chart-300 {
+                    height: 250px;
+                }
+                .chart-340 {
+                    height: 280px;
+                }
+            }
+        </style>
 
-        <!-- Executive Report Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 print:hidden">
-            <div>
-                <div class="flex items-center gap-3">
-                    <div class="p-2 bg-emerald-600 rounded-lg shadow-lg shadow-emerald-200">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                            </path>
-                        </svg>
-                    </div>
-                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">Executive Report</h1>
-                </div>
-                <p class="text-slate-500 mt-2 ml-14 text-sm font-medium">Live performance dashboard • {{ date('F Y') }}
-                </p>
-            </div>
-
-            <div class="flex gap-3 relative z-[1001]">
-                <div class="relative z-[1001]">
-                    <button type="button" id="dateDropdownBtn" onclick="toggleDropdown(event)"
-                        class="group flex items-center gap-3 bg-white border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl shadow-sm hover:border-emerald-500 hover:text-emerald-600 transition-all text-sm font-bold">
-                        <svg class="w-4 h-4 text-slate-400 group-hover:text-emerald-500" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                        <span id="selectedDateRange">{{ $rangeLabel }}</span>
-                        <svg class="w-3 h-3 ml-1 text-slate-400 group-hover:text-emerald-500" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    <div id="dateDropdownMenu"
-                        class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden transform origin-top-right transition-all z-[1001]">
-                        <div class="p-2 space-y-1">
-                            <a href="{{ request()->fullUrlWithQuery(['range' => '7d']) }}"
-                                class="block px-4 py-2.5 text-sm rounded-xl transition-colors font-medium {{ ($range ?? '30d') === '7d' ? 'text-emerald-700 bg-emerald-50 font-bold' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700' }}">Last
-                                7 Days</a>
-                            <a href="{{ request()->fullUrlWithQuery(['range' => 'month']) }}"
-                                class="block px-4 py-2.5 text-sm rounded-xl transition-colors font-medium {{ ($range ?? '30d') === 'month' ? 'text-emerald-700 bg-emerald-50 font-bold' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700' }}">This
-                                Month</a>
-                            <a href="{{ request()->fullUrlWithQuery(['range' => 'year']) }}"
-                                class="block px-4 py-2.5 text-sm rounded-xl transition-colors font-medium {{ ($range ?? '30d') === 'year' ? 'text-emerald-700 bg-emerald-50 font-bold' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700' }}">This
-                                Year</a>
-                        </div>
-                    </div>
-                </div>
-                <button onclick="window.print()"
-                    class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl shadow-lg shadow-slate-300 hover:shadow-slate-400 transition-all text-sm font-bold tracking-wide">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                    Print Report
-                </button>
-            </div>
-        </div>
-
-        <div class="hidden print:block mb-8 border-b border-slate-200 pb-4">
-            <h1 class="text-4xl font-bold text-slate-900">Tejada Dent Clinic Report</h1>
-            <p class="text-slate-500 mt-2">Generated on {{ date('F j, Y') }}</p>
-        </div>
-
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div
-                class="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-all group relative overflow-hidden">
-                <div
-                    class="absolute right-0 top-0 h-24 w-24 bg-emerald-50 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110">
-                </div>
-                <div class="relative z-10">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="p-3 bg-emerald-100 text-emerald-600 rounded-2xl">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                </path>
-                            </svg>
-                        </div>
-                        <span
-                            class="text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 rounded-full">+12%
-                            vs last month</span>
-                    </div>
-                    <p class="text-slate-400 text-xs font-bold tracking-widest uppercase">Total Appointments</p>
-                    <h2 class="text-4xl font-black text-slate-800 mt-1" id="total-appointments-display">
-                        {{ number_format($totalAppointments) }}</h2>
-                    <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 65%"></div>
-                    </div>
-                </div>
-            </div>
-            <div
-                class="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-all group relative overflow-hidden">
-                <div
-                    class="absolute right-0 top-0 h-24 w-24 bg-blue-50 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110">
-                </div>
-                <div class="relative z-10">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="p-3 bg-blue-100 text-blue-600 rounded-2xl">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p class="text-slate-400 text-xs font-bold tracking-widest uppercase">Most Popular Service</p>
-                    <h2 class="text-3xl font-black text-slate-800 mt-1 truncate" id="top-service-display">
-                        {{ $topServiceName }}</h2>
-                    <p class="text-xs text-slate-400 mt-2">Highest booking volume</p>
-                </div>
-            </div>
-            <div
-                class="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-md transition-all group relative overflow-hidden">
-                <div
-                    class="absolute right-0 top-0 h-24 w-24 bg-amber-50 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110">
-                </div>
-                <div class="relative z-10">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="p-3 bg-amber-100 text-amber-600 rounded-2xl">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                            </svg>
-                        </div>
-                        <span class="{{ $completionBadge['class'] }}"
-                            id="completion-badge">{{ $completionBadge['text'] }}</span>
-                    </div>
-                    <p class="text-slate-400 text-xs font-bold tracking-widest uppercase">Completion Rate</p>
-                    <h2 class="text-4xl font-black text-slate-800 mt-1" id="completion-rate-display">
-                        {{ $completionRate }}%</h2>
-                    <p class="text-xs text-slate-400 mt-2">Successful appointments</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div class="lg:col-span-2 bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
-                <div class="flex justify-between items-center mb-6">
+        <div class="reports-wrap">
+            <div class="report-card">
+                <h1 class="heading">Clinic Reports & Analytics</h1>
+                <p class="desc">Filter period: {{ $rangeLabel }}</p>
+                <form method="GET" action="{{ route('reports.index') }}" class="toolbar" style="margin-top:.8rem;">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Patient Statistics</h2>
-                        <p class="text-sm text-slate-400 font-medium">Daily appointment trends</p>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">Range</label>
+                        <select name="range" class="input">
+                            <option value="today" @selected($range === 'today')>Today</option>
+                            <option value="week" @selected($range === 'week')>This Week</option>
+                            <option value="month" @selected($range === 'month')>This Month</option>
+                            <option value="year" @selected($range === 'year')>This Year</option>
+                            <option value="custom" @selected($range === 'custom')>Custom Date Range</option>
+                        </select>
                     </div>
-                    <div class="flex gap-3">
-                        <div class="flex items-center gap-2 text-xs font-bold text-slate-500"><span
-                                class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Patients</div>
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">From</label>
+                        <input type="date" name="from_date" value="{{ $fromDate }}" class="input">
                     </div>
-                </div>
-                <div class="relative h-80 w-full"><canvas id="dailyChart"></canvas></div>
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">To</label>
+                        <input type="date" name="to_date" value="{{ $toDate }}" class="input">
+                    </div>
+                    <button class="btn" type="submit">Apply</button>
+                </form>
             </div>
-            <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-slate-800">Status</h2>
-                    <button class="text-slate-300 hover:text-slate-500 transition-colors"><svg class="w-5 h-5"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
-                            </path>
-                        </svg></button>
-                </div>
-                <div class="relative h-64 flex justify-center items-center my-2">
-                    <canvas id="statusChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-4xl font-black text-slate-800 tracking-tighter"
-                            id="center-total">{{ number_format($totalAppointments) }}</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mt-4" id="status-legend-container"></div>
-            </div>
-        </div>
 
-        <!-- Top Services -->
-        <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-8">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800">Top Performing Services</h2>
-                    <p class="text-sm text-slate-400 font-medium">Breakdown by appointment type</p>
-                </div>
-                <div class="p-2 bg-amber-50 rounded-lg text-amber-500"><svg class="w-5 h-5" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg></div>
+            <div class="grid-4">
+                <section class="report-card">
+                    <p class="title">Total Patients</p>
+                    <p class="value">{{ number_format($totalPatients) }}</p>
+                    <p class="sub">Current patient base</p>
+                </section>
+                <section class="report-card">
+                    <p class="title">Total Appointments</p>
+                    <p class="value">{{ number_format($totalAppointments) }}</p>
+                    <p class="sub">Within selected range</p>
+                </section>
+                <section class="report-card">
+                    <p class="title">Completed Appointments</p>
+                    <p class="value" style="color:#059669;">{{ number_format($completedCount) }}</p>
+                    <p class="sub">Status = Completed</p>
+                </section>
+                <section class="report-card">
+                    <p class="title">Cancelled Appointments</p>
+                    <p class="value" style="color:#dc2626;">{{ number_format($cancelledCount) }}</p>
+                    <p class="sub">Status = Cancelled</p>
+                </section>
             </div>
-            <div class="relative h-72"><canvas id="servicesChart"></canvas></div>
+
+            <div class="grid-2">
+                <section class="report-card">
+                    <h3 class="heading">Appointment Status Distribution</h3>
+                    <p class="desc">Scheduled, Arrived, Ongoing, Completed, Cancelled</p>
+                    <div class="chart-300"><canvas id="statusPieChart"></canvas></div>
+                </section>
+                <section class="report-card">
+                    <h3 class="heading">Monthly Patient Registration Trend</h3>
+                    <p class="desc">New patient registrations per month</p>
+                    <div class="chart-300"><canvas id="patientRegLineChart"></canvas></div>
+                </section>
+            </div>
+
+            <div class="grid-2">
+                <section class="report-card">
+                    <h3 class="heading">Appointment Trend</h3>
+                    <p class="desc">Clinic volume by date buckets in selected range</p>
+                    <div class="chart-300"><canvas id="appointmentTrendBarChart"></canvas></div>
+                </section>
+                <section class="report-card">
+                    <h3 class="heading">Most Requested Services</h3>
+                    <p class="desc">Based on appointment count</p>
+                    <div class="chart-300"><canvas id="servicesBarChart"></canvas></div>
+                </section>
+            </div>
+
+            <div class="grid-2">
+                <section class="report-card">
+                    <h3 class="heading">Walk-In vs Scheduled</h3>
+                    <p class="desc">Behavior based on activity logs and appointments</p>
+                    <div class="chart-300"><canvas id="walkinPieChart"></canvas></div>
+                </section>
+                <section class="report-card">
+                    <h3 class="heading">Patient Gender Distribution</h3>
+                    <p class="desc">Overall patient demographics</p>
+                    <div class="chart-300"><canvas id="genderPieChart"></canvas></div>
+                </section>
+            </div>
+
+            <section class="report-card">
+                <h3 class="heading">Patient Registration Report</h3>
+                <form method="GET" action="{{ route('reports.index') }}" class="toolbar" style="margin:.8rem 0;">
+                    <input type="hidden" name="range" value="{{ $range }}">
+                    <input type="hidden" name="from_date" value="{{ $fromDate }}">
+                    <input type="hidden" name="to_date" value="{{ $toDate }}">
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">From</label>
+                        <input type="date" name="patient_from" value="{{ $patientRegFrom }}" class="input">
+                    </div>
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">To</label>
+                        <input type="date" name="patient_to" value="{{ $patientRegTo }}" class="input">
+                    </div>
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">Gender</label>
+                        <select name="patient_gender" class="input">
+                            <option value="">All</option>
+                            <option value="Male" @selected($patientGender === 'Male')>Male</option>
+                            <option value="Female" @selected($patientGender === 'Female')>Female</option>
+                            <option value="Other" @selected($patientGender === 'Other')>Other</option>
+                        </select>
+                    </div>
+                    <button class="btn" type="submit">Filter</button>
+                </form>
+                <div class="table-wrap">
+                    <table class="r-table">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Full Name</th>
+                                <th>Gender</th>
+                                <th>Birth Date</th>
+                                <th>Mobile Number</th>
+                                <th>Date Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($patientRows as $row)
+                                <tr>
+                                    <td>{{ $row->id }}</td>
+                                    <td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
+                                    <td>{{ $row->gender ?? 'Unspecified' }}</td>
+                                    <td>{{ $row->birth_date ? \Carbon\Carbon::parse($row->birth_date)->format('M d, Y') : '-' }}</td>
+                                    <td>{{ $row->mobile_number ?? '-' }}</td>
+                                    <td>{{ $row->created_at ? \Carbon\Carbon::parse($row->created_at)->format('M d, Y h:i A') : '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="6">No records found.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="report-card">
+                <h3 class="heading">Appointment Report</h3>
+                <form method="GET" action="{{ route('reports.index') }}" class="toolbar" style="margin:.8rem 0;">
+                    <input type="hidden" name="range" value="{{ $range }}">
+                    <input type="hidden" name="from_date" value="{{ $fromDate }}">
+                    <input type="hidden" name="to_date" value="{{ $toDate }}">
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">From</label>
+                        <input type="date" name="appointment_from" value="{{ $appointmentFrom }}" class="input">
+                    </div>
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">To</label>
+                        <input type="date" name="appointment_to" value="{{ $appointmentTo }}" class="input">
+                    </div>
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">Status</label>
+                        <select name="appointment_status" class="input">
+                            <option value="">All</option>
+                            @foreach (['Pending','Scheduled','Arrived','Ongoing','Completed','Cancelled','Waiting'] as $status)
+                                <option value="{{ $status }}" @selected($appointmentStatus === $status)>{{ $status }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="title" style="display:block;margin-bottom:.25rem;">Service</label>
+                        <select name="appointment_service" class="input">
+                            <option value="">All</option>
+                            @foreach ($serviceOptions as $id => $name)
+                                <option value="{{ $id }}" @selected((string) $appointmentService === (string) $id)>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button class="btn" type="submit">Filter</button>
+                </form>
+                <div class="table-wrap">
+                    <table class="r-table">
+                        <thead>
+                            <tr>
+                                <th>Appointment ID</th>
+                                <th>Patient Name</th>
+                                <th>Service</th>
+                                <th>Appointment Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($appointmentRows as $row)
+                                <tr>
+                                    <td>{{ $row->id }}</td>
+                                    <td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
+                                    <td>{{ $row->service_name ?? 'N/A' }}</td>
+                                    <td>{{ $row->appointment_date ? \Carbon\Carbon::parse($row->appointment_date)->format('M d, Y h:i A') : '-' }}</td>
+                                    <td>{{ $row->status }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5">No records found.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="grid-2">
+                <section class="report-card">
+                    <h3 class="heading">Completed Appointment Report</h3>
+                    <div class="table-wrap" style="margin-top:.8rem;">
+                        <table class="r-table">
+                            <thead>
+                                <tr>
+                                    <th>Appointment ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Service</th>
+                                    <th>Appointment Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($completedRows as $row)
+                                    <tr>
+                                        <td>{{ $row->id }}</td>
+                                        <td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
+                                        <td>{{ $row->service_name ?? 'N/A' }}</td>
+                                        <td>{{ $row->appointment_date ? \Carbon\Carbon::parse($row->appointment_date)->format('M d, Y h:i A') : '-' }}</td>
+                                        <td>{{ $row->status }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5">No records found.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="report-card">
+                    <h3 class="heading">Cancelled Appointment Report</h3>
+                    <div class="table-wrap" style="margin-top:.8rem;">
+                        <table class="r-table">
+                            <thead>
+                                <tr>
+                                    <th>Appointment ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Service</th>
+                                    <th>Appointment Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($cancelledRows as $row)
+                                    <tr>
+                                        <td>{{ $row->id }}</td>
+                                        <td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
+                                        <td>{{ $row->service_name ?? 'N/A' }}</td>
+                                        <td>{{ $row->appointment_date ? \Carbon\Carbon::parse($row->appointment_date)->format('M d, Y h:i A') : '-' }}</td>
+                                        <td>{{ $row->status }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5">No records found.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
         </div>
     </main>
 
-    <!-- Hidden Data Container for JS -->
-    <div id="chart-data" data-dates="{{ json_encode($dates) }}" data-totals="{{ json_encode($totals) }}"
-        data-status-labels="{{ json_encode($statusLabels) }}" data-status-counts="{{ json_encode($statusCounts) }}"
-        data-service-names="{{ json_encode($serviceNames) }}" data-service-counts="{{ json_encode($serviceCounts) }}"
-        class="hidden">
-    </div>
-@endsection
-
-@push('script')
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // --- 1. Sidebar Logic ---
-        (function() {
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('toggleBtn');
-            if (!sidebar || !toggleBtn) return;
-            if (localStorage.getItem('sidebar-collapsed') === 'true') {
-                sidebar.classList.add('collapsed');
-            }
-            toggleBtn.addEventListener('click', function() {
-                sidebar.classList.toggle('collapsed');
-                localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
-            });
-        })();
+        (() => {
+            if (typeof Chart === 'undefined') return;
+            const isMobile = window.innerWidth < 768;
 
-        // --- 2. Dropdown Functions ---
-        function toggleDropdown(ev) {
-            ev && ev.stopPropagation();
-            const menu = document.getElementById('dateDropdownMenu');
-            if (!menu) return;
-            menu.classList.toggle('hidden');
-        }
+            const charts = {};
+            const build = (id, config) => {
+                const ctx = document.getElementById(id);
+                if (!ctx) return;
+                charts[id] = new Chart(ctx.getContext('2d'), config);
+            };
 
-        function selectRange(range) {
-            /* no-op; using links now */ }
-        window.addEventListener('click', function(e) {
-            const btn = document.getElementById('dateDropdownBtn');
-            const menu = document.getElementById('dateDropdownMenu');
-            if (!btn || !menu) return;
-            const inBtn = e.target.closest('#dateDropdownBtn') !== null;
-            const inMenu = e.target.closest('#dateDropdownMenu') !== null;
-            if (!inBtn && !inMenu) {
-                menu.classList.add('hidden');
-            }
-        });
-
-        // Close menu after clicking a menu item
-        document.addEventListener('DOMContentLoaded', function() {
-            const menu = document.getElementById('dateDropdownMenu');
-            if (!menu) return;
-            menu.querySelectorAll('a[href]').forEach(a => {
-                a.addEventListener('click', () => {
-                    menu.classList.add('hidden');
-                });
-            });
-        });
-
-        // --- 3. Chart Logic ---
-        document.addEventListener('DOMContentLoaded', function() {
-            // Parse Data
-            const dataElement = document.getElementById('chart-data');
-            const dailyDates = JSON.parse(dataElement.dataset.dates);
-            const dailyTotals = JSON.parse(dataElement.dataset.totals);
-            const statusLabels = JSON.parse(dataElement.dataset.statusLabels);
-            const statusCounts = JSON.parse(dataElement.dataset.statusCounts);
-            const serviceNames = JSON.parse(dataElement.dataset.serviceNames);
-            const serviceCounts = JSON.parse(dataElement.dataset.serviceCounts);
-
-            // Chart Configurations
-            Chart.defaults.font.family =
-                "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-            Chart.defaults.color = '#64748b';
-
-            // 1. Bar Chart
-            new Chart(document.getElementById('dailyChart').getContext('2d'), {
-                type: 'bar',
+            build('statusPieChart', {
+                type: 'pie',
                 data: {
-                    labels: dailyDates,
+                    labels: @json($statusLabels),
+                    datasets: [{
+                        data: @json($statusCounts),
+                        backgroundColor: ['#0284c7', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'],
+                    }],
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
+            });
+
+            build('patientRegLineChart', {
+                type: 'line',
+                data: {
+                    labels: @json($patientRegMonths),
                     datasets: [{
                         label: 'Patients',
-                        data: dailyTotals,
-                        backgroundColor: '#10b981',
-                        borderRadius: 6,
-                        barThickness: 25,
-                        hoverBackgroundColor: '#059669'
-                    }]
+                        data: @json($patientRegCounts),
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, .12)',
+                        fill: true,
+                        tension: .3,
+                    }],
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: '#f1f5f9',
-                                borderDash: [5, 5],
-                                drawBorder: false
-                            },
-                            border: {
-                                display: false
-                            },
-                            ticks: {
-                                padding: 15,
-                                font: {
-                                    weight: '500'
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            border: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: 11,
-                                    weight: '500'
-                                }
-                            }
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
             });
 
-            // 2. Doughnut Chart
-            const statusColors = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
-            new Chart(document.getElementById('statusChart').getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: statusLabels,
-                    datasets: [{
-                        data: statusCounts,
-                        backgroundColor: statusColors,
-                        borderWidth: 0,
-                        hoverOffset: 8,
-                        cutout: '85%'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    animation: {
-                        animateScale: true,
-                        animateRotate: true
-                    }
-                }
-            });
-
-            // Legend Generation
-            const legendContainer = document.getElementById('status-legend-container');
-            statusLabels.forEach((label, index) => {
-                const color = statusColors[index % statusColors.length];
-                legendContainer.innerHTML +=
-                    `<div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl"><div class="flex items-center gap-2.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: ${color}"></span><span class="text-xs font-bold text-slate-600 uppercase tracking-wide">${label}</span></div><span class="text-sm font-black text-slate-800">${statusCounts[index]}</span></div>`;
-            });
-
-            // 3. Horizontal Bar Chart
-            new Chart(document.getElementById('servicesChart').getContext('2d'), {
+            build('appointmentTrendBarChart', {
                 type: 'bar',
                 data: {
-                    labels: serviceNames,
+                    labels: @json($dates),
                     datasets: [{
-                        label: 'Bookings',
-                        data: serviceCounts,
-                        backgroundColor: '#f59e0b',
-                        borderRadius: 8,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.8,
-                        hoverBackgroundColor: '#d97706'
-                    }]
+                        label: 'Appointments',
+                        data: @json($totals),
+                        backgroundColor: '#0891b2',
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: isMobile ? 6 : 14 } },
+                        y: { beginAtZero: true, ticks: { precision: 0 } },
+                    },
+                },
+            });
+
+            build('servicesBarChart', {
+                type: 'bar',
+                data: {
+                    labels: @json($serviceNames),
+                    datasets: [{
+                        label: 'Count',
+                        data: @json($serviceCounts),
+                        backgroundColor: '#d97706',
+                    }],
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: {
-                                color: '#f1f5f9',
-                                borderDash: [5, 5],
-                                drawBorder: false
-                            },
-                            border: {
-                                display: false
-                            },
-                            ticks: {
-                                stepSize: 1
-                            }
-                        },
-                        y: {
-                            grid: {
-                                display: false
-                            },
-                            border: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    weight: '600',
-                                    size: 12
-                                }
-                            }
-                        }
-                    }
-                }
+                    plugins: { legend: { display: false } },
+                },
             });
-        });
+
+            build('walkinPieChart', {
+                type: 'pie',
+                data: {
+                    labels: ['Walk-In', 'Scheduled'],
+                    datasets: [{
+                        data: [{{ $walkInCount }}, {{ $scheduledCount }}],
+                        backgroundColor: ['#f97316', '#0ea5e9'],
+                    }],
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
+            });
+
+            build('genderPieChart', {
+                type: 'pie',
+                data: {
+                    labels: @json($genderLabels),
+                    datasets: [{
+                        data: @json($genderCounts),
+                        backgroundColor: ['#3b82f6', '#ec4899', '#a855f7', '#94a3b8'],
+                    }],
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
+            });
+        })();
     </script>
-@endpush
+@endsection
