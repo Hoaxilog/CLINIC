@@ -1,51 +1,51 @@
 <div>
     @if ($showModal)
-        <div data-patient-form-modal class="fixed inset-0 z-50 flex items-center justify-center bg-black/70" x-data="{}">
-            
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-[105rem] mx-auto m-8">
+        <div data-patient-form-modal class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-3 sm:p-6" x-data="{}">
+
+            <div class="w-full max-w-[108rem] overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-2xl">
                 <!-- Modal Content -->
-                <div class="flex flex-col max-h-[90vh]">
+                <div class="flex max-h-[92vh] flex-col">
                     
                     <!-- Stepper Header -->
-                    <div class="bg-white rounded-t-lg p-6 shadow-md">
-                        <div class="flex items-center justify-center">
+                    <div class="border-b border-slate-200 bg-white px-4 py-4 sm:px-6">
+                        <div class="flex flex-wrap items-center justify-center gap-y-3">
                             
                             <!-- Step 1 -->
-                            <div class="flex items-center gap-3 {{ $currentStep == 1 ? 'text-[#0086da]' : 'text-gray-500' }}">
-                                <span class="flex items-center justify-center h-8 w-8 rounded-full border-2 {{ $currentStep == 1 ? 'border-[#0086da]' : 'border-gray-500' }} text-sm font-bold">1</span>
-                                <span class="text-lg font-semibold whitespace-nowrap">Basic Information</span>
+                            <div class="flex items-center gap-2.5 {{ $currentStep == 1 ? 'text-sky-600' : 'text-slate-500' }}">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-full border-2 {{ $currentStep == 1 ? 'border-sky-600 bg-sky-50' : 'border-slate-400 bg-white' }} text-sm font-semibold">1</span>
+                                <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Basic Information</span>
                             </div>
                             
                             <!-- Connector -->
-                            <div class="w-16 h-px bg-gray-300 mx-4"></div>
+                            <div class="mx-3 h-px w-8 bg-slate-300 sm:w-12"></div>
                             
                             <!-- Step 2 -->
-                            <div class="flex items-center gap-3 {{ $currentStep == 2 ? 'text-[#0086da]' : 'text-gray-500' }}">
-                                <span class="flex items-center justify-center h-8 w-8 rounded-full border-2 {{ $currentStep == 2 ? 'border-blue-600' : 'border-gray-500' }} text-sm font-bold">2</span>
-                                <span class="text-lg font-semibold whitespace-nowrap">Health History</span>
+                            <div class="flex items-center gap-2.5 {{ $currentStep == 2 ? 'text-sky-600' : 'text-slate-500' }}">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-full border-2 {{ $currentStep == 2 ? 'border-sky-600 bg-sky-50' : 'border-slate-400 bg-white' }} text-sm font-semibold">2</span>
+                                <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Health History</span>
                             </div>
                             
                             <!-- Step 3 & 4 (Admin Only AND Editing) -->
                             @if($isAdmin && $isEditing)
-                                <div class="w-16 h-px bg-gray-300 mx-4"></div>
+                                <div class="mx-3 h-px w-8 bg-slate-300 sm:w-12"></div>
                                 
-                                <div class="flex items-center gap-3 {{ $currentStep == 3 ? 'text-[#0086da]' : 'text-gray-500' }}">
-                                    <span class="flex items-center justify-center h-8 w-8 rounded-full border-2 {{ $currentStep == 3 ? 'border-blue-600' : 'border-gray-500' }} text-sm font-bold">3</span>
-                                    <span class="text-lg font-semibold whitespace-nowrap">Dental Chart</span>
+                                <div class="flex items-center gap-2.5 {{ $currentStep == 3 ? 'text-sky-600' : 'text-slate-500' }}">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full border-2 {{ $currentStep == 3 ? 'border-sky-600 bg-sky-50' : 'border-slate-400 bg-white' }} text-sm font-semibold">3</span>
+                                    <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Dental Chart</span>
                                 </div>
                                 
-                                <div class="w-16 h-px bg-gray-300 mx-4"></div>
+                                <div class="mx-3 h-px w-8 bg-slate-300 sm:w-12"></div>
                                 
-                                <div class="flex items-center gap-3 {{ $currentStep == 4 ? 'text-[#0086da]' : 'text-gray-500' }}">
-                                    <span class="flex items-center justify-center h-8 w-8 rounded-full border-2 {{ $currentStep == 4 ? 'border-blue-600' : 'border-gray-500' }} text-sm font-bold">4</span>
-                                    <span class="text-lg font-semibold whitespace-nowrap">Treatment Record</span>
+                                <div class="flex items-center gap-2.5 {{ $currentStep == 4 ? 'text-sky-600' : 'text-slate-500' }}">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full border-2 {{ $currentStep == 4 ? 'border-sky-600 bg-sky-50' : 'border-slate-400 bg-white' }} text-sm font-semibold">4</span>
+                                    <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Treatment Record</span>
                                 </div>
                             @endif
                         </div>
                     </div>
 
                     <!-- Scrollable Form Area -->
-                    <div data-form-scroll class="p-8 overflow-y-auto">
+                    <div data-form-scroll class="overflow-y-auto bg-slate-50 px-4 py-5 sm:px-6 sm:py-6">
                         @if($currentStep == 1)
                             <div class="{{ $isReadOnly ? 'pointer-events-none' : '' }}">
                                 <livewire:PatientFormController.basic-info wire:key="basic-info" :data="$basicInfoData" />
@@ -96,109 +96,96 @@
                     </div>
 
                     <!-- Footer / Buttons -->
-                    <div class="bg-white rounded-b-lg p-6 flex justify-between items-center shadow-[inset_0_4px_6px_-2px_rgba(0,0,0,0.1)]">                        
-                        
-                        <!-- LEFT SIDE: ACTION BUTTONS (Edit or Save) -->
-                        <div>
-                            @if($isEditing && $isReadOnly)
-                                @if($currentStep == 3 || $currentStep == 4)
-                                @elseif($currentStep == 2 && empty($healthHistoryData['id']))
-                                    @else 
-                                    <button wire:click="enableEditMode" type="button" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-[#ffac00] hover:bg-yellow-600 shadow-md flex items-center gap-2">
+                    <div class="border-t border-slate-200 bg-white px-4 py-4 sm:px-6">
+                        @php
+                            $showEditButton = false;
+                            if ($isEditing && $isReadOnly) {
+                                if ($currentStep != 3 && $currentStep != 4 && !($currentStep == 2 && empty($healthHistoryData['id']))) {
+                                    $showEditButton = true;
+                                }
+                            }
+
+                            $shouldShowSave = false;
+                            if (!$isReadOnly) {
+                                $shouldShowSave = true;
+                                if (!$isEditing && $currentStep == 1) {
+                                    $shouldShowSave = false;
+                                }
+                                if ($isEditing && $currentStep == 3) {
+                                    $shouldShowSave = false;
+                                }
+                            }
+
+                            $showNext = true;
+                            $showBack = ($currentStep > 1);
+
+                            if (!$isEditing) {
+                                if ($currentStep >= 2) {
+                                    $showNext = false;
+                                }
+                            } else {
+                                if ($isAdmin) {
+                                    if ($currentStep >= 4) {
+                                        $showNext = false;
+                                    }
+                                } else {
+                                    if ($currentStep >= 2) {
+                                        $showNext = false;
+                                    }
+                                }
+
+                                if (!$isReadOnly) {
+                                    if ($currentStep != 3) {
+                                        $showNext = false;
+                                    }
+                                    if ($currentStep == 2 || $currentStep == 3) {
+                                        $showBack = false;
+                                    }
+                                }
+                            }
+                        @endphp
+
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="order-2 flex flex-wrap items-center gap-3 sm:order-1">
+                                <button wire:click="cancelEdit" type="button" class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                                    {{ ($isEditing && !$isReadOnly) ? 'Cancel' : 'Close' }}
+                                </button>
+
+                                @if ($showBack)
+                                    <button data-trigger-scroll wire:click="previousStep" type="button" wire:loading.attr="disabled"
+                                        wire:target="previousStep,nextStep,save"
+                                        class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">
+                                        <span wire:loading.remove wire:target="previousStep">Back</span>
+                                        <span wire:loading wire:target="previousStep">Loading...</span>
+                                    </button>
+                                @endif
+                            </div>
+
+                            <div class="order-1 flex flex-wrap items-center justify-end gap-3 sm:order-2">
+                                @if($showEditButton)
+                                    <button wire:click="enableEditMode" type="button" class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black inline-flex items-center gap-2 rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                                         Edit Record
                                     </button>
                                 @endif
-                            @elseif(!$isReadOnly)
-                                {{-- [UPDATED] Logic for Save Button Visibility --}}
-                                @php
-                                    $shouldShowSave = true;
-                                    
-                                    // Case 1: Adding New Patient -> Only show on Step 2
-                                    if (!$isEditing && $currentStep == 1) {
-                                        $shouldShowSave = false;
-                                    }
 
-                                    // Case 2: Editing (Admin) -> Hide on Step 3 (Dental Chart) to force flow to Step 4
-                                    if ($isEditing && $currentStep == 3) {
-                                        $shouldShowSave = false;
-                                    }
-                                @endphp
-
-                                    @if($shouldShowSave)
+                                @if($shouldShowSave)
                                     <button data-trigger-scroll wire:click="save" type="button"
-                                        class="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-green-600 hover:bg-green-700 shadow-sm">
+                                        class="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
                                         {{ (!$isEditing && $currentStep == 2) ? 'Save Patient' : (($currentStep == 4) ? 'Save Record' : 'Update & Save') }}
                                     </button>
                                 @endif
-                            @endif
+
+                                @if ($showNext)
+                                    <button data-trigger-scroll wire:click="nextStep" type="button" wire:loading.attr="disabled"
+                                        wire:target="nextStep,previousStep,save"
+                                        class="rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60">
+                                        <span wire:loading.remove wire:target="nextStep">Next</span>
+                                        <span wire:loading wire:target="nextStep">Loading...</span>
+                                    </button>
+                                @endif
+                            </div>
                         </div>
-
-                        <!-- RIGHT SIDE: NAVIGATION -->
-                        <div class="flex items-center gap-4">
-                            
-                            <button wire:click="cancelEdit" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
-                                {{ ($isEditing && !$isReadOnly) ? 'Cancel' : 'Close' }}
-                            </button>
-
-                            
-                            
-                            @php
-                                $showNext = true;
-                                $showBack = ($currentStep > 1);
-
-                                // 1. Adding New Patient
-                                if (!$isEditing) {
-                                    if ($currentStep >= 2) $showNext = false;
-                                } 
-                                // 2. Editing Existing Patient
-                                else {
-                                    // Max Step Constraints
-                                    if ($isAdmin) {
-                                        if ($currentStep >= 4) $showNext = false;
-                                    } else {
-                                        if ($currentStep >= 2) $showNext = false;
-                                    }
-
-                                    // Active Edit Mode Restrictions
-                                    if (!$isReadOnly) {
-                                        // Only show 'Next' if we are on Step 3 (Dental Chart) to go to Step 4.
-                                        // Steps 1 & 2 should strictly use 'Update & Save'.
-                                        if ($currentStep != 3) {
-                                            $showNext = false;
-                                        }
-
-                                        // Hide 'Back' on Step 2 and Step 3 during edit mode.
-                                        // Step 2: Health History -> prevent back to Basic Info
-                                        // Step 3: Dental Chart -> prevent back to Health History
-                                        // Step 4: Treatment Record -> ALLOW Back to Dental Chart
-                                        if ($currentStep == 2 || $currentStep == 3) {
-                                            $showBack = false;
-                                        }
-                                    }
-                                }
-                            @endphp
-
-                            @if ($showBack)
-                                <button data-trigger-scroll wire:click="previousStep" type="button" wire:loading.attr="disabled"
-                                    wire:target="previousStep,nextStep,save"
-                                    class="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed">
-                                    <span wire:loading.remove wire:target="previousStep">Back</span>
-                                    <span wire:loading wire:target="previousStep">Loading...</span>
-                                </button>
-                            @endif
-
-                            @if ($showNext)
-                                <button data-trigger-scroll wire:click="nextStep" type="button" wire:loading.attr="disabled"
-                                    wire:target="nextStep,previousStep,save"
-                                    class="px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-[#0086da] hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed">
-                                    <span wire:loading.remove wire:target="nextStep">Next</span>
-                                    <span wire:loading wire:target="nextStep">Loading...</span>
-                                </button>
-                            @endif
-
-                        </div>
-
                     </div>
                 </div>  
             </div>

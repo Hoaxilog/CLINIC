@@ -6,119 +6,53 @@
 
         <div class="mb-8">
             <h1 class="text-3xl lg:text-4xl font-bold text-gray-900">Dashboard</h1>
-            <p class="text-sm text-gray-500 mt-1">Operational overview for today and recent trends.</p>
+            <p class="mt-1 text-sm text-gray-500">Operational overview for today and quick actions.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <section
-                class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 min-h-[170px] flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div class="flex items-center justify-between">
-                    <p class="text-sm font-semibold text-gray-600">Today's Appointments</p>
-                    <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M8 2v4" />
-                            <path d="M16 2v4" />
-                            <rect width="18" height="18" x="3" y="4" rx="2" />
-                            <path d="M3 10h18" />
-                        </svg>
-                    </span>
-                </div>
-                <div>
-                    <div class="text-4xl font-bold text-gray-900">{{ $todayAppointmentsCount ?? 0 }}</div>
-                    <div class="text-xs text-gray-500 mt-2 font-medium">
-                        <span class="text-emerald-600">{{ $todayCompletedCount ?? 0 }} completed</span> &middot;
-                        <span class="text-rose-500">{{ $todayCancelledCount ?? 0 }} cancelled</span> &middot;
-                        <span>{{ $todayUpcomingCount ?? 0 }} upcoming</span>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <p class="text-sm font-semibold text-gray-600">Total Patients</p>
+                <div class="mt-3 text-4xl font-bold text-gray-900">{{ $totalPatients ?? 0 }}</div>
+                <p class="mt-2 text-xs font-medium text-gray-500">All registered patients</p>
             </section>
 
-            <section
-                class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 min-h-[170px] flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div class="flex items-center justify-between">
-                    <p class="text-sm font-semibold text-gray-600">Estimated Profit</p>
-                    <div class="flex items-center gap-2">
-                        <select id="profitRangeSelect"
-                            class="text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-100 outline-none">
-                            <option value="today" selected>Today</option>
-                            <option value="week">This Week</option>
-                            <option value="month">This Month</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <div id="profitValue" class="text-4xl font-bold text-gray-900">&#8369;{{ number_format($todayProfit ?? 0, 2) }}</div>
-                    <div id="profitChange" class="text-xs mt-2 font-semibold text-gray-400">&mdash;</div>
-                </div>
+            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <p class="text-sm font-semibold text-gray-600">Today's Appointments</p>
+                <div class="mt-3 text-4xl font-bold text-gray-900">{{ $todayAppointmentsCount ?? 0 }}</div>
+                <p class="mt-2 text-xs font-medium text-gray-500">
+                    <span class="text-emerald-600">{{ $todayCompletedCount ?? 0 }} completed</span>
+                    <span class="mx-1 text-gray-300">|</span>
+                    <span class="text-rose-600">{{ $todayCancelledCount ?? 0 }} cancelled</span>
+                </p>
             </section>
 
-            <section
-                class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 min-h-[170px] flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div class="flex items-center justify-between">
-                    <p class="text-sm font-semibold text-gray-600">Total Patients</p>
-                    <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                        </svg>
-                    </span>
-                </div>
-                <div>
-                    <div class="text-4xl font-bold text-gray-900">{{ $totalPatients ?? 0 }}</div>
-                    <div class="text-xs text-gray-500 mt-2 font-medium">All registered patients</div>
-                </div>
+            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <p class="text-sm font-semibold text-gray-600">Waiting / Arrived</p>
+                <div class="mt-3 text-4xl font-bold text-gray-900">{{ ($waitingPatientsCount ?? 0) + ($arrivedPatientsCount ?? 0) }}</div>
+                <p class="mt-2 text-xs font-medium text-gray-500">
+                    Waiting: {{ $waitingPatientsCount ?? 0 }}
+                    <span class="mx-1 text-gray-300">|</span>
+                    Arrived: {{ $arrivedPatientsCount ?? 0 }}
+                </p>
             </section>
 
-            <section
-                class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 min-h-[170px] flex flex-col justify-between hover:shadow-md transition-shadow">
-                @php
-                    $cancelledLast30 = $cancelledLast30 ?? 0;
-                    $bookedLast30 = $bookedLast30 ?? 0;
-                    $cancellationRate = $bookedLast30 > 0 ? ($cancelledLast30 / $bookedLast30) * 100 : 0;
-
-                    $cancellationClass = 'text-gray-500';
-                    if ($cancellationRate < 10) {
-                        $cancellationClass = 'text-emerald-600';
-                    } elseif ($cancellationRate >= 15) {
-                        $cancellationClass = 'text-rose-600';
-                    }
-                @endphp
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-semibold text-gray-600">Cancellation Rate</p>
-                        <p class="text-[11px] text-gray-400 mt-1">{{ $cancellationLabel ?? 'This Month' }}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <select id="cancellationRangeSelect"
-                            class="text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-100 outline-none">
-                            <option value="weekly" {{ ($cancellationRange ?? 'monthly') === 'weekly' ? 'selected' : '' }}>Weekly</option>
-                            <option value="monthly" {{ ($cancellationRange ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Monthly</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <div class="text-4xl font-bold {{ $cancellationClass }}">
-                        {{ number_format($cancellationRate, 0) }}%
-                    </div>
-                    <div class="text-xs text-gray-500 mt-2 font-medium">
-                        {{ $cancelledLast30 }} cancelled out of {{ $bookedLast30 }} booked
-                    </div>
-                </div>
+            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <p class="text-sm font-semibold text-gray-600">Pending Requests</p>
+                <div class="mt-3 text-4xl font-bold text-gray-900">{{ $pendingApprovalsCount ?? 0 }}</div>
+                <p class="mt-2 text-xs font-medium text-gray-500">Appointment requests awaiting approval</p>
             </section>
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+        <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
             <div>
                 @livewire('pending-approvals-widget')
             </div>
 
-            <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col">
-                <div class="flex items-center justify-between mb-6">
+            <section id="today-schedule" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <div class="mb-4 flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900">Upcoming Appointments</h2>
+                        <h2 class="text-lg font-bold text-gray-900">Today's Appointment Schedule</h2>
+                        <p class="mt-0.5 text-xs text-gray-500">Today's booked appointments and status.</p>
                     </div>
                 </div>
 
@@ -170,88 +104,135 @@
             </section>
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-            <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col">
-                <div class="mb-6">
-                    <h2 class="text-lg font-bold text-gray-900">Appointments Trend ({{ $rangeLabel ?? 'Last 15 Days' }})
-                    </h2>
-                </div>
-                <div class="relative flex-1 w-full min-h-[250px]">
-                    <canvas id="dashboardAppointmentsChart"></canvas>
-                </div>
-            </section>
-
-            <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col">
-                <div class="flex items-center justify-between mb-6">
+        <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <div class="mb-4 flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900">Patients Statistics</h2>
-                        <p id="patientStatsSubtitle" class="text-xs text-gray-500 mt-0.5">{{ $patientStatsLabel ?? 'Monthly new patient vs returning patient' }}</p>
+                        <h2 class="text-lg font-bold text-gray-900">Lobby Flow Snapshot</h2>
+                        <p class="mt-0.5 text-xs text-gray-500">Current patient flow inside the clinic.</p>
                     </div>
-                    <select id="patientStatsRangeSelect"
-                        class="text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-100 outline-none">
-                        <option value="weekly" {{ ($patientStatsRange ?? 'monthly') === 'weekly' ? 'selected' : '' }}>Weekly</option>
-                        <option value="monthly" {{ ($patientStatsRange ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Monthly</option>
-                    </select>
+                    <a href="{{ route('queue') }}" class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                        View Full Lobby Flow
+                    </a>
                 </div>
-                <div class="flex items-center justify-end mb-4">
-                    <div class="flex items-center gap-4 text-xs font-semibold text-gray-600">
-                        <span class="flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-blue-600"></span>
-                            New Patients
-                        </span>
-                        <span class="flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full bg-blue-200"></span>
-                            Returning Patients
-                        </span>
+
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                    <div class="rounded-xl bg-amber-50 p-4">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Waiting</div>
+                        <div class="mt-2 text-3xl font-bold text-amber-800">{{ $waitingPatientsCount ?? 0 }}</div>
                     </div>
-                </div>
-                <div class="relative flex-1 w-full min-h-[250px]">
-                    <canvas id="dashboardPatientsStatsChart"></canvas>
+                    <div class="rounded-xl bg-cyan-50 p-4">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-cyan-700">Arrived</div>
+                        <div class="mt-2 text-3xl font-bold text-cyan-800">{{ $arrivedPatientsCount ?? 0 }}</div>
+                    </div>
+                    <div class="rounded-xl bg-emerald-50 p-4">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Ongoing</div>
+                        <div class="mt-2 text-3xl font-bold text-emerald-800">{{ $ongoingPatientsCount ?? 0 }}</div>
+                    </div>
+                    <div class="rounded-xl bg-blue-50 p-4">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-blue-700">Completed</div>
+                        <div class="mt-2 text-3xl font-bold text-blue-800">{{ $completedPatientsCount ?? 0 }}</div>
+                    </div>
                 </div>
             </section>
 
-            <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-900">Revenue by Treatment</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Last 30 days based on treatment records</p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-xs text-gray-500 font-medium">Total revenue</div>
-                        <div class="text-xl font-extrabold text-gray-900">&#8369;{{ number_format($topRevenueTotal ?? 0, 2) }}</div>
-                    </div>
-                </div>
-                <div class="relative flex-1 w-full min-h-[250px]">
-                    <canvas id="dashboardRevenueByTreatmentChart"></canvas>
-                </div>
-            </section>
-        </div>
-
-        <div class="mt-6">
-            <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 h-full">
+            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                 <div class="mb-4">
-                    <h2 class="text-lg font-bold text-gray-900">Notes & Reminders</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Quick internal notes</p>
+                    <h2 class="text-lg font-bold text-gray-900">Appointment Status Today</h2>
+                    <p class="mt-0.5 text-xs text-gray-500">Pie or doughnut breakdown for today's statuses.</p>
                 </div>
-                <div class="mt-4">
-                    @livewire('notes')
+                <div id="statusChartWrap" class="relative min-h-[260px] w-full">
+                    <canvas id="dashboardStatusTodayChart"></canvas>
+                </div>
+                <div id="statusChartEmpty" class="hidden rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm font-medium text-gray-500">
+                    No appointments recorded today
                 </div>
             </section>
         </div>
+
+        <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-gray-900">Recent Activity</h2>
+                    <p class="mt-0.5 text-xs text-gray-500">Latest system actions (up to 5).</p>
+                </div>
+
+                <div class="max-h-[320px] overflow-auto rounded-xl border border-gray-100">
+                    <table class="min-w-full text-sm">
+                        <thead class="sticky top-0 bg-gray-50/95 text-xs uppercase tracking-wide text-gray-500">
+                            <tr>
+                                <th class="px-4 py-3 text-left">User</th>
+                                <th class="px-4 py-3 text-left">Activity</th>
+                                <th class="px-4 py-3 text-left">Date/Time</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 bg-white">
+                            @forelse($recentActivities as $activity)
+                                <tr>
+                                    <td class="px-4 py-3 font-semibold text-gray-900">{{ $activity->causer_name ?? 'System' }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $activity->description ?: ($activity->event ?? 'Activity updated') }}</td>
+                                    <td class="px-4 py-3 text-gray-600">{{ \Carbon\Carbon::parse($activity->created_at)->format('M d, Y h:i A') }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">No recent activity found.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-gray-900">Quick Actions</h2>
+                    <p class="mt-0.5 text-xs text-gray-500">Run common tasks instantly.</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <button type="button" id="addPatientQuickAction"
+                        class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
+                        <span>+</span>
+                        <span>Add Patient</span>
+                    </button>
+                    <a href="{{ route('appointment') }}"
+                        class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
+                        <span>??</span>
+                        <span>Book Appointment</span>
+                    </a>
+                    <a href="{{ route('queue') }}"
+                        class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
+                        <span>??</span>
+                        <span>Register Walk-In Patient</span>
+                    </a>
+                    <a href="#today-schedule"
+                        class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
+                        <span>??</span>
+                        <span>View Today's Schedule</span>
+                    </a>
+                    @if (auth()->user()?->role === 1)
+                        <a href="{{ route('reports.index') }}"
+                            class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition sm:col-span-2">
+                            <span>??</span>
+                            <span>Generate Reports</span>
+                        </a>
+                    @else
+                        <a href="{{ route('appointment') }}"
+                            class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition sm:col-span-2">
+                            <span>??</span>
+                            <span>Open Appointments</span>
+                        </a>
+                    @endif
+                </div>
+            </section>
+        </div>
+
         <livewire:patient-form-controller.patient-form-modal />
 
-        <div id="dashboard-chart-data" data-labels="{{ json_encode($trendDates) }}"
-            data-appointments="{{ json_encode($trendAppointments) }}"
-            data-patient-stats-dates="{{ json_encode($patientStatsDates ?? []) }}"
-            data-new-patient-counts="{{ json_encode($newPatientCounts ?? []) }}"
-            data-returning-patient-counts="{{ json_encode($returningPatientCounts ?? []) }}"
-            data-patient-stats-endpoint="{{ route('dashboard.patient-stats') }}"
-            data-top-revenue-treatment-names="{{ json_encode($topRevenueTreatmentNames ?? []) }}"
-            data-top-revenue-treatment-amounts="{{ json_encode($topRevenueTreatmentAmounts ?? []) }}"
-            data-today-profit="{{ $todayProfit }}" data-yesterday-profit="{{ $yesterdayProfit }}"
-            data-today-profit-pct="{{ $todayProfitPct }}" data-week-profit="{{ $weekProfit }}"
-            data-week-profit-pct="{{ $weekProfitPct }}" data-month-profit="{{ $monthProfit }}"
-            data-month-profit-pct="{{ $monthProfitPct }}" class="hidden">
+        <div id="dashboard-chart-data"
+            data-status-labels='@json($statusLabels ?? [])'
+            data-status-counts='@json($statusCounts ?? [])'
+            class="hidden">
         </div>
     </main>
 @endsection
@@ -260,397 +241,66 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const addPatientQuickAction = document.getElementById('addPatientQuickAction');
+            if (addPatientQuickAction) {
+                addPatientQuickAction.addEventListener('click', function() {
+                    if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+                        window.Livewire.dispatch('openAddPatientModal');
+                    }
+                });
+            }
+
             const dataEl = document.getElementById('dashboard-chart-data');
-            if (!dataEl) return;
+            const statusCtx = document.getElementById('dashboardStatusTodayChart');
+            const statusChartWrap = document.getElementById('statusChartWrap');
+            const statusChartEmpty = document.getElementById('statusChartEmpty');
 
-            const labels = JSON.parse(dataEl.dataset.labels || '[]');
-            const appointments = JSON.parse(dataEl.dataset.appointments || '[]');
-            const appointmentValues = appointments.map((value) => Number(value || 0));
-            const allAppointmentValuesZero = appointmentValues.every((value) => value === 0);
-            const patientStatsDates = JSON.parse(dataEl.dataset.patientStatsDates || '[]');
-            const newPatientCounts = JSON.parse(dataEl.dataset.newPatientCounts || '[]');
-            const returningPatientCounts = JSON.parse(dataEl.dataset.returningPatientCounts || '[]');
-            const patientStatsEndpoint = dataEl.dataset.patientStatsEndpoint || '';
-            const topRevenueTreatmentNames = JSON.parse(dataEl.dataset.topRevenueTreatmentNames || '[]');
-            const topRevenueTreatmentAmounts = JSON.parse(dataEl.dataset.topRevenueTreatmentAmounts || '[]');
-            const todayProfit = Number(dataEl.dataset.todayProfit || 0);
-            const todayProfitPct = dataEl.dataset.todayProfitPct;
-            const weekProfit = Number(dataEl.dataset.weekProfit || 0);
-            const weekProfitPct = dataEl.dataset.weekProfitPct;
-            const monthProfit = Number(dataEl.dataset.monthProfit || 0);
-            const monthProfitPct = dataEl.dataset.monthProfitPct;
+            if (!dataEl || !statusCtx || typeof Chart === 'undefined') {
+                return;
+            }
 
-            Chart.defaults.font.family =
-                "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-            Chart.defaults.color = '#64748b';
+            const statusLabels = JSON.parse(dataEl.dataset.statusLabels || '[]');
+            const statusCounts = JSON.parse(dataEl.dataset.statusCounts || '[]').map((value) => Number(value || 0));
+            const totalStatusCount = statusCounts.reduce((sum, value) => sum + value, 0);
 
-            // Position tooltip outward from the hovered doughnut slice direction.
-            Chart.Tooltip.positioners.patientStatsRadial = function(elements) {
-                const first = elements?.[0];
-                if (!first) {
-                    return false;
+            if (totalStatusCount === 0) {
+                if (statusChartWrap) {
+                    statusChartWrap.classList.add('hidden');
                 }
-
-                const chart = this.chart;
-                const {
-                    left,
-                    right,
-                    top,
-                    bottom
-                } = chart.chartArea;
-                const centerX = (left + right) / 2;
-                const centerY = (top + bottom) / 2;
-                const anchor = first.element.tooltipPosition();
-
-                const dx = anchor.x - centerX;
-                const dy = anchor.y - centerY;
-                const length = Math.hypot(dx, dy) || 1;
-                const offset = 36;
-
-                let x = anchor.x + (dx / length) * offset;
-                let y = anchor.y + (dy / length) * offset;
-
-                x = Math.max(left + 12, Math.min(right - 12, x));
-                y = Math.max(top + 12, Math.min(bottom - 12, y));
-
-                return {
-                    x,
-                    y,
-                    xAlign: dx >= 0 ? 'left' : 'right',
-                    yAlign: dy >= 0 ? 'top' : 'bottom'
-                };
-            };
-
-            const apptCtx = document.getElementById('dashboardAppointmentsChart');
-            if (apptCtx) {
-                new Chart(apptCtx.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Appointments',
-                            data: appointmentValues,
-                            borderColor: '#2f80ed',
-                            backgroundColor: 'rgba(47, 128, 237, 0.12)',
-                            fill: true,
-                            tension: 0.35,
-                            borderWidth: 3,
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
-                            pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#2f80ed',
-                            pointBorderWidth: 2,
-                            pointHitRadius: 10
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: !allAppointmentValuesZero,
-                                min: allAppointmentValuesZero ? -1 : 0,
-                                suggestedMax: allAppointmentValuesZero ? 1 : Math.max(...appointmentValues, 1) + 1,
-                                grace: allAppointmentValuesZero ? 0 : '10%',
-                                grid: {
-                                    color: '#cbd5e1',
-                                    lineWidth: 1.25
-                                },
-                                ticks: {
-                                    stepSize: 1,
-                                    precision: 0
-                                },
-                                border: {
-                                    display: false
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                border: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            const patientStatsCtx = document.getElementById('dashboardPatientsStatsChart');
-            const patientStatsSubtitle = document.getElementById('patientStatsSubtitle');
-            let patientStatsChart = null;
-            if (patientStatsCtx) {
-                const patientStatsCenterTextPlugin = {
-                    id: 'patientStatsCenterText',
-                    afterDraw(chart) {
-                        const { ctx, chartArea: { left, right, top, bottom } } = chart;
-                        const centerX = (left + right) / 2;
-                        const centerY = (top + bottom) / 2;
-                        const totalNewPatients = Number(chart.data.datasets?.[0]?.data?.[0] || 0);
-
-                        ctx.save();
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-
-                        ctx.fillStyle = '#0f172a';
-                        ctx.font = '700 24px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont';
-                        ctx.fillText(totalNewPatients.toString(), centerX, centerY - 8);
-
-                        ctx.fillStyle = '#64748b';
-                        ctx.font = '600 11px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont';
-                        ctx.fillText('Total New Patient Acquire', centerX, centerY + 12);
-
-                        ctx.restore();
-                    }
-                };
-
-                const renderPatientStats = (newCounts, returningCounts) => {
-                    const totalNewPatients = newCounts.reduce((sum, value) => sum + Number(value || 0), 0);
-                    const totalReturningPatients = returningCounts.reduce((sum, value) => sum + Number(value || 0), 0);
-                    const totals = [totalNewPatients, totalReturningPatients];
-
-                    if (patientStatsChart) {
-                        patientStatsChart.data.datasets[0].data = totals;
-                        patientStatsChart.update();
-                        return;
-                    }
-
-                    patientStatsChart = new Chart(patientStatsCtx.getContext('2d'), {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['New Patients', 'Returning Patients'],
-                            datasets: [{
-                                data: totals,
-                                backgroundColor: ['#2563eb', '#bfdbfe'],
-                                borderColor: ['#2563eb', '#bfdbfe'],
-                                borderWidth: 1,
-                                hoverOffset: 8
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '58%',
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    position: 'patientStatsRadial',
-                                    backgroundColor: '#ffffff',
-                                    titleColor: '#0f172a',
-                                    bodyColor: '#0f172a',
-                                    borderColor: '#e2e8f0',
-                                    borderWidth: 1,
-                                    caretSize: 8,
-                                    caretPadding: 8,
-                                    padding: 10,
-                                    usePointStyle: true,
-                                    callbacks: {
-                                        label: function(context) {
-                                            const value = Number(context.parsed ?? 0);
-                                            const values = (context.dataset.data || []).map((item) => Number(item || 0));
-                                            const total = values.reduce((sum, item) => sum + item, 0);
-                                            const pct = total > 0 ? Math.round((value / total) * 100) : 0;
-                                            return `${context.label}: ${value} (${pct}%)`;
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        plugins: [patientStatsCenterTextPlugin]
-                    });
-                };
-
-                renderPatientStats(newPatientCounts, returningPatientCounts);
-            }
-
-            const topCtx = document.getElementById('dashboardRevenueByTreatmentChart');
-            if (topCtx) {
-                const labelPlugin = {
-                    id: 'valueLabels',
-                    afterDatasetsDraw(chart) {
-                        const {
-                            ctx
-                        } = chart;
-                        ctx.save();
-                        ctx.font = '12px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont';
-                        ctx.fillStyle = '#334155';
-                        ctx.textBaseline = 'middle';
-                        chart.getDatasetMeta(0).data.forEach((bar, i) => {
-                            const value = Number(topRevenueTreatmentAmounts[i] ?? 0);
-                            ctx.fillText(`\u20B1 ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, bar.x + 8, bar.y);
-                        });
-                        ctx.restore();
-                    }
-                };
-
-                new Chart(topCtx.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: topRevenueTreatmentNames,
-                        datasets: [{
-                            data: topRevenueTreatmentAmounts,
-                            backgroundColor: '#5bbad5',
-                            borderRadius: 10,
-                            barThickness: 18,
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const value = Number(context.parsed.x ?? 0);
-                                        return `\u20B1 ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                grid: {
-                                    display: false
-                                },
-                                border: {
-                                    display: false
-                                },
-                                ticks: {
-                                    display: false
-                                }
-                            },
-                            y: {
-                                grid: {
-                                    display: false
-                                },
-                                border: {
-                                    display: false
-                                },
-                                ticks: {
-                                    color: '#475569',
-                                    font: {
-                                        weight: '600',
-                                        size: 12
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    plugins: [labelPlugin]
-                });
-            }
-
-            const profitRangeSelect = document.getElementById('profitRangeSelect');
-            const profitValue = document.getElementById('profitValue');
-            const profitChange = document.getElementById('profitChange');
-
-            function setProfitDisplay(mode) {
-                let value = todayProfit;
-                let pct = todayProfitPct;
-                let compareLabel = 'vs yesterday';
-
-                if (mode === 'week') {
-                    value = weekProfit;
-                    pct = weekProfitPct;
-                    compareLabel = 'vs last week';
-                } else if (mode === 'month') {
-                    value = monthProfit;
-                    pct = monthProfitPct;
-                    compareLabel = 'vs last month';
+                if (statusChartEmpty) {
+                    statusChartEmpty.classList.remove('hidden');
                 }
-
-                if (profitValue) {
-                    profitValue.textContent =
-                        `\u20B1 ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                }
-
-                if (profitChange) {
-                    let num = Number(pct);
-                    const hasPct = !(pct === null || pct === undefined || pct === '');
-                    if (!hasPct) {
-                        num = 0;
-                    }
-
-                    const isUp = num >= 0;
-                    const trendIcon = isUp ?
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up-icon lucide-trending-up"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>' :
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down-icon lucide-trending-down"><path d="M16 17h6v-6"/><path d="m22 17-8.5-8.5-5 5L2 7"/></svg>';
-
-                    const pctText = hasPct ? `${Math.abs(num)}%` : '0%';
-                    profitChange.innerHTML =
-                        `${trendIcon}<span>${isUp ? 'Estimated profit up' : 'Estimated profit down'} ${pctText} (${compareLabel})</span>`;
-                    profitChange.className =
-                        `text-xs mt-2 font-semibold flex items-center gap-2 ${isUp ? 'text-emerald-600' : 'text-rose-600'}`;
-                }
+                return;
             }
 
-            if (profitRangeSelect) {
-                profitRangeSelect.addEventListener('change', (e) => setProfitDisplay(e.target.value));
-                setProfitDisplay('today');
-            }
-
-            const patientStatsRangeSelect = document.getElementById('patientStatsRangeSelect');
-            if (patientStatsRangeSelect && patientStatsEndpoint) {
-                patientStatsRangeSelect.addEventListener('change', async function(e) {
-                    const selectedRange = e.target.value;
-                    patientStatsRangeSelect.disabled = true;
-
-                    try {
-                        const url = new URL(patientStatsEndpoint, window.location.origin);
-                        url.searchParams.set('patient_stats_range', selectedRange);
-
-                        const response = await fetch(url.toString(), {
-                            headers: {
-                                Accept: 'application/json'
+            new Chart(statusCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusCounts,
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#06b6d4', '#10b981', '#16a34a', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10,
+                                boxHeight: 10,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 14
                             }
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Failed to load patient statistics');
                         }
-
-                        const payload = await response.json();
-                        if (patientStatsSubtitle && payload.patientStatsLabel) {
-                            patientStatsSubtitle.textContent = payload.patientStatsLabel;
-                        }
-                        if (patientStatsChart) {
-                            const freshNew = Array.isArray(payload.newPatientCounts) ? payload.newPatientCounts : [];
-                            const freshReturning = Array.isArray(payload.returningPatientCounts) ? payload.returningPatientCounts : [];
-                            const totalNewPatients = freshNew.reduce((sum, value) => sum + Number(value || 0), 0);
-                            const totalReturningPatients = freshReturning.reduce((sum, value) => sum + Number(value || 0), 0);
-                            patientStatsChart.data.datasets[0].data = [totalNewPatients, totalReturningPatients];
-                            patientStatsChart.update();
-                        }
-                    } catch (error) {
-                        console.error(error);
-                    } finally {
-                        patientStatsRangeSelect.disabled = false;
                     }
-                });
-            }
-
-            const cancellationRangeSelect = document.getElementById('cancellationRangeSelect');
-            if (cancellationRangeSelect) {
-                cancellationRangeSelect.addEventListener('change', function(e) {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('cancellation_range', e.target.value);
-                    window.location.href = url.toString();
-                });
-            }
+                }
+            });
         });
     </script>
 @endpush
-
