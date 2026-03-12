@@ -1,84 +1,68 @@
 <section class="bg-white border border-gray-100 rounded-2xl shadow-sm" wire:poll.15s="loadPendingApprovals">
     <div class="flex items-center justify-between p-5 border-b border-gray-100">
         <div>
-            <h2 class="text-lg font-semibold text-gray-900">Appointment Request</h2>
-            <p class="text-xs text-gray-500">Pending requests awaiting approval.</p>
+            <h2 class="text-lg font-semibold text-gray-900">Pending Appointment Requests</h2>
+            <p class="text-xs text-gray-500">Latest 5 requests awaiting approval.</p>
         </div>
-        <button type="button"
+        <a href="{{ route('appointment') }}"
             class="px-3.5 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-            All Appointments
-        </button>
+            View All Requests
+        </a>
     </div>
 
-    <div class="divide-y divide-gray-100">
-        @forelse($pendingApprovals as $pending)
-            <div class="flex flex-col md:flex-row md:items-center justify-between p-5 hover:bg-gray-50 transition gap-4">
-
-                <div class="flex items-center gap-4 flex-1 min-w-0 cursor-pointer"
-                    wire:click="viewApproval({{ $pending->id }})" title="Click to view details">
-
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($pending->first_name . ' ' . $pending->last_name) }}&background=f3f4f6&color=374151"
-                        alt="Avatar" class="w-12 h-12 rounded-lg object-cover border border-gray-200 shrink-0">
-
-                    <div class="min-w-0">
-                        <h4 class="font-semibold text-gray-900 text-base truncate">{{ $pending->first_name }}
-                            {{ $pending->last_name }}</h4>
-
-                        <div class="flex items-center text-[11px] text-gray-500 mt-0.5 gap-2 flex-nowrap">
-                            <div class="flex items-center gap-1.5 whitespace-nowrap">
-                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                {{ \Carbon\Carbon::parse($pending->appointment_date)->format('d M Y') }}
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-50/80 text-xs uppercase tracking-wide text-gray-500">
+                <tr>
+                    <th class="px-5 py-3 text-left">Patient</th>
+                    <th class="px-5 py-3 text-left">Appointment Date</th>
+                    <th class="px-5 py-3 text-left">Service</th>
+                    <!-- <th class="px-5 py-3 text-left">Status</th> -->
+                    <th class="px-5 py-3 text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @forelse($pendingApprovals as $pending)
+                    <tr wire:key="pending-approval-{{ $pending->id }}" class="hover:bg-gray-50 transition-colors">
+                        <td class="px-5 py-3">
+                            <button type="button" wire:click="viewApproval({{ $pending->id }})"
+                                class="font-semibold text-gray-900 hover:text-[#0086DA] transition-colors">
+                                {{ $pending->last_name }}, {{ $pending->first_name }}
+                            </button>
+                        </td>
+                        <td class="px-5 py-3 text-gray-700">
+                            {{ \Carbon\Carbon::parse($pending->appointment_date)->format('M d, Y h:i A') }}
+                        </td>
+                        <td class="px-5 py-3 text-gray-700">{{ $pending->service_name }}</td>
+                        <!-- <td class="px-5 py-3">
+                            <span
+                                class="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+                                {{ $pending->status }}
+                            </span>
+                        </td> -->
+                        <td class="px-5 py-3">
+                            <div class="flex items-center justify-start gap-2">
+                                <button type="button" wire:click="approveAppointment({{ $pending->id }})"
+                                    class="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">
+                                    Approve
+                                </button>
+                                <button type="button" wire:click="rejectAppointment({{ $pending->id }})"
+                                    wire:confirm="Reject this appointment request?"
+                                    class="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition">
+                                    Reject
+                                </button>
                             </div>
-
-                            <span class="text-gray-300 shrink-0">|</span>
-
-                            <div class="flex items-center gap-1.5 whitespace-nowrap">
-                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                {{ \Carbon\Carbon::parse($pending->appointment_date)->format('h:i A') }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="shrink-0 flex items-center">
-                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-600">
-                        {{ $pending->service_name }}
-                    </span>
-                </div>
-
-                <div class="flex items-center shrink-0 gap-2">
-                    <button type="button" wire:click="approveAppointment({{ $pending->id }})"
-                        class="p-2.5 rounded-lg bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-700 transition flex items-center justify-center"
-                        title="Approve request">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </button>
-
-                    <button type="button" wire:click="rejectAppointment({{ $pending->id }})"
-                        wire:confirm="Reject this appointment request?"
-                        class="p-2.5 rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-700 transition flex items-center justify-center"
-                        title="Reject request">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-            </div>
-        @empty
-            <div class="p-8 text-center text-sm text-gray-500">
-                No pending appointment requests.
-            </div>
-        @endforelse
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-500">
+                            No pending appointment requests.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 
     @if ($showDetails && $selectedApproval)

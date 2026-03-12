@@ -1,4 +1,4 @@
-<div class="relative w-full h-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col"
+<div class="relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white"
     x-data="{
         historyLoading: {{ (count($historyList) > 0 || $isCreating) ? 'true' : 'false' }},
         nervous: @js((string) $is_nervous_q6),
@@ -20,10 +20,10 @@
     {{-- CONDITION: Show Form if History Exists OR We are Creating a New One --}}
     @if (count($historyList) > 0 || $isCreating)
 
-        <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200 sticky top-0 z-20"
+        <div class="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4"
             x-init="$nextTick(() => { $dispatch('health-history-ready'); })">
             <div class="flex items-center gap-4">
-                <h2 class="text-xl font-bold text-gray-800">Health History</h2>
+                <h2 class="text-lg font-semibold text-slate-900">Health History</h2>
 
                 {{-- History Dropdown: DO NOT DISABLE (User needs to switch views) --}}
                 @if (count($historyList) > 1 && $isReadOnly && !$isCreating)
@@ -53,7 +53,7 @@
                 {{-- New Record Button: ALWAYS CLICKABLE --}}
                 @if (count($historyList) > 0 && $isReadOnly && !$isCreating)
                     <button wire:click="triggerNewHistory" x-on:click="$dispatch('show-health-history-loading')"
-                        class="flex items-center gap-2 px-3 py-2 bg-[#0086da] text-white text-sm font-medium rounded hover:bg-blue-600 transition shadow-sm"
+                        class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
                         title="Start a fresh health record">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -67,10 +67,10 @@
         </div>
 
         <div data-health-history-scroll data-form-scroll
-            class="flex-1 overflow-y-auto p-4 lg:p-8 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-gray-100 scrollbar-thumb-gray-300">
+            class="flex-1 overflow-y-auto p-4 lg:p-6 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-slate-100 scrollbar-thumb-slate-300">
 
-            <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
-                <h2 class="text-xl font-bold text-black">Dental History</h2>
+            <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <h2 class="text-base font-semibold text-slate-900">Dental History</h2>
             </div>
 
             <div class="space-y-6 mb-10">
@@ -176,8 +176,8 @@
                 @endforeach
             </div>
 
-            <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
-                <h2 class="text-xl font-bold text-black">Medical History</h2>
+            <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <h2 class="text-base font-semibold text-slate-900">Medical History</h2>
             </div>
 
             <div class="space-y-6">
@@ -238,8 +238,8 @@
             </div>
 
             @if ($gender === 'Female')
-                <div class="bg-pink-100 border-l-4 border-pink-500 p-4 mb-6 mt-10">
-                    <h2 class="text-xl font-bold text-pink-800">For Women Only</h2>
+                <div class="mb-6 mt-10 rounded-xl border border-pink-200 bg-pink-50 px-4 py-3">
+                    <h2 class="text-base font-semibold text-pink-800">For Women Only</h2>
                 </div>
                 <div class="space-y-4">
                     @foreach ([['q' => '7. Are you pregnant?', 'model' => 'is_pregnant_q7'], ['q' => '8. Are you breast feeding?', 'model' => 'is_breast_feeding_q8']] as $fem)

@@ -1,155 +1,217 @@
-@extends('index') 
+@extends('index')
 
 @section('content')
-<main id="mainContent" class="min-h-screen bg-gray-100 p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
-
-    <!-- Page Header -->
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">User Accounts</h1>
-        <a href="{{ route('users.create') }}" class="bg-[#0086DA] hover:scale-105 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm  transition-transform duration-200 ">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            Add New User
-        </a>
-    </div>
-
-    <!-- Flash Messages -->
-    @if(session('success'))
-        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-r shadow-sm" role="alert">
-            <p class="font-bold">Success</p>
-            <p>{{ session('success') }}</p>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r shadow-sm" role="alert">
-            <p class="font-bold">Error</p>
-            <p>{{ session('error') }}</p>
-        </div>
-    @endif
-
-    {{-- SECTION: Admins --}}
-    <section class="mb-10">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-                Admins 
-                <span class="px-2 py-0.5 text-sm bg-gray-200 text-gray-700 rounded-full">{{ $admins->total() ?? $admins->count() }}</span>
-            </h2>
+    <main id="mainContent"
+        class="min-h-screen bg-[#f3f4f6] p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
+        <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
+            <div>
+                <h1 class="text-3xl lg:text-4xl font-bold text-gray-900">User Accounts</h1>
+                <p class="mt-1 text-sm text-gray-500">Manage admin and staff profiles, permissions, and lifecycle actions.</p>
+            </div>
+            <a href="{{ route('users.create') }}"
+                class="inline-flex items-center gap-2 rounded-xl bg-[#0086DA] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0079c3]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14" />
+                    <path d="M12 5v14" />
+                </svg>
+                <span>Add New User</span>
+            </a>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @forelse($admins as $user)
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 relative overflow-hidden">
-                    {{-- Role Badge --}}
-                    @if($user->role_name)
-                        <span class="absolute top-4 right-4 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-green-100 text-[#10b981]">
-                            {{ $user->role_name }}
-                        </span>
-                    @endif
-                    
-                    <div class="p-6">
-                        <div class="flex items-center gap-4 mb-5">
-                            <div class="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold bg-green-500 shadow-sm">
+        @if (session('success'))
+            <div class="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-sm" role="alert">
+                <p class="font-semibold">Success</p>
+                <p class="mt-0.5">{{ session('success') }}</p>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="mb-6 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm" role="alert">
+                <p class="font-semibold">Error</p>
+                <p class="mt-0.5">{{ session('error') }}</p>
+            </div>
+        @endif
+
+        <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div class="mb-5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">Admins</h2>
+                    <p class="mt-0.5 text-xs text-gray-500">Administrative users with full system control.</p>
+                </div>
+                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                    {{ $admins->total() ?? $admins->count() }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                @forelse($admins as $user)
+                    <article class="relative rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        @if ($user->role_name)
+                            <span class="absolute right-4 top-4 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                                {{ $user->role_name }}
+                            </span>
+                        @endif
+
+                        <div class="mb-5 flex items-center gap-3">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-base font-bold text-white">
                                 {{ strtoupper(substr($user->username, 0, 1)) }}
                             </div>
                             <div class="min-w-0">
-                                <h3 class="text-lg font-bold text-gray-900 truncate">{{ $user->username }}</h3>
-                                <p class="text-xs text-gray-500 truncate">ID: #{{ $user->id }}</p>
+                                <h3 class="truncate text-base font-bold text-gray-900">{{ $user->username }}</h3>
+                                <p class="truncate text-xs text-gray-500">ID: #{{ $user->id }}</p>
                             </div>
                         </div>
 
-                        <div class="space-y-3 mb-6">
-                            <div class="flex items-center gap-3 text-sm text-gray-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0 text-gray-400">
-                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>
-                                </svg>
-                                <span>Joined {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}</span>
-                            </div>
+                        <div class="mb-5 text-sm text-gray-600">
+                            Joined {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}
                         </div>
 
-                        <div class="border-t border-gray-100 pt-4 flex items-center gap-2">
-                            <a href="{{ route('users.edit', $user->id) }}" 
-                               class="flex-1 py-2 text-sm font-medium text-center text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
+                        <div class="flex items-center gap-2 border-t border-gray-100 pt-4">
+                            <a href="{{ route('users.edit', $user->id) }}"
+                                class="flex-1 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-center text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
                                 Edit
                             </a>
-                            @if($user->id !== auth()->id())
-                                <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="flex-1" onsubmit="return confirm('Are you sure you want to delete this admin?');">
+                            @if ($user->id !== auth()->id())
+                                <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="flex-1"
+                                    onsubmit="return confirm('Are you sure you want to delete this admin?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="w-full py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                                    <button type="submit"
+                                        class="w-full rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
                                         Delete
                                     </button>
                                 </form>
                             @endif
                         </div>
+                    </article>
+                @empty
+                    <div class="col-span-full rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                        No admins found.
                     </div>
-                </div>
-            @empty
-                <div class="col-span-full bg-white rounded-lg border border-dashed border-gray-300 p-8 text-center">
-                    <p class="text-gray-500">No admins found.</p>
-                </div>
-            @endforelse
-        </div>
-        <div class="mt-4">
-            {{ $admins->links() }}
-        </div>
-    </section>
+                @endforelse
+            </div>
 
-    {{-- SECTION: Staff --}}
-    <section class="mb-10">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-                Staff
-                <span class="px-2 py-0.5 text-sm bg-gray-200 text-gray-700 rounded-full">{{ $staffs->total() ?? $staffs->count() }}</span>
-            </h2>
-        </div>
+            <div class="mt-5">{{ $admins->links() }}</div>
+        </section>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @forelse($staffs as $user)
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 relative overflow-hidden">
-                    @if($user->role_name)
-                        <span class="absolute top-4 right-4 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-blue-100 text-blue-700">
-                            {{ $user->role_name }}
-                        </span>
-                    @endif
-                    
-                    <div class="p-6">
-                        <div class="flex items-center gap-4 mb-5">
-                            <div class="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold bg-blue-500 shadow-sm">
+        <section class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div class="mb-5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">Staff</h2>
+                    <p class="mt-0.5 text-xs text-gray-500">Operational users supporting daily clinic workflow.</p>
+                </div>
+                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                    {{ $staffs->total() ?? $staffs->count() }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                @forelse($staffs as $user)
+                    <article class="relative rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        @if ($user->role_name)
+                            <span class="absolute right-4 top-4 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                                {{ $user->role_name }}
+                            </span>
+                        @endif
+
+                        <div class="mb-5 flex items-center gap-3">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-base font-bold text-white">
                                 {{ strtoupper(substr($user->username, 0, 1)) }}
                             </div>
                             <div class="min-w-0">
-                                <h3 class="text-lg font-bold text-gray-900 truncate">{{ $user->username }}</h3>
-                                <p class="text-xs text-gray-500 truncate">ID: {{ $user->id }}</p>
-                            </div>
-                        </div>
-                        
-                        {{-- Contact & Date Info (Same as Admin) --}}
-                        <div class="space-y-3 mb-6">
-                            <div class="flex items-center gap-3 text-sm text-gray-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0 text-gray-400">
-                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>
-                                </svg>
-                                <span>Joined {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}</span>
+                                <h3 class="truncate text-base font-bold text-gray-900">{{ $user->username }}</h3>
+                                <p class="truncate text-xs text-gray-500">ID: #{{ $user->id }}</p>
                             </div>
                         </div>
 
-                        <div class="border-t border-gray-100 pt-4 flex items-center gap-2">
-                            <a href="{{ route('users.edit', $user->id) }}" class="flex-1 py-2 text-sm font-medium text-center text-yellow-700 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">Edit</a>
-                            <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="flex-1" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="w-full py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">Delete</button>
+                        <div class="mb-5 text-sm text-gray-600">
+                            Joined {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}
+                        </div>
+
+                        <div class="flex items-center gap-2 border-t border-gray-100 pt-4">
+                            <a href="{{ route('users.edit', $user->id) }}"
+                                class="flex-1 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-center text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
+                                Edit
+                            </a>
+                            <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="flex-1"
+                                onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="w-full rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                                    Delete
+                                </button>
                             </form>
                         </div>
+                    </article>
+                @empty
+                    <div class="col-span-full rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                        No staff found.
                     </div>
-                </div>
-            @empty
-                <div class="col-span-full bg-white rounded-lg border border-dashed border-gray-300 p-8 text-center">
-                    <p class="text-gray-500">No staff found.</p>
-                </div>
-            @endforelse
-        </div>
-        <div class="mt-4">{{ $staffs->links() }}</div>
-    </section>
+                @endforelse
+            </div>
 
-</main>
+            <div class="mt-5">{{ $staffs->links() }}</div>
+        </section>
+
+        <section class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div class="mb-5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">Patient Accounts</h2>
+                    <p class="mt-0.5 text-xs text-gray-500">Registered patient users created through sign-up and booking flows.</p>
+                </div>
+                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                    {{ $normalUsers->total() ?? $normalUsers->count() }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                @forelse($normalUsers as $user)
+                    <article class="relative rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                        <span class="absolute right-4 top-4 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700">
+                            {{ $user->role_name ?? 'patient' }}
+                        </span>
+
+                        <div class="mb-5 flex items-center gap-3">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-sky-500 text-base font-bold text-white">
+                                {{ strtoupper(substr($user->username, 0, 1)) }}
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="truncate text-base font-bold text-gray-900">{{ $user->username }}</h3>
+                                <p class="truncate text-xs text-gray-500">{{ $user->email }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-5 text-sm text-gray-600">
+                            Joined {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}
+                        </div>
+
+                        <div class="flex items-center gap-2 border-t border-gray-100 pt-4">
+                            @if ($user->id !== auth()->id())
+                                <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="w-full"
+                                    onsubmit="return confirm('Are you sure you want to delete this patient account?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="w-full rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                                        Delete
+                                    </button>
+                                </form>
+                            @else
+                                <p class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-center text-sm font-medium text-gray-500">
+                                    Current account
+                                </p>
+                            @endif
+                        </div>
+                    </article>
+                @empty
+                    <div class="col-span-full rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                        No patient accounts found.
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="mt-5">{{ $normalUsers->links() }}</div>
+        </section>
+    </main>
 @endsection

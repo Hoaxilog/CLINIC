@@ -42,7 +42,7 @@ class PendingApprovalsWidget extends Component
                 'patients.email_address',
                 'services.service_name'
             )
-            ->limit(6)
+            ->limit(5)
             ->get();
     }
 

@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+
 use Carbon\Carbon;
 use Throwable;
 
@@ -32,6 +33,8 @@ class NotificationBell extends Component
         }
 
         $notifications = collect();
+        $readIds = collect(session($this->readSessionKey($user->id), []));
+        $clearedIds = collect(session($this->clearedSessionKey($user->id), []));
 
         if ($user->role !== 3) {
             // Pending approvals count
@@ -223,14 +226,120 @@ class NotificationBell extends Component
             }
         }
 
-        $this->notifications = $notifications;
+        $notifications = $notifications
+            ->sortByDesc(fn ($notification) => Carbon::parse($notification->created_at)->timestamp)
+            ->values();
 
-        $this->unreadCount = $this->notifications->count();
+        if ($clearedIds->isNotEmpty()) {
+            $notifications = $notifications
+                ->reject(fn ($notification) => $clearedIds->contains($notification->id))
+                ->values();
+        }
+
+        $notifications = $notifications
+            ->map(function ($notification) use ($readIds) {
+                $notification->is_read = $readIds->contains($notification->id);
+                return $notification;
+            })
+            ->values();
+
+        $this->notifications = $notifications->all();
+        $this->unreadCount = $notifications->where('is_read', false)->count();
     }
 
     public function render()
     {
         return view('livewire.components.notification-bell');
+    }
+
+    public function markAsRead(string $notificationId): void
+    {
+        if ($notificationId === '') {
+            return;
+        }
+
+        $user = Auth::user();
+        if (!$user) {
+            return;
+        }
+
+        $readIds = collect(session($this->readSessionKey($user->id), []));
+        if (!$readIds->contains($notificationId)) {
+            $readIds->push($notificationId);
+            session([$this->readSessionKey($user->id) => $readIds->values()->all()]);
+        }
+
+        $this->buildNotifications();
+    }
+
+    public function markAllAsRead(): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return;
+        }
+
+        $currentIds = collect($this->notifications)->pluck('id')->filter()->unique()->values();
+        $readIds = collect(session($this->readSessionKey($user->id), []))
+            ->merge($currentIds)
+            ->unique()
+            ->values();
+        session([$this->readSessionKey($user->id) => $readIds->all()]);
+
+        $this->buildNotifications();
+    }
+
+    public function clearNotification(string $notificationId): void
+    {
+        if ($notificationId === '') {
+            return;
+        }
+
+        $user = Auth::user();
+        if (!$user) {
+            return;
+        }
+
+        $clearedIds = collect(session($this->clearedSessionKey($user->id), []));
+        if (!$clearedIds->contains($notificationId)) {
+            $clearedIds->push($notificationId);
+            session([$this->clearedSessionKey($user->id) => $clearedIds->values()->all()]);
+        }
+
+        $this->markAsRead($notificationId);
+    }
+
+    public function clearAllNotifications(): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return;
+        }
+
+        $currentIds = collect($this->notifications)->pluck('id')->filter()->unique()->values();
+
+        $clearedIds = collect(session($this->clearedSessionKey($user->id), []))
+            ->merge($currentIds)
+            ->unique()
+            ->values();
+
+        $readIds = collect(session($this->readSessionKey($user->id), []))
+            ->merge($currentIds)
+            ->unique()
+            ->values();
+
+        session([
+            $this->clearedSessionKey($user->id) => $clearedIds->all(),
+            $this->readSessionKey($user->id) => $readIds->all(),
+        ]);
+
+        $this->buildNotifications();
+    }
+
+    public function openNotification(string $notificationId, string $link)
+    {
+        $this->markAsRead($notificationId);
+        return $this->redirect($link);
     }
 
     protected function patientsUsesUserId(): bool
@@ -246,5 +355,15 @@ class NotificationBell extends Component
         }
 
         return $this->usesPatientUserId;
+    }
+
+    protected function readSessionKey(int $userId): string
+    {
+        return "notification_bell.user.{$userId}.read_ids";
+    }
+
+    protected function clearedSessionKey(int $userId): string
+    {
+        return "notification_bell.user.{$userId}.cleared_ids";
     }
 }

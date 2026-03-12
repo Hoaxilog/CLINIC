@@ -73,7 +73,6 @@ class Dashboard extends Controller
 
     public function index() {
         $today = Carbon::today();
-        $nextAppointmentCutoff = Carbon::now()->subMinutes(90);
         $range = request('range', '15d');
         $patientStatsRange = request('patient_stats_range', 'monthly');
         $cancellationRange = request('cancellation_range', 'monthly');
@@ -220,18 +219,17 @@ class Dashboard extends Controller
             ->pluck('total', 'status')
             ->toArray();
 
-        $statusLabels = ['Scheduled', 'Waiting', 'Ongoing', 'Completed', 'Cancelled'];
+        $statusLabels = ['Scheduled', 'Waiting', 'Arrived', 'Ongoing', 'Completed', 'Cancelled'];
         $statusCounts = [];
         foreach ($statusLabels as $label) {
             $statusCounts[] = $statusCountsMap[$label] ?? 0;
         }
 
-        $nextAppointments = DB::table('appointments')
+        $todayScheduleAppointments = DB::table('appointments')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->whereDate('appointments.appointment_date', $today)
-            ->where('appointments.appointment_date', '>=', $nextAppointmentCutoff)
-            ->whereNotIn('appointments.status', ['Cancelled', 'Completed'])
+            ->where('appointments.status', '!=', 'Pending')
             ->orderBy('appointments.appointment_date', 'asc')
             ->select(
                 'appointments.appointment_date',
@@ -240,7 +238,26 @@ class Dashboard extends Controller
                 'patients.last_name',
                 'services.service_name'
             )
-            ->limit(3)
+            ->get();
+
+        $waitingPatientsCount = (int) ($statusCountsMap['Waiting'] ?? 0);
+        $arrivedPatientsCount = (int) ($statusCountsMap['Arrived'] ?? 0);
+        $ongoingPatientsCount = (int) ($statusCountsMap['Ongoing'] ?? 0);
+        $completedPatientsCount = (int) ($statusCountsMap['Completed'] ?? 0);
+
+        $recentActivities = DB::table('activity_log')
+            ->leftJoin('users', function ($join) {
+                $join->on('activity_log.causer_id', '=', 'users.id')
+                    ->where('activity_log.causer_type', '=', 'App\\Models\\User');
+            })
+            ->select(
+                'activity_log.description',
+                'activity_log.event',
+                'activity_log.created_at',
+                'users.username as causer_name'
+            )
+            ->latest('activity_log.created_at')
+            ->limit(5)
             ->get();
 
         $pendingApprovalsCount = DB::table('appointments')->where('status', 'Pending')->count();
@@ -284,9 +301,14 @@ class Dashboard extends Controller
             'statusCounts'           => $statusCounts,
             'bookedLast30'           => $bookedLast30,
             'cancelledLast30'        => $cancelledLast30,
-            'nextAppointments'       => $nextAppointments,
+            'todayScheduleAppointments' => $todayScheduleAppointments,
             'pendingApprovalsCount'  => $pendingApprovalsCount,
             'totalPatients'          => $totalPatients,
+            'waitingPatientsCount'   => $waitingPatientsCount,
+            'arrivedPatientsCount'   => $arrivedPatientsCount,
+            'ongoingPatientsCount'   => $ongoingPatientsCount,
+            'completedPatientsCount' => $completedPatientsCount,
+            'recentActivities'       => $recentActivities,
             'patientStatsTotal'      => $patientStats['patientStatsTotal'],
             'patientStatsDates'      => $patientStats['patientStatsDates'],
             'newPatientCounts'       => $patientStats['newPatientCounts'],

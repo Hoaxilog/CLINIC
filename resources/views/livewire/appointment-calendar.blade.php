@@ -1,17 +1,36 @@
-<div class="relative" @if (!$showAppointmentModal) wire:poll.5s="loadAppointments" @endif>
+<div class="relative" x-data="{ modalOpen: @entangle('showAppointmentModal').defer }"
+    x-on:keydown.escape.window="modalOpen = false"
+    x-on:appointment-modal-closed.window="modalOpen = false"
+    @if ($activeTab === 'calendar' && !$showAppointmentModal) wire:poll.30s="refreshAppointments" @endif>
+    @php
+        $btnBase = 'inline-flex items-center justify-center rounded-lg font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed';
+        $btnSm = $btnBase . ' px-3.5 py-2 text-xs';
+        $btnMd = $btnBase . ' px-4 py-2 text-sm';
+        $btnLg = $btnBase . ' px-6 py-2.5 text-sm';
+        $btnIcon = 'inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#0f766e]';
+
+        $btnPrimary = 'bg-[#0f766e] text-white shadow-sm hover:bg-[#0d675f]';
+        $btnSecondary = 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
+        $btnOutlinePrimary = 'border border-[#0f766e] bg-[#f0fdfa] text-[#0f766e] hover:bg-[#ccfbf1]';
+        $btnDanger = 'bg-rose-600 text-white shadow-sm hover:bg-rose-700';
+        $btnDangerSoft = 'border border-transparent text-red-600 hover:bg-red-50 hover:border-red-100';
+        $btnSuccess = 'bg-[#0f766e] text-white shadow-sm hover:bg-[#0d675f]';
+        $btnWarning = 'bg-[#0f766e] text-white shadow-sm hover:bg-[#0d675f]';
+        $btnComplete = 'bg-[#0f766e] text-white shadow-sm hover:bg-[#0d675f]';
+        $btnInfo = 'bg-[#0f766e] text-white shadow-sm hover:bg-[#0d675f]';
+    @endphp
+
     <h1 class="text-3xl lg:text-4xl font-bold text-gray-800">Appointments</h1>
     <div class="w-full max-w-9xl mx-auto px-2 py-6 lg:px-8 overflow-x-auto bg-white mt-6">
         <div class="flex items-center gap-2 mb-6">
             @if (auth()->user()->role !== 3)
                 <button type="button" wire:click="setActiveTab('pending')"
-                    class="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 transition
-                    {{ $activeTab === 'pending' ? 'bg-[#0789da] text-white border-[#0789da] shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
+                    class="{{ $btnMd }} {{ $activeTab === 'pending' ? $btnPrimary . ' border border-[#0f766e]' : $btnSecondary }}">
                     Appointment Request
                 </button>
             @endif
             <button type="button" wire:click="setActiveTab('calendar')"
-                class="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-200 transition
-                {{ $activeTab === 'calendar' ? 'bg-[#0789da] text-white border-[#0789da] shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50' }}">
+                class="{{ $btnMd }} {{ $activeTab === 'calendar' ? $btnPrimary . ' border border-[#0f766e]' : $btnSecondary }}">
                 Appointment Calendar
             </button>
         </div>
@@ -21,7 +40,7 @@
                 <span class="font-semibold">Adding appointment for:</span>
                 <span class="font-medium text-blue-900">{{ $prefillPatientLabel }}</span>
                 <button type="button" wire:click="clearPrefill"
-                    class="ml-auto rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100">
+                    class="ml-auto {{ $btnSm }} border border-blue-200 bg-white text-blue-700 hover:bg-blue-100">
                     Clear
                 </button>
             </div>
@@ -40,7 +59,7 @@
                                 class="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700">
                             @if ($pendingFilterDate)
                                 <button type="button" wire:click="clearPendingFilterDate"
-                                    class="px-3 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                    class="{{ $btnMd }} {{ $btnSecondary }}">
                                     Clear
                                 </button>
                             @endif
@@ -60,6 +79,7 @@
                 <div class="divide-y divide-gray-100">
                     @forelse($this->getPendingApprovals() as $pending)
                         <div
+                            wire:key="pending-appointment-{{ $pending->id }}"
                             class="grid grid-cols-1 md:grid-cols-5 gap-3 px-5 py-4 text-sm items-center hover:bg-gray-50 transition">
                             <div>
                                 <div class="font-semibold text-gray-900">
@@ -76,11 +96,13 @@
                             </div>
                             <div class="flex md:justify-end gap-2">
                                 <button type="button" wire:click="approveAppointment({{ $pending->id }})"
-                                    class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition">
+                                    wire:loading.attr="disabled" wire:target="approveAppointment({{ $pending->id }})"
+                                    class="{{ $btnSm }} {{ $btnSuccess }}">
                                     Approve
                                 </button>
                                 <button type="button" wire:click="rejectAppointment({{ $pending->id }})"
-                                    class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition">
+                                    wire:loading.attr="disabled" wire:target="rejectAppointment({{ $pending->id }})"
+                                    class="{{ $btnSm }} {{ $btnDanger }}">
                                     Reject
                                 </button>
                             </div>
@@ -100,24 +122,16 @@
                         class="border rounded px-3 py-2 text-sm">
 
                     <button type="button" wire:click="goToToday"
-                        class="px-3 py-2 border rounded text-sm hover:bg-gray-100">
+                        class="{{ $btnMd }} {{ $btnSecondary }}">
                         Today
                     </button>
 
                     <div class="flex gap-2">
-                        <button wire:click="previousWeek" class="p-2 hover:bg-gray-200 rounded">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 19l-7-7 7-7" />
-                            </svg>
+                        <button wire:click="previousWeek" class="{{ $btnIcon }}">
+                            Previous Week
                         </button>
-                        <button wire:click="nextWeek" class="p-2 hover:bg-gray-200 rounded">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5l7 7-7 7" />
-                            </svg>
+                        <button wire:click="nextWeek" class="{{ $btnIcon }}">
+                            Next Week
                         </button>
                     </div>
                 </div>
@@ -130,6 +144,7 @@
                     </div>
                     @foreach ($weekDates as $date)
                         <div
+                            wire:key="calendar-day-header-{{ $date->format('Y-m-d') }}"
                             class="p-3.5 flex flex-col items-center justify-center border-r border-b border-gray-200  {{ $date->isToday() ? 'bg-[#0086da] text-white' : '' }}">
                             <span
                                 class="text-md font-medium {{ $date->isToday() ? ' text-white' : 'text-gray-500' }} mb-1">{{ $date->format('D') }}</span>
@@ -140,9 +155,85 @@
                     @endforeach
                 </div>
 
+                <div class="sm:hidden space-y-4 pt-4">
+                    @foreach ($weekDates as $date)
+                        @php
+                            $mobileDayAppointments = $this->getAppointmentsForDay($date)->sortBy('start_time');
+                        @endphp
+                        <div wire:key="calendar-mobile-day-{{ $date->format('Y-m-d') }}"
+                            class="rounded-xl border border-gray-200 bg-white p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        {{ $date->format('D') }}
+                                    </p>
+                                    <p class="text-base font-bold text-gray-900">
+                                        {{ $date->format('F j, Y') }}
+                                    </p>
+                                </div>
+                                @if ($date->isToday())
+                                    <span class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">Today</span>
+                                @endif
+                            </div>
+
+                            <div class="space-y-2">
+                                @forelse ($mobileDayAppointments as $appt)
+                                    <button type="button" wire:key="mobile-appointment-{{ $appt->id }}"
+                                        @click="modalOpen = true"
+                                        wire:click="viewAppointment({{ $appt->id }})"
+                                        class="w-full rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-left">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <p class="text-sm font-semibold text-gray-900 truncate">
+                                                {{ $appt->last_name }}, {{ $appt->first_name }}
+                                            </p>
+                                            <p class="text-xs font-semibold text-blue-700 whitespace-nowrap">
+                                                {{ \Carbon\Carbon::parse($appt->start_time)->format('h:i A') }}
+                                            </p>
+                                        </div>
+                                        <p class="text-xs text-gray-700 truncate">{{ $appt->service_name }}</p>
+                                        <p
+                                            class="text-xs font-semibold
+                                            @if ($appt->status == 'Ongoing') text-yellow-700
+                                            @elseif($appt->status == 'Scheduled') text-blue-700
+                                            @elseif($appt->status == 'Cancelled') text-red-700
+                                            @elseif($appt->status == 'Waiting') text-orange-700
+                                            @elseif($appt->status == 'Completed') text-green-700
+                                            @else text-gray-700 @endif">
+                                            {{ $appt->status === 'Waiting' ? 'Ready' : $appt->status }}
+                                        </p>
+                                    </button>
+                                @empty
+                                    <p class="rounded-lg border border-dashed border-gray-200 px-3 py-2 text-xs text-gray-500">
+                                        No appointments yet.
+                                    </p>
+                                @endforelse
+                            </div>
+
+                            <div class="mt-4">
+                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Tap a time to book</p>
+                                <div class="grid grid-cols-3 gap-2">
+                                    @foreach ($timeSlots as $time)
+                                        @php
+                                            $mobileIsOccupied = $this->isSlotOccupied($date->toDateString(), $time);
+                                        @endphp
+                                        <button type="button"
+                                            wire:key="mobile-slot-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $time) }}"
+                                            @if (!$mobileIsOccupied) @click="modalOpen = true" wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')" @endif
+                                            class="rounded-md border px-2 py-1.5 text-xs font-medium transition
+                                            {{ $mobileIsOccupied ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400' : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50' }}">
+                                            {{ \Carbon\Carbon::parse($time)->format('h:i A') }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
                 <div class="hidden sm:grid grid-cols-[120px_repeat(7,1fr)] w-full overflow-x-auto relative pt-4 z-10">
                     @foreach ($timeSlots as $time)
-                        <div class="relative h-16 lg:h-16 border-t border-r border-gray-200">
+                        <div wire:key="calendar-time-label-{{ str_replace(':', '-', $time) }}"
+                            class="relative h-16 lg:h-16 border-t border-r border-gray-200">
                             <span
                                 class="absolute top-0 left-2 -mt-2.5 bg-white px-1 text-sm font-semibold text-gray-500">
                                 {{ Carbon\Carbon::parse($time)->format('h:i A') }}
@@ -153,9 +244,10 @@
                                 $isOccupied = $this->isSlotOccupied($date->toDateString(), $time);
                             @endphp
 
-                            <div @if (!$isOccupied) wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')" @endif
+                            <div wire:key="calendar-slot-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $time) }}"
+                                @if (!$isOccupied) @click="modalOpen = true" wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')" @endif
                                 class="h-16 lg:h-16 p-0.5 md:p-3.5 border-t border-r border-gray-200 transition-all 
-                                @if (!$isOccupied) hover:bg-stone-100 cursor-default @endif
+                                @if (!$isOccupied) hover:bg-stone-100 cursor-pointer @endif
                                 ">
                             </div>
                         @endforeach
@@ -166,7 +258,8 @@
                         <div class="h-full"></div>
 
                         @foreach ($weekDates as $date)
-                            <div class="relative h-full border-r border-gray-200">
+                            <div wire:key="calendar-overlay-day-{{ $date->format('Y-m-d') }}"
+                                class="relative h-full border-r border-gray-200">
                                 @php
                                     $dayAppointments = $this->getAppointmentsForDay($date);
                                     $dayStartHour = 9;
@@ -185,11 +278,14 @@
                                         $countAtTime = $appointmentsAtTime->count();
                                     @endphp
 
-                                    <div class="absolute w-full px-1 py-0.5 "
+                                    <div wire:key="calendar-group-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $timeKey) }}"
+                                        class="absolute w-full px-1 py-0.5 "
                                         style="top: {{ $topPositionRem }}rem; height: {{ $heightInRem }}rem; z-index: 10;">
 
                                         @if ($countAtTime === 1)
-                                            <div wire:click="viewAppointment({{ $firstAppt->id }})"
+                                            <div wire:key="appointment-{{ $firstAppt->id }}"
+                                                @click="modalOpen = true"
+                                                wire:click="viewAppointment({{ $firstAppt->id }})"
                                                 class="rounded p-1.5 border-l-4 border-t-4 border-blue-600 bg-blue-50 h-full overflow-hidden pointer-events-auto cursor-pointer">
                                                 <p class="text-md font-semibold text-gray-900 mb-px">
                                                     {{ $firstAppt->last_name }}, {{ $firstAppt->first_name }}
@@ -231,6 +327,8 @@
                                                     class="absolute mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-30 pointer-events-auto">
                                                     @foreach ($appointmentsAtTime as $apptItem)
                                                         <button type="button"
+                                                            wire:key="appointment-dropdown-{{ $apptItem->id }}"
+                                                            @click="modalOpen = true"
                                                             wire:click="viewAppointment({{ $apptItem->id }})"
                                                             class="w-full text-left px-4 py-2 hover:bg-gray-50 border-b last:border-b-0">
                                                             <div class="text-sm font-semibold">
@@ -253,20 +351,20 @@
                 </div>
             </div>
         @endif
-    </div>
+        </div>
 
     {{-- --- APPOINTMENT MODAL --- --}}
-    @if ($showAppointmentModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div x-cloak x-show="modalOpen" x-transition.opacity.duration.150ms
+        class="fixed inset-0 z-50 flex items-center justify-center p-4" wire:ignore.self>
 
-            <div class="absolute inset-0 bg-black opacity-60" wire:click="closeAppointmentModal"></div>
+            <div class="absolute inset-0 bg-black opacity-60" @click="modalOpen = false"></div>
             <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 z-10 overflow-hidden">
 
                 <div class="px-6 py-4 flex items-center justify-between bg-white border-b">
                     <h3 class="text-2xl font-semibold text-gray-900 ">Appointment Details</h3>
                     <button
                         class="text-[#0086da] text-4xl flex items-center justify-center px-2 rounded-full hover:bg-[#e6f4ff] transition"
-                        wire:click="closeAppointmentModal">×</button>
+                        @click="modalOpen = false">×</button>
                 </div>
 
                 @if (session()->has('error'))
@@ -275,8 +373,20 @@
                     </div>
                 @endif
 
-                {{-- [FIX] Changed from DIV to FORM so the submit button works --}}
-                <form class="p-6 overflow-y-auto max-h-[85vh]" wire:submit.prevent="saveAppointment">
+                @if ($showAppointmentModal)
+                    <div wire:loading.flex
+                        wire:target="openAppointmentModal,viewAppointment,saveAppointment,updateStatus,admitPatient,processPatient,openPatientChart"
+                        class="min-h-[300px] items-center justify-center bg-gray-100 text-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
+                            <div class="text-sm font-semibold text-gray-700">Loading...</div>
+                        </div>
+                    </div>
+
+                    {{-- [FIX] Changed from DIV to FORM so the submit button works --}}
+                    <form class="p-6 overflow-y-auto max-h-[85vh]" wire:submit.prevent="saveAppointment"
+                        wire:loading.remove
+                        wire:target="openAppointmentModal,viewAppointment,saveAppointment,updateStatus,admitPatient,processPatient,openPatientChart">
 
                     {{-- DATE & TIME HEADER --}}
                     <div class="mb-6 bg-gray-50 rounded-xl p-5 border border-gray-100">
@@ -308,7 +418,7 @@
                         <div class="mb-6 relative">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Search Existing Patient</label>
                             <div class="relative">
-                                <input type="text" wire:model.live.debounce.300ms="searchQuery"
+                                <input type="text" wire:model.debounce.500ms="searchQuery"
                                     class="w-full border-black border
                                      rounded-lg px-4 py-2 pl-10 text-base focus:ring-2 focus:ring-[#0086da] focus:border-[#0086da]"
                                     placeholder="Search by name or phone number..." />
@@ -327,7 +437,8 @@
                                     <div
                                         class="absolute z-50 mt-1 w-full bg-white shadow-xl max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
                                         @foreach ($patientSearchResults as $result)
-                                            <button type="button" wire:click="selectPatient({{ $result->id }})"
+                                            <button type="button" wire:key="patient-search-result-{{ $result->id }}"
+                                                wire:click="selectPatient({{ $result->id }})"
                                                 class="w-full text-left cursor-pointer select-none relative py-3 pl-3 pr-9 hover:bg-blue-50 transition text-gray-900 group border-b border-gray-100 last:border-0">
                                                 <div class="flex justify-between items-center">
                                                     <span class="font-semibold block truncate">
@@ -437,8 +548,10 @@
                             {{-- === VIEWING MODE (Flow Logic) === --}}
                             @if (!in_array($appointmentStatus, ['Cancelled', 'Completed']))
                                 <button type="button" wire:click="updateStatus('Cancelled')"
+                                    wire:loading.attr="disabled"
+                                    wire:target="updateStatus"
                                     wire:confirm="Are you sure you want to cancel this appointment?"
-                                    class="px-5 py-2.5 rounded-lg text-red-600 font-medium hover:bg-red-50 border border-transparent hover:border-red-100 mr-auto transition">
+                                    class="{{ $btnLg }} {{ $btnDangerSoft }} mr-auto">
                                     Cancel Appointment
                                 </button>
                             @endif
@@ -446,71 +559,65 @@
                             @if ($appointmentStatus === 'Pending')
                                 @if (auth()->user()->role !== 3)
                                     <button type="button" wire:click="updateStatus('Scheduled')"
+                                        wire:loading.attr="disabled"
+                                        wire:target="updateStatus"
                                         wire:confirm="Approve this appointment request?"
-                                        class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition">
+                                        class="{{ $btnLg }} {{ $btnPrimary }}">
                                         Approve
                                     </button>
                                     <button type="button" wire:click="updateStatus('Cancelled')"
+                                        wire:loading.attr="disabled"
+                                        wire:target="updateStatus"
                                         wire:confirm="Reject this appointment request?"
-                                        class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold shadow-md hover:shadow-lg transition">
+                                        class="{{ $btnLg }} {{ $btnOutlinePrimary }}">
                                         Reject
                                     </button>
                                 @endif
                             @elseif($appointmentStatus === 'Scheduled')
                                 <button type="button" wire:click="processPatient"
-                                    class="px-6 py-2.5 rounded-lg bg-white border-2 border-blue-600 text-blue-700 font-bold hover:bg-blue-50 transition">
+                                    wire:loading.attr="disabled"
+                                    wire:target="processPatient"
+                                    class="{{ $btnLg }} {{ $btnOutlinePrimary }}">
                                     Update Patient Info
                                 </button>
                                 <button type="button" wire:click="updateStatus('Waiting')"
+                                    wire:loading.attr="disabled"
+                                    wire:target="updateStatus"
                                     wire:confirm="Confirm patient is ready?"
-                                    class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                                        </path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
+                                    class="{{ $btnLg }} {{ $btnPrimary }}">
                                     Mark Ready
                                 </button>
                             @elseif($appointmentStatus === 'Waiting')
                                 <button type="button" wire:click="processPatient"
-                                    class="px-6 py-2.5 rounded-lg bg-white border-2 border-gray-300 text-gray-600 font-bold hover:bg-gray-50 transition">
+                                    wire:loading.attr="disabled"
+                                    wire:target="processPatient"
+                                    class="{{ $btnLg }} {{ $btnOutlinePrimary }}">
                                     View Patient Info
                                 </button>
 
                                 @if (auth()->user()->role === 1)
                                     <button type="button" wire:click="admitPatient"
+                                        wire:loading.attr="disabled"
+                                        wire:target="admitPatient"
                                         wire:confirm="Admit this patient to the chair now?"
-                                        class="px-6 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                        </svg>
+                                        class="{{ $btnLg }} {{ $btnPrimary }}">
                                         ADMIT PATIENT
                                     </button>
                                 @endif
                             @elseif($appointmentStatus === 'Ongoing')
                                 @if (auth()->user()->role === 1)
                                     <button type="button" wire:click="openPatientChart"
-                                        class="px-6 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                            </path>
-                                        </svg>
+                                        wire:loading.attr="disabled"
+                                        wire:target="openPatientChart"
+                                        class="{{ $btnLg }} {{ $btnOutlinePrimary }}">
                                         View Dental Chart
                                     </button>
                                 @endif
                                 <button type="button" wire:click="updateStatus('Completed')"
+                                    wire:loading.attr="disabled"
+                                    wire:target="updateStatus"
                                     wire:confirm="Mark this appointment as completed?"
-                                    class="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4L19 7"></path>
-                                    </svg>
+                                    class="{{ $btnLg }} {{ $btnPrimary }}">
                                     Finish & Complete
                                 </button>
                             @elseif($appointmentStatus === 'Completed')
@@ -526,22 +633,36 @@
                             @endif
                         @else
                             {{-- === BOOKING MODE === --}}
-                            <button type="button" wire:click="closeAppointmentModal"
-                                class="px-5 py-3 rounded bg-gray-200 hover:bg-gray-300 font-medium">Cancel</button>
-                            <button type="submit"
+                            <button type="button" @click="modalOpen = false"
+                                class="{{ $btnLg }} {{ $btnOutlinePrimary }}">Cancel</button>
+                            <button type="submit" wire:loading.attr="disabled" wire:target="saveAppointment"
                                 onclick="return confirm('Save this appointment and patient details?')"
-                                class="px-6 py-3 rounded bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition">
+                                class="{{ $btnLg }} {{ $btnPrimary }}">
                                 Save Appointment
                             </button>
                         @endif
                     </div>
-                </form>
+                    </form>
+                @else
+                    <div class="min-h-[300px] flex items-center justify-center bg-gray-100 text-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
+                            <div class="text-sm font-semibold text-gray-700">Loading...</div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
-    @endif
-    <livewire:patient-form-controller.patient-form-modal />
+    <livewire:patient-form-controller.patient-form-modal lazy />
+
+    <div wire:loading.flex
+        wire:target="approveAppointment,rejectAppointment,previousWeek,nextWeek,goToDate,goToToday"
+        class="fixed inset-0 z-[70] items-center justify-center bg-white/70 backdrop-blur-sm text-center">
+        <div class="flex flex-col items-center gap-3">
+            <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
+            <div class="text-sm font-semibold text-gray-700">Loading...</div>
+        </div>
+    </div>
 
     @include('components.flash-toast')
 </div>
-
-
