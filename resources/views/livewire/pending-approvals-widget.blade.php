@@ -17,8 +17,15 @@
                 <div class="flex items-center gap-4 flex-1 min-w-0 cursor-pointer"
                     wire:click="viewApproval({{ $pending->id }})" title="Click to view details">
 
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($pending->first_name . ' ' . $pending->last_name) }}&background=f3f4f6&color=374151"
-                        alt="Avatar" class="w-12 h-12 rounded-lg object-cover border border-gray-200 shrink-0">
+                    <div class="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 bg-slate-100 shrink-0 flex items-center justify-center text-sm font-bold text-slate-600">
+                        @if (!empty($pending->profile_picture))
+                            <img src="{{ asset('storage/' . $pending->profile_picture) . '?v=' . urlencode((string) strtotime((string) data_get($pending, 'profile_picture_updated_at'))) }}"
+                                alt="{{ $pending->first_name }} {{ $pending->last_name }} profile picture"
+                                class="h-full w-full object-cover">
+                        @else
+                            {{ strtoupper(substr($pending->first_name ?? 'P', 0, 1) . substr($pending->last_name ?? '', 0, 1)) }}
+                        @endif
+                    </div>
 
                     <div class="min-w-0">
                         <h4 class="font-semibold text-gray-900 text-base truncate">{{ $pending->first_name }}

@@ -78,12 +78,14 @@
             <a href="{{ route('profile.index') }}"
             class="{{ request()->routeIs('profile.index') ? 'bg-gray-100' : '' }} 
                     flex items-center gap-2 px-2 py-1 hover:bg-gray-100 rounded-lg transition-all duration-300 group">
-                <div class="flex-shrink-0 text-gray-400 group-hover:text-[#0086DA] transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-icon">
-                        <circle cx="12" cy="12" r="10"/>
-                        <circle cx="12" cy="10" r="3"/>
-                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
-                    </svg>
+                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-sm font-bold text-slate-600 ring-1 ring-slate-200 transition-colors group-hover:ring-[#0086DA]/30">
+                    @if (!empty(auth()->user()->profile_picture))
+                        <img src="{{ asset('storage/' . auth()->user()->profile_picture) . '?v=' . urlencode((string) strtotime((string) auth()->user()->updated_at)) }}"
+                            alt="{{ auth()->user()->username }} profile picture"
+                            class="h-full w-full object-cover">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->username ?? 'U', 0, 1)) }}
+                    @endif
                 </div>
                 <div class="hidden md:flex flex-col items-start">
                     <span class="text-sm font-medium text-gray-700 group-hover:text-[#0086DA] leading-tight">
@@ -371,6 +373,4 @@
     @livewireScripts
 </body>
 </html>
-
-
 

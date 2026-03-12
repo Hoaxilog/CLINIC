@@ -48,8 +48,13 @@
                     
                     <div class="p-6">
                         <div class="flex items-center gap-4 mb-5">
-                            <div class="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold bg-green-500 shadow-sm">
-                                {{ strtoupper(substr($user->username, 0, 1)) }}
+                            <div class="flex-shrink-0 w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-white text-xl font-bold bg-green-500 shadow-sm">
+                                @if (!empty($user->profile_picture))
+                                    <img src="{{ asset('storage/' . $user->profile_picture) . '?v=' . urlencode((string) strtotime((string) $user->updated_at)) }}"
+                                        alt="{{ $user->username }} profile picture" class="h-full w-full object-cover">
+                                @else
+                                    {{ strtoupper(substr($user->username, 0, 1)) }}
+                                @endif
                             </div>
                             <div class="min-w-0">
                                 <h3 class="text-lg font-bold text-gray-900 truncate">{{ $user->username }}</h3>
@@ -114,8 +119,13 @@
                     
                     <div class="p-6">
                         <div class="flex items-center gap-4 mb-5">
-                            <div class="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold bg-blue-500 shadow-sm">
-                                {{ strtoupper(substr($user->username, 0, 1)) }}
+                            <div class="flex-shrink-0 w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-white text-xl font-bold bg-blue-500 shadow-sm">
+                                @if (!empty($user->profile_picture))
+                                    <img src="{{ asset('storage/' . $user->profile_picture) . '?v=' . urlencode((string) strtotime((string) $user->updated_at)) }}"
+                                        alt="{{ $user->username }} profile picture" class="h-full w-full object-cover">
+                                @else
+                                    {{ strtoupper(substr($user->username, 0, 1)) }}
+                                @endif
                             </div>
                             <div class="min-w-0">
                                 <h3 class="text-lg font-bold text-gray-900 truncate">{{ $user->username }}</h3>

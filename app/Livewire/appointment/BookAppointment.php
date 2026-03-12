@@ -20,6 +20,7 @@ class BookAppointment extends Component
     public $first_name, $last_name, $age, $contact_number, $email, $service_id;
     public $selectedDate, $selectedSlot;
     public $recaptchaToken;
+    public $appointment_terms_agreed = false;
     protected $usesPatientUserId = null;
     protected $appointmentStatuses = null;
     
@@ -125,6 +126,7 @@ class BookAppointment extends Component
             'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
             'selectedSlot' => 'required',
             'contact_number' => 'required',
+            'appointment_terms_agreed' => 'accepted',
         ]);
 
         if (Auth::check() && empty(Auth::user()->email_verified_at)) {

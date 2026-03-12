@@ -86,6 +86,13 @@ class PatientRecords extends Component
 
         $this->selectedPatient = $selectedPatient ?: DB::table('patients')->where('id', $patientId)->first();
 
+        if ($this->selectedPatient) {
+            $linkedUsers = $this->resolveLinkedUsersForPatients(collect([$this->selectedPatient]));
+            $linkedUser = $linkedUsers[$this->selectedPatient->id] ?? null;
+            $this->selectedPatient->profile_picture = data_get($linkedUser, 'profile_picture');
+            $this->selectedPatient->profile_picture_updated_at = data_get($linkedUser, 'updated_at');
+        }
+
         $this->lastVisit = DB::table('appointments')
                             ->where('patient_id', $patientId)
                             ->where('status', 'Completed')
@@ -451,6 +458,16 @@ class PatientRecords extends Component
             })
         );
 
+        $linkedUsers = $this->resolveLinkedUsersForPatients($patients->getCollection());
+        $patients->setCollection(
+            $patients->getCollection()->map(function ($patient) use ($linkedUsers) {
+                $linkedUser = $linkedUsers[$patient->id] ?? null;
+                $patient->profile_picture = data_get($linkedUser, 'profile_picture');
+                $patient->profile_picture_updated_at = data_get($linkedUser, 'updated_at');
+                return $patient;
+            })
+        );
+
         return view('livewire.patient-records', compact('patients'));
     }
 
@@ -467,5 +484,66 @@ class PatientRecords extends Component
         }
 
         return $this->usesPatientUserId;
+    }
+
+    protected function resolveLinkedUsersForPatients($patients): array
+    {
+        $patients = collect($patients)->filter();
+
+        if ($patients->isEmpty()) {
+            return [];
+        }
+
+        $userIds = $this->patientsUsesUserId()
+            ? $patients->pluck('user_id')->filter()->unique()->values()
+            : collect();
+
+        $emails = $patients->pluck('email_address')
+            ->filter()
+            ->map(fn ($email) => Str::lower(trim($email)))
+            ->unique()
+            ->values();
+
+        if ($userIds->isEmpty() && $emails->isEmpty()) {
+            return [];
+        }
+
+        $users = DB::table('users')
+            ->where(function ($query) use ($userIds, $emails) {
+                if ($userIds->isNotEmpty()) {
+                    $query->whereIn('id', $userIds->all());
+                }
+
+                if ($emails->isNotEmpty()) {
+                    $query->orWhereIn(DB::raw('LOWER(email)'), $emails->all())
+                        ->orWhereIn(DB::raw('LOWER(username)'), $emails->all());
+                }
+            })
+            ->get();
+
+        $usersById = $users->keyBy('id');
+        $usersByEmail = $users->filter(fn ($user) => !empty($user->email))
+            ->keyBy(fn ($user) => Str::lower(trim($user->email)));
+        $usersByUsername = $users->filter(fn ($user) => !empty($user->username))
+            ->keyBy(fn ($user) => Str::lower(trim($user->username)));
+
+        $resolved = [];
+
+        foreach ($patients as $patient) {
+            $linkedUser = null;
+
+            if ($this->patientsUsesUserId() && !empty($patient->user_id)) {
+                $linkedUser = $usersById->get($patient->user_id);
+            }
+
+            if (!$linkedUser && !empty($patient->email_address)) {
+                $emailKey = Str::lower(trim($patient->email_address));
+                $linkedUser = $usersByEmail->get($emailKey) ?? $usersByUsername->get($emailKey);
+            }
+
+            $resolved[$patient->id] = $linkedUser;
+        }
+
+        return $resolved;
     }
 }

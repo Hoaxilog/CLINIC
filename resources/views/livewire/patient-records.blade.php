@@ -142,8 +142,14 @@
                         <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="h-16 w-16 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
-                                    {{ $patientInitials }}
+                                    class="h-16 w-16 overflow-hidden rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
+                                    @if (!empty($selectedPatient->profile_picture))
+                                        <img src="{{ asset('storage/' . $selectedPatient->profile_picture) . '?v=' . urlencode((string) strtotime((string) data_get($selectedPatient, 'profile_picture_updated_at'))) }}"
+                                            alt="{{ $patientFullName ?: 'Patient' }} profile picture"
+                                            class="h-full w-full object-cover">
+                                    @else
+                                        {{ $patientInitials }}
+                                    @endif
                                 </div>
                                 <div>
                                     <span
@@ -505,12 +511,11 @@
                                                         <div x-show="open" @click.away="open = false"
                                                             class="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20"
                                                             style="display: none;">
-                                                            <button type="button"
-                                                                class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-                                                                wire:click="openProfile({{ $patient->id }})"
+                                                            <a href="{{ route('patients.show', $patient->id) }}"
+                                                                class="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
                                                                 onclick="event.stopPropagation();">
                                                                 View Profile
-                                                            </button>
+                                                            </a>
                                                             <button type="button"
                                                                 class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
                                                                 wire:click="$dispatch('editPatient', { id: {{ $patient->id }}, startStep: 1 })"
@@ -597,8 +602,14 @@
 
                                 <div class="mt-4 flex flex-col items-center text-center">
                                     <div
-                                        class="h-14 w-14 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-lg font-bold">
-                                        {{ $patientInitials }}
+                                        class="h-14 w-14 overflow-hidden rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-lg font-bold">
+                                        @if (!empty($patient->profile_picture))
+                                            <img src="{{ asset('storage/' . $patient->profile_picture) . '?v=' . urlencode((string) strtotime((string) data_get($patient, 'profile_picture_updated_at'))) }}"
+                                                alt="{{ $patientName ?: 'Patient' }} profile picture"
+                                                class="h-full w-full object-cover">
+                                        @else
+                                            {{ $patientInitials }}
+                                        @endif
                                     </div>
                                     <div class="mt-3 text-xs font-semibold text-gray-500">#{{ $patientCode }}</div>
                                     <div class="text-lg font-bold text-gray-900">
@@ -628,10 +639,10 @@
                                         class="flex-1 rounded-lg bg-[#0f172a] px-3 py-2 text-center text-xs font-semibold text-white hover:bg-black">
                                         Add Appointment
                                     </a>
-                                    <button type="button" wire:click="openProfile({{ $patient->id }})"
-                                        class="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
-                                        View Record
-                                    </button>
+                                    <a href="{{ route('patients.show', $patient->id) }}"
+                                        class="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-center text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                        View Profile
+                                    </a>
                                 </div>
                             </div>
 

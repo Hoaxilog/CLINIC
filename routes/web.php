@@ -82,8 +82,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/picture', [ProfileController::class, 'uploadProfilePicture'])->name('profile.picture.upload');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::post('/profile/password/reset-link', [ProfileController::class, 'sendPasswordResetLink'])->name('profile.password.reset-link');
+    Route::post('/profile/delete', [ProfileController::class, 'deleteAccount'])->name('profile.delete');
 
     Route::get('/book', BookAppointment::class)->name('book');
 });
@@ -97,6 +99,7 @@ Route::middleware(['auth', 'staffOrDentist'])->group(function () {
     })->name('queue');
     Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
     Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
+    Route::get('/patient-records/{id}', [PatientsController::class, 'show'])->name('patients.show');
 }); 
 
 // Patient-only routes

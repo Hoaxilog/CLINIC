@@ -9,12 +9,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Throwable;
 
 class ProfileController extends Controller
 {
+    protected ?array $userTableColumns = null;
+
     public function index()
     {
         $user = DB::table('users')->where('id', Auth::id())->first();
@@ -33,21 +37,82 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $userId = Auth::id();
+        $user = DB::table('users')->where('id', $userId)->first();
 
-        // Validate strictly against your existing columns
-        $validated = $request->validate([
+        if (!$user) {
+            return back()->with('failed', 'Unable to find your account.');
+        }
+
+        $rules = [
             'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($userId)],
-            'contact'  => ['required', 'string', 'max:20'],
+            'contact'  => ['nullable', 'string', 'max:20'],
+        ];
+
+        if ((int) $user->role !== 3) {
+            $rules['position'] = ['nullable', 'string', 'max:100'];
+        }
+
+        $validated = $request->validate($rules);
+
+        $updates = [
+            'updated_at' => now(),
+        ];
+
+        if ($this->userHasColumn('username')) {
+            $updates['username'] = $validated['username'];
+        }
+
+        if ($this->userHasColumn('contact')) {
+            $updates['contact'] = $validated['contact'] ?? data_get($user, 'contact');
+        }
+
+        if ((int) $user->role !== 3 && $this->userHasColumn('position')) {
+            $updates['position'] = $validated['position'] ?? data_get($user, 'position');
+        }
+
+        DB::table('users')->where('id', $userId)->update($updates);
+
+        return back()->with('success', 'Profile updated successfully.');
+    }
+
+    public function uploadProfilePicture(Request $request)
+    {
+        $userId = Auth::id();
+
+        // Validate only the profile picture - 10MB limit
+        $validated = $request->validate([
+            'profile_picture' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'], // 10MB max
+        ], [
+            'profile_picture.required' => 'Please select an image to upload.',
+            'profile_picture.image' => 'The file must be an image.',
+            'profile_picture.mimes' => 'Only JPEG, PNG, GIF, and WebP images are allowed.',
+            'profile_picture.max' => 'Image size must not exceed 10MB.',
         ]);
 
-        // Update strictly your existing columns
+        $user = DB::table('users')->find($userId);
+
+        if (!$this->userHasColumn('profile_picture')) {
+            return back()->with('failed', 'The profile_picture column is missing from your users table. Apply the SQL patch first.');
+        }
+        
+        // Delete old picture if exists
+        $existingPicture = data_get($user, 'profile_picture');
+        if ($user && $existingPicture && file_exists(storage_path('app/public/' . $existingPicture))) {
+            Storage::disk('public')->delete($existingPicture);
+        }
+
+        // Store new picture
+        $file = $request->file('profile_picture');
+        $filename = 'profile_' . $userId . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('profiles', $filename, 'public');
+
+        // Update user record
         DB::table('users')->where('id', $userId)->update([
-            'username' => $validated['username'],
-            'contact'  => $validated['contact'],
+            'profile_picture' => $path,
             'updated_at' => now(),
         ]);
 
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', 'Profile picture updated successfully.');
     }
 
     public function updatePassword(Request $request)
@@ -142,5 +207,54 @@ class ProfileController extends Controller
         }
 
         return $patient;
+    }
+
+    private function userHasColumn(string $column): bool
+    {
+        if ($this->userTableColumns === null) {
+            try {
+                $this->userTableColumns = Schema::getColumnListing('users');
+            } catch (Throwable $e) {
+                $this->userTableColumns = [];
+            }
+        }
+
+        return in_array($column, $this->userTableColumns, true);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Only allow patients (role 3) to delete their own account
+        if ((int)$user->role !== 3) {
+            return back()->with('failed', 'You do not have permission to delete this account.');
+        }
+
+        try {
+            DB::transaction(function () use ($user) {
+                $patient = $this->resolvePatientForUser($user);
+
+                if ($patient) {
+                    DB::table('patients')->where('id', $patient->id)->delete();
+                }
+
+                if ($user->profile_picture && file_exists(storage_path('app/public/' . $user->profile_picture))) {
+                    Storage::disk('public')->delete($user->profile_picture);
+                }
+
+                DB::table('users')->where('id', $user->id)->delete();
+            });
+            
+            // Logout user
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            return redirect('/')->with('success', 'Your account has been permanently deleted.');
+        } catch (Throwable $e) {
+            Log::error('Account deletion error: ' . $e->getMessage());
+            return back()->with('failed', 'An error occurred while deleting your account. Please try again.');
+        }
     }
 }

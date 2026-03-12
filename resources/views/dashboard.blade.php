@@ -136,12 +136,23 @@
                             }
                         @endphp
                         <div
-                            class="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-blue-100 transition-colors">
-                            <div>
-                                <div class="text-sm font-bold text-gray-900">{{ $appt->last_name }},
-                                    {{ $appt->first_name }}
+                            class="flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-100 hover:border-blue-100 transition-colors">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="h-12 w-12 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 flex shrink-0 items-center justify-center text-sm font-bold text-slate-600">
+                                    @if (!empty($appt->profile_picture))
+                                        <img src="{{ asset('storage/' . $appt->profile_picture) . '?v=' . urlencode((string) strtotime((string) data_get($appt, 'profile_picture_updated_at'))) }}"
+                                            alt="{{ $appt->first_name }} {{ $appt->last_name }} profile picture"
+                                            class="h-full w-full object-cover">
+                                    @else
+                                        {{ strtoupper(substr($appt->first_name ?? 'P', 0, 1) . substr($appt->last_name ?? '', 0, 1)) }}
+                                    @endif
                                 </div>
-                                <div class="text-xs text-gray-500 mt-0.5">{{ $appt->service_name }}</div>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-bold text-gray-900 truncate">{{ $appt->last_name }},
+                                        {{ $appt->first_name }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-0.5 truncate">{{ $appt->service_name }}</div>
+                                </div>
                             </div>
                             <div class="text-right">
                                 <div class="text-sm font-bold text-gray-900">
@@ -642,6 +653,4 @@
         });
     </script>
 @endpush
-
-
 

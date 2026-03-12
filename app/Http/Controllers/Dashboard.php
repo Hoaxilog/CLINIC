@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Throwable;
 
 class Dashboard extends Controller
 {
+    protected ?bool $patientsUsesUserId = null;
+
     protected function buildPatientStats(string $patientStatsRange): array
     {
         $today = Carbon::today();
@@ -226,22 +231,33 @@ class Dashboard extends Controller
             $statusCounts[] = $statusCountsMap[$label] ?? 0;
         }
 
-        $nextAppointments = DB::table('appointments')
+        $nextAppointmentsColumns = [
+            'appointments.appointment_date',
+            'appointments.status',
+            'appointments.patient_id',
+            'patients.first_name',
+            'patients.last_name',
+            'patients.email_address',
+            'services.service_name',
+        ];
+
+        if ($this->patientsUsesUserId()) {
+            $nextAppointmentsColumns[] = 'patients.user_id';
+        } else {
+            $nextAppointmentsColumns[] = DB::raw('NULL as user_id');
+        }
+
+        $nextAppointmentsQuery = DB::table('appointments')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->whereDate('appointments.appointment_date', $today)
             ->where('appointments.appointment_date', '>=', $nextAppointmentCutoff)
             ->whereNotIn('appointments.status', ['Cancelled', 'Completed'])
             ->orderBy('appointments.appointment_date', 'asc')
-            ->select(
-                'appointments.appointment_date',
-                'appointments.status',
-                'patients.first_name',
-                'patients.last_name',
-                'services.service_name'
-            )
-            ->limit(3)
-            ->get();
+            ->select($nextAppointmentsColumns);
+
+        $nextAppointments = $nextAppointmentsQuery->limit(3)->get();
+        $nextAppointments = $this->attachPatientProfilePictures($nextAppointments);
 
         $pendingApprovalsCount = DB::table('appointments')->where('status', 'Pending')->count();
         $totalPatients = DB::table('patients')->count();
@@ -303,4 +319,89 @@ class Dashboard extends Controller
         ]);
     }
 
+    protected function attachPatientProfilePictures($appointments)
+    {
+        $appointments = collect($appointments);
+
+        if ($appointments->isEmpty()) {
+            return $appointments;
+        }
+
+        $usesPatientUserId = false;
+
+        try {
+            $usesPatientUserId = Schema::hasColumn('patients', 'user_id');
+        } catch (Throwable $e) {
+            $usesPatientUserId = false;
+        }
+
+        $userIds = $usesPatientUserId
+            ? $appointments->pluck('user_id')->filter()->unique()->values()
+            : collect();
+
+        $emails = $appointments->pluck('email_address')
+            ->filter()
+            ->map(fn ($email) => Str::lower(trim($email)))
+            ->unique()
+            ->values();
+
+        if ($userIds->isEmpty() && $emails->isEmpty()) {
+            return $appointments->map(function ($appointment) {
+                $appointment->profile_picture = null;
+                return $appointment;
+            });
+        }
+
+        $users = DB::table('users')
+            ->where(function ($query) use ($userIds, $emails) {
+                if ($userIds->isNotEmpty()) {
+                    $query->whereIn('id', $userIds->all());
+                }
+
+                if ($emails->isNotEmpty()) {
+                    $query->orWhereIn(DB::raw('LOWER(email)'), $emails->all())
+                        ->orWhereIn(DB::raw('LOWER(username)'), $emails->all());
+                }
+            })
+            ->get();
+
+        $usersById = $users->keyBy('id');
+        $usersByEmail = $users->filter(fn ($user) => !empty($user->email))
+            ->keyBy(fn ($user) => Str::lower(trim($user->email)));
+        $usersByUsername = $users->filter(fn ($user) => !empty($user->username))
+            ->keyBy(fn ($user) => Str::lower(trim($user->username)));
+
+        return $appointments->map(function ($appointment) use ($usesPatientUserId, $usersById, $usersByEmail, $usersByUsername) {
+            $linkedUser = null;
+
+            if ($usesPatientUserId && !empty($appointment->user_id)) {
+                $linkedUser = $usersById->get($appointment->user_id);
+            }
+
+            if (!$linkedUser && !empty($appointment->email_address)) {
+                $emailKey = Str::lower(trim($appointment->email_address));
+                $linkedUser = $usersByEmail->get($emailKey) ?? $usersByUsername->get($emailKey);
+            }
+
+            $appointment->profile_picture = data_get($linkedUser, 'profile_picture');
+            $appointment->profile_picture_updated_at = data_get($linkedUser, 'updated_at');
+
+            return $appointment;
+        });
+    }
+
+    protected function patientsUsesUserId(): bool
+    {
+        if ($this->patientsUsesUserId !== null) {
+            return $this->patientsUsesUserId;
+        }
+
+        try {
+            $this->patientsUsesUserId = Schema::hasColumn('patients', 'user_id');
+        } catch (Throwable $e) {
+            $this->patientsUsesUserId = false;
+        }
+
+        return $this->patientsUsesUserId;
+    }
 }
