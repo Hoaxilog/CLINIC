@@ -22,7 +22,7 @@ class LoginController extends Controller
     public function index()
     {
         if (Auth::check()) {
-            $role = Auth::user()?->role;
+            $role = (int) (Auth::user()?->role ?? 0);
             if ($role === 3) {
                 return redirect()->route('patient.dashboard');
             }
@@ -291,7 +291,7 @@ class LoginController extends Controller
             return $isUnverified ? redirect('/dashboard') : redirect()->intended('/appointment');
         }
 
-        if ($role === 3) {
+        if ((int) $role === 3) {
             return redirect()->intended('/patient/dashboard');
         }
 

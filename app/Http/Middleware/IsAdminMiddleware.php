@@ -18,7 +18,7 @@ class IsAdminMiddleware
         }
 
         $userId = Auth::id();
-        $role = DB::table('users')->where('id', $userId)->value('role');
+        $role = (int) DB::table('users')->where('id', $userId)->value('role');
 
         $isAdmin = $role === 1;
 

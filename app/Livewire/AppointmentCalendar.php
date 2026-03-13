@@ -10,7 +10,6 @@ use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Carbon\CarbonInterval; // <-- Add this at the top
 
 class AppointmentCalendar extends Component
 {
@@ -22,10 +21,11 @@ class AppointmentCalendar extends Component
     public $viewType = 'week';
     public $weekDates = [];
     public $timeSlots = [];
-    /** @var \Illuminate\Support\Collection */
+    /** @var array<int, array<string, mixed>>|\Illuminate\Support\Collection<int, object> */
     public $appointments = [];
-    /** @var \Illuminate\Support\Collection */
-    public $occupiedAppointments = [];
+    /** @var \Illuminate\Support\Collection<int, object> */
+    protected $occupiedAppointments;
+    public $occupiedSlotCounts = [];
     public $showAppointmentModal = false;
     /** @var \Illuminate\Support\Collection */
     public $servicesList = [];
@@ -67,6 +67,8 @@ class AppointmentCalendar extends Component
 
     public function mount()
     {
+        $this->occupiedAppointments = collect();
+
         $this->currentDate = Carbon::now();
         $this->selectedDate = $this->currentDate->format('Y-m-d');
 
@@ -112,66 +114,101 @@ class AppointmentCalendar extends Component
 
     public function loadAppointments()
     {
+        $this->refreshAppointments();
+        $this->refreshSlotCounts();
+    }
+
+    public function refreshAppointments()
+    {
+        if (count($this->weekDates) < 7) {
+            $this->appointments = collect();
+            return;
+        }
+
         $startOfWeek = $this->weekDates[0]->startOfDay();
         $endOfWeek = $this->weekDates[6]->endOfDay();
 
-        $baseQuery = DB::table('appointments')
+        $calendarQuery = DB::table('appointments')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->whereBetween('appointment_date', [$startOfWeek, $endOfWeek])
             ->select(
-                'appointments.*', 
+                'appointments.id',
+                'appointments.patient_id',
+                'appointments.service_id',
+                'appointments.appointment_date',
+                'appointments.status',
                 'patients.first_name', 
                 'patients.last_name', 
                 'patients.middle_name', 
+                'patients.mobile_number',
+                'patients.birth_date',
                 'services.service_name', 
                 'services.duration'
             );
 
         // For display: hide Pending, show everything else except Cancelled
-        $this->appointments = (clone $baseQuery)
+        $this->appointments = (clone $calendarQuery)
             ->where('appointments.status', '!=', 'Cancelled')
             ->where('appointments.status', '!=', 'Pending')
             ->get()
-            // THIS IS WTF
-            ->map(function($appointment) {
-                
-                sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);
-                $appointment->duration_in_minutes = ($h * 60) + $m;
-                
-                $carbonDate = Carbon::parse($appointment->appointment_date);
-                $appointment->start_date = $carbonDate->toDateString();
-                $appointment->start_time = $carbonDate->format('H:i');
-                
-                $appointment->end_time = $carbonDate->copy()
-                                 ->addMinutes($appointment->duration_in_minutes)
-                                 ->format('H:i');
-                return $appointment;
-            });
+            ->map(fn($appointment) => $this->hydrateAppointmentTiming($appointment))
+            ->values();
+    }
+
+    public function refreshSlotCounts()
+    {
+        if (count($this->weekDates) < 7) {
+            $this->occupiedAppointments = collect();
+            $this->occupiedSlotCounts = [];
+            return;
+        }
+
+        $startOfWeek = $this->weekDates[0]->startOfDay();
+        $endOfWeek = $this->weekDates[6]->endOfDay();
 
         // For occupancy: only approved appointments consume slot capacity.
-        $this->occupiedAppointments = (clone $baseQuery)
+        $this->occupiedAppointments = DB::table('appointments')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->whereBetween('appointment_date', [$startOfWeek, $endOfWeek])
             ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES)
+            ->select(
+                'appointments.appointment_date',
+                'services.duration'
+            )
             ->get()
-            ->map(function($appointment) {
-                sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);
-                $appointment->duration_in_minutes = ($h * 60) + $m;
+            ->map(fn($appointment) => $this->hydrateAppointmentTiming($appointment));
 
-                $carbonDate = Carbon::parse($appointment->appointment_date);
-                $appointment->start_date = $carbonDate->toDateString();
-                $appointment->start_time = $carbonDate->format('H:i');
+        $this->rebuildOccupiedSlotCounts();
+    }
 
-                $appointment->end_time = $carbonDate->copy()
-                                 ->addMinutes($appointment->duration_in_minutes)
-                                 ->format('H:i');
-                return $appointment;
-            });
+    protected function hydrateAppointmentTiming(object $appointment): object
+    {
+        $appointment->duration_in_minutes = $this->durationToMinutes($appointment->duration ?? null);
+        $start = Carbon::parse($appointment->appointment_date);
+        $appointment->start_date = $start->toDateString();
+        $appointment->start_time = $start->format('H:i');
+        $appointment->end_time = $start->copy()
+            ->addMinutes($appointment->duration_in_minutes)
+            ->format('H:i');
+
+        return $appointment;
+    }
+
+    protected function durationToMinutes(?string $duration): int
+    {
+        if (!$duration) {
+            return 0;
+        }
+
+        sscanf($duration, '%d:%d:%d', $hours, $minutes, $seconds);
+        return ((int) $hours * 60) + (int) $minutes;
     }
     
 
     public function getAppointmentsForDay($date)
     {
-        return $this->appointments->where('start_date', $date->toDateString());
+        return collect($this->appointments)->where('start_date', $date->toDateString());
     }
 
     public function previousWeek()
@@ -227,10 +264,14 @@ class AppointmentCalendar extends Component
         }
     }
 
-    public function closeAppointmentModal()
+    public function closeAppointmentModal(bool $resetForm = false)
     {
         $this->showAppointmentModal = false;
-        $this->resetForm();
+        $this->dispatch('appointment-modal-closed');
+
+        if ($resetForm) {
+            $this->resetForm();
+        }
     }
 
     public function updatedSelectedService($serviceId)
@@ -272,8 +313,7 @@ class AppointmentCalendar extends Component
                 return;
             }
             
-            sscanf($service->duration, '%d:%d:%d', $h, $m, $s);
-            $durationInMinutes = ($h * 60) + $m;
+            $durationInMinutes = $this->durationToMinutes($service->duration);
 
             $proposedStart = Carbon::parse($this->appointmentDate)->setTimeFromTimeString($this->selectedTime);
             $proposedEnd = $proposedStart->copy()->addMinutes($durationInMinutes);
@@ -405,7 +445,7 @@ class AppointmentCalendar extends Component
             session()->flash('success', 'Appointment booked successfully!'); 
 
             $this->loadAppointments();
-            $this->closeAppointmentModal();
+            $this->closeAppointmentModal(true);
 
         } catch (\Throwable $th) {
             // 3. FIX: Show the error instead of hiding it!
@@ -448,53 +488,52 @@ class AppointmentCalendar extends Component
 
     public function isSlotOccupied($date, $time)
     {
-        $slotStart = Carbon::parse($date . ' ' . $time);
-        $slotStartInMinutes = $slotStart->hour * 60 + $slotStart->minute;
-        $slotEndInMinutes = $slotStartInMinutes + 30;
-        $overlappingAppointments = 0;
+        $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
+        $key = $date . ' ' . $normalizedTime;
+        return ($this->occupiedSlotCounts[$key] ?? 0) >= self::SLOT_CAPACITY;
+    }
+
+    protected function rebuildOccupiedSlotCounts(): void
+    {
+        $slotCounts = [];
 
         foreach ($this->occupiedAppointments as $appointment) {
-            if (Carbon::parse($appointment->start_date)->isSameDay($slotStart)) {
-                $existingStart = Carbon::parse($appointment->start_date . ' ' . $appointment->start_time);
-                $existingStartInMinutes = $existingStart->hour * 60 + $existingStart->minute;
-                $existingEndInMinutes = $existingStartInMinutes + $appointment->duration_in_minutes;
+            $slotCursor = Carbon::parse($appointment->start_date . ' ' . $appointment->start_time)->seconds(0);
+            $slotEnd = $slotCursor->copy()->addMinutes((int) $appointment->duration_in_minutes);
 
-                $isOverlapping = (
-                    $slotStartInMinutes < $existingEndInMinutes && 
-                    $slotEndInMinutes > $existingStartInMinutes
-                );
-
-                if ($isOverlapping) {
-                    $overlappingAppointments++;
-
-                    if ($overlappingAppointments >= self::SLOT_CAPACITY) {
-                        return true;
-                    }
-                }
+            while ($slotCursor < $slotEnd) {
+                $key = $slotCursor->format('Y-m-d H:i');
+                $slotCounts[$key] = ($slotCounts[$key] ?? 0) + 1;
+                $slotCursor->addMinutes(30);
             }
         }
-        
-        return false;
+
+        $this->occupiedSlotCounts = $slotCounts;
     }
 
     public function viewAppointment($appointmentId)
     {
-        // 1. Fetch the appointment with patient and service details
-        $appointment = DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
-            ->join('services', 'appointments.service_id', '=', 'services.id')
-            ->select(
-                'appointments.*',
-                'patients.first_name',
-                'patients.last_name',
-                'patients.middle_name',
-                'patients.mobile_number',
-                'patients.birth_date', 
-                'services.service_name',
-                'services.duration'
-            )
-            ->where('appointments.id', $appointmentId)
-            ->first();
+        // Fast path: use already loaded weekly data.
+        $appointment = collect($this->appointments)->firstWhere('id', (int) $appointmentId);
+
+        // Fallback path for any appointment not in current in-memory collection.
+        if (!$appointment) {
+            $appointment = DB::table('appointments')
+                ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+                ->join('services', 'appointments.service_id', '=', 'services.id')
+                ->select(
+                    'appointments.*',
+                    'patients.first_name',
+                    'patients.last_name',
+                    'patients.middle_name',
+                    'patients.mobile_number',
+                    'patients.birth_date',
+                    'services.service_name',
+                    'services.duration'
+                )
+                ->where('appointments.id', $appointmentId)
+                ->first();
+        }
 
         if ($appointment) {
             $this->resetForm(); 
@@ -505,7 +544,6 @@ class AppointmentCalendar extends Component
             $this->middleName = $appointment->middle_name;
             $this->contactNumber = $appointment->mobile_number;
             $this->birthDate = $appointment->birth_date;
-            $this->selectedService = $appointment->service_id;
             $this->viewingAppointmentId = $appointment->id;
             $this->appointmentStatus = $appointment->status;   
 
@@ -513,10 +551,10 @@ class AppointmentCalendar extends Component
             $dt = Carbon::parse($appointment->appointment_date);
             $this->appointmentDate = $dt->toDateString();  // NEW: Use this
             $this->selectedTime = $dt->format('H:i:s');
+            $this->selectedService = $appointment->service_id;
 
             // Calculate End Time for display
-            sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);
-            $durationInMinutes = ($h * 60) + $m;
+            $durationInMinutes = $this->durationToMinutes($appointment->duration);
             $this->endTime = $dt->copy()->addMinutes($durationInMinutes)->format('H:i A');
 
             // 4. Set mode to Viewing and open modal
@@ -715,12 +753,17 @@ class AppointmentCalendar extends Component
             return;
         }
 
-        // Search by First Name, Last Name, or Mobile Number
+        // Search by first name, last name, or mobile number.
         $this->patientSearchResults = DB::table('patients')
-            ->select('id', 'first_name', 'last_name', 'middle_name', 'mobile_number', 'birth_date') 
-            ->orwhere('first_name', 'like', '%' . $this->searchQuery . '%')
-            ->orwhere('last_name', 'like', '%' . $this->searchQuery . '%')
-            ->limit(10) // Limit results to keep UI clean
+            ->select('id', 'first_name', 'last_name', 'middle_name', 'mobile_number', 'birth_date')
+            ->where(function ($query) {
+                $query->where('first_name', 'like', '%' . $this->searchQuery . '%')
+                    ->orWhere('last_name', 'like', '%' . $this->searchQuery . '%')
+                    ->orWhere('mobile_number', 'like', '%' . $this->searchQuery . '%');
+            })
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->limit(10)
             ->get();
     }
 
@@ -805,8 +848,7 @@ class AppointmentCalendar extends Component
         // Use Original Time
         $startTime = Carbon::parse($appointment->appointment_date); 
         
-        sscanf($service->duration, '%d:%d:%d', $h, $m, $s);
-        $durationMinutes = ($h * 60) + $m;
+        $durationMinutes = $this->durationToMinutes($service->duration);
         $endTime = $startTime->copy()->addMinutes($durationMinutes);
 
         // Conflict Check
@@ -865,7 +907,7 @@ class AppointmentCalendar extends Component
                 ])
                 ->log('Admitted Appointment');
             
-            $this->loadDashboardData();
+            $this->loadAppointments();
             $this->closeAppointmentModal();
             $this->dispatch('editPatient', id: $appointment->patient_id, startStep: 3);
         }

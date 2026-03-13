@@ -1,4 +1,4 @@
-<div class="relative w-full h-[68vh] bg-white border border-gray-200 rounded-lg flex flex-col lg:flex-row"
+<div class="relative flex h-[68vh] w-full flex-col rounded-2xl border border-slate-200 bg-white lg:flex-row"
     x-data="{ chartLoading: {{ (count($history) > 0 || $isCreating) ? 'true' : 'false' }} }"
     x-on:show-dental-loading.window="chartLoading = true"
     x-on:dental-chart-ready.window="chartLoading = false">
@@ -12,12 +12,12 @@
 
     @if (count($history) > 0 || $isCreating)
 
-        <div class="flex-1 h-full relative flex flex-col min-w-0 bg-gray-50 transition-all duration-300">
+        <div class="relative flex h-full min-w-0 flex-1 flex-col bg-slate-50 transition-all duration-300">
 
             <div
-                class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200 sticky top-0 z-20">
+                class="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
                 <div class="flex items-center gap-4">
-                    <h2 class="text-xl font-bold text-gray-800">Dental Chart</h2>
+                    <h2 class="text-lg font-semibold text-slate-900">Dental Chart</h2>
                     @if (count($history) > 0)
                         <div class="flex items-center gap-2">
                             <select wire:model.live="selectedHistoryId" x-on:change="$dispatch('show-dental-loading')"
@@ -35,7 +35,7 @@
                 <div class="flex items-center gap-3">
                     @if ($isReadOnly && count($history) > 0)
                         <button wire:click="triggerNewChart" x-on:click="$dispatch('show-dental-loading')"
-                            class="flex items-center gap-2 px-3 py-2 bg-[#0086da] text-white text-sm font-medium rounded hover:bg-blue-600 transition shadow-sm"
+                            class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
                             title="Start a fresh chart for today">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -50,12 +50,12 @@
             </div>
 
             <div data-form-scroll
-                class="flex-1 overflow-auto p-4 px-15 sm:px-8 lg:px-6 xl:p-10 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-gray-100 scrollbar-thumb-gray-300">
+                class="flex-1 overflow-auto p-4 sm:px-6 lg:px-6 xl:p-8 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-slate-100 scrollbar-thumb-slate-300">
                 <livewire:PatientFormController.dental-chart-grid :teeth="$teeth" :isReadOnly="$isReadOnly" />
                 <div class="max-w-6xl mx-auto flex flex-col gap-12">
                     <section class="w-full">
-                        <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
-                            <h2 class="text-xl font-bold text-black">Oral Exam</h2>
+                        <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <h2 class="text-base font-semibold text-slate-900">Oral Exam</h2>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-8">
 
@@ -162,8 +162,8 @@
                     </section>
 
                     <section class="w-full">
-                        <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
-                            <h2 class="text-xl font-bold text-black">Comments / Plan</h2>
+                        <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <h2 class="text-base font-semibold text-slate-900">Comments / Plan</h2>
                         </div>
                         <div class="space-y-8 bg-white p-8">
                             <div>
@@ -209,5 +209,4 @@
         </div>
     @endif
 </div>
-
 

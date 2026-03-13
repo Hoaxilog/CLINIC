@@ -35,7 +35,7 @@ class TodaySchedule extends Component
 
     public function mount()
     {
-        $this->loadDashboardData();
+        $this->refreshAllSections();
         $this->servicesList = DB::table('services')->get();
     }
 
@@ -49,61 +49,105 @@ class TodaySchedule extends Component
     public function resumePolling()
     {
         $this->isPatientFormOpen = false;
-        $this->loadDashboardData(); // Refresh data immediately upon closing
+        $this->refreshAllSections();
     }
 
     public function loadDashboardData()
     {
-        $today = Carbon::today();
-        $user = Auth::user(); 
+        $this->refreshAllSections();
+    }
 
-        // 1. LEFT COLUMN: Agenda
+    public function refreshAllSections()
+    {
+        $this->refreshTodaySchedule();
+        $this->refreshWaitingQueue();
+        $this->refreshOngoingAppointments();
+    }
+
+    public function refreshTodaySchedule()
+    {
+        $today = Carbon::today();
         $this->todayAppointments = DB::table('appointments')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
-            ->whereDate('appointment_date', $today)
-            ->whereIn('status', ['Scheduled', 'Completed', 'Cancelled']) 
-            ->orderBy('appointment_date', 'asc')
-            ->select('appointments.*', 'patients.first_name', 'patients.last_name', 'services.service_name', 'services.duration')
-            ->get(); 
+            ->whereDate('appointments.appointment_date', $today)
+            ->whereIn('appointments.status', ['Scheduled', 'Completed', 'Cancelled'])
+            ->orderBy('appointments.appointment_date', 'asc')
+            ->select(
+                'appointments.id',
+                'appointments.patient_id',
+                'appointments.service_id',
+                'appointments.appointment_date',
+                'appointments.status',
+                'patients.first_name',
+                'patients.last_name',
+                'patients.middle_name',
+                'patients.mobile_number',
+                'patients.birth_date',
+                'services.duration',
+                'services.service_name'
+            )
+            ->get();
+    }
 
-        // 2. MIDDLE COLUMN: Waiting Room
+    public function refreshWaitingQueue()
+    {
+        $today = Carbon::today();
         $this->waitingQueue = DB::table('appointments')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
-            ->whereDate('appointment_date', $today)
-            ->where('status', 'Waiting') 
-            ->orderBy('appointment_date', 'asc')
-            ->orderBy('created_at', 'asc')
+            ->whereDate('appointments.appointment_date', $today)
+            ->where('appointments.status', 'Waiting')
+            ->orderBy('appointments.appointment_date', 'asc')
+            ->orderBy('appointments.created_at', 'asc')
             ->select(
-                'appointments.*',
+                'appointments.id',
+                'appointments.patient_id',
+                'appointments.service_id',
+                'appointments.appointment_date',
+                'appointments.status',
                 'patients.first_name',
                 'patients.last_name',
-                'services.service_name',
+                'patients.middle_name',
+                'patients.mobile_number',
+                'patients.birth_date',
                 'services.duration',
+                'services.service_name',
                 DB::raw("appointments.updated_at as waited_at")
             )
             ->get();
+    }
 
-        // 3. RIGHT COLUMN: Now Serving
+    public function refreshOngoingAppointments()
+    {
+        $today = Carbon::today();
+        $user = Auth::user();
+
         $ongoingQuery = DB::table('appointments')
             ->join('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
-            // [ADDED] Join users table to get dentist name
-            ->leftJoin('users', 'appointments.dentist_id', '=', 'users.id') 
-            ->whereDate('appointment_date', $today)
-            ->where('status', 'Ongoing')
-            ->orderBy('updated_at', 'desc')
+            ->leftJoin('users', 'appointments.dentist_id', '=', 'users.id')
+            ->whereDate('appointments.appointment_date', $today)
+            ->where('appointments.status', 'Ongoing')
+            ->orderBy('appointments.updated_at', 'desc')
             ->select(
-                'appointments.*', 
-                'patients.first_name', 
-                'patients.last_name', 
-                'services.service_name', 
+                'appointments.id',
+                'appointments.patient_id',
+                'appointments.service_id',
+                'appointments.appointment_date',
+                'appointments.status',
+                'appointments.dentist_id',
+                'patients.first_name',
+                'patients.last_name',
+                'patients.middle_name',
+                'patients.mobile_number',
+                'patients.birth_date',
                 'services.duration',
-                'users.username as dentist_name' // [ADDED] Select dentist name
+                'services.service_name',
+                'users.username as dentist_name'
             );
 
-        if ($user->role === 1) { 
+        if ($user->role === 1) {
             $ongoingQuery->where('dentist_id', $user->id);
         }
 
@@ -168,7 +212,8 @@ class TodaySchedule extends Component
 
             session()->flash('success', 'Patient admitted to chair successfully!');
             
-            $this->loadDashboardData();
+            $this->refreshWaitingQueue();
+            $this->refreshOngoingAppointments();
             $this->closeAppointmentModal();
             $this->dispatch('editPatient', id: $appointment->patient_id, startStep: 3);
         }
@@ -249,26 +294,55 @@ class TodaySchedule extends Component
             ])
             ->log('Admitted Appointment');
 
-        $this->loadDashboardData();
+        $this->refreshWaitingQueue();
+        $this->refreshOngoingAppointments();
         $this->viewAppointment($next->id);
     }
 
     public function viewAppointment($appointmentId)
     {
-        $appointment = DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
-            ->join('services', 'appointments.service_id', '=', 'services.id')
-            // [ADDED] Join users to get dentist details
-            ->leftJoin('users', 'appointments.dentist_id', '=', 'users.id') 
-            ->select(
-                'appointments.*',
-                'patients.first_name', 'patients.last_name', 'patients.middle_name',
-                'patients.mobile_number', 'patients.birth_date',
-                'services.service_name', 'services.duration',
-                'users.username as dentist_name' // [ADDED]
-            )
-            ->where('appointments.id', $appointmentId)
-            ->first();
+        // Reset fields first so stale patient data never flashes while switching cards.
+        $this->reset([
+            'firstName',
+            'lastName',
+            'middleName',
+            'contactNumber',
+            'birthDate',
+            'selectedService',
+            'selectedDate',
+            'selectedTime',
+            'endTime',
+            'appointmentStatus',
+            'viewingAppointmentId',
+            'dentistName'
+        ]);
+
+        // Fast path: use already loaded board datasets before hitting the database.
+        $appointment = $this->findLoadedAppointment((int) $appointmentId);
+
+        if (!$appointment) {
+            $appointment = DB::table('appointments')
+                ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+                ->join('services', 'appointments.service_id', '=', 'services.id')
+                ->leftJoin('users', 'appointments.dentist_id', '=', 'users.id')
+                ->select(
+                    'appointments.id',
+                    'appointments.patient_id',
+                    'appointments.service_id',
+                    'appointments.appointment_date',
+                    'appointments.status',
+                    'patients.first_name',
+                    'patients.last_name',
+                    'patients.middle_name',
+                    'patients.mobile_number',
+                    'patients.birth_date',
+                    'services.service_name',
+                    'services.duration',
+                    'users.username as dentist_name'
+                )
+                ->where('appointments.id', $appointmentId)
+                ->first();
+        }
 
         if ($appointment) {
             $this->firstName = $appointment->first_name;
@@ -279,20 +353,40 @@ class TodaySchedule extends Component
             $this->selectedService = $appointment->service_id;
             $this->viewingAppointmentId = $appointment->id;
             $this->appointmentStatus = $appointment->status;
-            
-            // [ADDED] Set the dentist name property
-            $this->dentistName = $appointment->dentist_name; 
+            $this->dentistName = $appointment->dentist_name ?? '';
 
             $dt = Carbon::parse($appointment->appointment_date);
             $this->selectedDate = $dt->toDateString();
             $this->selectedTime = $dt->format('h:i A');
-    
-            sscanf($appointment->duration, '%d:%d:%d', $h, $m, $s);
-            $durationInMinutes = ($h * 60) + $m;
+            $durationInMinutes = $this->durationToMinutes($appointment->duration ?? null);
             $this->endTime = $dt->copy()->addMinutes($durationInMinutes)->format('h:i A');
 
             $this->showAppointmentModal = true;
+            $this->dispatch('appointment-details-loaded');
+            return;
         }
+
+        $this->dispatch('appointment-details-loaded');
+    }
+
+    protected function findLoadedAppointment(int $appointmentId): ?object
+    {
+        $appointment = collect($this->todayAppointments)
+            ->concat($this->waitingQueue)
+            ->concat($this->ongoingAppointments)
+            ->firstWhere('id', $appointmentId);
+
+        return $appointment ?: null;
+    }
+
+    protected function durationToMinutes(?string $duration): int
+    {
+        if (!$duration) {
+            return 0;
+        }
+
+        sscanf($duration, '%d:%d:%d', $hours, $minutes, $seconds);
+        return ((int) $hours * 60) + (int) $minutes;
     }
 
     public function openPatientChart()
@@ -348,7 +442,7 @@ class TodaySchedule extends Component
             }
 
             session()->flash('success', "Appointment status updated to '$newStatus'.");
-            $this->loadDashboardData();
+            $this->refreshAllSections();
             $this->closeAppointmentModal();
         }
     }
@@ -356,8 +450,20 @@ class TodaySchedule extends Component
     public function closeAppointmentModal()
     {
         $this->showAppointmentModal = false;
-        // [ADDED] Reset dentist name
-        $this->reset(['firstName', 'lastName', 'contactNumber', 'viewingAppointmentId', 'dentistName']);
+        $this->reset([
+            'firstName',
+            'lastName',
+            'middleName',
+            'contactNumber',
+            'birthDate',
+            'selectedService',
+            'selectedDate',
+            'selectedTime',
+            'endTime',
+            'appointmentStatus',
+            'viewingAppointmentId',
+            'dentistName'
+        ]);
     }
 
     public function render() 

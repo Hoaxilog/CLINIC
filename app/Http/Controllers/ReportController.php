@@ -9,7 +9,7 @@ use Carbon\CarbonPeriod;
 
 class ReportController extends Controller
 {
-    public function index(Request $request)
+    private function resolveRange(Request $request): array
     {
         $range = $request->query('range', 'month');
         $allowed = ['today', 'week', 'month', 'year', 'custom'];
@@ -63,6 +63,17 @@ class ReportController extends Controller
 
         $fromDate = $request->query('from_date') ?: $startDate->toDateString();
         $toDate = $request->query('to_date') ?: $endDate->toDateString();
+
+        return [$range, $startDate, $endDate, $rangeLabel, $fromDate, $toDate];
+    }
+
+    public function index(Request $request)
+    {
+        [$range, $startDate, $endDate, $rangeLabel, $fromDate, $toDate] = $this->resolveRange($request);
+        $section = $request->query('section', 'overview');
+        if (!in_array($section, ['overview', 'patients', 'appointments', 'printable'], true)) {
+            $section = 'overview';
+        }
 
         $totalPatients = (int) DB::table('patients')->count();
 
@@ -176,6 +187,28 @@ class ReportController extends Controller
                 : (int) ($genderData->firstWhere('gender', $gender)->total ?? 0))
             ->values();
 
+        $ageGroupLabels = collect(['0-12', '13-17', '18-29', '30-44', '45-59', '60+']);
+        $ageGroupCounts = [0, 0, 0, 0, 0, 0];
+        $birthDates = DB::table('patients')
+            ->whereNotNull('birth_date')
+            ->pluck('birth_date');
+        foreach ($birthDates as $birthDate) {
+            $age = Carbon::parse($birthDate)->age;
+            if ($age <= 12) {
+                $ageGroupCounts[0]++;
+            } elseif ($age <= 17) {
+                $ageGroupCounts[1]++;
+            } elseif ($age <= 29) {
+                $ageGroupCounts[2]++;
+            } elseif ($age <= 44) {
+                $ageGroupCounts[3]++;
+            } elseif ($age <= 59) {
+                $ageGroupCounts[4]++;
+            } else {
+                $ageGroupCounts[5]++;
+            }
+        }
+
         $patientRegistrationRaw = DB::table('patients')
             ->select(DB::raw(match ($driver) {
                 'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
@@ -282,6 +315,8 @@ class ReportController extends Controller
             'scheduledCount',
             'genderLabels',
             'genderCounts',
+            'ageGroupLabels',
+            'ageGroupCounts',
             'patientRegMonths',
             'patientRegCounts',
             'patientRows',
@@ -300,7 +335,137 @@ class ReportController extends Controller
             'range',
             'rangeLabel',
             'fromDate',
-            'toDate'
+            'toDate',
+            'section'
         ));
+    }
+
+    public function print(Request $request, string $reportType)
+    {
+        [$range, $startDate, $endDate, $rangeLabel, $fromDate, $toDate] = $this->resolveRange($request);
+
+        $allowedTypes = ['patients', 'appointments', 'completed', 'cancelled', 'services', 'monthly-summary'];
+        abort_unless(in_array($reportType, $allowedTypes, true), 404);
+
+        $statusData = DB::table('appointments')
+            ->select('status', DB::raw('count(*) as total'))
+            ->whereBetween('appointment_date', [$startDate, $endDate])
+            ->groupBy('status')
+            ->get();
+
+        $totalPatients = (int) DB::table('patients')->count();
+        $totalAppointments = (int) DB::table('appointments')
+            ->whereBetween('appointment_date', [$startDate, $endDate])
+            ->count();
+        $completedCount = (int) ($statusData->firstWhere('status', 'Completed')->total ?? 0);
+        $cancelledCount = (int) ($statusData->firstWhere('status', 'Cancelled')->total ?? 0);
+
+        $reportTitle = '';
+        $columns = [];
+        $rows = collect();
+
+        if ($reportType === 'patients') {
+            $patientGender = $request->query('patient_gender');
+            $patientRegFrom = $request->query('patient_from') ?: $startDate->toDateString();
+            $patientRegTo = $request->query('patient_to') ?: $endDate->toDateString();
+
+            $rows = DB::table('patients')
+                ->select('id', 'first_name', 'middle_name', 'last_name', 'gender', 'birth_date', 'mobile_number', 'created_at')
+                ->when($patientGender, fn ($query) => $query->where('gender', $patientGender))
+                ->whereBetween('created_at', [
+                    Carbon::parse($patientRegFrom)->startOfDay(),
+                    Carbon::parse($patientRegTo)->endOfDay(),
+                ])
+                ->orderByDesc('created_at')
+                ->get();
+
+            $reportTitle = 'Patient Registration Report';
+            $columns = ['Patient ID', 'Full Name', 'Gender', 'Birth Date', 'Mobile Number', 'Date Registered'];
+        } elseif ($reportType === 'appointments' || $reportType === 'completed' || $reportType === 'cancelled') {
+            $appointmentFrom = $request->query('appointment_from') ?: $startDate->toDateString();
+            $appointmentTo = $request->query('appointment_to') ?: $endDate->toDateString();
+            $appointmentStatus = $request->query('appointment_status');
+            $appointmentService = $request->query('appointment_service');
+
+            $appointmentBase = DB::table('appointments')
+                ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
+                ->leftJoin('services', 'appointments.service_id', '=', 'services.id')
+                ->select(
+                    'appointments.id',
+                    'appointments.appointment_date',
+                    'appointments.status',
+                    'services.service_name',
+                    'patients.first_name',
+                    'patients.middle_name',
+                    'patients.last_name'
+                )
+                ->whereBetween('appointments.appointment_date', [
+                    Carbon::parse($appointmentFrom)->startOfDay(),
+                    Carbon::parse($appointmentTo)->endOfDay(),
+                ]);
+
+            if ($reportType === 'appointments') {
+                $rows = (clone $appointmentBase)
+                    ->when($appointmentStatus, fn ($query) => $query->where('appointments.status', $appointmentStatus))
+                    ->when($appointmentService, fn ($query) => $query->where('appointments.service_id', $appointmentService))
+                    ->orderByDesc('appointments.appointment_date')
+                    ->get();
+                $reportTitle = 'Appointment Report';
+            } elseif ($reportType === 'completed') {
+                $rows = (clone $appointmentBase)
+                    ->where('appointments.status', 'Completed')
+                    ->orderByDesc('appointments.appointment_date')
+                    ->get();
+                $reportTitle = 'Completed Treatments Report';
+            } else {
+                $rows = (clone $appointmentBase)
+                    ->where('appointments.status', 'Cancelled')
+                    ->orderByDesc('appointments.appointment_date')
+                    ->get();
+                $reportTitle = 'Cancelled Appointment Report';
+            }
+
+            $columns = ['Appointment ID', 'Patient Name', 'Service', 'Appointment Date', 'Status'];
+        } elseif ($reportType === 'services') {
+            $rows = DB::table('appointments')
+                ->join('services', 'appointments.service_id', '=', 'services.id')
+                ->select('services.service_name', DB::raw('count(*) as total'))
+                ->whereBetween('appointment_date', [$startDate, $endDate])
+                ->groupBy('services.service_name')
+                ->orderByDesc('total')
+                ->get();
+
+            $reportTitle = 'Service Utilization Summary';
+            $columns = ['Service', 'Appointment Count'];
+        } else {
+            $reportTitle = 'Monthly Clinic Summary';
+            $columns = ['Metric', 'Value'];
+            $rows = collect([
+                (object) ['metric' => 'Total Patients', 'value' => number_format($totalPatients)],
+                (object) ['metric' => 'Total Appointments', 'value' => number_format($totalAppointments)],
+                (object) ['metric' => 'Completed Appointments', 'value' => number_format($completedCount)],
+                (object) ['metric' => 'Cancelled Appointments', 'value' => number_format($cancelledCount)],
+                (object) ['metric' => 'Date Range', 'value' => Carbon::parse($fromDate)->format('M d, Y') . ' - ' . Carbon::parse($toDate)->format('M d, Y')],
+            ]);
+        }
+
+        return view('reports.print.report', [
+            'reportType' => $reportType,
+            'reportTitle' => $reportTitle,
+            'columns' => $columns,
+            'rows' => $rows,
+            'range' => $range,
+            'rangeLabel' => $rangeLabel,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'generatedAt' => now(),
+            'generatedBy' => auth()->user()?->name ?? 'Admin',
+            'summary' => [
+                'totalPatients' => $totalPatients,
+                'totalAppointments' => $totalAppointments,
+                'completedCount' => $completedCount,
+                'cancelledCount' => $cancelledCount,
+            ],
+        ]);
     }
 }

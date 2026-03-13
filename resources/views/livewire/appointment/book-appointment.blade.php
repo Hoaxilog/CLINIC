@@ -1,6 +1,6 @@
 <div>
     @php
-        $isPatientUser = auth()->check() && auth()->user()->role === 3;
+        $isPatientUser = auth()->check() && (int) auth()->user()->role === 3;
         $patientName = $isPatientUser ? auth()->user()->username ?? 'Patient' : null;
         $sectionClass = $isPatientUser
             ? 'bg-slate-50 py-8 md:py-10'
@@ -251,7 +251,45 @@
                         @enderror
                     @endguest
 
-                    <button type="submit" onclick="setRecaptchaToken()" class="{{ $primaryButtonClass }}">
+                    <!-- Appointment Notice and Terms -->
+                    <div class="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 class="font-semibold text-blue-900 mb-4">Appointment Notice</h4>
+                        <div class="text-sm text-blue-800 space-y-3 mb-6">
+                            <p>Please bear with us while we confirm your appointment. We typically respond within <strong>24 hours</strong>. If you have not received a response after this time, you may contact us through <strong>Messenger, SMS, Viber, WhatsApp, or Telegram</strong>.</p>
+                            
+                            <p>If you need to <strong>cancel or reschedule</strong>, please notify us <strong>at least 24 hours in advance</strong>. Patients who arrive <strong>more than 15 minutes late</strong> may be required to <strong>reschedule their appointment</strong>.</p>
+                            
+                            <p>If you are <strong>feeling unwell</strong> or experiencing <strong>flu-like symptoms</strong> such as fever, cough, sore throat, runny nose, difficulty breathing, or loss of taste or smell, please <strong>stay at home and reschedule your appointment</strong>.</p>
+                        </div>
+
+                        <div class="flex items-start gap-3 pt-4 border-t border-blue-200">
+                            <input 
+                                type="checkbox" 
+                                wire:model="appointment_terms_agreed" 
+                                id="appointment-terms-checkbox"
+                                class="mt-1 w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
+                            >
+                            <label for="appointment-terms-checkbox" class="text-sm text-slate-700 cursor-pointer">
+                                I have read and agree to the Appointment Terms and Conditions.
+                            </label>
+                        </div>
+                        @error('appointment_terms_agreed')
+                            <div class="text-sm text-red-600 mt-2">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        onclick="setRecaptchaToken()" 
+                        class="{{ $primaryButtonClass }}"
+                        id="appointment-submit-btn"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-50 cursor-not-allowed"
+                        :disabled="!appointment_terms_agreed"
+                        x-data="{ termsAgreed: @entangle('appointment_terms_agreed') }"
+                        :class="{ 'opacity-50 cursor-not-allowed': !termsAgreed }"
+                        @click="if (!termsAgreed) event.preventDefault()"
+                    >
                         Confirm Appointment
                     </button>
                 </div>
@@ -387,6 +425,34 @@
             bindCalendarNavigation();
             renderCalendar();
             ensureRecaptcha();
+            
+            // Handle appointment terms checkbox
+            const termsCheckbox = document.getElementById('appointment-terms-checkbox');
+            const submitBtn = document.getElementById('appointment-submit-btn');
+            
+            function updateSubmitButtonState() {
+                if (termsCheckbox && submitBtn) {
+                    if (termsCheckbox.checked) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            }
+            
+            if (termsCheckbox) {
+                termsCheckbox.addEventListener('change', updateSubmitButtonState);
+                submitBtn.addEventListener('click', function(e) {
+                    if (!termsCheckbox.checked) {
+                        e.preventDefault();
+                        alert('Please read and agree to the Appointment Terms and Conditions to continue.');
+                    }
+                });
+                // Set initial button state
+                updateSubmitButtonState();
+            }
         });
 
         document.addEventListener('book-calendar-refresh', (event) => {
@@ -398,4 +464,3 @@
         });
     </script>
 </div>
-

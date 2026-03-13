@@ -7,7 +7,7 @@ use Illuminate\View\View;
 class ServiceController extends Controller
 {
     /**
-     * Show General Checkup service page
+     * Show General Checkup service page.
      */
     public function generalCheckup(): View
     {
@@ -21,23 +21,23 @@ class ServiceController extends Controller
                 'Professional teeth cleaning',
                 'Digital X-rays',
                 'Early cavity detection',
-                'Personalized dental advice'
+                'Personalized dental advice',
             ],
             'benefits' => [
                 'Prevents tooth decay and gum disease',
                 'Detects problems early',
                 'Maintains overall oral health',
-                'Cost-effective preventive care'
+                'Cost-effective preventive care',
             ],
-            'price' => '₱500 - ₱1,000',
-            'duration' => '30 - 45 minutes'
+            'price' => 'PHP 500 - PHP 1,000',
+            'duration' => '30 - 45 minutes',
         ];
 
         return view('services.general-checkup', compact('service'));
     }
 
     /**
-     * Show Orthodontics service page
+     * Show Orthodontics service page.
      */
     public function orthodontics(): View
     {
@@ -51,24 +51,24 @@ class ServiceController extends Controller
                 'Lingual braces',
                 'Ceramic braces',
                 'Bite correction',
-                'Smile alignment'
+                'Smile alignment',
             ],
             'benefits' => [
                 'Improved smile appearance',
                 'Better bite alignment',
                 'Easier teeth cleaning',
                 'Reduced risk of tooth decay',
-                'Improved overall health'
+                'Improved overall health',
             ],
-            'price' => '₱80,000 - ₱250,000',
-            'duration' => '18 - 36 months'
+            'price' => 'PHP 80,000 - PHP 250,000',
+            'duration' => '18 - 36 months',
         ];
 
         return view('services.orthodontics', compact('service'));
     }
 
     /**
-     * Show Teeth Whitening service page
+     * Show Teeth Whitening service page.
      */
     public function teethWhitening(): View
     {
@@ -82,7 +82,7 @@ class ServiceController extends Controller
                 'Safe and effective formula',
                 'Results in one session',
                 'Lasting up to 6 months',
-                'No sensitivity pain'
+                'No sensitivity pain',
             ],
             'benefits' => [
                 'Whiter teeth in hours',
@@ -90,17 +90,17 @@ class ServiceController extends Controller
                 'Boosts confidence',
                 'Safe for all tooth types',
                 'Long-lasting effects',
-                'Non-invasive procedure'
+                'Non-invasive procedure',
             ],
-            'price' => '₱5,000 - ₱12,000',
-            'duration' => '45 - 60 minutes'
+            'price' => 'PHP 5,000 - PHP 12,000',
+            'duration' => '45 - 60 minutes',
         ];
 
         return view('services.teeth-whitening', compact('service'));
     }
 
     /**
-     * Show Oral Surgery service page
+     * Show Oral Surgery service page.
      */
     public function oralSurgery(): View
     {
@@ -114,17 +114,17 @@ class ServiceController extends Controller
                 'Treatment for impacted teeth',
                 'Management of oral infections',
                 'Post-operative care instructions',
-                'Follow-up healing checks'
+                'Follow-up healing checks',
             ],
             'benefits' => [
                 'Relieves pain and discomfort',
                 'Prevents infection spread',
                 'Protects surrounding teeth and gums',
                 'Improves long-term oral health',
-                'Performed with modern safety protocols'
+                'Performed with modern safety protocols',
             ],
-            'price' => 'P3,000 - P20,000',
-            'duration' => '45 - 90 minutes'
+            'price' => 'PHP 3,000 - PHP 20,000',
+            'duration' => '45 - 90 minutes',
         ];
 
         return view('services.oral-surgery', compact('service'));

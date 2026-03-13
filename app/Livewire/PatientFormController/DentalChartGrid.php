@@ -32,9 +32,9 @@ class DentalChartGrid extends Component
         ['label' => 'For Extraction', 'code' => 'X', 'color' => 'red'],
         ['label' => 'Non-vital Tooth', 'code' => 'NV', 'color' => 'red'],
         ['label' => 'Temporary Filling', 'code' => 'TF', 'color' => 'red'],
-        ['label' => '1st Degree Mobility', 'code' => '1Â°', 'color' => 'red'],
-        ['label' => '2nd Degree Mobility', 'code' => '2Â°', 'color' => 'red'],
-        ['label' => '3rd Degree Mobility', 'code' => '3Â°', 'color' => 'red'],
+        ['label' => '1st Degree Mobility', 'code' => '1 Deg', 'color' => 'red'],
+        ['label' => '2nd Degree Mobility', 'code' => '2 Deg', 'color' => 'red'],
+        ['label' => '3rd Degree Mobility', 'code' => '3 Deg', 'color' => 'red'],
         ['label' => 'Amalgam Filling', 'code' => 'Am', 'color' => 'blue'],
         ['label' => 'Composite Filling', 'code' => 'LC', 'color' => 'blue'],
         ['label' => 'Glass Ionomer', 'code' => 'GIC', 'color' => 'blue'],
@@ -49,7 +49,7 @@ class DentalChartGrid extends Component
         ['label' => 'Maryland Bridge', 'code' => 'MC', 'color' => 'blue'],
         ['label' => 'Veneer / Laminate', 'code' => 'V', 'color' => 'blue'],
         ['label' => 'Root Canal Treated', 'code' => 'RCT', 'color' => 'blue'],
-        ['label' => 'Erupting Tooth', 'code' => 'â†‘/â†“', 'color' => 'blue'],
+        ['label' => 'Erupting Tooth', 'code' => 'Up/Down', 'color' => 'blue'],
     ];
 
     public function mount($teeth = [], $isReadOnly = false)

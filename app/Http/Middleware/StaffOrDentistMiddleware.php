@@ -16,7 +16,7 @@ class StaffOrDentistMiddleware
                 ->withErrors(['email' => 'You must log in first.']);
         }
 
-        $role = Auth::user()?->role;
+        $role = (int) (Auth::user()?->role ?? 0);
         $isStaff = in_array($role, [1, 2], true);
 
         if (!$isStaff) {

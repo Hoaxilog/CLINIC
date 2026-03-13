@@ -6,6 +6,7 @@ use App\Http\Middleware\IsPatientMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,8 +15,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // If user is already logged in, redirect guest middleware to dashboard.
-        $middleware->redirectUsersTo('/dashboard');
+        // If an authenticated user reaches a guest-only page, send them to the correct area.
+        $middleware->redirectUsersTo(function (Request $request) {
+            return match ((int) ($request->user()?->role ?? 0)) {
+                3 => route('patient.dashboard'),
+                1, 2 => route('dashboard'),
+                default => route('home'),
+            };
+        });
         $middleware->trustProxies(at: '*');
         $middleware->alias([
             'isAdmin' => IsAdminMiddleware::class,
