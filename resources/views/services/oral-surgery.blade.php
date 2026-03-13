@@ -1,147 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
-    <title>{{ $service['title'] }} - Tejada Clinic</title>
-    @vite('resources/css/app.css')
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Oral Surgery service at Tejada Dental Clinic." />
+  <title>Oral Surgery | Tejada Dental Clinic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,500;1,600&display=swap" rel="stylesheet" />
+  @vite('resources/css/app.css')
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Outfit', 'sans-serif'], serif: ['Playfair Display', 'serif'] }, colors: { brand: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 500: '#0082C3', 600: '#0071aa', deep: '#0a2540' } } } } };
+  </script>
+  <style>
+    body { background-color:#fcfdfe; background-image:radial-gradient(circle at 2px 2px, rgba(0,130,195,.04) 1px, transparent 0), linear-gradient(180deg, rgba(240,249,255,.5) 0%, rgba(255,255,255,0) 100%); background-size:48px 48px, 100% 100%; }
+    .reveal { opacity:0; transform:translateY(30px); transition:all 1s cubic-bezier(.16,1,.3,1); }
+    .reveal.active { opacity:1; transform:translateY(0); }
+    .btn-premium { background:linear-gradient(135deg,#0082C3 0%,#005a88 100%); }
+    .service-card { border:1px solid rgba(0,130,195,.12); transition:all .45s ease; }
+    .service-card:hover { transform:translateY(-8px); box-shadow:0 24px 55px -20px rgba(0,130,195,.28); border-color:rgba(0,130,195,.3); }
+  </style>
 </head>
-
-<body class="font-['Roboto']">
-    @include('components.homepage.header-section')
-
-    <main class="pt-20">
-        <!-- Hero Section -->
-        <section class="bg-[#FCFCFC] py-16 lg:py-28 border-b-2 border-black">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-                    <div class="text-left">
-                        <div class="inline-block border-2 border-black px-3 py-1 mb-8 bg-white">
-                            <span class="text-xs font-bold uppercase tracking-widest text-black">Our Services</span>
-                        </div>
-
-                        <h1 class="text-5xl md:text-7xl font-bold text-black leading-[1.1] mb-8 tracking-tight">
-                            {{ $service['title'] }}
-                        </h1>
-
-                        <p class="text-lg text-gray-700 max-w-lg mb-12 leading-relaxed font-medium">
-                            {{ $service['description'] }}
-                        </p>
-
-                        <div class="flex gap-4 flex-col sm:flex-row">
-                            <a href="/book"
-                                class="inline-flex items-center justify-center min-w-[200px] px-8 py-4 bg-[#0789da] text-white text-base font-bold border-2 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
-                                Book Now <span class="ml-2">→</span>
-                            </a>
-                            <a href="/#services"
-                                class="inline-flex items-center justify-center min-w-[200px] px-8 py-4 bg-white text-black text-base font-bold border-2 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
-                                View More Services <span class="ml-2">←</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="hidden lg:block relative w-full h-[500px] mt-10 lg:mt-0">
-                        <img src="{{ $service['image'] }}" alt="{{ $service['title'] }}"
-                            class="w-full h-full object-cover border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                    </div>
-                </div>
+<body class="text-slate-800 antialiased overflow-x-hidden">
+  @include('components.homepage.header-section')
+  <main class="pt-36 lg:pt-44">
+    <section class="relative overflow-hidden bg-white pb-20 pt-10 lg:pb-28">
+      <div class="absolute right-0 -top-10 h-80 w-80 rounded-full bg-brand-100/40 blur-3xl"></div>
+      <div class="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-10">
+        <div class="grid items-center gap-12 lg:grid-cols-2">
+          <div class="reveal">
+            <p class="mb-5 text-[11px] font-black uppercase tracking-[0.35em] text-brand-500">Service 02</p>
+            <h1 class="mb-6 font-serif text-4xl font-bold leading-tight text-brand-deep lg:text-6xl">Oral Surgery</h1>
+            <p class="mb-10 max-w-2xl text-lg font-light leading-relaxed text-slate-500">Safe and precise minor oral surgical procedures for impacted teeth, infection control, and advanced dental treatment.</p>
+            <div class="flex flex-wrap gap-4">
+              <a href="/book" class="btn-premium rounded-2xl px-8 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white transition">Book Now</a>
+              <a href="/#services" class="rounded-2xl border border-brand-100 bg-white px-8 py-3 text-sm font-bold uppercase tracking-[0.2em] text-brand-deep transition hover:border-brand-500 hover:text-brand-500">View More Services</a>
             </div>
-        </section>
-
-        <!-- Service Details Section -->
-        <section class="bg-white py-16 lg:py-24 border-b-2 border-black">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
-                    <div class="order-2 lg:order-1">
-                        <h2 class="text-4xl md:text-5xl font-black text-black leading-tight mb-8 uppercase tracking-tighter">
-                            What's Included
-                        </h2>
-
-                        <ul class="space-y-4">
-                            @foreach ($service['details'] as $detail)
-                                <li class="flex items-start gap-4 p-6 bg-[#FCFCFC] border-2 border-black">
-                                    <div
-                                        class="flex-shrink-0 w-6 h-6 bg-[#0789da] text-white flex items-center justify-center rounded-full">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd"
-                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <p class="font-bold text-black">{{ $detail }}</p>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-
-                    <div class="order-1 lg:order-2 mb-12 lg:mb-0">
-                        <div class="relative inline-block w-full">
-                            <div class="absolute inset-0 bg-[#0789da] border-2 border-black translate-x-4 translate-y-4">
-                            </div>
-
-                            <div class="relative bg-white border-2 border-black p-10 md:p-14">
-                                <h3 class="text-2xl font-black mb-6 uppercase tracking-tight">Key Benefits</h3>
-
-                                <ul class="space-y-6">
-                                    @foreach ($service['benefits'] as $benefit)
-                                        <div class="flex items-start gap-4">
-                                            <div
-                                                class="flex-shrink-0 w-8 h-8 bg-[#0789da] text-white flex items-center justify-center font-bold text-sm">
-                                                ✓
-                                            </div>
-                                            <p class="font-bold text-black">{{ $benefit }}</p>
-                                        </div>
-                                    @endforeach
-                                </ul>
-
-                                <div class="mt-10 border-t-2 border-black pt-8">
-                                    <div class="space-y-4">
-                                        <div>
-                                            <p class="text-xs font-bold uppercase text-gray-500 mb-2">Estimated Duration</p>
-                                            <p class="text-2xl font-black text-[#0789da]">{{ $service['duration'] }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs font-bold uppercase text-gray-500 mb-2">Price Range</p>
-                                            <p class="text-2xl font-black text-[#0789da]">{{ $service['price'] }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Section -->
-        <section class="bg-[#FCFCFC] py-16 lg:py-24 border-b-2 border-black">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-[#0789da] border-2 border-black translate-x-3 translate-y-3"></div>
-                    <div class="relative bg-white border-2 border-black p-10 md:p-14 text-center">
-                        <h3 class="text-3xl md:text-4xl font-black text-black mb-4 uppercase tracking-tighter">
-                            Ready to Transform Your Smile?
-                        </h3>
-                        <p class="text-gray-700 mb-10 font-medium text-lg max-w-2xl mx-auto">
-                            Schedule your appointment today and let our professional team help you achieve the smile you deserve.
-                        </p>
-                        <a href="/book"
-                            class="inline-flex items-center bg-[#0789da] text-white font-black px-10 py-4 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all uppercase tracking-widest text-sm">
-                            Book Your Appointment <span class="ml-3">→</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        @include('components.homepage.footer-section')
-    </main>
+          </div>
+          <div class="reveal overflow-hidden rounded-[2.75rem] border-[12px] border-white bg-slate-100 shadow-2xl">
+            <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1200&q=85" alt="Oral surgery treatment room" class="h-[380px] w-full object-cover lg:h-[500px]">
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="bg-[#f4fbff]/50 py-16 lg:py-24">
+      <div class="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-10">
+        <h2 class="reveal mb-8 font-serif text-3xl font-bold text-brand-deep">What’s Included</h2>
+        <div class="grid gap-8 md:grid-cols-3">
+          <div class="service-card reveal rounded-3xl bg-white p-8"><h3 class="mb-3 font-serif text-2xl font-bold text-brand-deep">Surgical Assessment</h3><p class="text-sm text-slate-500">Clinical exam and treatment planning before procedure.</p></div>
+          <div class="service-card reveal rounded-3xl bg-white p-8"><h3 class="mb-3 font-serif text-2xl font-bold text-brand-deep">Procedure Care</h3><p class="text-sm text-slate-500">Sterile, controlled surgical management.</p></div>
+          <div class="service-card reveal rounded-3xl bg-white p-8"><h3 class="mb-3 font-serif text-2xl font-bold text-brand-deep">Recovery Guide</h3><p class="text-sm text-slate-500">Post-operative instructions and healing support.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  @include('components.homepage.footer-section')
+  <script>
+    lucide.createIcons();
+    const io = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) entry.target.classList.add('active'); }), { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  </script>
 </body>
-
 </html>

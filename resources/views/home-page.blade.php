@@ -1,580 +1,467 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
-    <title>Tejada Clinic</title>
-    @vite('resources/css/app.css')
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Tejada Dental Clinic - Premium, compassionate dental care in Quezon City." />
+  <title>Tejada Dental Clinic | Excellence in Oral Care</title>
 
-<body class=" font-['Roboto']">
-    @include('components.homepage.header-section')
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,500;1,600&display=swap" rel="stylesheet" />
 
-    <main class="pt-20">
-        <section class="bg-[#FCFCFC] py-16 lg:py-28">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+  @vite('resources/css/app.css')
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-                    <div class="text-left">
-                        <div class="inline-block border-2 border-black px-3 py-1 mb-8 bg-white">
-                            <span class="text-xs font-bold uppercase tracking-widest text-black">World-Class
-                                Dentistry</span>
-                        </div>
-
-                        <h1 class="text-5xl md:text-7xl font-bold text-black leading-[1.1] mb-8 tracking-tight">
-                            Achieve Your <br>
-                            <span class="underline decoration-4 underline-offset-8 decoration-black">Perfect
-                                Smile</span>
-                        </h1>
-
-                        <p class="text-lg text-gray-700 max-w-lg mb-12 leading-relaxed font-medium">
-                            Experience personalized dental care with cutting-edge technology and a compassionate team.
-                            Your oral health is our passion.
-                        </p>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-sm lg:max-w-none lg:flex lg:flex-row">
-                            <a href="/register"
-                                class="inline-flex items-center justify-center min-w-[180px] px-8 py-4 bg-black text-white text-base font-bold border-2 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
-                                Join Our Platform <span class="ml-2">→</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="hidden lg:block relative w-full h-[500px]">
-                        <div id="stack-container" class="relative w-full h-full cursor-pointer" onclick="nextPage()">
-
-                            <div
-                                class="stack-card absolute inset-0 bg-white border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-500 ease-in-out z-10">
-                                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80"
-                                    class="w-full h-full object-cover" alt="Clinic 1">
-                            </div>
-
-                            <div
-                                class="stack-card absolute inset-0 bg-white border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-500 ease-in-out z-20">
-                                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80"
-                                    class="w-full h-full object-cover" alt="Clinic 2">
-                            </div>
-
-                            <div
-                                class="stack-card absolute inset-0 bg-white border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-500 ease-in-out z-30">
-                                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80"
-                                    class="w-full h-full object-cover hover:grayscale-0" alt="Clinic 3">
-                            </div>
-                        </div>
-
-                        <div class="mt-6 flex items-center justify-end gap-5">
-                            <p class="text-xs font-black uppercase tracking-widest text-gray-400 font-mono">View our
-                                facility</p>
-                            <button onclick="nextPage()"
-                                class="group flex items-center gap-2 text-sm font-black hover:text-[#0789da] transition-colors">
-                                <span class="bg-black text-white p-1 group-hover:bg-[#0789da] transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path d="M9 5l7 7-7 7" stroke-width="3" />
-                                    </svg>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <section id="about" class="bg-white py-16 lg:py-24 border-t-2 border-black">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="mb-16 text-center lg:text-left">
-                    <div
-                        class="inline-block border-2 border-black px-3 py-1 mb-4 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                        <span class="text-xs font-bold uppercase tracking-widest text-black">About Us</span>
-                    </div>
-                </div>
-                <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
-                    <div class="order-2 lg:order-1 text-left">
-                        <h2
-                            class="text-4xl md:text-7xl font-black text-black leading-none mb-8 uppercase tracking-tighter">
-                            Redefining the <br>
-                            <span class="text-[#0789da]">Dental Experience</span>
-                        </h2>
-
-                        <div class="space-y-6 text-lg text-gray-700 font-medium leading-relaxed">
-                            <p>
-                                At <span class="font-bold text-black underline decoration-2 underline-offset-4">Tejada
-                                    Dental Clinic</span>, we believe that dental care should be transparent, accessible,
-                                and completely stress-free. We've combined decades of clinical expertise with modern
-                                technology to create a smarter clinic.
-                            </p>
-                            <p>
-                                Whether you're here for a routine check-up or a complex restorative procedure, our team
-                                is dedicated to providing personalized care that fits your lifestyle and your budget.
-                            </p>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4 mt-10">
-                            <div class="p-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                                <p class="text-3xl font-black text-[#0789da]">10+</p>
-                                <p class="text-sm font-bold uppercase text-black">Years Experience</p>
-                            </div>
-                            <div class="p-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                                <p class="text-3xl font-black text-[#0789da]">5k+</p>
-                                <p class="text-sm font-bold uppercase text-black">Happy Patients</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="order-1 lg:order-2 mb-12 lg:mb-0">
-                        <div class="relative inline-block w-full">
-                            <div
-                                class="absolute inset-0 bg-[#0789da] border-2 border-black translate-x-4 translate-y-4">
-                            </div>
-
-                            <div class="relative bg-white border-2 border-black  md:p-20 p-10">
-                                <h3 class="text-2xl font-black mb-4 uppercase tracking-tight">Why Choose Us?</h3>
-                                <ul class="space-y-4">
-                                    <li class="flex items-start gap-3">
-                                        <span
-                                            class="flex-shrink-0 w-6 h-6 bg-[#0789da] text-white flex items-center justify-center text-xs font-bold">1</span>
-                                        <p class="font-bold text-black">Modern Equipment & Digital Records</p>
-                                    </li>
-                                    <li class="flex items-start gap-3">
-                                        <span
-                                            class="flex-shrink-0 w-6 h-6 bg-[#0789da] text-white flex items-center justify-center text-xs font-bold">2</span>
-                                        <p class="font-bold text-black">Highly Experienced Dental Surgeons</p>
-                                    </li>
-                                    <li class="flex items-start gap-3">
-                                        <span
-                                            class="flex-shrink-0 w-6 h-6 bg-[#0789da] text-white flex items-center justify-center text-xs font-bold">3</span>
-                                        <p class="font-bold text-black">Seamless Online Appointment System</p>
-                                    </li>
-                                </ul>
-
-                                <div class="mt-8 border-t-2 border-black pt-6">
-                                    <p class="italic font-medium text-gray-600">"We don't just treat teeth; we care for
-                                        the people behind the smiles."</p>
-                                    <p class="mt-2 font-black uppercase text-sm">— Dr. Shiela, Lead Dentist</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-
-        <section id="services" class="bg-[#FCFCFC] py-16 lg:py-24 border-t-2 border-black">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                <div class="mb-16 text-center lg:text-left">
-                    <div
-                        class="inline-block border-2 border-black px-3 py-1 mb-4 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                        <span class="text-xs font-bold uppercase tracking-widest text-black">What We Do</span>
-                    </div>
-                    <h2 class="text-5xl md:text-7xl font-black text-black uppercase tracking-tighter">
-                        Our Dental <span class="text-[#0789da]">Services</span>
-                    </h2>
-                    <p class="mt-4 text-lg font-medium text-gray-600 max-w-2xl">
-                        Comprehensive care designed for your comfort. From routine maintenance to your cosmetic
-                        transformations.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-
-                    <div
-                        class="group bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all overflow-hidden flex flex-col">
-                        <div class="h-48 border-b-4 border-black overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80"
-                                alt="General Checkup" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-6 flex flex-col flex-grow">
-                            <h3 class="text-2xl font-black text-black mb-3">General Checkup</h3>
-                            <p class="text-gray-600 font-medium text-sm mb-6 flex-grow leading-relaxed">
-                                Routine examination with a professional dentist to keep your oral health at peak
-                                condition.
-                            </p>
-                            <div class="flex items-center justify-between mt-auto">
-                                <a href="/services/general-checkup"
-                                    class="font-black text-sm uppercase underline decoration-2 underline-offset-4 hover:text-[#0789da] transition-colors">Learn
-                                    More</a>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        class="group bg-white border-2 border-black  shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all overflow-hidden flex flex-col">
-                        <div class="h-48 border-b-4 border-black overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80"
-                                alt="Orthodontics" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-6 flex flex-col flex-grow">
-                            <h3 class="text-2xl font-black text-black mb-3">Orthodontics</h3>
-                            <p class="text-gray-600 font-medium text-sm mb-6 flex-grow leading-relaxed">
-                                Modern braces and aligners to correct your smile and improve long-term dental health.
-                            </p>
-                            <div class="flex items-center justify-between mt-auto">
-                                <a href="/services/orthodontics"
-                                    class="font-black text-sm uppercase underline decoration-2 underline-offset-4 hover:text-[#0789da] transition-colors">Learn
-                                    More</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        class="group bg-white border-2 border-black  shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all overflow-hidden flex flex-col">
-                        <div class="h-48 border-b-4 border-black overflow-hidden">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSc_b0xAG8cB0EQbHARkpSNVrA9ZzmqX42kvw&s"
-                                alt="Teeth Whitening" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-6 flex flex-col flex-grow">
-                            <h3 class="text-2xl font-black text-black mb-3">Teeth Whitening</h3>
-                            <p class="text-gray-600 font-medium text-sm mb-6 flex-grow leading-relaxed">
-                                Advance teeth whitening to brighten your smile up to 8 shades in a single session.
-                            </p>
-                            <div class="flex items-center justify-between mt-auto">
-                                <a href="/services/teeth-whitening"
-                                    class="font-black text-sm uppercase underline decoration-2 underline-offset-4 hover:text-[#0789da] transition-colors">Learn
-                                    More</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        class="group bg-white border-2 border-black  shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all overflow-hidden flex flex-col">
-                        <div class="h-48 border-b-4 border-black overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80"
-                                alt="Oral Surgery" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-6 flex flex-col flex-grow">
-                            <h3 class="text-2xl font-black text-black mb-3">Oral Surgery</h3>
-                            <p class="text-gray-600 font-medium text-sm mb-6 flex-grow leading-relaxed">
-                                Safe and precise procedures for impacted teeth, severe decay, and advanced oral health concerns.
-                            </p>
-                            <div class="flex items-center justify-between mt-auto">
-                                <a href="/services/oral-surgery"
-                                    class="font-black text-sm uppercase underline decoration-2 underline-offset-4 hover:text-[#0789da] transition-colors">Learn
-                                    More</a>
-                            </div>
-                        </div>
-                    </div>
-
-
-                </div>
-
-                <div class="mt-20 relative">
-                    <div class="absolute inset-0 bg-[#0789da] border-2 border-black translate-x-3 translate-y-3"></div>
-                    <div class="relative bg-white border-2 border-black p-10 md:p-14 text-center">
-                        <h3 class="text-3xl md:text-4xl font-black text-black mb-4 uppercase tracking-tighter">Need a
-                            custom treatment plan?</h3>
-                        <p class="text-gray-700 mb-10 font-medium text-lg max-w-2xl mx-auto">
-                            Tell us your goals and we'll recommend the best options for your smile.
-                        </p>
-                        <a href="/book"
-                            class="inline-flex items-center bg-[#0789da] text-white font-black px-10 py-4 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all uppercase tracking-widest text-sm">
-                            Get a Consultation <span class="ml-3">→</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="contact" class="bg-[#FCFCFC] py-16 lg:py-24 border-t-2 border-black">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                <div class="mb-16 text-center lg:text-left">
-                    <div
-                        class="inline-block border-2 border-black px-3 py-1 mb-4 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                        <span class="text-xs font-bold uppercase tracking-widest text-black">Get In Touch</span>
-                    </div>
-                    <h2 class="text-5xl md:text-7xl font-black text-black uppercase tracking-tighter">
-                        Visit our <span class="text-[#0789da]">Clinic</span>
-                    </h2>
-                </div>
-
-                <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
-
-                    <div class="space-y-8">
-                        <p class="text-xl font-bold text-gray-700 leading-relaxed max-w-md">
-                            Ready to book your visit? Use our online system or reach out through any of these channels.
-                        </p>
-
-                        <div class="space-y-6">
-                            <div
-                                class="group flex items-start gap-4 p-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
-                                <div
-                                    class="bg-[#0789da] border-2 border-black p-2 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="font-black uppercase text-sm tracking-widest mb-1">Clinic Address</h4>
-                                    <p class="font-bold text-gray-600">251 Commonwealth Ave, Diliman, Quezon City</p>
-                                </div>
-                            </div>
-
-                            <a href="https://facebook.com/yourclinicpage" target="_blank"
-                                class="group flex items-start gap-4 p-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
-                                <div
-                                    class="bg-[#0789da] border-2 border-black p-2 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="font-black uppercase text-sm tracking-widest mb-1">Facebook Page</h4>
-                                    <p class="font-bold text-gray-600">facebook.com/TejaDentClinic</p>
-                                </div>
-                            </a>
-
-                            <div
-                                class="group flex items-start gap-4 p-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
-                                <div
-                                    class="bg-[#0789da] border-2 border-black p-2 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="font-black uppercase text-sm tracking-widest mb-1">Call / WhatsApp</h4>
-                                    <p class="font-bold text-gray-600">+63 912 345 6789</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-12 lg:mt-0 relative">
-                        <div class="absolute inset-0 bg-[#0789da] border-2 border-black translate-x-4 translate-y-4">
-                        </div>
-                        <div
-                            class="relative bg-white border-2 border-black overflow-hidden aspect-square md:aspect-video lg:aspect-square">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3860.0526364003323!2d121.07357487578508!3d14.668435175138128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b759ceee4d07%3A0x8927894f17a3b774!2sDiliman%20Doctors%20Hospital!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph"
-                                class="w-full h-full " style="border:0;" allowfullscreen="" loading="lazy">
-                            </iframe>
-                            <div
-                                class="absolute top-4 right-4 bg-white border-2 border-black px-4 py-2 font-black text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                                FIND US HERE
-                            </div>
-                        </div>
-
-                        <div
-                            class="absolute -bottom-6 -left-6 bg-white border-2 border-black p-5 shadow-[4px_4px_0px_0px_rgba(7,137,218,1)]">
-                            <h5 class="text-black font-black text-xs uppercase mb-3 border-b border-gray-700 pb-1">
-                                Business Hours</h5>
-                            <ul class="text-black text-[10px] font-bold space-y-1">
-                                <li class="flex justify-between gap-4"><span>Mon-Fri:</span> <span>9:00 AM - 6:00
-                                        PM</span></li>
-                                <li class="flex justify-between gap-4"><span>Saturday:</span> <span>9:00 AM - 6:00
-                                        PM</span></li>
-                                <li class="flex justify-between gap-4 text-blue-400"><span>Sunday:</span>
-                                    <span>Closed</span>
-                                </li>
-                                <li class="flex justify-between gap-4 text-blue-400"><span>Tuesday:</span>
-                                    <span>Closed</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <section id="registration-info" class="bg-white py-16 lg:py-24 border-t-2 border-black">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-
-                    <div class="text-left">
-                        <div
-                            class="inline-block border-2 border-black px-3 py-1 mb-6 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                            <span class="text-xs font-bold uppercase tracking-widest text-black">Why Register?</span>
-                        </div>
-
-                        <h2
-                            class="text-4xl md:text-6xl font-black text-black leading-tight mb-8 uppercase  tracking-tighter">
-                            Manage your <br> <span
-                                class="text-[#0789da] underline decoration-4 underline-offset-4">Digital
-                                Smiles</span>
-                        </h2>
-
-                        <div class="space-y-8">
-                            <div class="flex gap-6 group">
-                                <div
-                                    class="flex-shrink-0 w-12 h-12 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center group-hover:bg-[#0789da] group-hover:text-white transition-all">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="font-black uppercase text-lg">Track Your Records</h4>
-                                    <p class="font-medium text-gray-600">Access your complete dental history, and
-                                        treatment plans anytime, anywhere. No more physical folders.</p>
-                                </div>
-                            </div>
-
-                            <div class="flex gap-6 group">
-                                <div
-                                    class="flex-shrink-0 w-12 h-12 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center group-hover:bg-[#0789da] group-hover:text-white transition-all">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="font-black uppercase text-lg">Smart Notifications</h4>
-                                    <p class="font-medium text-gray-600">Receive automatic reminders via email or SMS.
-                                        Never miss a check-up or follow-up appointment again.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-12">
-                            <a href="/register"
-                                class="inline-flex items-center justify-center px-10 py-5 bg-[#0789da] text-white text-lg font-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all uppercase tracking-widest">
-                                Register Now →
-                            </a>
-                        </div>
-                    </div>
-
-
-                    <div class="hidden lg:block">
-                        <div class="relative inline-block w-full">
-                            <div
-                                class="absolute inset-0 bg-[#0789da] border-2 border-black translate-x-4 translate-y-4">
-                            </div>
-                            <div
-                                class="relative bg-white border-2 border-black p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                                <div class="space-y-6">
-                                    <div class="flex items-center gap-4 border-b-2 border-black pb-4">
-                                        <div
-                                            class="w-12 h-12 bg-[#0789da] text-white flex items-center justify-center font-bold">
-                                            1</div>
-                                        <p class="font-black uppercase text-sm">Create an account in seconds</p>
-                                    </div>
-                                    <div class="flex items-center gap-4 border-b-2 border-black pb-4">
-                                        <div
-                                            class="w-12 h-12 bg-[#0789da] text-white flex items-center justify-center font-bold">
-                                            2</div>
-                                        <p class="font-black uppercase text-sm">Secure digital record storage</p>
-                                    </div>
-                                    <div class="flex items-center gap-4">
-                                        <div
-                                            class="w-12 h-12 bg-[#0789da] text-white flex items-center justify-center font-bold">
-                                            3</div>
-                                        <p class="font-black uppercase text-sm">Instant appointment alerts</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        @include('components.homepage.footer-section')
-    </main>
-
-    <script>
-        function nextPage() {
-            const container = document.getElementById('stack-container');
-            const cards = container.querySelectorAll('.stack-card');
-
-            // Get the current top card (the last one in the DOM)
-            const topCard = cards[cards.length - 1];
-
-            // 1. Slide straight to the right (No rotation)
-            topCard.style.transform = 'translateX(110%)';
-            topCard.style.opacity = '0';
-
-            setTimeout(() => {
-                // 2. Move it to the bottom of the stack (beginning of the parent)
-                container.prepend(topCard);
-
-                // 3. Reset its position so it's ready to appear at the bottom
-                topCard.style.transform = 'translateX(0)';
-                topCard.style.opacity = '1';
-
-                // 4. Update Z-indices so the order is always correct
-                const currentCards = container.querySelectorAll('.stack-card');
-                currentCards.forEach((card, index) => {
-                    card.style.zIndex = (index + 1) * 10;
-                });
-            }, 500); // Duration matches Tailwind's transition-all duration-500
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              500: '#0082C3',
+              600: '#0071aa',
+              deep: '#0a2540',
+            }
+          },
+          animation: {
+            'float': 'float 8s ease-in-out infinite',
+            'float-delayed': 'float 8s ease-in-out 4s infinite',
+            'shimmer': 'shimmer 2.5s infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+              '50%': { transform: 'translateY(-20px) rotate(1deg)' },
+            },
+            shimmer: {
+              '0%': { backgroundPosition: '-200% 0' },
+              '100%': { backgroundPosition: '200% 0' },
+            }
+          }
         }
+      }
+    }
+  </script>
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuBtn = document.getElementById('menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuIcon = document.getElementById('menu-icon');
-            const menuPanel = document.getElementById('mobile-menu-panel');
-            const menuBackdrop = document.getElementById('mobile-menu-backdrop');
-            const menuClose = document.getElementById('menu-close');
-            if (!menuBtn || !mobileMenu || !menuIcon || !menuPanel || !menuBackdrop || !menuClose) return;
+  <style>
+    body {
+      background-color: #fcfdfe;
+      background-image:
+        radial-gradient(circle at 2px 2px, rgba(0, 130, 195, 0.04) 1px, transparent 0),
+        linear-gradient(180deg, rgba(240, 249, 255, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
+      background-size: 48px 48px, 100% 100%;
+    }
 
-            if (!menuBtn || !mobileMenu) return; // Exit if elements not found
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-            function openMenu() {
-                mobileMenu.classList.remove('hidden');
-                mobileMenu.classList.add('pointer-events-auto');
-                mobileMenu.setAttribute('aria-hidden', 'false');
-                menuBtn.setAttribute('aria-expanded', 'true');
-                menuIcon.innerHTML =
-                    `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`;
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        menuBackdrop.classList.remove('opacity-0', 'pointer-events-none');
-                        menuBackdrop.classList.add('opacity-100', 'pointer-events-auto');
-                        menuPanel.classList.remove('translate-x-full');
-                        menuClose.focus();
-                    });
-                });
-            }
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-            function closeMenu() {
-                if (mobileMenu.contains(document.activeElement)) {
-                    menuBtn.focus();
-                }
-                menuPanel.classList.add('translate-x-full');
-                menuBackdrop.classList.remove('opacity-100', 'pointer-events-auto');
-                menuBackdrop.classList.add('opacity-0', 'pointer-events-none');
-                menuBtn.setAttribute('aria-expanded', 'false');
-                menuIcon.innerHTML =
-                    `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />`;
-                setTimeout(() => {
-                    mobileMenu.classList.add('hidden', 'pointer-events-none');
-                    mobileMenu.classList.remove('pointer-events-auto');
-                    mobileMenu.setAttribute('aria-hidden', 'true');
-                }, 300);
-            }
+    .service-card {
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid rgba(0, 130, 195, 0.08);
+      background: rgba(255, 255, 255, 0.9);
+    }
+    .service-card:hover {
+      transform: translateY(-16px) scale(1.02);
+      box-shadow: 0 40px 100px -20px rgba(0, 130, 195, 0.18);
+      border-color: rgba(0, 130, 195, 0.3);
+      background: white;
+    }
 
-            menuBtn.addEventListener('click', function() {
-                if (mobileMenu.classList.contains('hidden')) {
-                    openMenu();
-                } else {
-                    closeMenu();
-                }
-            });
+    .btn-premium {
+      background: linear-gradient(135deg, #0082C3 0%, #005a88 100%);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+    .btn-premium::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: rotate(45deg);
+      transition: 0.8s;
+    }
+    .btn-premium:hover::after {
+      left: 100%;
+    }
+    .btn-premium:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px -5px rgba(0, 130, 195, 0.4);
+    }
 
-            menuBackdrop.addEventListener('click', closeMenu);
-            menuClose.addEventListener('click', closeMenu);
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f1f5f9; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-            // Close menu on link clicks
-            const menuLinks = mobileMenu.querySelectorAll('a');
-            menuLinks.forEach(link => {
-                link.addEventListener('click', closeMenu);
-            });
+    /* Formal sizing for About section */
+    #about h2 {
+      font-size: clamp(2rem, 3.2vw, 3.25rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 2rem;
+    }
+
+    #about .space-y-8 > p {
+      font-size: clamp(1rem, 1.15vw, 1.125rem);
+      line-height: 1.8;
+    }
+
+    #about .group.relative.reveal {
+      max-width: 34rem;
+      width: 100%;
+      margin-inline: auto;
+    }
+
+    #about .group.relative.reveal > div:nth-child(2) {
+      aspect-ratio: 3 / 4;
+      border-width: 8px;
+      border-radius: 2.25rem;
+    }
+
+    /* Hide header Patient Portal/Login button */
+    header nav a[href*="login"],
+    header nav a[href*="portal"],
+    nav a[href*="login"],
+    nav a[href*="portal"] {
+      display: none !important;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased overflow-x-hidden selection:bg-brand-500 selection:text-white">
+
+  @include('components.homepage.header-section')
+
+  <section class="relative overflow-hidden bg-white pb-24 pt-40 lg:pb-40 lg:pt-56">
+    <div class="absolute -left-24 -top-24 -z-10 h-96 w-96 rounded-full bg-brand-100/30 blur-[100px]"></div>
+    <div class="absolute right-0 top-0 -z-10 h-full w-1/2 rounded-l-[15rem] bg-brand-50/20"></div>
+
+    <div class="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-10">
+      <div class="grid items-center gap-14 lg:grid-cols-2">
+        <div class="reveal max-w-2xl">
+          <div class="mb-10 inline-flex items-center gap-3 rounded-full border border-brand-100 bg-brand-50 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.3em] text-brand-500 shadow-sm">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-brand-500"></span>
+            Ranked #1 in Patient Satisfaction
+          </div>
+          <h1 class="mb-10 font-serif text-5xl font-bold leading-[1.05] tracking-tight text-brand-deep lg:text-[5.4rem]">
+            Premium care for a
+            <span class="relative italic text-brand-500">
+              confident
+              <svg class="absolute -bottom-2 left-0 -z-10 h-3 w-full text-brand-200" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" stroke-width="4" fill="none"/></svg>
+            </span>
+            smile.
+          </h1>
+          <p class="mb-14 max-w-lg text-xl font-light leading-relaxed text-slate-500">
+            Receive world-class clinical expertise within a sanctuary of modern luxury. We prioritize your comfort and safety above all.
+          </p>
+          <div class="flex flex-wrap items-center gap-8">
+            <a href="#register" class="btn-premium rounded-2xl px-12 py-5 text-sm font-bold uppercase tracking-widest text-white shadow-2xl transition-all active:scale-95">
+              Start Your Visit
+            </a>
+            <a href="#services" class="group flex items-center gap-3 text-sm font-black uppercase tracking-[0.2em] text-brand-deep transition-colors hover:text-brand-500">
+              Our Services
+              <i data-lucide="arrow-right" class="h-5 w-5 transition-transform group-hover:translate-x-3"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="reveal relative hidden lg:block">
+          <div class="group relative z-10 aspect-square overflow-hidden rounded-[4rem] border-[16px] border-white bg-slate-50 shadow-[0_50px_120px_-20px_rgba(0,0,0,0.12)]">
+            <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1000&q=90" alt="Clinic Interior" class="h-full w-full object-cover transition-transform duration-[2.5s] group-hover:scale-105">
+            <div class="absolute inset-0 bg-brand-deep/5 transition-colors duration-700 group-hover:bg-transparent"></div>
+          </div>
+
+          <div class="animate-float absolute -bottom-10 -left-10 z-20 flex cursor-default items-center gap-5 rounded-[2.5rem] border border-white/60 bg-white/35 p-8 shadow-2xl backdrop-blur-xl transition-transform hover:scale-105">
+            <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-500/85 text-white shadow-lg backdrop-blur-sm">
+              <i data-lucide="award" class="h-8 w-8"></i>
+            </div>
+            <div>
+              <p class="mb-1 text-[11px] font-black uppercase tracking-widest text-brand-500">Top Rated</p>
+              <p class="text-xl font-bold text-brand-deep">10+ Expert Doctors</p>
+            </div>
+          </div>
+
+          <div class="animate-float-delayed absolute -right-12 top-16 z-20 flex cursor-default items-center gap-5 rounded-[2.5rem] border border-white/35 bg-brand-deep/65 p-8 shadow-2xl backdrop-blur-xl transition-transform hover:scale-105">
+            <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/35 bg-white/15 text-white backdrop-blur-sm">
+              <i data-lucide="mail" class="h-8 w-8"></i>
+            </div>
+            <div class="text-white">
+              <p class="text-xl font-bold">Smart Booking</p>
+              <p class="mt-1 text-[11px] font-bold uppercase tracking-widest opacity-60">Gmail Notifications</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="relative overflow-hidden bg-white py-28 lg:py-32">
+    <div class="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-10">
+      <div class="grid items-center gap-20 lg:grid-cols-2">
+        <div class="reveal">
+          <div class="mb-10 text-[12px] font-black uppercase tracking-[0.5em] text-brand-500">Our Story</div>
+          <h2 class="mb-10 font-serif text-4xl font-bold leading-tight tracking-tighter text-brand-deep lg:text-6xl">A Decade of Clinical Excellence.</h2>
+
+          <div class="space-y-8">
+            <p class="text-lg font-light leading-relaxed text-slate-500">
+              Founded over 10 years ago in Quezon City, Tejada Dental Clinic delivers modern, evidence-based dentistry in a calm and professional setting. From prevention to advanced procedures, we focus on safe and precise care for every patient.
+            </p>
+            <p class="text-lg font-light leading-relaxed text-slate-500">
+              Our team combines clinical experience, digital diagnostics, and patient-first service. Whether you need a routine checkup, orthodontic planning, whitening, or oral surgery, we make treatment clear, comfortable, and dependable.
+            </p>
+
+          </div>
+        </div>
+
+        <div class="group relative mx-auto w-full max-w-[560px] reveal">
+          <div class="absolute -inset-4 -z-10 rounded-[4rem] bg-brand-50 transition-transform duration-700 group-hover:scale-105"></div>
+          <div class="aspect-[4/4.8] overflow-hidden rounded-[3rem] border-[10px] border-white bg-slate-50 shadow-2xl">
+            <img src="https://images.unsplash.com/photo-1588776814546-daab30f310ce?auto=format&fit=crop&w=1000&q=80" alt="Dental treatment session in clinic" class="h-full w-full object-cover">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="services" class="relative overflow-hidden bg-[#f4fbff]/50 py-28 lg:py-32">
+    <div class="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-10">
+      <div class="reveal mx-auto mb-24 max-w-3xl text-center">
+        <div class="mb-6 text-center text-[12px] font-black uppercase tracking-[0.5em] text-brand-500">Procedures</div>
+        <h2 class="mb-8 font-serif text-5xl font-bold leading-tight tracking-tight text-brand-deep lg:text-7xl">
+          Clinical <span class="font-light italic text-brand-500 underline decoration-brand-200 underline-offset-8">Excellence</span>
+        </h2>
+        <p class="text-xl font-light leading-relaxed text-slate-500">Combining medical precision with aesthetic artistry to deliver transformative results.</p>
+      </div>
+
+      <div class="grid gap-10 md:grid-cols-2 xl:grid-cols-4">
+        <div class="service-card group reveal overflow-hidden rounded-[3rem] bg-white">
+          <div class="relative h-64 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80" alt="Checkup" class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110">
+            <div class="absolute left-6 top-6 flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-xs font-black tracking-widest text-brand-deep shadow-sm backdrop-blur-sm">01</div>
+          </div>
+          <div class="p-10">
+            <h3 class="mb-4 font-serif text-2xl font-bold text-brand-deep">General Checkup</h3>
+            <p class="mb-10 text-sm font-light leading-relaxed text-slate-500">Advanced clinical examinations to ensure long-term oral health.</p>
+            <a href="/services/general-checkup" class="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-brand-500 transition-all group-hover:gap-5">
+              Discover <i data-lucide="chevron-right" class="h-4 w-4"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="service-card group reveal overflow-hidden rounded-[3rem] bg-white">
+          <div class="relative h-64 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80" alt="Surgery" class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110">
+            <div class="absolute left-6 top-6 flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-xs font-black tracking-widest text-brand-deep shadow-sm backdrop-blur-sm">02</div>
+          </div>
+          <div class="p-10">
+            <h3 class="mb-4 font-serif text-2xl font-bold text-brand-deep">Oral Surgery</h3>
+            <p class="mb-10 text-sm font-light leading-relaxed text-slate-500">Precision-guided procedures performed with absolute surgical mastery.</p>
+            <a href="/services/oral-surgery" class="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-brand-500 transition-all group-hover:gap-5">
+              Discover <i data-lucide="chevron-right" class="h-4 w-4"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="service-card group reveal overflow-hidden rounded-[3rem] bg-white">
+          <div class="relative h-64 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=600&q=80" alt="Orthodontics" class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110">
+            <div class="absolute left-6 top-6 flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-xs font-black tracking-widest text-brand-deep shadow-sm backdrop-blur-sm">03</div>
+          </div>
+          <div class="p-10">
+            <h3 class="mb-4 font-serif text-2xl font-bold text-brand-deep">Orthodontics</h3>
+            <p class="mb-10 text-sm font-light leading-relaxed text-slate-500">Designing perfect alignment for both functional and aesthetic brilliance.</p>
+            <a href="/services/orthodontics" class="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-brand-500 transition-all group-hover:gap-5">
+              Discover <i data-lucide="chevron-right" class="h-4 w-4"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="service-card group reveal overflow-hidden rounded-[3rem] bg-white">
+          <div class="relative h-64 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&fit=crop&w=600&q=80" alt="Teeth Whitening Treatment" class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110">
+            <div class="absolute left-6 top-6 flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-xs font-black tracking-widest text-brand-deep shadow-sm backdrop-blur-sm">04</div>
+          </div>
+          <div class="p-10">
+            <h3 class="mb-4 font-serif text-2xl font-bold text-brand-deep">Teeth Whitening</h3>
+            <p class="mb-10 text-sm font-light leading-relaxed text-slate-500">Advanced clinical brightening protocols for immediate, natural radiance.</p>
+            <a href="/services/teeth-whitening" class="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-brand-500 transition-all group-hover:gap-5">
+              Discover <i data-lucide="chevron-right" class="h-4 w-4"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="relative bg-white py-28 lg:py-32">
+    <div class="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-10">
+      <div class="grid items-center gap-20 lg:grid-cols-2">
+        <div class="reveal">
+          <div class="mb-10 text-[12px] font-black uppercase tracking-[0.5em] text-brand-500">Location</div>
+          <h2 class="mb-14 font-serif text-5xl font-bold leading-tight tracking-tighter text-brand-deep lg:text-[5.1rem]">Clinical excellence in the heart of the city.</h2>
+
+          <div class="space-y-10">
+            <div class="group flex items-start gap-8">
+              <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] bg-brand-50 text-brand-500 shadow-sm transition-all duration-500 group-hover:bg-brand-500 group-hover:text-white">
+                <i data-lucide="map-pin" class="h-7 w-7"></i>
+              </div>
+              <div>
+                <p class="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Practice Address</p>
+                <p class="text-2xl font-bold text-brand-deep">251 Commonwealth Ave, Diliman</p>
+                <p class="mt-1 font-light text-slate-500">Quezon City, Metro Manila, Philippines</p>
+              </div>
+            </div>
+
+            <div class="group flex items-start gap-8">
+              <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] bg-brand-50 text-brand-500 shadow-sm transition-all duration-500 group-hover:bg-brand-500 group-hover:text-white">
+                <i data-lucide="phone" class="h-7 w-7"></i>
+              </div>
+              <div>
+                <p class="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Contact Details</p>
+                <p class="text-2xl font-bold text-brand-deep">+63 912 345 6789</p>
+                <p class="mt-1 font-light italic text-slate-500">Mon - Sat: 9:00 AM - 6:00 PM</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group relative h-[650px] overflow-hidden rounded-[4rem] border-[16px] border-slate-50 bg-slate-100 shadow-[0_60px_100px_-30px_rgba(0,130,195,0.2)] reveal">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3860.0526364003323!2d121.07357487578508!3d14.668435175138128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b759ceee4d07%3A0x8927894f17a3b774!2sDiliman%20Doctors%20Hospital!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph" class="absolute inset-0 h-full w-full border-0 transition-all duration-1000 group-hover:scale-[1.02]" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Tejada Dental Clinic Location"></iframe>
+          <div class="absolute bottom-5 right-5 z-20 flex gap-3">
+            <a href="https://maps.google.com/?q=251+Commonwealth+Ave,+Diliman,+Quezon+City" target="_blank" rel="noopener noreferrer" class="rounded-xl bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-wider text-brand-deep shadow-lg backdrop-blur-sm transition hover:bg-white">
+              Open Map
+            </a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=251+Commonwealth+Ave,+Diliman,+Quezon+City" target="_blank" rel="noopener noreferrer" class="rounded-xl bg-brand-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition hover:bg-brand-600">
+              Directions
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="relative overflow-hidden border-t border-slate-100 bg-white pb-16 pt-28 lg:pt-32">
+    <div class="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-brand-500 to-transparent opacity-30"></div>
+
+    <div class="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-10">
+      <div class="mb-20 grid gap-16 md:grid-cols-3 lg:gap-24">
+        <div class="reveal">
+          <a class="td-brand mb-10 flex items-center gap-4" href="{{ url('/') }}">
+            <div class="relative flex h-11 w-11 shrink-0 items-center justify-center">
+              <svg width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="-translate-y-[1px]">
+                <defs>
+                  <linearGradient id="footerLogoMain" x1="11" y1="11" x2="53" y2="55" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#1389D4" />
+                    <stop offset="1" stop-color="#0B4F96" />
+                  </linearGradient>
+                  <linearGradient id="footerLogoShade" x1="42" y1="14" x2="50" y2="44" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#0A5DA5" />
+                    <stop offset="1" stop-color="#0C2340" />
+                  </linearGradient>
+                  <linearGradient id="footerLogoBadge" x1="25" y1="27" x2="39" y2="41" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#0F9ADD" />
+                    <stop offset="1" stop-color="#0B4D8E" />
+                  </linearGradient>
+                </defs>
+                <path fill="url(#footerLogoMain)" d="M32 58c-1.2 0-2.3-.4-3.2-1.2C16.5 47 8 39.7 8 28.8 8 19.7 14.6 13 23 13c3.7 0 7.2 1.4 9.9 4 2.7-2.6 6.2-4 9.9-4 8.4 0 15 6.7 15 15.8 0 10.9-8.5 18.2-20.8 28-.9.8-2 1.2-3.1 1.2z" />
+                <path fill="url(#footerLogoShade)" d="M42.8 14.1c6 2.3 10.2 7.5 10.2 14.7 0 8.8-6.1 14.8-15.9 22.8 2.9-8.5-5.2-13.6-1.1-20 3.6-5.6 9-8.7 6.8-17.5z" opacity=".95" />
+                <path fill="#FFFFFF" opacity=".22" d="M17 22c2.4-5.1 8.2-8.4 14.3-8.4 1.2 0 2.4.1 3.6.4-4.8 1-8.8 4.2-10.6 8.9-2.4 6.4-.6 12.6 3.7 17.4-6.8-3-13.7-10-11-18.3z" />
+                <path fill="#EFF8FF" d="M31.4 58c2.4-3.3 3.3-6.8 2.7-10.4-.4-2.2.2-4.5 1.5-6.4l2.5-3.4c1.7-2.4 1.4-5.6-.7-7.6l-4.7-4.5-4.7 4.5c-2.1 2-2.4 5.3-.7 7.6l2.5 3.4c1.3 1.9 1.9 4.2 1.5 6.4-.6 3.6.3 7.1 2.7 10.4h-2.6z" />
+                <circle cx="32" cy="34" r="11" fill="url(#footerLogoBadge)" stroke="#DFF3FF" stroke-width="2.2" />
+                <circle cx="32" cy="34" r="8.4" fill="#FFFFFF" />
+                <path d="M32 29v10M27 34h10" stroke="#0C3C71" stroke-width="3.2" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="flex -translate-y-[1px] flex-col justify-center leading-none">
+              <p class="font-serif text-[17px] font-bold tracking-[0.01em] text-[#0f2340] sm:text-[19px]">Tejada Dental</p>
+              <p class="mt-1 text-[8px] font-bold uppercase tracking-[0.28em] text-[#0082C3] sm:text-[9px] sm:tracking-[0.32em]">Clinic &amp; Oral Care</p>
+            </div>
+          </a>
+          <p class="max-w-sm text-[15px] font-light leading-relaxed text-slate-400">Excellence in oral healthcare and patient comfort for over a decade. Your smile is our greatest clinical masterpiece.</p>
+        </div>
+        <div class="reveal">
+          <h4 class="mb-10 text-[10px] font-black uppercase tracking-[0.5em] text-brand-deep opacity-40">Navigation</h4>
+          <ul class="space-y-5 text-[13px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            <li><a href="#about" class="transition-all hover:text-brand-500">About Clinic</a></li>
+            <li><a href="#services" class="transition-all hover:text-brand-500">Our Services</a></li>
+            <li><a href="#contact" class="transition-all hover:text-brand-500">Directions</a></li>
+          </ul>
+        </div>
+        <div class="reveal">
+          <h4 class="mb-10 text-[10px] font-black uppercase tracking-[0.5em] text-brand-deep opacity-40">Treatments</h4>
+          <ul class="space-y-5 text-[13px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            <li><a href="/services/general-checkup" class="transition-all hover:text-brand-500">General Checkup</a></li>
+            <li><a href="/services/orthodontics" class="transition-all hover:text-brand-500">Orthodontics</a></li>
+            <li><a href="/services/oral-surgery" class="transition-all hover:text-brand-500">Oral Surgery</a></li>
+            <li><a href="/services/teeth-whitening" class="transition-all hover:text-brand-500">Teeth Whitening</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="flex flex-col items-start justify-between gap-4 border-t border-slate-50 pt-12 text-[10px] font-black uppercase tracking-[0.28em] opacity-40 md:flex-row md:items-center">
+        <p>&copy; 2026 Tejada Dental Clinic. All Rights Reserved.</p>
+        <p>Quezon City, PH</p>
+      </div>
+    </div>
+  </footer>
+
+  <button id="backToTop" class="fixed bottom-8 right-8 z-[60] rounded-2xl bg-brand-deep p-4 text-white opacity-0 translate-y-10 shadow-2xl shadow-brand-deep/20 transition-all hover:-translate-y-2 hover:bg-brand-500 active:scale-90">
+    <i data-lucide="arrow-up" class="h-6 w-6"></i>
+  </button>
+
+  <script>
+    lucide.createIcons();
+
+    const reveals = document.querySelectorAll('.reveal');
+    const backToTop = document.getElementById('backToTop');
+
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 600) {
+        backToTop.classList.add('opacity-100', 'translate-y-0');
+        backToTop.classList.remove('opacity-0', 'translate-y-10');
+      } else {
+        backToTop.classList.add('opacity-0', 'translate-y-10');
+        backToTop.classList.remove('opacity-100', 'translate-y-0');
+      }
+
+      reveals.forEach(el => {
+        const top = el.getBoundingClientRect().top;
+        if (top < window.innerHeight * 0.92) {
+          el.classList.add('active');
+        }
+      });
+    });
+
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.dispatchEvent(new Event('scroll'));
+  </script>
+</body>
+</html>

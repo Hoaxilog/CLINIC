@@ -1,218 +1,219 @@
-<header>
-    <nav class="fixed top-0 left-0 right-0 z-50 bg-[#FCFCFC] border-b-2 border-black">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20 items-center">
-                <div class="flex-shrink-0 flex items-center">
-                    <a href="/" class="flex items-center space-x-2">
-                        <div class="flex items-center gap-2">
-                            <div class="relative w-15 h-15 rounded-full flex items-center justify-center">
-                                <svg width="56" height="45" viewBox="0 0 56 45" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <mask id="mask0_128_176" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0"
-                                        y="0" width="56" height="45">
-                                        <path
-                                            d="M11.783 0.465134C6.04622 2.04593 1.64903 6.81758 0.396845 12.7602C-0.127324 15.307 -0.127324 16.9171 0.367724 19.3468C1.70727 25.6993 7.88082 33.5154 18.5972 42.444L21.0724 44.5225L21.3927 43.1173C22.1499 39.8972 23.402 37.9944 25.6152 36.7941C27.2751 35.8574 28.3525 35.9159 30.158 36.9698C31.5849 37.8187 33.2739 40.5412 33.7398 42.7367C33.9437 43.7321 34.1766 44.5225 34.264 44.5225C34.5261 44.5225 40.8161 39.0775 43.5243 36.5307C51.7363 28.7438 56.0461 20.9862 55.4637 15.0436C55.0269 10.711 53.2797 7.05178 50.2511 4.24147C44.2814 -1.37913 35.4579 -1.4084 29.5756 4.12438L27.7701 5.82227L25.9646 4.15365C22.9361 1.34335 19.4708 -0.00325012 15.3939 0.0552979C14.2 0.0552979 12.5692 0.260216 11.783 0.465134ZM32.7206 9.36442C38.7486 12.3504 41.1947 19.4932 38.1953 25.4066C37.2634 27.2801 34.7008 29.8269 32.808 30.7344C27.0712 33.4862 20.0532 31.0857 17.2867 25.4066C16.0054 22.7134 15.6851 20.6934 16.151 17.9417C16.7626 14.341 19.1796 11.0916 22.5284 9.42297C24.596 8.39838 25.4405 8.22274 28.2943 8.33983C30.4492 8.42765 31.119 8.57402 32.7206 9.36442Z"
-                                            fill="black" />
-                                        <path
-                                            d="M24.0136 9.97903C21.0142 11.15 18.9757 13.2577 17.7235 16.4193C16.7917 18.7612 16.9664 22.3619 18.1021 24.616C19.2378 26.8116 21.2471 28.8022 23.3729 29.7975C24.9163 30.5001 25.4987 30.6172 27.7701 30.6172C29.9833 30.6172 30.653 30.5001 32.0217 29.8561C39.1271 26.4896 40.5831 17.5024 34.8755 12.2039C32.6624 10.1547 30.7113 9.39355 27.6828 9.39355C26.1976 9.42283 24.9745 9.59847 24.0136 9.97903ZM31.0316 13.4334C30.9151 14.0188 30.9151 15.0142 31.0025 15.5996L31.1772 16.6828L33.2739 16.7706L35.3414 16.8584V20.0493V23.2694L33.3613 23.2987C32.2838 23.328 31.3228 23.4451 31.2063 23.5329C31.119 23.65 31.0025 24.616 31.0025 25.6992L30.9734 27.6898L27.6828 27.7776L24.4213 27.8654V25.6699V23.5036L23.0526 23.328C22.2663 23.2401 21.3345 23.2109 20.9268 23.2401L20.1988 23.2987L20.1114 19.9907L20.0241 16.712H22.2372H24.4213V14.5165V12.321H27.7992H31.2063L31.0316 13.4334Z"
-                                            fill="black" />
-                                    </mask>
-                                    <g mask="url(#mask0_128_176)">
-                                        <rect x="-25.5311" y="-23.4609" width="106.265" height="91.7739"
-                                            fill="#0086DA" />
-                                    </g>
-                                </svg>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <p class="font-bold tracking-widest">TEJA </p>
-                                <p class="bg-[#0789da] text-white tracking-widest px-1">DENT</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="hidden md:flex items-center space-x-10">
-                    @if (auth()->check() && auth()->user()->role === 3)
-                        <a href="{{ route('patient.dashboard') }}"
-                            class="text-sm font-bold text-black hover:underline underline-offset-4">Dashboard</a>
-                        <a href="{{ route('book') }}"
-                            class="text-sm font-bold text-black hover:underline underline-offset-4">Book</a>
-                        <a href="{{ route('profile.index') }}"
-                            class="text-sm font-bold text-black hover:underline underline-offset-4">Profile</a>
-                    @else
-                        <a href="/home#about"
-                            class="text-sm font-bold text-black hover:underline underline-offset-4">About</a>
-                        <a href="/home#services"
-                            class="text-sm font-bold text-black hover:underline underline-offset-4">Services</a>
-                        <a href="/home#contact"
-                            class="text-sm font-bold text-black hover:underline underline-offset-4">Contact</a>
-                    @endif
-                </div>
-                <div class="flex items-center gap-5">
-                    @if (auth()->check() && auth()->user()->role === 3)
-                        <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
-                            @csrf
-                            <button type="submit"
-                                class="px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da] hover:text-white hover:bg-[#0789da] transition-all">
-                                Logout
-                            </button>
-                        </form>
-                        <a href="{{ route('book') }}"
-                            class="hidden md:flex md:items-center md:gap-2 md:block px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-black text-white hover:scale-105 transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                                color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M16 2V6M8 2V6" />
-                                <path
-                                    d="M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4Z" />
-                                <path d="M3 10H21" />
-                                <path d="M11.9955 14H12.0045M11.9955 18H12.0045M15.991 14H16M8 14H8.00897M8 18H8.00897" />
-                            </svg>
-                            Book Now
-                        </a>
-                    @else
-                        <a href="/login"
-                            class="hidden md:flex md:items-center md:gap-2 md:block px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da]  hover:text-white hover:bg-[#0789da] transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"
-                            color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M20.6073 4.00087C21 4.61597 21 5.41166 21 7.00304V16.997C21 18.5883 21 19.384 20.6073 19.9991C20.5372 20.109 20.4586 20.2132 20.3722 20.3108C19.8886 20.8572 19.1233 21.0758 17.5929 21.513C16.0586 21.9513 15.2914 22.1704 14.736 21.8417C14.6396 21.7847 14.55 21.7171 14.4687 21.6402C14 21.1965 14 20.3988 14 18.8034V5.19662C14 3.60122 14 2.80351 14.4687 2.35982C14.55 2.28288 14.6396 2.21527 14.736 2.15827C15.2914 1.82956 16.0586 2.0487 17.5929 2.48699C19.1233 2.92418 19.8886 3.14278 20.3722 3.68925C20.4586 3.78684 20.5372 3.89103 20.6073 4.00087Z" />
-                            <path
-                                d="M14 4H11.9829C10.0812 4 9.13039 4 8.5396 4.58579C8.21023 4.91238 8.06449 5.34994 8 6M14 20H11.9829C10.0812 20 9.13039 20 8.5396 19.4142C8.21023 19.0876 8.06449 18.6501 8 18" />
-                            <path
-                                d="M10 12H3M8.50005 9.49994C8.50005 9.49994 11 11.3412 11 12C11 12.6588 8.50003 14.4999 8.50003 14.4999" />
-                        </svg>
-                        LOGIN
-                    </a>
-                        <a href="/book"
-                            class="hidden md:flex md:items-center md:gap-2 md:block px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-blac text-white  hover:scale-105 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                            color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M16 2V6M8 2V6" />
-                            <path
-                                d="M13 4H11C7.22876 4 5.34315 4 4.17157 5.17157C3 6.34315 3 8.22876 3 12V14C3 17.7712 3 19.6569 4.17157 20.8284C5.34315 22 7.22876 22 11 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V12C21 8.22876 21 6.34315 19.8284 5.17157C18.6569 4 16.7712 4 13 4Z" />
-                            <path d="M3 10H21" />
-                            <path d="M11.9955 14H12.0045M11.9955 18H12.0045M15.991 14H16M8 14H8.00897M8 18H8.00897" />
-                        </svg>
-                            Book Now
-                        </a>
-                    @endif
-                    <button id="menu-btn"
-                        class="md:hidden p-2 border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                        aria-controls="mobile-menu" aria-expanded="false" aria-label="Toggle menu">
-                        <svg id="menu-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="black">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div id="mobile-menu" class="md:hidden fixed inset-0 z-50 hidden pointer-events-none" aria-hidden="true">
-            <div id="mobile-menu-backdrop"
-                class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 ease-out pointer-events-none"></div>
-            <div id="mobile-menu-panel"
-                class="absolute right-0 top-0 h-full w-72 max-w-[85%] bg-[#FCFCFC] border-l-2 border-black shadow-[8px_0_0px_0px_rgba(0,0,0,1)] transform translate-x-full transition-transform duration-300 ease-out will-change-transform pointer-events-auto">
-                <div class="flex items-center justify-between px-4 h-16 border-b-2 border-black">
-                    <p class="text-sm font-black tracking-widest">MENU</p>
-                    <button id="menu-close" class="p-2 border-2 border-black bg-white" aria-label="Close menu">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="black">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="px-4 py-6 space-y-4">
-                    @if (auth()->check() && auth()->user()->role === 3)
-                        <a href="{{ route('patient.dashboard') }}"
-                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Dashboard</a>
-                        <a href="{{ route('book') }}"
-                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Book</a>
-                        <a href="{{ route('profile.index') }}"
-                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Profile</a>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"
-                                class="block w-full text-center px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da] hover:text-white hover:bg-[#0789da] transition-all">
-                                Logout
-                            </button>
-                        </form>
-                        <a href="{{ route('book') }}"
-                            class="block w-full text-center px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-black text-white hover:scale-105 transition-all">Book
-                            Now</a>
-                    @else
-                        <a href="/#about"
-                            class="block text-sm font-bold text-black hover:underline underline-offset-4">About</a>
-                        <a href="/#services"
-                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Services</a>
-                        <a href="/#contact"
-                            class="block text-sm font-bold text-black hover:underline underline-offset-4">Contact</a>
-                        <a href="/login"
-                            class="block w-full text-center px-5 py-2 text-sm font-bold bg-white border-2 border-[#0789da] text-[#0789da] hover:text-white hover:bg-[#0789da] transition-all">Login</a>
-                        <a href="/book"
-                            class="block w-full text-center px-5 py-2 text-sm font-bold bg-[#0789da] border-2 border-black text-white hover:scale-105 transition-all">Book
-                            Now</a>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </nav>
+<style>
+  .td-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 100;
+    height: 80px;
+    background: #f4fbff;
+    border-bottom: 1px solid #d3e6f3;
+  }
+
+  .td-header-inner {
+    width: 100%;
+    height: 100%;
+    padding: 0 var(--page-gutter, clamp(20px, 3.2vw, 56px));
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .td-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .td-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    list-style: none;
+    gap: clamp(18px, 2.2vw, 40px);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  .td-nav a {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #4f7594;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+  }
+
+  .td-nav a:hover {
+    color: #0082C3;
+  }
+
+  .td-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .td-header-login {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid #b7d9ee;
+    background: #fff;
+    color: #0a3f73;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+
+  .td-header-login:hover {
+    border-color: #0082C3;
+    color: #0082C3;
+    background: #eaf6fd;
+  }
+
+  .td-header-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #0082C3 0%, #006aa4 100%);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 11px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0, 130, 195, 0.28);
+    transition: filter 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .td-header-cta:hover {
+    filter: saturate(1.08);
+    box-shadow: 0 8px 18px rgba(0, 106, 164, 0.35);
+  }
+
+  .td-mobile-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #b7d9ee;
+    background: #fff;
+    color: #0a3f73;
+    border-radius: 8px;
+    padding: 8px;
+  }
+
+  @media (max-width: 1024px) {
+    .td-header-inner {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .td-nav,
+    .td-actions {
+      display: none;
+    }
+
+    .td-mobile-btn {
+      display: inline-flex;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .td-header {
+      height: 74px;
+    }
+
+    .td-header-inner {
+      padding: 0 12px;
+    }
+  }
+</style>
+
+<header class="td-header">
+  <div class="td-header-inner">
+    <a class="td-brand" href="{{ url('/') }}">
+      <div class="relative flex h-11 w-11 shrink-0 items-center justify-center">
+        <svg width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="-translate-y-[1px]">
+          <defs>
+            <linearGradient id="headerLogoMain" x1="11" y1="11" x2="53" y2="55" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#1389D4" />
+              <stop offset="1" stop-color="#0B4F96" />
+            </linearGradient>
+            <linearGradient id="headerLogoShade" x1="42" y1="14" x2="50" y2="44" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#0A5DA5" />
+              <stop offset="1" stop-color="#0C2340" />
+            </linearGradient>
+            <linearGradient id="headerLogoBadge" x1="25" y1="27" x2="39" y2="41" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#0F9ADD" />
+              <stop offset="1" stop-color="#0B4D8E" />
+            </linearGradient>
+          </defs>
+          <path fill="url(#headerLogoMain)" d="M32 58c-1.2 0-2.3-.4-3.2-1.2C16.5 47 8 39.7 8 28.8 8 19.7 14.6 13 23 13c3.7 0 7.2 1.4 9.9 4 2.7-2.6 6.2-4 9.9-4 8.4 0 15 6.7 15 15.8 0 10.9-8.5 18.2-20.8 28-.9.8-2 1.2-3.1 1.2z" />
+          <path fill="url(#headerLogoShade)" d="M42.8 14.1c6 2.3 10.2 7.5 10.2 14.7 0 8.8-6.1 14.8-15.9 22.8 2.9-8.5-5.2-13.6-1.1-20 3.6-5.6 9-8.7 6.8-17.5z" opacity=".95" />
+          <path fill="#FFFFFF" opacity=".22" d="M17 22c2.4-5.1 8.2-8.4 14.3-8.4 1.2 0 2.4.1 3.6.4-4.8 1-8.8 4.2-10.6 8.9-2.4 6.4-.6 12.6 3.7 17.4-6.8-3-13.7-10-11-18.3z" />
+          <path fill="#EFF8FF" d="M31.4 58c2.4-3.3 3.3-6.8 2.7-10.4-.4-2.2.2-4.5 1.5-6.4l2.5-3.4c1.7-2.4 1.4-5.6-.7-7.6l-4.7-4.5-4.7 4.5c-2.1 2-2.4 5.3-.7 7.6l2.5 3.4c1.3 1.9 1.9 4.2 1.5 6.4-.6 3.6.3 7.1 2.7 10.4h-2.6z" />
+          <circle cx="32" cy="34" r="11" fill="url(#headerLogoBadge)" stroke="#DFF3FF" stroke-width="2.2" />
+          <circle cx="32" cy="34" r="8.4" fill="#FFFFFF" />
+          <path d="M32 29v10M27 34h10" stroke="#0C3C71" stroke-width="3.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="flex -translate-y-[1px] flex-col justify-center leading-none">
+        <p class="font-serif text-[17px] font-bold tracking-[0.01em] text-[#0f2340] sm:text-[19px]">Tejada Dental</p>
+        <p class="mt-1 text-[8px] font-bold uppercase tracking-[0.28em] text-[#0082C3] sm:text-[9px] sm:tracking-[0.32em]">Clinic &amp; Oral Care</p>
+      </div>
+    </a>
+
+    <ul class="td-nav">
+      <li><a href="{{ url('/#about') }}">About</a></li>
+      <li><a href="{{ url('/#services') }}">Services</a></li>
+      <li><a href="{{ url('/#contact') }}">Contact</a></li>
+    </ul>
+
+    <div class="td-actions">
+      <a class="td-header-login" href="{{ url('/login') }}">Login</a>
+      <a class="td-header-cta" href="{{ url('/#register-section') }}">Book Appointment</a>
+    </div>
+
+    <button id="menu-btn" class="td-mobile-btn" aria-label="Open menu">
+      <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+
+  <div id="mobile-menu" class="hidden border-t border-slate-200 bg-[#f4fbff] px-4 py-4 md:hidden">
+    <div class="flex flex-col gap-3">
+      <a href="{{ url('/#about') }}" class="text-sm font-semibold text-[#4f7594]">About</a>
+      <a href="{{ url('/#services') }}" class="text-sm font-semibold text-[#4f7594]">Services</a>
+      <a href="{{ url('/#contact') }}" class="text-sm font-semibold text-[#4f7594]">Contact</a>
+      <a href="{{ url('/login') }}" class="mt-1 rounded-md border border-[#b7d9ee] px-4 py-2 text-center text-sm font-semibold text-[#0a3f73]">Login</a>
+      <a href="{{ url('/#register-section') }}" class="rounded-md bg-[#0082C3] px-4 py-2 text-center text-sm font-semibold text-white">Book Appointment</a>
+    </div>
+  </div>
 </header>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = document.getElementById('menu-icon');
-        const menuPanel = document.getElementById('mobile-menu-panel');
-        const menuBackdrop = document.getElementById('mobile-menu-backdrop');
-        const menuClose = document.getElementById('menu-close');
+  (function() {
+    const menuBtn = document.getElementById('menu-btn');
+    const menuIcon = document.getElementById('menu-icon');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (!menuBtn || !menuIcon || !mobileMenu) return;
 
-        if (!menuBtn || !mobileMenu) return; // Exit if elements not found
-
-        function openMenu() {
-            mobileMenu.classList.remove('hidden');
-            mobileMenu.classList.add('pointer-events-auto');
-            mobileMenu.setAttribute('aria-hidden', 'false');
-            menuBtn.setAttribute('aria-expanded', 'true');
-            menuIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`;
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    menuBackdrop.classList.remove('opacity-0', 'pointer-events-none');
-                    menuBackdrop.classList.add('opacity-100', 'pointer-events-auto');
-                    menuPanel.classList.remove('translate-x-full');
-                });
-            });
-        }
-
-        function closeMenu() {
-            menuPanel.classList.add('translate-x-full');
-            menuBackdrop.classList.remove('opacity-100', 'pointer-events-auto');
-            menuBackdrop.classList.add('opacity-0', 'pointer-events-none');
-            menuBtn.setAttribute('aria-expanded', 'false');
-            menuIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />`;
-            setTimeout(() => {
-                mobileMenu.classList.add('hidden', 'pointer-events-none');
-                mobileMenu.classList.remove('pointer-events-auto');
-                mobileMenu.setAttribute('aria-hidden', 'true');
-            }, 300);
-        }
-
-        menuBtn.addEventListener('click', function() {
-            if (mobileMenu.classList.contains('hidden')) {
-                openMenu();
-            } else {
-                closeMenu();
-            }
-        });
-
-        menuBackdrop.addEventListener('click', closeMenu);
-        menuClose.addEventListener('click', closeMenu);
-
-        // Close menu on link clicks
-        const menuLinks = mobileMenu.querySelectorAll('a');
-        menuLinks.forEach(link => {
-            link.addEventListener('click', closeMenu);
-        });
+    menuBtn.addEventListener('click', () => {
+      const isOpen = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      menuIcon.innerHTML = isOpen
+        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />'
+        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
     });
+  })();
 </script>
