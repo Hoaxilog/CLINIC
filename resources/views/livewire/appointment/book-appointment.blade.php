@@ -111,7 +111,8 @@
                             <label class="mb-1 block text-sm font-medium text-slate-700">
                                 Contact Number <span class="text-red-600">*</span>
                             </label>
-                            <input type="number" wire:model="contact_number" placeholder="Contact number"
+                            <input type="text" wire:model="contact_number" placeholder="Contact number"
+                                inputmode="numeric" pattern="[0-9]*" autocomplete="tel"
                                 class="{{ $inputClass }}">
                             @error('contact_number')
                                 <div class="text-sm text-red-600 mt-1">{{ $message }}</div>
@@ -421,10 +422,18 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const contactNumberInput = document.querySelector('input[wire\\:model="contact_number"]');
             syncCalendarToSelectedDate();
             bindCalendarNavigation();
             renderCalendar();
             ensureRecaptcha();
+
+            if (contactNumberInput) {
+                contactNumberInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '');
+                    this.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+            }
             
             // Handle appointment terms checkbox
             const termsCheckbox = document.getElementById('appointment-terms-checkbox');

@@ -57,7 +57,7 @@ class AppointmentCalendar extends Component
         'firstName' => 'required|string|max:100',
         'lastName' => 'required|string|max:100',
         'middleName' => 'nullable|string|max:100',
-        'contactNumber' => 'required|string|max:20',
+        'contactNumber' => ['required', 'regex:/^[0-9]+$/', 'max:20'],
         'selectedService' => 'required',
         'selectedDate' => 'required',
         'selectedTime' => 'required',
@@ -73,6 +73,11 @@ class AppointmentCalendar extends Component
         $this->selectedDate = $this->currentDate->format('Y-m-d');
 
         $this->activeTab = 'calendar';
+        $requestedTab = request()->query('tab');
+
+        if ($requestedTab === 'pending' && Auth::user()?->role !== 3) {
+            $this->activeTab = 'pending';
+        }
 
         $this->generateWeekDates(); 
         $this->generateTimeSlots();
@@ -298,11 +303,13 @@ class AppointmentCalendar extends Component
         $this->validate([
             'firstName' => 'required|string|max:100',
             'lastName' => 'required|string|max:100',
-            'contactNumber' => 'required|string|max:20',
+            'contactNumber' => ['required', 'regex:/^[0-9]+$/', 'max:20'],
             'selectedService' => 'required',
             'selectedDate' => 'required',
             'selectedTime' => 'required',
             'birthDate' => 'required',
+        ], [
+            'contactNumber.regex' => 'Contact number must contain digits only.',
         ]);
 
         try {
@@ -458,11 +465,13 @@ class AppointmentCalendar extends Component
         $this->validate([
             'firstName' => 'required|string|max:100',
             'lastName' => 'required|string|max:100',
-            'contactNumber' => 'required|string|max:20',
+            'contactNumber' => ['required', 'regex:/^[0-9]+$/', 'max:20'],
             'selectedService' => 'required',
             'selectedDate' => 'required',
             'selectedTime' => 'required',
             'birthDate' => 'required',
+        ], [
+            'contactNumber.regex' => 'Contact number must contain digits only.',
         ]);
 
         return true;

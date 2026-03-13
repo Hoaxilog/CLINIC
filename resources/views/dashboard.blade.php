@@ -1,6 +1,11 @@
 @extends('index')
 
 @section('content')
+    @php
+        $todayCompletedPatients = collect($todayScheduleAppointments ?? [])->where('status', 'Completed')->values();
+        $todayCancelledPatients = collect($todayScheduleAppointments ?? [])->where('status', 'Cancelled')->values();
+    @endphp
+
     <main id="mainContent"
         class="min-h-screen bg-[#f3f4f6] p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
 
@@ -134,6 +139,56 @@
                         <div class="mt-2 text-3xl font-bold text-blue-800">{{ $completedPatientsCount ?? 0 }}</div>
                     </div>
                 </div>
+
+                <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                    <div class="rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <h3 class="text-sm font-semibold text-emerald-900">Completed Today</h3>
+                                <p class="mt-1 text-xs text-emerald-700">Patients whose appointments were completed today.</p>
+                            </div>
+                            <span class="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-700">{{ $todayCompletedPatients->count() }}</span>
+                        </div>
+
+                        <div class="mt-4 space-y-2">
+                            @forelse ($todayCompletedPatients as $appointment)
+                                <div class="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 text-sm shadow-sm">
+                                    <div class="min-w-0">
+                                        <p class="truncate font-semibold text-slate-900">{{ $appointment->last_name }}, {{ $appointment->first_name }}</p>
+                                        <p class="truncate text-xs text-slate-500">{{ $appointment->service_name }}</p>
+                                    </div>
+                                    <span class="shrink-0 text-xs font-semibold text-emerald-700">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('h:i A') }}</span>
+                                </div>
+                            @empty
+                                <p class="rounded-lg border border-dashed border-emerald-200 bg-white/80 px-3 py-4 text-sm text-emerald-800">No completed appointments recorded today.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl border border-rose-100 bg-rose-50/60 p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <h3 class="text-sm font-semibold text-rose-900">Cancelled Today</h3>
+                                <p class="mt-1 text-xs text-rose-700">Patients who cancelled or were marked cancelled today.</p>
+                            </div>
+                            <span class="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-rose-700">{{ $todayCancelledPatients->count() }}</span>
+                        </div>
+
+                        <div class="mt-4 space-y-2">
+                            @forelse ($todayCancelledPatients as $appointment)
+                                <div class="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 text-sm shadow-sm">
+                                    <div class="min-w-0">
+                                        <p class="truncate font-semibold text-slate-900">{{ $appointment->last_name }}, {{ $appointment->first_name }}</p>
+                                        <p class="truncate text-xs text-slate-500">{{ $appointment->service_name }}</p>
+                                    </div>
+                                    <span class="shrink-0 text-xs font-semibold text-rose-700">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('h:i A') }}</span>
+                                </div>
+                            @empty
+                                <p class="rounded-lg border border-dashed border-rose-200 bg-white/80 px-3 py-4 text-sm text-rose-800">No cancelled appointments recorded today.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -205,7 +260,7 @@
                         <span>??</span>
                         <span>Register Walk-In Patient</span>
                     </a>
-                    <a href="#today-schedule"
+                    <a href="{{ route('queue') }}"
                         class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
                         <span>??</span>
                         <span>View Today's Schedule</span>

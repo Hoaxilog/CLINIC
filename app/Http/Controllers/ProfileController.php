@@ -18,6 +18,7 @@ use Throwable;
 class ProfileController extends Controller
 {
     protected ?array $userTableColumns = null;
+    protected ?array $patientTableColumns = null;
 
     public function index()
     {
@@ -45,14 +46,26 @@ class ProfileController extends Controller
 
         $rules = [
             'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($userId)],
-            'contact'  => ['nullable', 'string', 'max:20'],
+            'contact'  => ['nullable', 'regex:/^[0-9]+$/', 'max:20'],
         ];
 
-        if ((int) $user->role !== 3) {
+        if ((int) $user->role === 3) {
+            $rules = array_merge($rules, [
+                'birth_date' => ['nullable', 'date'],
+                'gender' => ['nullable', Rule::in(['Male', 'Female', 'Other'])],
+                'home_address' => ['nullable', 'string', 'max:255'],
+                'emergency_contact_name' => ['nullable', 'string', 'max:255'],
+                'emergency_contact_number' => ['nullable', 'regex:/^[0-9]+$/', 'max:20'],
+                'relationship' => ['nullable', 'string', 'max:100'],
+            ]);
+        } else {
             $rules['position'] = ['nullable', 'string', 'max:100'];
         }
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'contact.regex' => 'The contact number must contain digits only.',
+            'emergency_contact_number.regex' => 'The emergency contact number must contain digits only.',
+        ]);
 
         $updates = [
             'updated_at' => now(),
@@ -71,6 +84,46 @@ class ProfileController extends Controller
         }
 
         DB::table('users')->where('id', $userId)->update($updates);
+
+        if ((int) $user->role === 3) {
+            $patient = $this->resolvePatientForUser($user);
+
+            if ($patient) {
+                $patientUpdates = ['updated_at' => now()];
+
+                if ($this->patientHasColumn('mobile_number')) {
+                    $patientUpdates['mobile_number'] = $validated['contact'] ?: null;
+                }
+
+                if ($this->patientHasColumn('birth_date')) {
+                    $patientUpdates['birth_date'] = $validated['birth_date'] ?? data_get($patient, 'birth_date');
+                }
+
+                if ($this->patientHasColumn('gender')) {
+                    $patientUpdates['gender'] = $validated['gender'] ?? data_get($patient, 'gender');
+                }
+
+                if ($this->patientHasColumn('home_address')) {
+                    $patientUpdates['home_address'] = $validated['home_address'] ?? data_get($patient, 'home_address');
+                }
+
+                if ($this->patientHasColumn('emergency_contact_name')) {
+                    $patientUpdates['emergency_contact_name'] = $validated['emergency_contact_name'] ?? data_get($patient, 'emergency_contact_name');
+                }
+
+                if ($this->patientHasColumn('emergency_contact_number')) {
+                    $patientUpdates['emergency_contact_number'] = $validated['emergency_contact_number'] ?? data_get($patient, 'emergency_contact_number');
+                }
+
+                if ($this->patientHasColumn('relationship')) {
+                    $patientUpdates['relationship'] = $validated['relationship'] ?? data_get($patient, 'relationship');
+                }
+
+                DB::table('patients')
+                    ->where('id', $patient->id)
+                    ->update($patientUpdates);
+            }
+        }
 
         return back()->with('success', 'Profile updated successfully.');
     }
@@ -132,7 +185,13 @@ class ProfileController extends Controller
             $rules['current_password'] = ['required', 'current_password'];
         }
 
-        $request->validate($rules);
+        $request->validate($rules, [
+            'current_password.required' => 'Your current password is required.',
+            'current_password.current_password' => 'The current password is incorrect.',
+            'password.required' => 'Please enter a new password.',
+            'password.min' => 'The new password must be at least 8 characters.',
+            'password.confirmed' => 'The password confirmation does not match.',
+        ]);
 
         DB::table('users')->where('id', Auth::id())->update([
             'password' => Hash::make($request->password),
@@ -220,6 +279,19 @@ class ProfileController extends Controller
         }
 
         return in_array($column, $this->userTableColumns, true);
+    }
+
+    private function patientHasColumn(string $column): bool
+    {
+        if ($this->patientTableColumns === null) {
+            try {
+                $this->patientTableColumns = Schema::getColumnListing('patients');
+            } catch (Throwable $e) {
+                $this->patientTableColumns = [];
+            }
+        }
+
+        return in_array($column, $this->patientTableColumns, true);
     }
 
     public function deleteAccount(Request $request)
