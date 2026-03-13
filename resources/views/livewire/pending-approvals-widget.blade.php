@@ -4,7 +4,7 @@
             <h2 class="text-lg font-semibold text-gray-900">Pending Appointment Requests</h2>
             <p class="text-xs text-gray-500">Latest 6 requests awaiting approval.</p>
         </div>
-        <a href="{{ route('appointment') }}"
+        <a href="{{ route('appointment', ['tab' => 'pending']) }}"
             class="px-3.5 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
             View All Requests
         </a>

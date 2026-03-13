@@ -499,7 +499,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number <span class="text-red-600">*</span></label>
-                            <input wire:model="contactNumber" type="number"
+                            <input wire:model="contactNumber" type="text" inputmode="numeric" pattern="[0-9]*"
                                 class="border w-full border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-800 font-medium"
                                 @if ($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
                             @error('contactNumber')

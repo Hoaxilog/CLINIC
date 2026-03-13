@@ -132,6 +132,12 @@ class ForgotPasswordController extends Controller
             'email' => 'required|email|exists:users',
             'password' => 'required|min:8|confirmed',
             'token' => 'required'
+        ], [
+            'email.exists' => 'We could not find an account for that email address.',
+            'password.required' => 'Please enter a new password.',
+            'password.min' => 'The new password must be at least 8 characters.',
+            'password.confirmed' => 'The password confirmation does not match.',
+            'token.required' => 'The reset token is missing or invalid.',
         ]);
 
         // Verify the token matches the email

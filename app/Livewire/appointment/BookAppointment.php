@@ -125,8 +125,10 @@ class BookAppointment extends Component
             'service_id' => 'required',
             'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
             'selectedSlot' => 'required',
-            'contact_number' => 'required',
+            'contact_number' => ['required', 'regex:/^[0-9]+$/', 'max:20'],
             'appointment_terms_agreed' => 'accepted',
+        ], [
+            'contact_number.regex' => 'Contact number must contain digits only.',
         ]);
 
         if (Auth::check() && empty(Auth::user()->email_verified_at)) {

@@ -118,6 +118,9 @@
                                 <label for="contact" class="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Contact Number</label>
                                 <input type="text" id="contact" name="contact" value="{{ old('contact', $user->contact ?? '') }}"
                                     placeholder="09XXXXXXXXXX"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    autocomplete="tel"
                                     class="w-full rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0086DA] focus:bg-white focus:ring-4 focus:ring-sky-100">
                                 @error('contact')
                                     <p class="mt-2 text-xs font-medium text-rose-600">{{ $message }}</p>
@@ -173,8 +176,26 @@
 
                             <div>
                                 <label for="current_password" class="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Current Password</label>
-                                <input type="password" id="current_password" name="current_password" placeholder="Enter your current password"
-                                    class="w-full rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0086DA] focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                <div class="relative">
+                                    <input type="password" id="current_password" name="current_password" placeholder="Enter your current password"
+                                        class="w-full rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0086DA] focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                    <button type="button" data-password-toggle="current_password" class="absolute inset-y-0 right-3 inline-flex items-center text-slate-400 transition hover:text-slate-600" aria-label="Toggle current password visibility">
+                                        <span data-password-icon="show">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            </svg>
+                                        </span>
+                                        <span data-password-icon="hide" class="hidden">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m3 3 18 18" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.88 5.09A9.77 9.77 0 0 1 12 5c4.48 0 8.27 2.94 9.54 7a9.96 9.96 0 0 1-4.04 5.02" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6.23 6.23A9.96 9.96 0 0 0 2.46 12A9.97 9.97 0 0 0 12 19c1.61 0 3.13-.38 4.46-1.06" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
                                 @error('current_password')
                                     <p class="mt-2 text-xs font-medium text-rose-600">{{ $message }}</p>
                                 @enderror
@@ -182,8 +203,26 @@
 
                             <div>
                                 <label for="password" class="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">New Password</label>
-                                <input type="password" id="password" name="password" placeholder="Enter new password"
-                                    class="w-full rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0086DA] focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                <div class="relative">
+                                    <input type="password" id="password" name="password" placeholder="Enter new password"
+                                        class="w-full rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0086DA] focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                    <button type="button" data-password-toggle="password" class="absolute inset-y-0 right-3 inline-flex items-center text-slate-400 transition hover:text-slate-600" aria-label="Toggle new password visibility">
+                                        <span data-password-icon="show">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            </svg>
+                                        </span>
+                                        <span data-password-icon="hide" class="hidden">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m3 3 18 18" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.88 5.09A9.77 9.77 0 0 1 12 5c4.48 0 8.27 2.94 9.54 7a9.96 9.96 0 0 1-4.04 5.02" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6.23 6.23A9.96 9.96 0 0 0 2.46 12A9.97 9.97 0 0 0 12 19c1.61 0 3.13-.38 4.46-1.06" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
                                 @error('password')
                                     <p class="mt-2 text-xs font-medium text-rose-600">{{ $message }}</p>
                                 @enderror
@@ -196,8 +235,29 @@
 
                             <div>
                                 <label for="password_confirmation" class="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Confirm Password</label>
-                                <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Re-enter your new password"
-                                    class="w-full rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0086DA] focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                <div class="relative">
+                                    <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Re-enter your new password"
+                                        class="w-full rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#0086DA] focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                    <button type="button" data-password-toggle="password_confirmation" class="absolute inset-y-0 right-3 inline-flex items-center text-slate-400 transition hover:text-slate-600" aria-label="Toggle password confirmation visibility">
+                                        <span data-password-icon="show">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                            </svg>
+                                        </span>
+                                        <span data-password-icon="hide" class="hidden">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m3 3 18 18" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.88 5.09A9.77 9.77 0 0 1 12 5c4.48 0 8.27 2.94 9.54 7a9.96 9.96 0 0 1-4.04 5.02" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6.23 6.23A9.96 9.96 0 0 0 2.46 12A9.97 9.97 0 0 0 12 19c1.61 0 3.13-.38 4.46-1.06" />
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                                @error('password_confirmation')
+                                    <p class="mt-2 text-xs font-medium text-rose-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="flex justify-end border-t border-sky-100 pt-6">
@@ -276,6 +336,8 @@
             const strengthContainer = document.getElementById('strength-container');
             const strengthBar = document.getElementById('strength-bar');
             const strengthText = document.getElementById('strength-text');
+            const contactInput = document.getElementById('contact');
+            const passwordToggleButtons = document.querySelectorAll('[data-password-toggle]');
 
             if (avatarTrigger && avatarInput) {
                 avatarTrigger.addEventListener('click', function() {
@@ -304,6 +366,27 @@
                     reader.readAsDataURL(file);
                 });
             }
+
+            if (contactInput) {
+                contactInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '');
+                });
+            }
+
+            passwordToggleButtons.forEach((button) => {
+                button.addEventListener('click', function() {
+                    const input = document.getElementById(this.dataset.passwordToggle);
+                    if (!input) {
+                        return;
+                    }
+
+                    const isPassword = input.type === 'password';
+                    input.type = isPassword ? 'text' : 'password';
+
+                    this.querySelector('[data-password-icon="show"]')?.classList.toggle('hidden', isPassword);
+                    this.querySelector('[data-password-icon="hide"]')?.classList.toggle('hidden', !isPassword);
+                });
+            });
 
             if (!passwordInput || !strengthContainer || !strengthBar || !strengthText) {
                 return;
