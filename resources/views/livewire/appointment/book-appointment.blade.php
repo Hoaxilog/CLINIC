@@ -1,6 +1,6 @@
 <div>
     @php
-        $isPatientUser = auth()->check() && auth()->user()->role === 3;
+        $isPatientUser = auth()->check() && (int) auth()->user()->role === 3;
         $patientName = $isPatientUser ? auth()->user()->username ?? 'Patient' : null;
         $sectionClass = $isPatientUser
             ? 'bg-slate-50 py-8 md:py-10'
@@ -464,4 +464,3 @@
         });
     </script>
 </div>
-

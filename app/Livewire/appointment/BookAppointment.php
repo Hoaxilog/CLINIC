@@ -267,7 +267,7 @@ class BookAppointment extends Component
     public function render()
     {
         $services = DB::table('services')->get();
-        $layout = (Auth::check() && Auth::user()?->role === 3) ? 'layouts.patient-portal' : 'layouts.app';
+        $layout = (Auth::check() && (int) (Auth::user()?->role ?? 0) === 3) ? 'layouts.patient-portal' : 'layouts.app';
         return view('livewire.appointment.book-appointment', compact('services'))
             ->layout($layout);
     }

@@ -2,7 +2,7 @@
 
 @section('content')
     @php
-        $isPatient = auth()->check() && auth()->user()->role === 3;
+        $isPatient = auth()->check() && (int) auth()->user()->role === 3;
         $roleLabel = ucfirst(['Admin', 'Staff', 'Patient'][$user->role - 1] ?? 'User');
         $profilePictureUrl = !empty($user->profile_picture)
             ? asset('storage/' . $user->profile_picture) . '?v=' . urlencode((string) strtotime((string) $user->updated_at))

@@ -15,7 +15,7 @@
 </head>
 <body class="tracking-wide">
     @php
-        $isPatient = auth()->check() && auth()->user()->role === 3;
+        $isPatient = auth()->check() && (int) auth()->user()->role === 3;
     @endphp
 
     @if ($isPatient)
@@ -38,12 +38,24 @@
                 <div class="flex items-center justify-end gap-2 shrink-0">
                     @livewire('components.notification-bell')
                     <details class="relative">
-                        <summary class="list-none cursor-pointer inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <circle cx="12" cy="10" r="3"/>
-                                <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
-                            </svg>
+                        <summary class="list-none cursor-pointer {{ request()->routeIs('profile.index') ? 'border-sky-200 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }} inline-flex items-center gap-2 rounded-xl border px-2 py-1.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50">
+                            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-sm font-bold text-current ring-1 ring-slate-200 transition-colors hover:bg-slate-200 hover:ring-[#0086DA]/30">
+                                @if (!empty(auth()->user()->profile_picture))
+                                    <img src="{{ asset('storage/' . auth()->user()->profile_picture) . '?v=' . urlencode((string) strtotime((string) auth()->user()->updated_at)) }}"
+                                        alt="{{ auth()->user()->username }} profile picture"
+                                        class="h-full w-full object-cover">
+                                @else
+                                    {{ strtoupper(substr(auth()->user()->username ?? 'U', 0, 1)) }}
+                                @endif
+                            </div>
+                            <div class="hidden md:flex flex-col items-start pr-1">
+                                <span class="text-sm font-semibold leading-tight text-slate-700">
+                                    {{ auth()->user()->username }}
+                                </span>
+                                <span class="text-[10px] leading-tight text-slate-500">
+                                    Patient
+                                </span>
+                            </div>
                         </summary>
                         <div class="absolute right-0 mt-2 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-md z-50">
                             <a href="{{ route('profile.index') }}" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
@@ -114,7 +126,7 @@
         </button>
         <nav class="flex h-full w-full flex-col pb-6 pt-1">
             <ul class="h-full w-full space-y-1 px-2">
-                @if (auth()->user()->role === 3)
+                @if ((int) auth()->user()->role === 3)
                     <li class="px-3 pb-2 pt-1 nav-text text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 transition-all duration-300 group-[.collapsed]:opacity-0">
                         Care
                     </li>
@@ -393,8 +405,6 @@
     @livewireScripts
 </body>
 </html>
-
-
 
 
 

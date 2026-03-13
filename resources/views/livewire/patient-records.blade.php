@@ -1,5 +1,5 @@
 @php
-    $isPatientUser = auth()->check() && auth()->user()->role === 3;
+    $isPatientUser = auth()->check() && (int) auth()->user()->role === 3;
 @endphp
 <div class="h-full flex flex-col" wire:poll.5s>
 

@@ -16,7 +16,7 @@ class IsPatientMiddleware
                 ->withErrors(['email' => 'You must log in first.']);
         }
 
-        $role = Auth::user()?->role;
+        $role = (int) (Auth::user()?->role ?? 0);
         $isPatient = $role === 3;
 
         if (!$isPatient) {
