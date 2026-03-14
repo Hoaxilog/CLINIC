@@ -37,36 +37,12 @@
 @section('content')
     <main id="mainContent"
         class="min-h-screen queue-shell p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
-        <section class="queue-panel rounded-2xl p-5 lg:p-6">
-            <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-                <div>
-                    <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Clinic Queue Monitor</p>
-                    <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Patient Flow Board</h1>
-                    <p class="mt-2 text-sm text-slate-600">Track scheduled, waiting, and active treatments in real time.</p>
-                </div>
+        <div class="mb-4">
+            <h1 class="text-xl font-bold tracking-tight text-slate-900">Lobby Flow</h1>
+        </div>
 
-                <div class="flex flex-wrap items-center gap-2.5">
-                    <span class="queue-chip inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold tracking-wide">
-                        Live Status
-                    </span>
-                    <span class="queue-chip inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold tracking-wide">
-                        {{ now()->format('M d, Y') }}
-                    </span>
-                </div>
-            </div>
-        </section>
-
-        <section class="mt-5 queue-panel rounded-2xl p-4 lg:p-6">
-            <div class="mb-4 flex items-end justify-between border-b border-slate-200 pb-3">
-                <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Queue Details</p>
-                    <p class="mt-1 text-sm text-slate-600">Real-time patient flow and treatment progression.</p>
-                </div>
-            </div>
-
-            <div class="rounded-xl border border-slate-200 bg-white p-2 lg:p-3">
-                @livewire('today-schedule')
-            </div>
+        <section class="queue-panel rounded-none p-4 lg:p-6">
+            @livewire('today-schedule')
         </section>
 
         <livewire:patient-form-controller.patient-form-modal />

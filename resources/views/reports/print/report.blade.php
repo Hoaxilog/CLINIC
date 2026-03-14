@@ -85,6 +85,9 @@
             .page { max-width: none; padding: 0; }
             @page { size: auto; margin: 12mm; }
         }
+        @media (max-width: 1024px) {
+            .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
         @media (max-width: 768px) {
             .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .signature { grid-template-columns: 1fr; }
@@ -118,6 +121,22 @@
             <article class="summary-card">
                 <p class="summary-title">Cancelled Appointments</p>
                 <p class="summary-value">{{ number_format($summary['cancelledCount']) }}</p>
+            </article>
+            <article class="summary-card">
+                <p class="summary-title">Revenue</p>
+                <p class="summary-value">PHP {{ number_format($summary['totalRevenue'] ?? 0, 2) }}</p>
+            </article>
+            <article class="summary-card">
+                <p class="summary-title">Cost</p>
+                <p class="summary-value">PHP {{ number_format($summary['totalCost'] ?? 0, 2) }}</p>
+            </article>
+            <article class="summary-card">
+                <p class="summary-title">Profit</p>
+                <p class="summary-value">PHP {{ number_format($summary['totalProfit'] ?? 0, 2) }}</p>
+            </article>
+            <article class="summary-card">
+                <p class="summary-title">Profit Margin</p>
+                <p class="summary-value">{{ isset($summary['profitMargin']) && $summary['profitMargin'] !== null ? number_format($summary['profitMargin'], 1) . '%' : '--' }}</p>
             </article>
         </section>
 

@@ -11,6 +11,10 @@
             .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
             .title { margin: 0 0 .5rem; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .08em; }
             .value { margin: 0; font-size: 2rem; line-height: 1.1; color: #111827; font-weight: 700; }
+            .value-compact { margin: .55rem 0 0; font-size: 2.1rem; line-height: 1.05; color: #111827; font-weight: 700; }
+            .metric-card { min-height: 0; display: block; }
+            .metric-card .value,
+            .metric-card .value-compact { margin-top: .55rem; font-size: 2.1rem; line-height: 1.05; }
             .sub { margin: .45rem 0 0; color: #6b7280; font-size: .85rem; }
             .heading { margin: 0; font-size: 1.02rem; font-weight: 700; color: #111827; }
             .heading-row { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
@@ -79,10 +83,16 @@
 
             @if ($section === 'overview')
                 <div class="grid-4">
-                    <section class="report-card"><p class="title">Total Patients</p><p class="value">{{ number_format($totalPatients) }}</p><p class="sub">Current patient base</p></section>
-                    <section class="report-card"><p class="title">Total Appointments</p><p class="value">{{ number_format($totalAppointments) }}</p><p class="sub">Within selected range</p></section>
-                    <section class="report-card"><p class="title">Completed Appointments</p><p class="value" style="color:#059669;">{{ number_format($completedCount) }}</p><p class="sub">Status = Completed</p></section>
-                    <section class="report-card"><p class="title">Cancelled Appointments</p><p class="value" style="color:#dc2626;">{{ number_format($cancelledCount) }}</p><p class="sub">Status = Cancelled</p></section>
+                    <section class="report-card metric-card"><p class="title">New Patients</p><p class="value-compact">{{ number_format($newPatientsCount) }}</p></section>
+                    <section class="report-card metric-card"><p class="title">Completed Appointments</p><p class="value-compact" style="color:#059669;">{{ number_format($completedCount) }}</p></section>
+                    <section class="report-card metric-card"><p class="title">Cancelled Appointments</p><p class="value-compact" style="color:#dc2626;">{{ number_format($cancelledCount) }}</p></section>
+                    <section class="report-card metric-card"><p class="title">Completion Rate</p><p class="value">{{ number_format($completionRate) }}%</p><p class="sub">{{ number_format($totalAppointments) }} total appointments in range</p></section>
+                </div>
+
+                <div class="grid-3">
+                    <section class="report-card"><p class="title">Revenue</p><p class="value">PHP {{ number_format($totalRevenue, 2) }}</p><p class="sub">Collected payments in selected range</p></section>
+                    <section class="report-card"><p class="title">Cost</p><p class="value">PHP {{ number_format($totalCost, 2) }}</p><p class="sub">Treatment costs in selected range</p></section>
+                    <section class="report-card"><p class="title">Profit</p><p class="value" style="color: {{ $totalProfit >= 0 ? '#059669' : '#dc2626' }};">PHP {{ number_format($totalProfit, 2) }}</p><p class="sub">Margin: {{ $profitMargin === null ? '--' : number_format($profitMargin, 1) . '%' }}</p></section>
                 </div>
 
                 <div class="grid-2">
@@ -143,7 +153,7 @@
             @if ($section === 'appointments')
                 <div class="grid-2">
                     <section class="report-card"><h3 class="heading">Appointment Status Distribution</h3><p class="desc">Status outcome overview</p><div class="chart-300"><canvas id="statusPieChartAppointments"></canvas></div></section>
-                    <section class="report-card"><h3 class="heading">Walk-In vs Scheduled</h3><p class="desc">Booking behavior</p><div class="chart-300"><canvas id="walkinPieChart"></canvas></div></section>
+                    <section class="report-card"><h3 class="heading">Walk-In vs Online Appointment</h3><p class="desc">Booking behavior</p><div class="chart-300"><canvas id="walkinPieChart"></canvas></div></section>
                 </div>
 
                 <div class="grid-2">
@@ -275,7 +285,7 @@
             });
             build('walkinPieChart', {
                 type: 'pie',
-                data: { labels: ['Walk-In', 'Scheduled'], datasets: [{ data: [{{ $walkInCount }}, {{ $scheduledCount }}], backgroundColor: ['#f97316', '#0ea5e9'] }] },
+                data: { labels: ['Walk-In', 'Online Appointment'], datasets: [{ data: [{{ $walkInCount }}, {{ $scheduledCount }}], backgroundColor: ['#f97316', '#0ea5e9'] }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
             });
             build('genderPieChart', {

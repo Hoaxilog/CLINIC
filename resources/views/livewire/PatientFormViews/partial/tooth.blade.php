@@ -8,6 +8,14 @@
 
     $data = $teeth[$tooth] ?? [];
 
+    $toothForImage = $tooth;
+    $quadrant = intdiv((int) $tooth, 10);
+    $position = ((int) $tooth) % 10;
+    if (in_array($quadrant, [5, 6, 7, 8], true) && $position >= 1 && $position <= 5) {
+        $quadrantMap = [5 => 1, 6 => 2, 7 => 3, 8 => 4];
+        $toothForImage = ((int) $quadrantMap[$quadrant] * 10) + $position;
+    }
+
     $topColor = $data['top']['color'] ?? 'white';
     $rightColor = $data['right']['color'] ?? 'white';
     $bottomColor = $data['bottom']['color'] ?? 'white';
@@ -104,7 +112,7 @@
                 <div class="absolute left-1/2 top-1/2 z-[100] -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
                     x-cloak x-show="open" x-transition.opacity x-on:click.away="open = false; expanded = false">
                     @php
-                        $innerItems = $quickTools;
+                        $innerItems = array_merge([['label' => 'Clear Surface', 'code' => '__CLEAR__', 'color' => 'gray']], $quickTools);
                         $innerCount = count($innerItems) + ($hasMoreTools ? 1 : 0);
                         $outerCount = count($outerTools);
 
@@ -136,17 +144,19 @@
                                 $mid = ($start + $end) / 2;
                                 [$tx, $ty] = $polar(($innerInnerR + $innerOuterR) / 2, $mid);
                                 $isRed = $tool['color'] === 'red';
-                                $fill = $isRed ? '#ef4444' : '#3b82f6';
+                                $fill = $tool['color'] === 'gray' ? '#4b5563' : ($isRed ? '#ef4444' : '#3b82f6');
+                                $isClear = $tool['code'] === '__CLEAR__';
+                                $displayCode = $isClear ? 'CLR' : $tool['code'];
                             @endphp
                             <path d="{{ $arc($innerOuterR, $innerInnerR, $start, $end) }}" fill="{{ $fill }}"
                                 stroke="#e5e7eb" stroke-width="1.5" class="cursor-pointer hover:opacity-90"
-                                x-on:click.stop="$store.dentalChart.applyTool('{{ $tool['code'] }}', tooth, part); open = false; expanded = false">
+                                x-on:click.stop="{{ $isClear ? '$store.dentalChart.clearPart(tooth, part);' : '$store.dentalChart.applyTool(\'' . $tool['code'] . '\', tooth, part);' }} open = false; expanded = false">
                                 <title>{{ $tool['label'] }}</title>
                             </path>
                             <text x="{{ $tx }}" y="{{ $ty }}" text-anchor="middle"
                                 dominant-baseline="middle"
                                 class="fill-white text-[16px] font-bold select-none pointer-events-none">
-                                {{ $tool['code'] }}
+                                {{ $displayCode }}
                             </text>
                         @endforeach
                         @if ($hasMoreTools)
@@ -208,7 +218,7 @@
 
         {{-- ROOT IMAGE --}}
         <div class="h-20 sm:h-18 w-full flex items-start justify-center -mt-1 z-0">
-            <img src="{{ asset('images/teeth/' . $tooth . '.png') }}" alt="T{{ $tooth }}"
+            <img src="{{ asset('images/teeth/' . $toothForImage . '.png') }}" alt="T{{ $tooth }}"
                 class="w-16 sm:w-10 h-auto object-contain opacity-80" onerror="this.style.display='none'" />
         </div>
 
@@ -252,7 +262,7 @@
         </div>
 
         <div class="h-20 sm:h-18 w-full flex items-end justify-center -mb-1 z-0">
-            <img src="{{ asset('images/teeth/' . $tooth . '.png') }}" alt="T{{ $tooth }}"
+            <img src="{{ asset('images/teeth/' . $toothForImage . '.png') }}" alt="T{{ $tooth }}"
                 class="w-16 sm:w-10 h-auto object-contain opacity-80" onerror="this.style.display='none'" />
         </div>
 
@@ -303,7 +313,7 @@
                 <div class="absolute left-1/2 top-1/2 z-[100] -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
                     x-cloak x-show="open" x-transition.opacity x-on:click.away="open = false; expanded = false">
                     @php
-                        $innerItems = $quickTools;
+                        $innerItems = array_merge([['label' => 'Clear Surface', 'code' => '__CLEAR__', 'color' => 'gray']], $quickTools);
                         $innerCount = count($innerItems) + ($hasMoreTools ? 1 : 0);
                         $outerCount = count($outerTools);
 
@@ -335,17 +345,19 @@
                                 $mid = ($start + $end) / 2;
                                 [$tx, $ty] = $polar(($innerInnerR + $innerOuterR) / 2, $mid);
                                 $isRed = $tool['color'] === 'red';
-                                $fill = $isRed ? '#ef4444' : '#3b82f6';
+                                $fill = $tool['color'] === 'gray' ? '#4b5563' : ($isRed ? '#ef4444' : '#3b82f6');
+                                $isClear = $tool['code'] === '__CLEAR__';
+                                $displayCode = $isClear ? 'CLR' : $tool['code'];
                             @endphp
                             <path d="{{ $arc($innerOuterR, $innerInnerR, $start, $end) }}" fill="{{ $fill }}"
                                 stroke="#e5e7eb" stroke-width="1.5" class="cursor-pointer hover:opacity-90"
-                                x-on:click.stop="$store.dentalChart.applyTool('{{ $tool['code'] }}', tooth, part); open = false; expanded = false">
+                                x-on:click.stop="{{ $isClear ? '$store.dentalChart.clearPart(tooth, part);' : '$store.dentalChart.applyTool(\'' . $tool['code'] . '\', tooth, part);' }} open = false; expanded = false">
                                 <title>{{ $tool['label'] }}</title>
                             </path>
                             <text x="{{ $tx }}" y="{{ $ty }}" text-anchor="middle"
                                 dominant-baseline="middle"
                                 class="fill-white text-[16px] font-bold select-none pointer-events-none">
-                                {{ $tool['code'] }}
+                                {{ $displayCode }}
                             </text>
                         @endforeach
                         @if ($hasMoreTools)

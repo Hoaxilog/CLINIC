@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -76,6 +77,9 @@ class ReportController extends Controller
         }
 
         $totalPatients = (int) DB::table('patients')->count();
+        $newPatientsCount = (int) DB::table('patients')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
 
         $driver = DB::getDriverName();
         $groupByMonth = $range === 'year' || $startDate->diffInDays($endDate) > 120;
@@ -165,16 +169,39 @@ class ReportController extends Controller
         $cancelledCount = (int) ($statusData->firstWhere('status', 'Cancelled')->total ?? 0);
         $completionRate = $totalAppointments > 0 ? round(($completedCount / $totalAppointments) * 100) : 0;
         $topServiceName = $serviceNames->first() ?? 'N/A';
-
-        $walkInCount = (int) DB::table('activity_log')
+        $totalRevenue = (float) (DB::table('treatment_records')
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->where(function ($query) {
-                $query->whereRaw('LOWER(event) LIKE ?', ['%walk%'])
-                    ->orWhereRaw('LOWER(description) LIKE ?', ['%walk%'])
-                    ->orWhereRaw('LOWER(log_name) LIKE ?', ['%walk%']);
-            })
-            ->count();
-        $scheduledCount = max($totalAppointments - $walkInCount, 0);
+            ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0)), 0) as revenue')
+            ->value('revenue') ?? 0);
+        $totalCost = (float) (DB::table('treatment_records')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('COALESCE(SUM(COALESCE(cost_of_treatment,0)), 0) as total_cost')
+            ->value('total_cost') ?? 0);
+        $totalProfit = $totalRevenue - $totalCost;
+        $profitMargin = $totalRevenue > 0
+            ? round(($totalProfit / $totalRevenue) * 100, 1)
+            : null;
+
+        if (Schema::hasColumn('appointments', 'booking_type')) {
+            $walkInCount = (int) DB::table('appointments')
+                ->whereBetween('appointment_date', [$startDate, $endDate])
+                ->where('booking_type', 'walk_in')
+                ->count();
+            $scheduledCount = (int) DB::table('appointments')
+                ->whereBetween('appointment_date', [$startDate, $endDate])
+                ->where('booking_type', 'online_appointment')
+                ->count();
+        } else {
+            $walkInCount = (int) DB::table('activity_log')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->where(function ($query) {
+                    $query->whereRaw('LOWER(event) LIKE ?', ['%walk%'])
+                        ->orWhereRaw('LOWER(description) LIKE ?', ['%walk%'])
+                        ->orWhereRaw('LOWER(log_name) LIKE ?', ['%walk%']);
+                })
+                ->count();
+            $scheduledCount = max($totalAppointments - $walkInCount, 0);
+        }
 
         $genderData = DB::table('patients')
             ->select('gender', DB::raw('count(*) as total'))
@@ -306,11 +333,16 @@ class ReportController extends Controller
             'serviceNames',
             'serviceCounts',
             'totalPatients',
+            'newPatientsCount',
             'totalAppointments',
             'completedCount',
             'cancelledCount',
             'completionRate',
             'topServiceName',
+            'totalRevenue',
+            'totalCost',
+            'totalProfit',
+            'profitMargin',
             'walkInCount',
             'scheduledCount',
             'genderLabels',
@@ -359,6 +391,18 @@ class ReportController extends Controller
             ->count();
         $completedCount = (int) ($statusData->firstWhere('status', 'Completed')->total ?? 0);
         $cancelledCount = (int) ($statusData->firstWhere('status', 'Cancelled')->total ?? 0);
+        $totalRevenue = (float) (DB::table('treatment_records')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0)), 0) as revenue')
+            ->value('revenue') ?? 0);
+        $totalCost = (float) (DB::table('treatment_records')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('COALESCE(SUM(COALESCE(cost_of_treatment,0)), 0) as total_cost')
+            ->value('total_cost') ?? 0);
+        $totalProfit = $totalRevenue - $totalCost;
+        $profitMargin = $totalRevenue > 0
+            ? round(($totalProfit / $totalRevenue) * 100, 1)
+            : null;
 
         $reportTitle = '';
         $columns = [];
@@ -445,6 +489,10 @@ class ReportController extends Controller
                 (object) ['metric' => 'Total Appointments', 'value' => number_format($totalAppointments)],
                 (object) ['metric' => 'Completed Appointments', 'value' => number_format($completedCount)],
                 (object) ['metric' => 'Cancelled Appointments', 'value' => number_format($cancelledCount)],
+                (object) ['metric' => 'Total Revenue', 'value' => 'PHP ' . number_format($totalRevenue, 2)],
+                (object) ['metric' => 'Total Cost', 'value' => 'PHP ' . number_format($totalCost, 2)],
+                (object) ['metric' => 'Total Profit', 'value' => 'PHP ' . number_format($totalProfit, 2)],
+                (object) ['metric' => 'Profit Margin', 'value' => ($profitMargin === null ? '--' : number_format($profitMargin, 1) . '%')],
                 (object) ['metric' => 'Date Range', 'value' => Carbon::parse($fromDate)->format('M d, Y') . ' - ' . Carbon::parse($toDate)->format('M d, Y')],
             ]);
         }
@@ -465,6 +513,10 @@ class ReportController extends Controller
                 'totalAppointments' => $totalAppointments,
                 'completedCount' => $completedCount,
                 'cancelledCount' => $cancelledCount,
+                'totalRevenue' => $totalRevenue,
+                'totalCost' => $totalCost,
+                'totalProfit' => $totalProfit,
+                'profitMargin' => $profitMargin,
             ],
         ]);
     }

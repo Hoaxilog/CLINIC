@@ -1,7 +1,6 @@
 <div class="flex flex-col items-center justify-center gap-12 mx-auto mb-16"
     x-data
     x-on:request-dental-chart-teeth.window="
-        console.log('[DentalChart] localTeeth before send', $store.dentalChart.localTeeth);
         $wire.provideTeeth($store.dentalChart.toPlain($store.dentalChart.localTeeth))
     "
     x-init="
@@ -102,6 +101,15 @@
                     this.localTeeth[tooth][part] = { color, code };
                     this.ensureStatusCode(tooth, code, color);
                 }
+            },
+            clearPart(tooth, part) {
+                if (this.isReadOnly) return;
+                if (!tooth || !part) return;
+                this.ensureTeeth();
+                const currentData = this.localTeeth?.[tooth]?.[part] || null;
+                if (!currentData?.code) return;
+                delete this.localTeeth[tooth][part];
+                this.removeStatusCode(tooth, currentData.code);
             }
         };
         if (!existing) {
@@ -111,521 +119,138 @@
         }
         $nextTick(() => { $dispatch('dental-chart-ready'); });
     ">
+
+    @php
+        $shapeForTooth = function (int $tooth): string {
+            $position = $tooth % 10;
+            return $position <= 3 ? 'box' : 'circle';
+        };
+
+        $renderTooth = function (int $tooth, bool $isLower) use ($teeth, $toolLabels, $quickTools, $picker, $tools, $shapeForTooth) {
+            return view('livewire.PatientFormViews.partial.tooth', [
+                'tooth' => $tooth,
+                'type' => $shapeForTooth($tooth),
+                'isLower' => $isLower,
+                'teeth' => $teeth,
+                'toolLabels' => $toolLabels,
+                'quickTools' => $quickTools,
+                'picker' => $picker,
+                'tools' => $tools,
+            ])->render();
+        };
+
+        $chunk = fn(array $teethSet, int $size) => array_chunk($teethSet, $size);
+
+        $upperLeft = $layout['upper']['left'] ?? [];
+        $upperRight = $layout['upper']['right'] ?? [];
+        $lowerLeft = $layout['lower']['left'] ?? [];
+        $lowerRight = $layout['lower']['right'] ?? [];
+
+        $upperAll = array_merge($upperLeft, $upperRight);
+        $lowerAll = array_merge($lowerLeft, $lowerRight);
+
+        $upperRows2 = $chunk($upperAll, 2);
+        $lowerRows2 = $chunk($lowerAll, 2);
+        $upperRows4 = $chunk($upperAll, 4);
+        $lowerRows4 = $chunk($lowerAll, 4);
+    @endphp
+
     <div class="flex flex-col items-center">
         <h3 class="text-gray-400 font-bold tracking-[0.2em] text-sm uppercase mb-4">Upper Arch</h3>
         <div class="p-4 border border-gray-200 rounded-xl bg-white shadow-sm w-full">
-            {{-- <=510px: 2 teeth per row --}}
             <div class="flex flex-col items-center gap-3 max-[510px]:flex hidden">
-                <div class="flex gap-1">
-                    @foreach ([11, 12] as $tooth)
-                        @php $shape = in_array($tooth, [11, 12, 13]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([13, 14] as $tooth)
-                        @php $shape = in_array($tooth, [11, 12, 13]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([15, 16] as $tooth)
-                        @php $shape = in_array($tooth, [11, 12, 13]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([17, 18] as $tooth)
-                        @php $shape = in_array($tooth, [11, 12, 13]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([21, 22] as $tooth)
-                        @php $shape = in_array($tooth, [21, 22, 23]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([23, 24] as $tooth)
-                        @php $shape = in_array($tooth, [21, 22, 23]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([25, 26] as $tooth)
-                        @php $shape = in_array($tooth, [21, 22, 23]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([27, 28] as $tooth)
-                        @php $shape = in_array($tooth, [21, 22, 23]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
+                @foreach ($upperRows2 as $row)
+                    <div class="flex gap-1">
+                        @foreach ($row as $tooth)
+                            {!! $renderTooth($tooth, false) !!}
+                        @endforeach
+                    </div>
+                @endforeach
             </div>
 
-            {{-- <=730px: 4 rows per arch --}}
             <div class="hidden max-[730px]:flex max-[510px]:hidden flex-col items-center gap-5">
-                <div class="flex gap-1">
-                    @foreach ([11, 12, 13, 14] as $tooth)
-                        @php $shape = in_array($tooth, [11, 12, 13]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([15, 16, 17, 18] as $tooth)
-                        @php $shape = in_array($tooth, [11, 12, 13]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([21, 22, 23, 24] as $tooth)
-                        @php $shape = in_array($tooth, [21, 22, 23]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([25, 26, 27, 28] as $tooth)
-                        @php $shape = in_array($tooth, [21, 22, 23]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
+                @foreach ($upperRows4 as $row)
+                    <div class="flex gap-1">
+                        @foreach ($row as $tooth)
+                            {!! $renderTooth($tooth, false) !!}
+                        @endforeach
+                    </div>
+                @endforeach
             </div>
 
-            {{-- <1200px: 2 rows per arch --}}
             <div class="hidden max-[1199px]:flex max-[730px]:hidden flex-col items-center gap-5">
                 <div class="flex gap-1">
-                    @foreach ([18, 17, 16, 15, 14, 13, 12, 11] as $tooth)
-                        @php $shape = in_array($tooth, [11, 12, 13]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
+                    @foreach ($upperLeft as $tooth)
+                        {!! $renderTooth($tooth, false) !!}
                     @endforeach
                 </div>
                 <div class="flex gap-1">
-                    @foreach ([21, 22, 23, 24, 25, 26, 27, 28] as $tooth)
-                        @php $shape = in_array($tooth, [21, 22, 23]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
+                    @foreach ($upperRight as $tooth)
+                        {!! $renderTooth($tooth, false) !!}
                     @endforeach
                 </div>
             </div>
 
-            {{-- >=1200px: original 2 groups in a row --}}
             <div class="hidden min-[1200px]:flex items-end gap-1 justify-center">
                 <div class="flex gap-1 border-r-2 border-gray-300 pr-3">
-                    @foreach ([18, 17, 16, 15, 14, 13, 12, 11] as $tooth)
-                        @php $shape = in_array($tooth, [11, 12, 13]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
+                    @foreach ($upperLeft as $tooth)
+                        {!! $renderTooth($tooth, false) !!}
                     @endforeach
                 </div>
                 <div class="flex gap-1 pl-3">
-                    @foreach ([21, 22, 23, 24, 25, 26, 27, 28] as $tooth)
-                        @php $shape = in_array($tooth, [21, 22, 23]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => false,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
+                    @foreach ($upperRight as $tooth)
+                        {!! $renderTooth($tooth, false) !!}
                     @endforeach
                 </div>
             </div>
         </div>
     </div>
+
     <div class="flex flex-col items-center">
         <h3 class="text-gray-400 font-bold tracking-[0.2em] text-sm uppercase mb-4">Lower Arch</h3>
         <div class="p-4 border border-gray-200 rounded-xl bg-white shadow-sm w-full">
-            {{-- <=510px: 2 teeth per row --}}
             <div class="flex flex-col items-center gap-3 max-[510px]:flex hidden">
-                <div class="flex gap-1">
-                    @foreach ([41, 42] as $tooth)
-                        @php $shape = in_array($tooth, [41, 42, 43]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([43, 44] as $tooth)
-                        @php $shape = in_array($tooth, [41, 42, 43]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([45, 46] as $tooth)
-                        @php $shape = in_array($tooth, [41, 42, 43]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([47, 48] as $tooth)
-                        @php $shape = in_array($tooth, [41, 42, 43]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([31, 32] as $tooth)
-                        @php $shape = in_array($tooth, [31, 32, 33]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([33, 34] as $tooth)
-                        @php $shape = in_array($tooth, [31, 32, 33]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([35, 36] as $tooth)
-                        @php $shape = in_array($tooth, [31, 32, 33]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([37, 38] as $tooth)
-                        @php $shape = in_array($tooth, [31, 32, 33]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
+                @foreach ($lowerRows2 as $row)
+                    <div class="flex gap-1">
+                        @foreach ($row as $tooth)
+                            {!! $renderTooth($tooth, true) !!}
+                        @endforeach
+                    </div>
+                @endforeach
             </div>
 
-            {{-- <=730px: 4 rows per arch --}}
             <div class="hidden max-[730px]:flex max-[510px]:hidden flex-col items-center gap-5">
-                <div class="flex gap-1">
-                    @foreach ([41, 42, 43, 44] as $tooth)
-                        @php $shape = in_array($tooth, [41, 42, 43]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([45, 46, 47, 48] as $tooth)
-                        @php $shape = in_array($tooth, [41, 42, 43]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([31, 32, 33, 34] as $tooth)
-                        @php $shape = in_array($tooth, [31, 32, 33]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
-                <div class="flex gap-1">
-                    @foreach ([35, 36, 37, 38] as $tooth)
-                        @php $shape = in_array($tooth, [31, 32, 33]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
-                    @endforeach
-                </div>
+                @foreach ($lowerRows4 as $row)
+                    <div class="flex gap-1">
+                        @foreach ($row as $tooth)
+                            {!! $renderTooth($tooth, true) !!}
+                        @endforeach
+                    </div>
+                @endforeach
             </div>
 
-            {{-- <1200px: 2 rows per arch --}}
             <div class="hidden max-[1199px]:flex max-[730px]:hidden flex-col items-center gap-5">
                 <div class="flex gap-1">
-                    @foreach ([48, 47, 46, 45, 44, 43, 42, 41] as $tooth)
-                        @php $shape = in_array($tooth, [41, 42, 43]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
+                    @foreach ($lowerLeft as $tooth)
+                        {!! $renderTooth($tooth, true) !!}
                     @endforeach
                 </div>
                 <div class="flex gap-1">
-                    @foreach ([31, 32, 33, 34, 35, 36, 37, 38] as $tooth)
-                        @php $shape = in_array($tooth, [31, 32, 33]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
+                    @foreach ($lowerRight as $tooth)
+                        {!! $renderTooth($tooth, true) !!}
                     @endforeach
                 </div>
             </div>
 
-            {{-- >=1200px: original 2 groups in a row --}}
             <div class="hidden min-[1200px]:flex items-start gap-1 justify-center">
                 <div class="flex gap-1 border-r-2 border-gray-300 pr-3">
-                    @foreach ([48, 47, 46, 45, 44, 43, 42, 41] as $tooth)
-                        @php $shape = in_array($tooth, [41, 42, 43]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
+                    @foreach ($lowerLeft as $tooth)
+                        {!! $renderTooth($tooth, true) !!}
                     @endforeach
                 </div>
                 <div class="flex gap-1 pl-3">
-                    @foreach ([31, 32, 33, 34, 35, 36, 37, 38] as $tooth)
-                        @php $shape = in_array($tooth, [31, 32, 33]) ? 'box' : 'circle'; @endphp
-                        @include('livewire.PatientFormViews.partial.tooth', [
-                            'tooth' => $tooth,
-                            'type' => $shape,
-                            'isLower' => true,
-                            'teeth' => $teeth,
-                            'toolLabels' => $toolLabels,
-                            'quickTools' => $quickTools,
-                            'picker' => $picker,
-                            'tools' => $tools,
-                        ])
+                    @foreach ($lowerRight as $tooth)
+                        {!! $renderTooth($tooth, true) !!}
                     @endforeach
                 </div>
             </div>

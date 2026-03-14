@@ -33,6 +33,18 @@
                 </div>
 
                 <div class="flex items-center gap-3">
+                    <div class="inline-flex items-center rounded-lg border border-slate-300 bg-white p-1">
+                        <button type="button" wire:click="$set('dentitionType','adult')"
+                            @if ($isReadOnly) disabled @endif
+                            class="rounded-md px-3 py-1.5 text-xs font-semibold transition {{ $dentitionType === 'adult' ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-100' }} disabled:cursor-not-allowed disabled:opacity-50">
+                            Adult
+                        </button>
+                        <button type="button" wire:click="$set('dentitionType','child')"
+                            @if ($isReadOnly) disabled @endif
+                            class="rounded-md px-3 py-1.5 text-xs font-semibold transition {{ $dentitionType === 'child' ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-100' }} disabled:cursor-not-allowed disabled:opacity-50">
+                            Child
+                        </button>
+                    </div>
                     @if ($isReadOnly && count($history) > 0)
                         <button wire:click="triggerNewChart" x-on:click="$dispatch('show-dental-loading')"
                             class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
@@ -51,7 +63,7 @@
 
             <div data-form-scroll
                 class="flex-1 overflow-auto p-4 sm:px-6 lg:px-6 xl:p-8 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-slate-100 scrollbar-thumb-slate-300">
-                <livewire:PatientFormController.dental-chart-grid :teeth="$teeth" :isReadOnly="$isReadOnly" />
+                <livewire:PatientFormController.dental-chart-grid :teeth="$teeth" :isReadOnly="$isReadOnly" :dentitionType="$dentitionType" />
                 <div class="max-w-6xl mx-auto flex flex-col gap-12">
                     <section class="w-full">
                         <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -209,4 +221,3 @@
         </div>
     @endif
 </div>
-

@@ -5,8 +5,10 @@ namespace App\Livewire\PatientFormController;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Livewire\Attributes\On;
+use App\Support\PatientFormDraftService;
 use App\Models\Patient;
 use App\Models\DentalChart;
 use App\Models\TreatmentRecord;
@@ -34,6 +36,10 @@ class PatientFormModal extends Component
     public $chartKey = 'initial'; 
     public $healthHistoryList = []; 
     public $selectedHealthHistoryId = '';
+    public $patientAge = null;
+    public $dentalDataLoaded = false;
+    public $pendingDentalDraft = null;
+    public $hasPendingDentalDraft = false;
 
     #[On('openAddPatientModal')]
     public function openForCreate()
@@ -56,13 +62,11 @@ class PatientFormModal extends Component
         $this->checkAdminRole();
 
         $this->loadPatientData($id);
-        
-        if ($this->isAdmin) {
-            $this->loadDentalChartHistory($id);
-            $this->loadLatestDentalChart($id);
-        }
 
         $this->currentStep = $startStep;
+        if ($this->isAdmin && $this->currentStep >= 3) {
+            $this->ensureDentalDataLoaded();
+        }
         $this->showModal = true;
         $this->dispatch('patient-form-opened');
     }
@@ -72,13 +76,14 @@ class PatientFormModal extends Component
         $this->showModal = false;
         $this->resetState();
 
-        $this->dispatch('patient-form-opened');
+        $this->dispatch('patient-form-closed');
     }
 
     private function resetState()
     {
         $this->reset(); 
         $this->currentStep = 1;
+        $this->dentalDataLoaded = false;
         // Ensure "Add Patient" button logic resets correctly
         $this->healthHistoryList = [];
     }
@@ -160,6 +165,7 @@ class PatientFormModal extends Component
         } else {
             if ($this->isAdmin && $this->isEditing && $this->currentStep < $this->getMaxStep()) {
                 $this->currentStep = 3;
+                $this->syncDataToSteps();
             }
         }
     }
@@ -191,6 +197,7 @@ class PatientFormModal extends Component
                 
                 $this->dispatch('patient-added');
                 $this->isReadOnly = true;
+                $this->clearCurrentDraftAfterSuccessfulSave();
                 session()->flash('success', 'Dental chart & treatment record saved successfully.');
             } else {
                 if (!$this->isEditing) session()->flash('error', 'Error: Must be in Edit Mode.');
@@ -216,7 +223,7 @@ class PatientFormModal extends Component
             // Walk-In Logic (Waiting Room)
             $defaultService = DB::table('services')->first(); 
             if ($defaultService) {
-                $createdAppointmentId = DB::table('appointments')->insertGetId([
+                $appointmentPayload = [
                     'patient_id' => $this->newPatientId,
                     'service_id' => $defaultService->id,
                     'appointment_date' => now(),
@@ -224,7 +231,13 @@ class PatientFormModal extends Component
                     'created_at' => now(),
                     'updated_at' => now(),
                     'modified_by' => $this->getModifier()
-                ]);
+                ];
+
+                if (Schema::hasColumn('appointments', 'booking_type')) {
+                    $appointmentPayload['booking_type'] = 'walk_in';
+                }
+
+                $createdAppointmentId = DB::table('appointments')->insertGetId($appointmentPayload);
             }
         });
 
@@ -280,6 +293,7 @@ class PatientFormModal extends Component
         }
 
         $this->dispatch('patient-added');
+        $this->clearCurrentDraftAfterSuccessfulSave();
         $this->closeModal();
         session()->flash('success', 'New patient record created successfully!');
     }
@@ -323,6 +337,7 @@ class PatientFormModal extends Component
         $this->dispatch('patient-added');
         $this->isReadOnly = true; 
         $this->isSaving = false;
+        $this->clearCurrentDraftAfterSuccessfulSave();
         session()->flash('info', 'Patient information updated.');
     }
 
@@ -386,6 +401,7 @@ class PatientFormModal extends Component
         $this->dispatch('patient-added');
         $this->isReadOnly = true; 
         $this->isSaving = false;
+        $this->clearCurrentDraftAfterSuccessfulSave();
     }
 
     private function updateDentalChart()
@@ -565,6 +581,7 @@ class PatientFormModal extends Component
     {
         $patient = DB::table('patients')->where('id', $id)->first();
         $this->basicInfoData = (array) $patient;
+        $this->patientAge = $this->calculateAge($this->basicInfoData['birth_date'] ?? null);
 
         $this->healthHistoryList = DB::table('health_histories')
             ->where('patient_id', $id)
@@ -668,7 +685,29 @@ class PatientFormModal extends Component
                 historyList: $this->healthHistoryList,
                 selectedId: $this->selectedHealthHistoryId
             )->to('PatientFormController.health-history');
+            return;
         }
+
+        if ($this->isAdmin && $this->isEditing && $this->currentStep >= 3) {
+            $this->ensureDentalDataLoaded();
+            if ($this->hasPendingDentalDraft && is_array($this->pendingDentalDraft)) {
+                $this->dentalChartData = $this->pendingDentalDraft;
+                $this->pendingDentalDraft = null;
+                $this->hasPendingDentalDraft = false;
+                $this->chartKey = uniqid();
+            }
+        }
+    }
+
+    private function ensureDentalDataLoaded(): void
+    {
+        if ($this->dentalDataLoaded || !$this->isAdmin || !$this->isEditing || !$this->newPatientId) {
+            return;
+        }
+
+        $this->loadDentalChartHistory($this->newPatientId);
+        $this->loadLatestDentalChart($this->newPatientId);
+        $this->dentalDataLoaded = true;
     }
 
     private function getMaxStep()
@@ -702,6 +741,7 @@ class PatientFormModal extends Component
                 gender: $this->basicInfoData['gender'] ?? null
             );
             if ($this->isAdmin) {
+                $this->ensureDentalDataLoaded();
                 $this->loadLatestDentalChart($this->newPatientId);
             }
         } else {
@@ -740,8 +780,255 @@ class PatientFormModal extends Component
         $this->chartKey = uniqid();
     }
 
+    public function fetchServerDraft($mode, $patientId = 0)
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return null;
+        }
+
+        $safeMode = $mode === 'edit' ? 'edit' : 'create';
+        $safePatientId = $safeMode === 'edit' ? (int) $patientId : 0;
+
+        $draft = app(PatientFormDraftService::class)->getDraft($userId, $safeMode, $safePatientId);
+        if (!$draft) {
+            return null;
+        }
+
+        $payload = json_decode($draft->payload_json, true);
+        if (!is_array($payload)) {
+            return null;
+        }
+
+        return [
+            'mode' => $draft->mode,
+            'patientId' => (int) $draft->patient_id,
+            'step' => (int) $draft->step,
+            'payload' => $payload,
+            'updatedAt' => optional($draft->updated_at)->toIso8601String(),
+        ];
+    }
+
+    public function saveDraftFromClient($payload)
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return ['ok' => false, 'message' => 'Unauthorized'];
+        }
+
+        $normalized = $this->normalizeDraftPayload($payload);
+        if (!$normalized) {
+            return ['ok' => false, 'message' => 'Invalid draft payload'];
+        }
+
+        $encoded = json_encode($normalized['payload']);
+        if ($encoded === false || strlen($encoded) > 300000) {
+            return ['ok' => false, 'message' => 'Draft payload too large'];
+        }
+
+        $record = app(PatientFormDraftService::class)->upsertDraft(
+            $userId,
+            $normalized['mode'],
+            $normalized['patientId'],
+            $normalized['currentStep'],
+            $normalized['payload']
+        );
+
+        return [
+            'ok' => true,
+            'updatedAt' => optional($record->updated_at)->toIso8601String(),
+        ];
+    }
+
+    public function discardDraft($mode, $patientId = 0)
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return ['ok' => false, 'deleted' => 0];
+        }
+
+        $safeMode = $mode === 'edit' ? 'edit' : 'create';
+        $safePatientId = $safeMode === 'edit' ? (int) $patientId : 0;
+        $deleted = app(PatientFormDraftService::class)->discardDraft($userId, $safeMode, $safePatientId);
+
+        return ['ok' => true, 'deleted' => $deleted];
+    }
+
+    public function applyDraftPayload($payload): bool
+    {
+        $normalized = $this->normalizeDraftPayload($payload);
+        if (!$normalized) {
+            return false;
+        }
+
+        [$contextMode, $contextPatientId] = $this->resolveDraftContext();
+        if ($normalized['mode'] !== $contextMode || (int) $normalized['patientId'] !== (int) $contextPatientId) {
+            return false;
+        }
+
+        $safeMaxStep = $this->getMaxStep();
+        $targetStep = max(1, min($safeMaxStep, (int) $normalized['currentStep']));
+        $safePayload = $normalized['payload'];
+
+        // Restored drafts should continue in editable mode.
+        $this->isReadOnly = false;
+
+        $this->basicInfoData = $safePayload['basicInfo'];
+        $this->healthHistoryData = $safePayload['healthHistory'];
+        $this->treatmentRecordData = $safePayload['treatmentRecord'];
+
+        $restoredDental = $safePayload['dentalChart'] ?? [];
+        if (!empty($restoredDental) && $this->isAdmin && $this->isEditing) {
+            $this->pendingDentalDraft = [
+                'teeth' => is_array($restoredDental['teeth'] ?? null) ? $restoredDental['teeth'] : [],
+                'oral_exam' => is_array($restoredDental['oralExam'] ?? null) ? $restoredDental['oralExam'] : [],
+                'comments' => is_array($restoredDental['chartComments'] ?? null) ? $restoredDental['chartComments'] : [],
+                'meta' => [
+                    'dentition_type' => ($restoredDental['dentitionType'] ?? 'adult') === 'child' ? 'child' : 'adult',
+                    'numbering_system' => is_string($restoredDental['numberingSystem'] ?? null)
+                        ? $restoredDental['numberingSystem']
+                        : 'FDI',
+                ],
+            ];
+            $this->hasPendingDentalDraft = true;
+            // Make Step 3 render the chart form even with no existing history rows.
+            $this->forceNewRecord = true;
+        }
+
+        $this->currentStep = $targetStep;
+        $this->syncDataToSteps();
+        $this->dispatch('fillBasicInfo', data: $this->basicInfoData)->to('PatientFormController.basic-info');
+        $this->dispatch('fillHealthHistory', data: $this->healthHistoryData, gender: $this->basicInfoData['gender'] ?? null)
+            ->to('PatientFormController.health-history');
+
+        return true;
+    }
+
     public function render()
     {
         return view('livewire.PatientFormViews.patient-form-modal');
+    }
+
+    private function calculateAge($birthDate): ?int
+    {
+        if (empty($birthDate)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($birthDate)->age;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function resolveDraftContext(): array
+    {
+        $mode = $this->isEditing ? 'edit' : 'create';
+        $patientId = $mode === 'edit' ? (int) ($this->newPatientId ?? 0) : 0;
+        return [$mode, $patientId];
+    }
+
+    private function clearCurrentDraftAfterSuccessfulSave(): void
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return;
+        }
+
+        [$mode, $patientId] = $this->resolveDraftContext();
+        app(PatientFormDraftService::class)->discardDraft($userId, $mode, $patientId);
+        $this->dispatch('patient-form-draft-cleared', userId: $userId, mode: $mode, patientId: $patientId);
+    }
+
+    private function normalizeDraftPayload($payload): ?array
+    {
+        if (!is_array($payload)) {
+            return null;
+        }
+
+        $allowedTopLevel = ['currentStep', 'basicInfo', 'healthHistory', 'dentalChart', 'treatmentRecord', 'updatedAt', 'mode', 'patientId'];
+        foreach (array_keys($payload) as $key) {
+            if (!in_array($key, $allowedTopLevel, true)) {
+                return null;
+            }
+        }
+
+        $mode = ($payload['mode'] ?? ($this->isEditing ? 'edit' : 'create')) === 'edit' ? 'edit' : 'create';
+        $patientId = (int) ($payload['patientId'] ?? ($mode === 'edit' ? (int) ($this->newPatientId ?? 0) : 0));
+        if ($mode !== 'edit') {
+            $patientId = 0;
+        }
+        $currentStep = max(1, min(4, (int) ($payload['currentStep'] ?? 1)));
+
+        $basicAllowed = [
+            'last_name', 'first_name', 'middle_name', 'nickname', 'occupation', 'birth_date', 'gender', 'civil_status',
+            'home_address', 'office_address', 'home_number', 'office_number', 'mobile_number', 'email_address', 'referral',
+            'emergency_contact_name', 'emergency_contact_number', 'relationship', 'who_answering', 'relationship_to_patient',
+            'father_name', 'father_number', 'mother_name', 'mother_number', 'guardian_name', 'guardian_number',
+        ];
+        $healthAllowed = [
+            'when_last_visit_q1', 'what_last_visit_reason_q1', 'what_seeing_dentist_reason_q2',
+            'is_clicking_jaw_q3a', 'is_pain_jaw_q3b', 'is_difficulty_opening_closing_q3c', 'is_locking_jaw_q3d',
+            'is_clench_grind_q4', 'is_bad_experience_q5', 'is_nervous_q6', 'what_nervous_concern_q6',
+            'is_condition_q1', 'what_condition_reason_q1', 'is_hospitalized_q2', 'what_hospitalized_reason_q2',
+            'is_serious_illness_operation_q3', 'what_serious_illness_operation_reason_q3', 'is_taking_medications_q4',
+            'what_medications_list_q4', 'is_allergic_medications_q5', 'what_allergies_list_q5',
+            'is_allergic_latex_rubber_metals_q6', 'is_pregnant_q7', 'is_breast_feeding_q8',
+        ];
+        $treatmentAllowed = ['dmd', 'treatment', 'cost_of_treatment', 'amount_charged', 'remarks'];
+
+        $basicInfo = $this->pickAllowedAssoc($payload['basicInfo'] ?? [], $basicAllowed);
+        $healthHistory = $this->pickAllowedAssoc($payload['healthHistory'] ?? [], $healthAllowed);
+        $treatmentRecord = $this->pickAllowedAssoc($payload['treatmentRecord'] ?? [], $treatmentAllowed);
+
+        $rawDental = is_array($payload['dentalChart'] ?? null) ? $payload['dentalChart'] : [];
+        $oralExam = $this->pickAllowedAssoc($rawDental['oralExam'] ?? [], [
+            'oral_hygiene_status', 'gingiva', 'calcular_deposits', 'stains', 'complete_denture', 'partial_denture',
+        ]);
+        $chartComments = $this->pickAllowedAssoc($rawDental['chartComments'] ?? [], ['notes', 'treatment_plan']);
+        $teeth = is_array($rawDental['teeth'] ?? null) ? $rawDental['teeth'] : [];
+
+        $dentalChart = [
+            'teeth' => $teeth,
+            'oralExam' => $oralExam,
+            'chartComments' => $chartComments,
+            'dentitionType' => ($rawDental['dentitionType'] ?? 'adult') === 'child' ? 'child' : 'adult',
+            'numberingSystem' => is_string($rawDental['numberingSystem'] ?? null) ? $rawDental['numberingSystem'] : 'FDI',
+        ];
+
+        $normalizedPayload = [
+            'currentStep' => $currentStep,
+            'basicInfo' => $basicInfo,
+            'healthHistory' => $healthHistory,
+            'dentalChart' => $dentalChart,
+            'treatmentRecord' => $treatmentRecord,
+            'updatedAt' => is_string($payload['updatedAt'] ?? null) ? $payload['updatedAt'] : now()->toIso8601String(),
+            'mode' => $mode,
+            'patientId' => $patientId,
+        ];
+
+        return [
+            'mode' => $mode,
+            'patientId' => $patientId,
+            'currentStep' => $currentStep,
+            'payload' => $normalizedPayload,
+        ];
+    }
+
+    private function pickAllowedAssoc($input, array $allowed): array
+    {
+        if (!is_array($input)) {
+            return [];
+        }
+
+        $output = [];
+        foreach ($allowed as $key) {
+            if (array_key_exists($key, $input)) {
+                $output[$key] = $input[$key];
+            }
+        }
+
+        return $output;
     }
 }   

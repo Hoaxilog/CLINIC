@@ -9,7 +9,7 @@
                 <p class="mt-1 text-sm text-gray-500">Manage admin and staff profiles, permissions, and lifecycle actions.</p>
             </div>
             <a href="{{ route('users.create') }}"
-                class="inline-flex items-center gap-2 rounded-xl bg-[#0086DA] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0079c3]">
+                class="inline-flex items-center gap-2 rounded-none bg-[#4F46E5] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4338CA]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M5 12h14" />
                     <path d="M12 5v14" />
@@ -19,20 +19,20 @@
         </div>
 
         @if (session('success'))
-            <div class="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-sm" role="alert">
+            <div class="mb-6 rounded-none border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-sm" role="alert">
                 <p class="font-semibold">Success</p>
                 <p class="mt-0.5">{{ session('success') }}</p>
             </div>
         @endif
 
         @if (session('error'))
-            <div class="mb-6 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm" role="alert">
+            <div class="mb-6 rounded-none border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm" role="alert">
                 <p class="font-semibold">Error</p>
                 <p class="mt-0.5">{{ session('error') }}</p>
             </div>
         @endif
 
-        <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <section class="rounded-none border border-gray-100 bg-white p-6 shadow-sm">
             <div class="mb-5 flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-bold text-gray-900">Admins</h2>
@@ -45,7 +45,7 @@
 
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($admins as $user)
-                    <article class="relative rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                    <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
                         @if ($user->role_name)
                             <span class="absolute right-4 top-4 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
                                 {{ $user->role_name }}
@@ -68,7 +68,7 @@
 
                         <div class="flex items-center gap-2 border-t border-gray-100 pt-4">
                             <a href="{{ route('users.edit', $user->id) }}"
-                                class="flex-1 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-center text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
+                                class="flex-1 rounded-none border border-amber-100 bg-amber-50 px-3 py-2 text-center text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
                                 Edit
                             </a>
                             @if ($user->id !== auth()->id())
@@ -77,7 +77,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                        class="w-full rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                                        class="w-full rounded-none border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
                                         Delete
                                     </button>
                                 </form>
@@ -85,7 +85,7 @@
                         </div>
                     </article>
                 @empty
-                    <div class="col-span-full rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                    <div class="col-span-full rounded-none border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
                         No admins found.
                     </div>
                 @endforelse
@@ -94,7 +94,7 @@
             <div class="mt-5">{{ $admins->links() }}</div>
         </section>
 
-        <section class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <section class="mt-6 rounded-none border border-gray-100 bg-white p-6 shadow-sm">
             <div class="mb-5 flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-bold text-gray-900">Staff</h2>
@@ -107,7 +107,7 @@
 
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($staffs as $user)
-                    <article class="relative rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                    <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
                         @if ($user->role_name)
                             <span class="absolute right-4 top-4 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
                                 {{ $user->role_name }}
@@ -130,7 +130,7 @@
 
                         <div class="flex items-center gap-2 border-t border-gray-100 pt-4">
                             <a href="{{ route('users.edit', $user->id) }}"
-                                class="flex-1 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-center text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
+                                class="flex-1 rounded-none border border-amber-100 bg-amber-50 px-3 py-2 text-center text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
                                 Edit
                             </a>
                             <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="flex-1"
@@ -138,14 +138,14 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"
-                                    class="w-full rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                                    class="w-full rounded-none border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
                                     Delete
                                 </button>
                             </form>
                         </div>
                     </article>
                 @empty
-                    <div class="col-span-full rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                    <div class="col-span-full rounded-none border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
                         No staff found.
                     </div>
                 @endforelse
@@ -154,7 +154,7 @@
             <div class="mt-5">{{ $staffs->links() }}</div>
         </section>
 
-        <section class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <section class="mt-6 rounded-none border border-gray-100 bg-white p-6 shadow-sm">
             <div class="mb-5 flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-bold text-gray-900">Patient Accounts</h2>
@@ -167,7 +167,7 @@
 
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($normalUsers as $user)
-                    <article class="relative rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                    <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
                         <span class="absolute right-4 top-4 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700">
                             {{ $user->role_name ?? 'patient' }}
                         </span>
@@ -193,19 +193,19 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                        class="w-full rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                                        class="w-full rounded-none border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
                                         Delete
                                     </button>
                                 </form>
                             @else
-                                <p class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-center text-sm font-medium text-gray-500">
+                                <p class="w-full rounded-none border border-gray-200 bg-gray-50 px-3 py-2 text-center text-sm font-medium text-gray-500">
                                     Current account
                                 </p>
                             @endif
                         </div>
                     </article>
                 @empty
-                    <div class="col-span-full rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                    <div class="col-span-full rounded-none border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
                         No patient accounts found.
                     </div>
                 @endforelse

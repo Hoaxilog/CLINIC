@@ -198,7 +198,8 @@
                                     @php
                                         $isFull = !empty($slot['is_full']);
                                         $isPastSlot = !empty($slot['is_past']);
-                                        $isDisabled = $isFull || $isPastSlot;
+                                        $isBlocked = !empty($slot['is_blocked']);
+                                        $isDisabled = $isFull || $isPastSlot || $isBlocked;
                                     @endphp
                                     <label class="{{ $isDisabled ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                                         <input type="radio" name="selectedSlot" wire:model="selectedSlot" value="{{ $slot['value'] }}"
@@ -398,4 +399,3 @@
         });
     </script>
 </div>
-

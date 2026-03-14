@@ -6,11 +6,8 @@ use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Throwable;
 use App\Models\Patient;
 
@@ -26,14 +23,6 @@ class PatientRecords extends Component
     public $viewMode = 'cards';
     public $showProfile = false;
     public $treatmentRecords = [];
-    public $linkEmailModalOpen = false;
-    public $linkEmailPatientId = null;
-    public $linkEmailPatientLabel = '';
-    public $linkEmailOldEmail = '';
-    public $newLinkedEmail = '';
-    public $linkAccountIdentifier = '';
-    public $confirmInPerson = false;
-    public $confirmRecordMatch = false;
     protected $usesPatientUserId = null;
 
     protected $paginationTheme = 'tailwind';
@@ -249,152 +238,6 @@ class PatientRecords extends Component
             }
             session()->flash('success', 'Patient deleted successfully.');
         }
-    }
-
-    public function openLinkEmailModal($patientId)
-    {
-        if (Auth::check() && Auth::user()->role === 3) {
-            session()->flash('error', 'You do not have permission to link patient email.');
-            return;
-        }
-
-        $patient = DB::table('patients')->where('id', $patientId)->first();
-        if (!$patient) {
-            session()->flash('error', 'Patient not found.');
-            return;
-        }
-
-        $this->linkEmailPatientId = $patient->id;
-        $this->linkEmailPatientLabel = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
-        $this->linkEmailOldEmail = $patient->email_address ?? '';
-        $this->newLinkedEmail = $patient->email_address ?? '';
-        $this->linkAccountIdentifier = $patient->email_address ?? '';
-        $this->confirmInPerson = false;
-        $this->confirmRecordMatch = false;
-        $this->linkEmailModalOpen = true;
-    }
-
-    public function closeLinkEmailModal()
-    {
-        $this->linkEmailModalOpen = false;
-    }
-
-    public function linkPatientEmail()
-    {
-        if (Auth::check() && Auth::user()->role === 3) {
-            session()->flash('error', 'You do not have permission to link patient email.');
-            return;
-        }
-
-        $this->validate([
-            'linkEmailPatientId' => ['required', 'integer'],
-            'newLinkedEmail' => ['required', 'email', 'max:255'],
-            'confirmInPerson' => ['accepted'],
-            'confirmRecordMatch' => ['accepted'],
-            'linkAccountIdentifier' => ['nullable', 'string', 'max:255'],
-        ], [
-            'confirmInPerson.accepted' => 'In-person identity check is required.',
-            'confirmRecordMatch.accepted' => 'Patient record verification is required.',
-        ]);
-
-        $patient = DB::table('patients')->where('id', $this->linkEmailPatientId)->first();
-        if (!$patient) {
-            session()->flash('error', 'Patient not found.');
-            return;
-        }
-
-        $usesUserId = $this->patientsUsesUserId();
-        $linkedUserId = $usesUserId ? data_get($patient, 'user_id') : null;
-        $newEmail = Str::lower(trim($this->newLinkedEmail));
-        $identifier = trim((string) $this->linkAccountIdentifier);
-        $identifier = $identifier === '' ? null : Str::lower($identifier);
-        $oldEmail = $patient->email_address ? Str::lower(trim($patient->email_address)) : null;
-
-        $matchedUser = null;
-        if ($identifier) {
-            $matchedUser = DB::table('users')
-                ->whereRaw('LOWER(username) = ?', [$identifier])
-                ->orWhereRaw('LOWER(email) = ?', [$identifier])
-                ->first();
-        } elseif ($usesUserId && !empty($linkedUserId)) {
-            $matchedUser = DB::table('users')->where('id', $linkedUserId)->first();
-        } elseif ($oldEmail) {
-            $matchedUser = DB::table('users')
-                ->whereRaw('LOWER(email) = ?', [$oldEmail])
-                ->orWhereRaw('LOWER(username) = ?', [$oldEmail])
-                ->first();
-        }
-
-        $verificationToken = null;
-        $result = DB::transaction(function () use ($patient, $newEmail, $matchedUser, $usesUserId, &$verificationToken) {
-            if ($matchedUser) {
-                $emailInUse = DB::table('users')
-                    ->where('email', $newEmail)
-                    ->where('id', '!=', $matchedUser->id)
-                    ->exists();
-
-                if ($emailInUse) {
-                    return 'email_conflict';
-                }
-            }
-
-            $patientUpdate = [
-                'email_address' => $newEmail,
-                'modified_by' => Auth::user()?->username ?? 'SYSTEM',
-                'updated_at' => now(),
-            ];
-
-            if ($usesUserId && $matchedUser) {
-                $patientUpdate['user_id'] = $matchedUser->id;
-            }
-
-            DB::table('patients')
-                ->where('id', $patient->id)
-                ->update($patientUpdate);
-
-            if (!$matchedUser) {
-                return 'patient_only';
-            }
-
-            $verificationToken = Str::random(64);
-
-            DB::table('users')
-                ->where('id', $matchedUser->id)
-                ->update([
-                    'email' => $newEmail,
-                    'email_verified_at' => null,
-                    'verification_token' => $verificationToken,
-                    'updated_at' => now(),
-                ]);
-
-            return 'patient_and_user';
-        });
-
-        if ($result === 'email_conflict') {
-            session()->flash('error', 'Cannot link new email because it is already used by another user account.');
-            return;
-        }
-
-        if ($result === 'patient_and_user' && $verificationToken) {
-            Mail::send('auth.emails.verify-email', [
-                'token' => $verificationToken,
-                'id' => $matchedUser->id,
-                'name' => 'Patient',
-            ], function ($message) use ($newEmail) {
-                $message->to($newEmail);
-                $message->subject('Verify Your New Email Address - Tejadent');
-            });
-        }
-
-        $this->linkEmailModalOpen = false;
-        $this->dispatch('close-patient-menus');
-
-        if ($result === 'patient_only') {
-            session()->flash('info', 'Patient email updated. No user account was matched, so no verification email was sent.');
-            return;
-        }
-
-        session()->flash('success', 'Patient email linked successfully. Verification email sent to the new address.');
     }
 
     public function render()

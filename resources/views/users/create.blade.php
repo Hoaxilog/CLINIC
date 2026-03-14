@@ -18,19 +18,19 @@
     
     <div class="max-w-3xl mx-auto">
         
-        {{-- Card Container (Matches Login: rounded-2xl, shadow-xl, border) --}}
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-10 relative">
+        {{-- Card Container (Matches Login: rounded-none, shadow-xl, border) --}}
+        <div class="bg-white rounded-none shadow-xl border border-gray-100 overflow-hidden p-10 relative">
             
             {{-- HEADER (Typography matches Login Page: ExtraBold & Tracking Wide) --}}
             <div class="text-center mb-10">
                 <h1 class="text-3xl font-extrabold text-gray-800 tracking-wide mb-2">
-                    CREATE <span class="text-[#0086DA]">USER</span>
+                    CREATE <span class="text-[#4F46E5]">USER</span>
                 </h1>
                 <p class="text-sm text-gray-500 font-semibold">Add a new administrator or staff member.</p>
             </div>
             
             @if(session('error'))
-                <div class="mb-8 p-4 rounded-lg bg-red-50 border-l-4 border-red-500 text-red-700 text-sm flex items-center shadow-sm">
+                <div class="mb-8 p-4 rounded-none bg-red-50 border-l-4 border-red-500 text-red-700 text-sm flex items-center shadow-sm">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <div>
                         <span class="font-bold block">Error Encountered</span>
@@ -53,7 +53,7 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             </span>
                             <input type="email" name="email" value="{{ old('email') }}" placeholder="e.g. staff@tejadent.com" required
-                                class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                                class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                         </div>
                         @error('email') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
                     </div>
@@ -66,7 +66,7 @@
                                 {{-- Badge Icon --}}
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                             </span>
-                            <select name="role" required class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] appearance-none bg-white transition duration-200 text-gray-800 font-medium">
+                            <select name="role" required class="w-full pl-10 pr-10 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] appearance-none bg-white transition duration-200 text-gray-800 font-medium">
                                 <option value="" selected disabled>Select Role</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->id }}" {{ old('role') == $role->id ? 'selected' : '' }}>{{ ucfirst($role->role_name) }}</option>
@@ -91,7 +91,7 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             </span>
                             <input type="password" id="admin-create-password" name="password" placeholder="Min. 8 characters" required
-                                class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                                class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                             <button type="button"
                                 onclick="toggleAdminCreatePassword('admin-create-password','admin-create-eye-open','admin-create-eye-closed')"
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 transition"
@@ -116,7 +116,7 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             </span>
                             <input type="password" id="admin-create-password-confirmation" name="password_confirmation" placeholder="Re-enter password" required
-                                class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-[#0086DA] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                                class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                             <button type="button"
                                 onclick="toggleAdminCreatePassword('admin-create-password-confirmation','admin-create-confirm-eye-open','admin-create-confirm-eye-closed')"
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 transition"
@@ -140,7 +140,7 @@
                     <a href="{{ route('users.index') }}" class="text-sm font-bold text-gray-500 hover:text-gray-700 transition duration-200">
                         Cancel
                     </a>
-                    <button type="submit" class="px-8 py-3 bg-[#0086DA] hover:bg-[#0073A8] text-white font-bold rounded-lg shadow-md transition duration-200 text-lg tracking-wide">
+                    <button type="submit" class="px-8 py-3 bg-[#4F46E5] hover:bg-[#4338CA] text-white font-bold rounded-none shadow-md transition duration-200 text-lg tracking-wide">
                         CREATE ACCOUNT
                     </button>
                 </div>

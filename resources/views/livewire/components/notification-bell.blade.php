@@ -1,4 +1,10 @@
-<div x-data="{ open: false }" @keydown.escape.window="open = false" wire:poll.30s="buildNotifications" class="relative z-50">
+<div
+    x-data="{ open: false }"
+    x-init="$watch('open', value => { document.body.classList.toggle('overflow-hidden', value); })"
+    @keydown.escape.window="open = false"
+    wire:poll.30s="buildNotifications"
+    class="relative z-50"
+>
     <button
         @click="open = !open"
         class="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
@@ -16,28 +22,34 @@
         @endif
     </button>
 
-    <div x-show="open" class="fixed inset-0 z-[70]" style="display: none;">
-        <div
-            @click="open = false"
-            x-transition:enter="transition-opacity duration-300 ease-out"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity duration-300 ease-in"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="absolute inset-0 bg-slate-900/40"
-        ></div>
+    <template x-teleport="body">
+        <div class="fixed inset-0 z-[5000] overflow-hidden pointer-events-none">
+            <div
+                x-show="open"
+                @click="open = false"
+                x-transition:enter="transition-opacity duration-300 ease-out"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition-opacity duration-300 ease-in"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="absolute inset-0 bg-slate-900/55 backdrop-blur-[1px] pointer-events-auto"
+                style="display: none;"
+            ></div>
 
-        <aside
-            x-transition:enter="transform transition duration-300 ease-out"
-            x-transition:enter-start="translate-x-full opacity-80"
-            x-transition:enter-end="translate-x-0"
-            x-transition:leave="transform transition duration-250 ease-in"
-            x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="translate-x-full opacity-80"
-            class="absolute right-0 top-0 h-screen w-[92vw] max-w-[420px] border-l border-slate-200 bg-slate-50 shadow-2xl will-change-transform"
-            @click.stop
-        >
+            <aside
+                x-show="open"
+                @click.outside="open = false"
+                x-transition:enter="transform-gpu transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                x-transition:enter-start="translate-x-full"
+                x-transition:enter-end="translate-x-0"
+                x-transition:leave="transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.4,0,1,1)]"
+                x-transition:leave-start="translate-x-0"
+                x-transition:leave-end="translate-x-full"
+                class="absolute right-0 top-0 h-screen w-[92vw] max-w-[420px] border-l border-slate-200 bg-slate-50 shadow-2xl will-change-transform pointer-events-auto"
+                @click.stop
+                style="display: none;"
+            >
             <div class="flex h-full flex-col">
                 <div class="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
                     <div class="flex items-start justify-between gap-3">
@@ -81,14 +93,6 @@
                             @foreach($notifications as $notification)
                                 <div
                                     wire:key="notification-{{ $notification->id }}"
-                                    x-show="open"
-                                    x-transition:enter="transform transition duration-300 ease-out"
-                                    x-transition:enter-start="translate-x-4 opacity-0"
-                                    x-transition:enter-end="translate-x-0 opacity-100"
-                                    x-transition:leave="transform transition duration-150 ease-in"
-                                    x-transition:leave-start="translate-x-0 opacity-100"
-                                    x-transition:leave-end="translate-x-2 opacity-0"
-                                    style="transition-delay: {{ min($loop->index * 35, 220) }}ms;"
                                     class="group rounded-xl border border-slate-200 px-3 py-3 transition-colors hover:bg-slate-50 {{ !$notification->is_read ? 'bg-sky-50/60' : 'bg-white' }}"
                                 >
                                     <div class="flex items-start gap-3">
@@ -187,6 +191,7 @@
                     View All Appointments ->
                 </a>
             </div>
-        </aside>
-    </div>
+            </aside>
+        </div>
+    </template>
 </div>

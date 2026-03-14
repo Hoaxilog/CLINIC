@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 22, 2026 at 01:11 PM
+-- Generation Time: Mar 14, 2026 at 03:53 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -198,7 +198,116 @@ INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_type`, `ev
 (132, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 90, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\",\"patient_name\":\"Legaspina, MDave Dela Vega\"}}', NULL, '2026-02-17 16:05:27', '2026-02-17 16:05:27'),
 (133, 'default', 'Admitted Appointment', 'App\\Models\\Appointment', 'appointment_admitted', 90, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Waiting\",\"service_id\":1,\"dentist_id\":null},\"attributes\":{\"status\":\"Ongoing\",\"service_id\":1,\"dentist_id\":2}}', NULL, '2026-02-17 16:05:28', '2026-02-17 16:05:28'),
 (134, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 91, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":101,\"patient_name\":\"JOELQWE, JOEL JOEL\",\"service_id\":\"2\",\"appointment_date\":\"2026-02-19 18:30:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-19 09:21:58', '2026-02-19 09:21:58'),
-(135, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 92, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":66,\"patient_name\":\"QWEQWE, ASDASDASD QWEQWE\",\"service_id\":\"2\",\"appointment_date\":\"2026-02-19 15:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-19 11:18:00', '2026-02-19 11:18:00');
+(135, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 92, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":66,\"patient_name\":\"QWEQWE, ASDASDASD QWEQWE\",\"service_id\":\"2\",\"appointment_date\":\"2026-02-19 15:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-19 11:18:00', '2026-02-19 11:18:00'),
+(136, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 93, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":25,\"patient_name\":\"ROSALES, CLARENZ LUIGI SALUMBIDES\",\"service_id\":\"1\",\"appointment_date\":\"2026-02-22 16:30:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-22 11:43:37', '2026-02-22 11:43:37'),
+(137, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 94, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-02-22 15:23:01', '2026-02-22 15:23:01'),
+(138, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 99, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":110,\"patient_name\":\"Legaspina, MDave Dela Vega\",\"service_id\":\"1\",\"appointment_date\":\"2026-02-23 09:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-23 01:05:09', '2026-02-23 01:05:09'),
+(139, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 99, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\",\"patient_name\":\"Legaspina, MDave Dela Vega\"}}', NULL, '2026-02-23 01:14:44', '2026-02-23 01:14:44'),
+(140, 'default', 'Admitted Patient to Chair', 'App\\Models\\Appointment', 'appointment_admitted', 99, 'App\\Models\\User', 2, '[]', NULL, '2026-02-23 01:15:55', '2026-02-23 01:15:55'),
+(141, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 99, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Ongoing\"},\"attributes\":{\"status\":\"Completed\",\"patient_name\":\"Legaspina, MDave Dela Vega\"}}', NULL, '2026-02-23 01:52:23', '2026-02-23 01:52:23'),
+(142, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 96, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-02-23 02:18:47', '2026-02-23 02:18:47'),
+(143, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 100, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":114,\"patient_name\":\"Rosales, Dale Salumbides\",\"service_id\":\"1\",\"appointment_date\":\"2026-02-23 17:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-02-23 02:25:07', '2026-02-23 02:25:07'),
+(144, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 30, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"chart_data\":\"{\\\"teeth\\\":[],\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Fair\\\",\\\"gingiva\\\":\\\"Healthy\\\",\\\"calcular_deposits\\\":\\\"None\\\",\\\"stains\\\":\\\"None\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"Upper\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"}}\"}}', NULL, '2026-02-24 17:41:37', '2026-02-24 17:41:37'),
+(145, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 14, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"dmd\":\"eqwqew\",\"treatment\":\"eqwqwe\",\"cost_of_treatment\":\"231\",\"amount_charged\":\"312\",\"remarks\":\"sdasd\",\"image\":null,\"modified_by\":\"sample\",\"updated_at\":\"2026-02-24T17:41:37.428734Z\"}}', NULL, '2026-02-24 17:41:37', '2026-02-24 17:41:37'),
+(146, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 31, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"chart_data\":\"{\\\"teeth\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{\\\"center\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"CP\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"CP\\\",\\\"color\\\":\\\"red\\\"}}],\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Good\\\",\\\"gingiva\\\":\\\"Healthy\\\",\\\"calcular_deposits\\\":\\\"None\\\",\\\"stains\\\":\\\"None\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"None\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"}}\"}}', NULL, '2026-02-25 04:56:26', '2026-02-25 04:56:26'),
+(147, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 15, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"dmd\":\"Dr. Rosales\",\"treatment\":\"Extraction\",\"cost_of_treatment\":\"500\",\"amount_charged\":\"500\",\"remarks\":\"\",\"image\":null,\"modified_by\":\"sample\",\"updated_at\":\"2026-02-25T04:56:27.027173Z\"}}', NULL, '2026-02-25 04:56:27', '2026-02-25 04:56:27'),
+(148, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 32, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"chart_data\":\"{\\\"teeth\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{\\\"right\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"CD\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"CD\\\",\\\"color\\\":\\\"red\\\"}}],\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Excellent\\\",\\\"gingiva\\\":\\\"Mildly Inflamed\\\",\\\"calcular_deposits\\\":\\\"Moderate\\\",\\\"stains\\\":\\\"None\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"Upper\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"}}\"}}', NULL, '2026-02-25 06:12:10', '2026-02-25 06:12:10'),
+(149, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 16, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"dmd\":\"Dr me\",\"treatment\":\"Longganog\",\"cost_of_treatment\":\"123\",\"amount_charged\":\"345\",\"remarks\":\"asd\",\"modified_by\":\"sample\",\"updated_at\":\"2026-02-25T06:12:10.484106Z\"}}', NULL, '2026-02-25 06:12:10', '2026-02-25 06:12:10'),
+(150, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 33, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"chart_data\":\"{\\\"teeth\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{\\\"right\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"C\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"C\\\",\\\"color\\\":\\\"red\\\"}}],\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Poor\\\",\\\"gingiva\\\":\\\"Healthy\\\",\\\"calcular_deposits\\\":\\\"None\\\",\\\"stains\\\":\\\"Slight\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"None\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"}}\"}}', NULL, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(151, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 17, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"dmd\":\"SDA\",\"treatment\":\"QWE\",\"cost_of_treatment\":\"123\",\"amount_charged\":\"342\",\"remarks\":\"DAS\",\"modified_by\":\"sample\",\"updated_at\":\"2026-02-25T06:17:55.659656Z\"}}', NULL, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(152, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 34, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"chart_data\":\"{\\\"teeth\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{\\\"bottom\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"CD\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"CD\\\",\\\"color\\\":\\\"red\\\"}}],\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Excellent\\\",\\\"gingiva\\\":\\\"Healthy\\\",\\\"calcular_deposits\\\":\\\"Moderate\\\",\\\"stains\\\":\\\"Slight\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"None\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"}}\"}}', NULL, '2026-02-25 06:32:37', '2026-02-25 06:32:37'),
+(153, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 18, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"dmd\":\"DAS\",\"treatment\":\"ASD\",\"cost_of_treatment\":\"231\",\"amount_charged\":\"231\",\"remarks\":\"ASD\",\"modified_by\":\"sample\",\"updated_at\":\"2026-02-25T06:32:37.980281Z\"}}', NULL, '2026-02-25 06:32:37', '2026-02-25 06:32:37'),
+(154, 'default', 'Deleted Patient', 'App\\Models\\Patient', 'patient_deleted', 116, 'App\\Models\\User', 2, '{\"old\":{\"id\":116,\"last_name\":\"DSA\",\"first_name\":\"ASD\",\"mobile_number\":\"213\",\"middle_name\":null,\"nickname\":null,\"occupation\":null,\"birth_date\":null,\"gender\":null,\"civil_status\":null,\"home_address\":null,\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"sdjklsdfjkl@gmail.com\",\"referral\":null,\"emergency_contact_name\":null,\"emergency_contact_number\":null,\"relationship\":null,\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"GUEST\",\"created_at\":\"2026-02-08 00:35:49\",\"updated_at\":\"2026-02-08 00:35:49\"},\"attributes\":{\"first_name\":\"ASD\",\"last_name\":\"DSA\",\"middle_name\":null,\"mobile_number\":\"213\"}}', NULL, '2026-02-25 07:30:51', '2026-02-25 07:30:51'),
+(155, 'default', 'Deleted Patient', 'App\\Models\\Patient', 'patient_deleted', 112, 'App\\Models\\User', 2, '{\"old\":{\"id\":112,\"last_name\":\"sadsads\",\"first_name\":\"fgdgd\",\"mobile_number\":\"213231213\",\"middle_name\":\"gfdfggfd\",\"nickname\":null,\"occupation\":\"fsdfsd\",\"birth_date\":\"2026-01-21\",\"gender\":\"Male\",\"civil_status\":\"sdasa\",\"home_address\":\"321321\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":null,\"referral\":null,\"emergency_contact_name\":\"Rosales\",\"emergency_contact_number\":\"321321321\",\"relationship\":\"sadsa\",\"who_answering\":\"asdsasdsa\",\"relationship_to_patient\":\"qewqew\",\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\",\"created_at\":\"2026-01-22 13:19:46\",\"updated_at\":\"2026-01-22 13:45:26\"},\"attributes\":{\"first_name\":\"fgdgd\",\"last_name\":\"sadsads\",\"middle_name\":\"gfdfggfd\",\"mobile_number\":\"213231213\"}}', NULL, '2026-02-25 07:35:53', '2026-02-25 07:35:53'),
+(156, 'default', 'Deleted Patient', 'App\\Models\\Patient', 'patient_deleted', 81, 'App\\Models\\User', 2, '{\"old\":{\"id\":81,\"last_name\":\"TR\",\"first_name\":\"TR\",\"mobile_number\":\"231321\",\"middle_name\":\"TR\",\"nickname\":null,\"occupation\":null,\"birth_date\":\"2026-01-19\",\"gender\":null,\"civil_status\":null,\"home_address\":null,\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":null,\"referral\":null,\"emergency_contact_name\":null,\"emergency_contact_number\":null,\"relationship\":null,\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\",\"created_at\":\"2026-01-19 22:49:46\",\"updated_at\":\"2026-01-19 22:49:46\"},\"attributes\":{\"first_name\":\"TR\",\"last_name\":\"TR\",\"middle_name\":\"TR\",\"mobile_number\":\"231321\"}}', NULL, '2026-02-25 07:37:07', '2026-02-25 07:37:07'),
+(157, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 96, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Cancelled\"}}', NULL, '2026-02-25 10:39:22', '2026-02-25 10:39:22'),
+(158, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 100, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Cancelled\"}}', NULL, '2026-02-25 10:39:51', '2026-02-25 10:39:51'),
+(159, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 90, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Ongoing\"},\"attributes\":{\"status\":\"Cancelled\"}}', NULL, '2026-02-25 10:39:58', '2026-02-25 10:39:58'),
+(160, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 101, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":110,\"patient_name\":\"Legaspina, MDave Dela Vega\",\"service_id\":\"1\",\"appointment_date\":\"2026-03-06 11:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-06 09:30:12', '2026-03-06 09:30:12'),
+(161, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 115, 'App\\Models\\User', 2, '{\"old\":{\"first_name\":\"GHJK\",\"last_name\":\"ZCX\",\"middle_name\":null,\"birth_date\":null},\"attributes\":{\"first_name\":\"GHJK\",\"last_name\":\"ZCX\",\"middle_name\":null,\"birth_date\":\"2026-03-13\"}}', NULL, '2026-03-06 14:50:52', '2026-03-06 14:50:52'),
+(162, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 102, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":115,\"patient_name\":\"ZCX, GHJK\",\"service_id\":\"1\",\"appointment_date\":\"2026-03-06 17:30:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-06 14:50:52', '2026-03-06 14:50:52'),
+(163, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_cancelled', 95, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Cancelled\"}}', NULL, '2026-03-08 17:04:57', '2026-03-08 17:04:57'),
+(164, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 103, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":113,\"patient_name\":\"9, Gloc\",\"service_id\":\"2\",\"appointment_date\":\"2026-03-12 14:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-12 05:21:06', '2026-03-12 05:21:06'),
+(165, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 103, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\"}}', NULL, '2026-03-12 12:41:03', '2026-03-12 12:41:03'),
+(166, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 104, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":113,\"patient_name\":\"9, Gloc\",\"service_id\":\"2\",\"appointment_date\":\"2026-03-12 17:30:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-12 12:52:03', '2026-03-12 12:52:03'),
+(167, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 105, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":114,\"patient_name\":\"Rosales, Dale Salumbides\",\"service_id\":\"3\",\"appointment_date\":\"2026-03-12 12:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-12 12:53:46', '2026-03-12 12:53:46'),
+(168, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 104, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\"}}', NULL, '2026-03-12 15:15:14', '2026-03-12 15:15:14'),
+(169, 'default', 'Admitted Appointment', 'App\\Models\\Appointment', 'appointment_admitted', 103, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Waiting\",\"service_id\":2,\"dentist_id\":null},\"attributes\":{\"status\":\"Ongoing\",\"service_id\":2,\"dentist_id\":2}}', NULL, '2026-03-12 15:15:21', '2026-03-12 15:15:21'),
+(170, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 106, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":25,\"patient_name\":\"ROSALES, CLARENZ LUIGI SALUMBIDES\",\"service_id\":\"2\",\"appointment_date\":\"2026-03-12 12:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-13 04:04:01', '2026-03-13 04:04:01'),
+(171, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 118, 'App\\Models\\User', 2, '{\"old\":{\"first_name\":\"mn\",\"last_name\":\"nm\",\"middle_name\":null,\"birth_date\":null},\"attributes\":{\"first_name\":\"mn\",\"last_name\":\"nm\",\"middle_name\":null,\"birth_date\":\"2003-01-22\"}}', NULL, '2026-03-13 04:05:53', '2026-03-13 04:05:53'),
+(172, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 107, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"patient_name\":\"nm, mn\",\"service_id\":\"2\",\"appointment_date\":\"2026-03-12 14:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-13 04:05:53', '2026-03-13 04:05:53'),
+(173, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 97, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-03-13 05:37:13', '2026-03-13 05:37:13'),
+(174, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 98, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-03-13 05:37:18', '2026-03-13 05:37:18'),
+(175, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 97, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Cancelled\"}}', NULL, '2026-03-13 05:38:46', '2026-03-13 05:38:46'),
+(176, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 98, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Cancelled\"}}', NULL, '2026-03-13 05:38:55', '2026-03-13 05:38:55'),
+(177, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 108, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-03-13 05:40:30', '2026-03-13 05:40:30'),
+(178, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 109, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-03-13 05:40:34', '2026-03-13 05:40:34'),
+(179, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 108, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\"}}', NULL, '2026-03-13 05:40:52', '2026-03-13 05:40:52'),
+(180, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 109, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\"}}', NULL, '2026-03-13 05:41:05', '2026-03-13 05:41:05'),
+(181, 'default', 'Admitted Appointment', 'App\\Models\\Appointment', 'appointment_admitted', 109, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Waiting\",\"service_id\":3,\"dentist_id\":null},\"attributes\":{\"status\":\"Ongoing\",\"service_id\":3,\"dentist_id\":2}}', NULL, '2026-03-13 05:41:15', '2026-03-13 05:41:15'),
+(182, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 109, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Ongoing\"},\"attributes\":{\"status\":\"Completed\",\"patient_name\":\"El, Jo\"}}', NULL, '2026-03-13 05:41:51', '2026-03-13 05:41:51'),
+(183, 'default', 'Admitted Patient to Chair', 'App\\Models\\Appointment', 'appointment_admitted', 108, 'App\\Models\\User', 2, '[]', NULL, '2026-03-13 05:41:57', '2026-03-13 05:41:57'),
+(184, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 108, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Ongoing\"},\"attributes\":{\"status\":\"Completed\",\"patient_name\":\"Cerineoo, Deeyowil\"}}', NULL, '2026-03-13 05:42:12', '2026-03-13 05:42:12'),
+(185, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 110, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-03-13 06:44:08', '2026-03-13 06:44:08'),
+(186, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 111, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-03-13 06:44:15', '2026-03-13 06:44:15'),
+(187, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 110, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\"}}', NULL, '2026-03-13 06:44:29', '2026-03-13 06:44:29'),
+(188, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 111, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\"}}', NULL, '2026-03-13 06:44:40', '2026-03-13 06:44:40'),
+(189, 'default', 'Admitted Patient to Chair', 'App\\Models\\Appointment', 'appointment_admitted', 110, 'App\\Models\\User', 2, '[]', NULL, '2026-03-13 06:44:57', '2026-03-13 06:44:57'),
+(190, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 35, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":119,\"chart_data\":\"{\\\"teeth\\\":{\\\"11\\\":null,\\\"12\\\":{\\\"right\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"CD\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"CD\\\",\\\"color\\\":\\\"red\\\"}},\\\"13\\\":null,\\\"14\\\":null,\\\"15\\\":null,\\\"16\\\":{\\\"center\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"CI\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"CI\\\",\\\"color\\\":\\\"red\\\"}}},\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Good\\\",\\\"gingiva\\\":\\\"Mildly Inflamed\\\",\\\"calcular_deposits\\\":\\\"None\\\",\\\"stains\\\":\\\"Slight\\\",\\\"complete_denture\\\":\\\"Upper\\\",\\\"partial_denture\\\":\\\"Lower\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"asd\\\",\\\"treatment_plan\\\":\\\"step 123\\\"},\\\"meta\\\":{\\\"dentition_type\\\":\\\"adult\\\",\\\"numbering_system\\\":\\\"FDI\\\"}}\"}}', NULL, '2026-03-13 06:46:37', '2026-03-13 06:46:37'),
+(191, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 19, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":119,\"dmd\":\"Dr. Hiluluk\",\"treatment\":\"Extraction\",\"cost_of_treatment\":\"1200\",\"amount_charged\":\"1000\",\"remarks\":\"celan\",\"modified_by\":\"sample\",\"updated_at\":\"2026-03-13T06:46:37.360989Z\"}}', NULL, '2026-03-13 06:46:37', '2026-03-13 06:46:37'),
+(192, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 112, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":27,\"patient_name\":\"ROSALES, LUIS\",\"service_id\":\"2\",\"appointment_date\":\"2026-03-13 18:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-13 06:49:41', '2026-03-13 06:49:41'),
+(193, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 113, 'App\\Models\\User', 2, '{\"old\":{\"first_name\":\"Gloc\",\"last_name\":\"9\",\"middle_name\":\"\",\"birth_date\":\"2026-01-13\"},\"attributes\":{\"first_name\":\"Jo\",\"last_name\":\"El\",\"middle_name\":null,\"birth_date\":\"2003-11-01\"}}', NULL, '2026-03-13 06:57:31', '2026-03-13 06:57:31'),
+(194, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 113, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":113,\"patient_name\":\"El, Jo\",\"service_id\":\"2\",\"appointment_date\":\"2026-03-13 18:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-13 06:57:31', '2026-03-13 06:57:31'),
+(195, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 114, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":110,\"patient_name\":\"Legaspina, MDave Dela Vega\",\"service_id\":\"3\",\"appointment_date\":\"2026-03-13 17:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-13 07:01:53', '2026-03-13 07:01:53'),
+(196, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 120, 'App\\Models\\User', 2, '{\"old\":{\"id\":120,\"last_name\":\"El\",\"first_name\":\"Jo\",\"mobile_number\":\"123456789\",\"middle_name\":null,\"nickname\":null,\"occupation\":null,\"birth_date\":null,\"gender\":null,\"civil_status\":null,\"home_address\":null,\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"cerineo123@gmail.com\",\"referral\":null,\"emergency_contact_name\":null,\"emergency_contact_number\":null,\"relationship\":null,\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"cerineo123@gmail.com\",\"created_at\":\"2026-03-13 13:39:51\",\"updated_at\":\"2026-03-13 14:42:50\"},\"attributes\":{\"last_name\":\"El\",\"first_name\":\"Jo\",\"middle_name\":\"Qu\",\"nickname\":null,\"occupation\":\"Dancer\",\"birth_date\":\"2000-11-11\",\"gender\":\"Female\",\"civil_status\":\"Single\",\"home_address\":\"Bahay\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"mobile_number\":\"123456789\",\"email_address\":\"cerineo123@gmail.com\",\"referral\":null,\"emergency_contact_name\":\"Mama\",\"emergency_contact_number\":\"1231313\",\"relationship\":\"mama\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 07:34:01', '2026-03-13 07:34:01'),
+(197, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 120, 'App\\Models\\User', 2, '{\"old\":{\"id\":120,\"last_name\":\"El\",\"first_name\":\"Jo\",\"mobile_number\":\"123456789\",\"middle_name\":\"Qu\",\"nickname\":null,\"occupation\":\"Dancer\",\"birth_date\":\"2000-11-11\",\"gender\":\"Female\",\"civil_status\":\"Single\",\"home_address\":\"Bahay\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"cerineo123@gmail.com\",\"referral\":null,\"emergency_contact_name\":\"Mama\",\"emergency_contact_number\":\"1231313\",\"relationship\":\"mama\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\",\"created_at\":\"2026-03-13 13:39:51\",\"updated_at\":\"2026-03-13 15:34:01\"},\"attributes\":{\"last_name\":\"El\",\"first_name\":\"Jo\",\"middle_name\":\"Qu\",\"nickname\":null,\"occupation\":\"Dancer\",\"birth_date\":\"2000-11-11\",\"gender\":\"Male\",\"civil_status\":\"Single\",\"home_address\":\"Bahay\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"mobile_number\":\"123456789\",\"email_address\":\"cerineo123@gmail.com\",\"referral\":null,\"emergency_contact_name\":\"Mama\",\"emergency_contact_number\":\"1231313\",\"relationship\":\"mama\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 07:34:15', '2026-03-13 07:34:15'),
+(198, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 110, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Ongoing\"},\"attributes\":{\"status\":\"Completed\",\"patient_name\":\"Cerineoo, Deeyowil\"}}', NULL, '2026-03-13 07:36:16', '2026-03-13 07:36:16'),
+(199, 'default', 'Cancelled Appointment', 'App\\Models\\Appointment', 'appointment_cancelled', 113, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Cancelled\",\"patient_name\":\"El, Jo\"}}', NULL, '2026-03-13 07:36:33', '2026-03-13 07:36:33'),
+(200, 'default', 'Admitted Patient to Chair', 'App\\Models\\Appointment', 'appointment_admitted', 111, 'App\\Models\\User', 2, '[]', NULL, '2026-03-13 07:36:59', '2026-03-13 07:36:59'),
+(201, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 36, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":120,\"chart_data\":\"{\\\"teeth\\\":{\\\"11\\\":{\\\"left\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"C\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"C\\\",\\\"color\\\":\\\"red\\\"}},\\\"12\\\":null,\\\"13\\\":null,\\\"14\\\":null,\\\"15\\\":null,\\\"16\\\":null,\\\"17\\\":null,\\\"18\\\":null,\\\"21\\\":null,\\\"22\\\":null,\\\"23\\\":null,\\\"24\\\":null,\\\"25\\\":null,\\\"26\\\":null,\\\"27\\\":null,\\\"28\\\":null,\\\"31\\\":null,\\\"32\\\":{\\\"right\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"C\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"C\\\",\\\"color\\\":\\\"red\\\"}},\\\"33\\\":null,\\\"34\\\":null,\\\"35\\\":null,\\\"36\\\":null,\\\"37\\\":null,\\\"38\\\":{\\\"center\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"X\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"X\\\",\\\"color\\\":\\\"red\\\"}}},\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Excellent\\\",\\\"gingiva\\\":\\\"Healthy\\\",\\\"calcular_deposits\\\":\\\"Slight\\\",\\\"stains\\\":\\\"None\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"None\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"},\\\"meta\\\":{\\\"dentition_type\\\":\\\"adult\\\",\\\"numbering_system\\\":\\\"FDI\\\"}}\"}}', NULL, '2026-03-13 07:38:46', '2026-03-13 07:38:46'),
+(202, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 20, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":120,\"dmd\":\"Dr. Dave\",\"treatment\":\"Cleaning\",\"cost_of_treatment\":\"1000\",\"amount_charged\":\"1000\",\"remarks\":\"GUDS\",\"modified_by\":\"sample\",\"updated_at\":\"2026-03-13T07:38:46.167944Z\"}}', NULL, '2026-03-13 07:38:46', '2026-03-13 07:38:46'),
+(203, 'default', 'Created Patient', 'App\\Models\\Patient', 'patient_created', 121, 'App\\Models\\User', 2, '{\"attributes\":{\"first_name\":\"Ichi\",\"last_name\":\"Kawa\",\"middle_name\":\"\",\"mobile_number\":\"122333\",\"birth_date\":\"2003-01-02\"}}', NULL, '2026-03-13 07:42:56', '2026-03-13 07:42:56'),
+(204, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 115, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":121,\"patient_name\":\"Kawa, Ichi\",\"service_id\":\"1\",\"appointment_date\":\"2026-03-13 19:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-13 07:42:56', '2026-03-13 07:42:56'),
+(205, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 111, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Ongoing\"},\"attributes\":{\"status\":\"Completed\",\"patient_name\":\"El, Jo Qu\"}}', NULL, '2026-03-13 07:44:04', '2026-03-13 07:44:04'),
+(206, 'default', 'Cancelled Appointment', 'App\\Models\\Appointment', 'appointment_cancelled', 112, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Cancelled\",\"patient_name\":\"ROSALES, LUIS\"}}', NULL, '2026-03-13 07:44:19', '2026-03-13 07:44:19'),
+(207, 'default', 'Created Appointment', 'App\\Models\\Appointment', 'appointment_created', 116, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":121,\"patient_name\":\"Kawa, Ichi\",\"service_id\":\"1\",\"appointment_date\":\"2026-03-13 18:00:00\",\"status\":\"Scheduled\"}}', NULL, '2026-03-13 07:46:09', '2026-03-13 07:46:09'),
+(208, 'default', 'Created Patient', 'App\\Models\\Patient', 'patient_created', 122, 'App\\Models\\User', 2, '{\"attributes\":{\"last_name\":\"Hinomori\",\"first_name\":\"Shisho\",\"middle_name\":\"Mori\",\"nickname\":\"\",\"occupation\":\"Actress\",\"birth_date\":\"2002-02-02\",\"gender\":\"Female\",\"civil_status\":\"Single\",\"home_address\":\"School\",\"office_address\":\"\",\"home_number\":\"\",\"office_number\":\"\",\"mobile_number\":\"123123132\",\"email_address\":\"Shisho@gmail.com\",\"referral\":\"\",\"emergency_contact_name\":\"Emu\",\"emergency_contact_number\":\"12312323\",\"relationship\":\"BFF\",\"who_answering\":\"\",\"relationship_to_patient\":\"\",\"father_name\":\"\",\"father_number\":\"\",\"mother_name\":\"\",\"mother_number\":\"\",\"guardian_name\":\"\",\"guardian_number\":\"\"}}', NULL, '2026-03-13 07:49:07', '2026-03-13 07:49:07'),
+(209, 'default', 'Created Health History', 'App\\Models\\Patient', 'health_history_created', 122, 'App\\Models\\User', 2, '{\"health_history_id\":24,\"attributes\":{\"when_last_visit_q1\":null,\"what_last_visit_reason_q1\":\"\",\"what_seeing_dentist_reason_q2\":\"Check Up\",\"is_clicking_jaw_q3a\":0,\"is_pain_jaw_q3b\":0,\"is_difficulty_opening_closing_q3c\":0,\"is_locking_jaw_q3d\":0,\"is_clench_grind_q4\":0,\"is_bad_experience_q5\":0,\"is_nervous_q6\":0,\"what_nervous_concern_q6\":\"\",\"is_condition_q1\":0,\"what_condition_reason_q1\":\"\",\"is_hospitalized_q2\":0,\"what_hospitalized_reason_q2\":\"\",\"is_serious_illness_operation_q3\":0,\"what_serious_illness_operation_reason_q3\":\"\",\"is_taking_medications_q4\":0,\"what_medications_list_q4\":\"\",\"is_allergic_medications_q5\":0,\"what_allergies_list_q5\":\"\",\"is_allergic_latex_rubber_metals_q6\":0,\"is_pregnant_q7\":0,\"is_breast_feeding_q8\":0,\"selectedHistoryId\":\"new\"}}', NULL, '2026-03-13 07:49:07', '2026-03-13 07:49:07'),
+(210, 'default', 'Created Walk-in Appointment', 'App\\Models\\Appointment', 'appointment_created', 117, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":122,\"patient_name\":\"Hinomori, Shisho Mori\",\"status\":\"Waiting\"}}', NULL, '2026-03-13 07:49:07', '2026-03-13 07:49:07'),
+(211, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 122, 'App\\Models\\User', 2, '{\"old\":{\"id\":122,\"last_name\":\"Hinomori\",\"first_name\":\"Shisho\",\"mobile_number\":\"123123132\",\"middle_name\":\"Mori\",\"nickname\":\"\",\"occupation\":\"Actress\",\"birth_date\":\"2002-02-02\",\"gender\":\"Female\",\"civil_status\":\"Single\",\"home_address\":\"School\",\"office_address\":\"\",\"home_number\":\"\",\"office_number\":\"\",\"email_address\":\"Shisho@gmail.com\",\"referral\":\"\",\"emergency_contact_name\":\"Emu\",\"emergency_contact_number\":\"12312323\",\"relationship\":\"BFF\",\"who_answering\":\"\",\"relationship_to_patient\":\"\",\"father_name\":\"\",\"father_number\":\"\",\"mother_name\":\"\",\"mother_number\":\"\",\"guardian_name\":\"\",\"guardian_number\":\"\",\"modified_by\":\"sample\",\"created_at\":\"2026-03-13 15:49:07\",\"updated_at\":\"2026-03-13 15:49:07\"},\"attributes\":{\"last_name\":\"Hinomori\",\"first_name\":\"Shisho\",\"middle_name\":\"Mori\",\"nickname\":\"\",\"occupation\":\"Actress\",\"birth_date\":\"2002-02-02\",\"gender\":\"Male\",\"civil_status\":\"Single\",\"home_address\":\"School\",\"office_address\":\"\",\"home_number\":\"\",\"office_number\":\"\",\"mobile_number\":\"123123132\",\"email_address\":\"Shisho@gmail.com\",\"referral\":\"\",\"emergency_contact_name\":\"Emu\",\"emergency_contact_number\":\"12312323\",\"relationship\":\"BFF\",\"who_answering\":\"\",\"relationship_to_patient\":\"\",\"father_name\":\"\",\"father_number\":\"\",\"mother_name\":\"\",\"mother_number\":\"\",\"guardian_name\":\"\",\"guardian_number\":\"\",\"modified_by\":\"sample\"}}', NULL, '2026-03-13 07:50:50', '2026-03-13 07:50:50');
+INSERT INTO `activity_log` (`id`, `log_name`, `description`, `subject_type`, `event`, `subject_id`, `causer_type`, `causer_id`, `properties`, `batch_uuid`, `created_at`, `updated_at`) VALUES
+(212, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 122, 'App\\Models\\User', 2, '{\"old\":{\"id\":122,\"last_name\":\"Hinomori\",\"first_name\":\"Shisho\",\"mobile_number\":\"123123132\",\"middle_name\":\"Mori\",\"nickname\":\"\",\"occupation\":\"Actress\",\"birth_date\":\"2002-02-02\",\"gender\":\"Male\",\"civil_status\":\"Single\",\"home_address\":\"School\",\"office_address\":\"\",\"home_number\":\"\",\"office_number\":\"\",\"email_address\":\"Shisho@gmail.com\",\"referral\":\"\",\"emergency_contact_name\":\"Emu\",\"emergency_contact_number\":\"12312323\",\"relationship\":\"BFF\",\"who_answering\":\"\",\"relationship_to_patient\":\"\",\"father_name\":\"\",\"father_number\":\"\",\"mother_name\":\"\",\"mother_number\":\"\",\"guardian_name\":\"\",\"guardian_number\":\"\",\"modified_by\":\"sample\",\"created_at\":\"2026-03-13 15:49:07\",\"updated_at\":\"2026-03-13 15:50:49\"},\"attributes\":{\"last_name\":\"Hinomori\",\"first_name\":\"Shisho\",\"middle_name\":\"Mori\",\"nickname\":\"\",\"occupation\":\"Actress\",\"birth_date\":\"2002-02-02\",\"gender\":\"Female\",\"civil_status\":\"Single\",\"home_address\":\"School\",\"office_address\":\"\",\"home_number\":\"\",\"office_number\":\"\",\"mobile_number\":\"123123132\",\"email_address\":\"Shisho@gmail.com\",\"referral\":\"\",\"emergency_contact_name\":\"Emu\",\"emergency_contact_number\":\"12312323\",\"relationship\":\"BFF\",\"who_answering\":\"\",\"relationship_to_patient\":\"\",\"father_name\":\"\",\"father_number\":\"\",\"mother_name\":\"\",\"mother_number\":\"\",\"guardian_name\":\"\",\"guardian_number\":\"\",\"modified_by\":\"sample\"}}', NULL, '2026-03-13 07:51:01', '2026-03-13 07:51:01'),
+(213, 'default', 'Admitted Patient to Chair', 'App\\Models\\Appointment', 'appointment_admitted', 117, 'App\\Models\\User', 2, '[]', NULL, '2026-03-13 07:51:21', '2026-03-13 07:51:21'),
+(214, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 37, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":122,\"chart_data\":\"{\\\"teeth\\\":[],\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Excellent\\\",\\\"gingiva\\\":\\\"Healthy\\\",\\\"calcular_deposits\\\":\\\"None\\\",\\\"stains\\\":\\\"None\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"None\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"},\\\"meta\\\":{\\\"dentition_type\\\":\\\"adult\\\",\\\"numbering_system\\\":\\\"FDI\\\"}}\"}}', NULL, '2026-03-13 07:52:29', '2026-03-13 07:52:29'),
+(215, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 21, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":122,\"dmd\":\"Dr. Dave\",\"treatment\":\"Cleaning\",\"cost_of_treatment\":\"1000\",\"amount_charged\":\"1000\",\"remarks\":\"\",\"modified_by\":\"sample\",\"updated_at\":\"2026-03-13T07:52:29.690471Z\"}}', NULL, '2026-03-13 07:52:29', '2026-03-13 07:52:29'),
+(216, 'default', 'Cancelled Appointment', 'App\\Models\\Appointment', 'appointment_cancelled', 117, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Ongoing\"},\"attributes\":{\"status\":\"Cancelled\",\"patient_name\":\"Hinomori, Shisho Mori\"}}', NULL, '2026-03-13 07:53:09', '2026-03-13 07:53:09'),
+(217, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 118, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-03-13 08:03:07', '2026-03-13 08:03:07'),
+(218, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 118, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Waiting\",\"patient_name\":\"Rui, Rui\"}}', NULL, '2026-03-13 08:05:05', '2026-03-13 08:05:05'),
+(219, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 123, 'App\\Models\\User', 2, '{\"old\":{\"id\":123,\"last_name\":\"Rui\",\"first_name\":\"Rui\",\"mobile_number\":\"1801233123\",\"middle_name\":null,\"nickname\":null,\"occupation\":null,\"birth_date\":null,\"gender\":null,\"civil_status\":null,\"home_address\":null,\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"twgrd90335@minitts.net\",\"referral\":null,\"emergency_contact_name\":null,\"emergency_contact_number\":null,\"relationship\":null,\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"twgrd90335@minitts.net\",\"created_at\":\"2026-03-13 16:01:41\",\"updated_at\":\"2026-03-13 16:01:41\"},\"attributes\":{\"last_name\":\"Rui\",\"first_name\":\"Rui\",\"middle_name\":\"Rui\",\"nickname\":null,\"occupation\":\"Inventor\",\"birth_date\":\"2003-03-31\",\"gender\":\"Male\",\"civil_status\":\"Single\",\"home_address\":\"WonderLand\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"mobile_number\":\"1801233123\",\"email_address\":\"twgrd90335@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"Emu\",\"emergency_contact_number\":\"123123123\",\"relationship\":\"Friend\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 08:07:01', '2026-03-13 08:07:01'),
+(220, 'default', 'Created Health History', 'App\\Models\\Patient', 'health_history_created', 123, 'App\\Models\\User', 2, '{\"health_history_id\":25,\"attributes\":{\"when_last_visit_q1\":null,\"what_last_visit_reason_q1\":\"\",\"what_seeing_dentist_reason_q2\":\"Cleaning\",\"is_clicking_jaw_q3a\":0,\"is_pain_jaw_q3b\":0,\"is_difficulty_opening_closing_q3c\":0,\"is_locking_jaw_q3d\":0,\"is_clench_grind_q4\":0,\"is_bad_experience_q5\":0,\"is_nervous_q6\":0,\"what_nervous_concern_q6\":\"\",\"is_condition_q1\":0,\"what_condition_reason_q1\":\"\",\"is_hospitalized_q2\":0,\"what_hospitalized_reason_q2\":\"\",\"is_serious_illness_operation_q3\":0,\"what_serious_illness_operation_reason_q3\":\"\",\"is_taking_medications_q4\":0,\"what_medications_list_q4\":\"\",\"is_allergic_medications_q5\":0,\"what_allergies_list_q5\":\"\",\"is_allergic_latex_rubber_metals_q6\":0,\"is_pregnant_q7\":0,\"is_breast_feeding_q8\":0,\"modified_by\":\"sample\",\"patient_id\":123,\"created_at\":\"2026-03-13T08:12:05.474607Z\",\"updated_at\":\"2026-03-13T08:12:05.474624Z\"}}', NULL, '2026-03-13 08:12:05', '2026-03-13 08:12:05'),
+(221, 'default', 'Admitted Patient to Chair', 'App\\Models\\Appointment', 'appointment_admitted', 118, 'App\\Models\\User', 2, '[]', NULL, '2026-03-13 08:12:28', '2026-03-13 08:12:28'),
+(222, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 38, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":123,\"chart_data\":\"{\\\"teeth\\\":[],\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Excellent\\\",\\\"gingiva\\\":\\\"Healthy\\\",\\\"calcular_deposits\\\":\\\"None\\\",\\\"stains\\\":\\\"None\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"None\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"},\\\"meta\\\":{\\\"dentition_type\\\":\\\"adult\\\",\\\"numbering_system\\\":\\\"FDI\\\"}}\"}}', NULL, '2026-03-13 08:13:41', '2026-03-13 08:13:41'),
+(223, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 22, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":123,\"dmd\":\"Dr. Dave\",\"treatment\":\"Cleaning\",\"cost_of_treatment\":\"2000\",\"amount_charged\":\"2000\",\"remarks\":\"Excellent!\",\"modified_by\":\"sample\",\"updated_at\":\"2026-03-13T08:13:41.499860Z\"}}', NULL, '2026-03-13 08:13:41', '2026-03-13 08:13:41'),
+(224, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 118, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Ongoing\"},\"attributes\":{\"status\":\"Completed\",\"patient_name\":\"Rui, Rui Rui\"}}', NULL, '2026-03-13 08:14:06', '2026-03-13 08:14:06'),
+(225, 'default', 'Deleted Patient', 'App\\Models\\Patient', 'patient_deleted', 113, 'App\\Models\\User', 2, '{\"old\":{\"id\":113,\"last_name\":\"El\",\"first_name\":\"Jo\",\"mobile_number\":\"123456789\",\"middle_name\":null,\"nickname\":null,\"occupation\":null,\"birth_date\":\"2003-11-01\",\"gender\":null,\"civil_status\":null,\"home_address\":null,\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":null,\"referral\":null,\"emergency_contact_name\":null,\"emergency_contact_number\":null,\"relationship\":null,\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"Jerome_123\",\"created_at\":\"2026-01-22 15:56:06\",\"updated_at\":\"2026-03-13 14:57:31\"},\"attributes\":{\"first_name\":\"Jo\",\"last_name\":\"El\",\"middle_name\":null,\"mobile_number\":\"123456789\"}}', NULL, '2026-03-13 08:21:40', '2026-03-13 08:21:40'),
+(226, 'default', 'Deleted User Account', 'App\\Models\\User', 'user_deleted', 39, 'App\\Models\\User', 2, '{\"attributes\":{\"id\":39,\"username\":\"twgrd90335@minitts.net\",\"email\":\"twgrd90335@minitts.net\",\"email_verified_at\":\"2026-03-13 15:56:21\",\"google_id\":null,\"role\":3,\"created_at\":\"2026-03-13 15:55:43\",\"updated_at\":\"2026-03-13 15:56:21\"}}', NULL, '2026-03-13 08:23:23', '2026-03-13 08:23:23'),
+(227, 'default', 'Created User Account', 'App\\Models\\User', 'user_created', 40, 'App\\Models\\User', 2, '{\"attributes\":{\"username\":\"SICKAA@GMAIL.COM\",\"email\":\"SICKAA@GMAIL.COM\",\"role\":\"1\",\"email_verified_at\":null,\"created_at\":\"2026-03-13T08:32:49.325229Z\",\"updated_at\":\"2026-03-13T08:32:49.325240Z\"}}', NULL, '2026-03-13 08:32:51', '2026-03-13 08:32:51'),
+(228, 'default', 'Deleted User Account', 'App\\Models\\User', 'user_deleted', 40, 'App\\Models\\User', 2, '{\"attributes\":{\"id\":40,\"username\":\"SICKAA@GMAIL.COM\",\"email\":\"SICKAA@GMAIL.COM\",\"email_verified_at\":null,\"google_id\":null,\"role\":1,\"created_at\":\"2026-03-13 16:32:49\",\"updated_at\":\"2026-03-13 16:32:49\"}}', NULL, '2026-03-13 08:33:33', '2026-03-13 08:33:33'),
+(229, 'default', 'Created User Account', 'App\\Models\\User', 'user_created', 41, 'App\\Models\\User', 2, '{\"attributes\":{\"username\":\"SICKAA@GMAIL.COM\",\"email\":\"SICKAA@GMAIL.COM\",\"role\":\"1\",\"email_verified_at\":null,\"created_at\":\"2026-03-13T08:34:01.287917Z\",\"updated_at\":\"2026-03-13T08:34:01.287929Z\"}}', NULL, '2026-03-13 08:34:03', '2026-03-13 08:34:03'),
+(230, 'default', 'Updated User Account', 'App\\Models\\User', 'user_updated', 41, 'App\\Models\\User', 2, '{\"old\":{\"role\":1},\"attributes\":{\"role\":\"2\"}}', NULL, '2026-03-13 08:34:19', '2026-03-13 08:34:19'),
+(231, 'default', 'Deleted User Account', 'App\\Models\\User', 'user_deleted', 41, 'App\\Models\\User', 2, '{\"attributes\":{\"id\":41,\"username\":\"SICKAA@GMAIL.COM\",\"email\":\"SICKAA@GMAIL.COM\",\"email_verified_at\":null,\"google_id\":null,\"role\":2,\"created_at\":\"2026-03-13 16:34:01\",\"updated_at\":\"2026-03-13 16:34:19\"}}', NULL, '2026-03-13 08:34:29', '2026-03-13 08:34:29'),
+(232, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 39, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"chart_data\":\"{\\\"teeth\\\":{\\\"51\\\":{\\\"center\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"CI\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"CI\\\",\\\"color\\\":\\\"red\\\"}}},\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Fair\\\",\\\"gingiva\\\":\\\"Severe Inflamed\\\",\\\"calcular_deposits\\\":\\\"Slight\\\",\\\"stains\\\":\\\"Slight\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"None\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"},\\\"meta\\\":{\\\"dentition_type\\\":\\\"child\\\",\\\"numbering_system\\\":\\\"FDI\\\"}}\"}}', NULL, '2026-03-13 11:00:40', '2026-03-13 11:00:40'),
+(233, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 23, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":118,\"dmd\":\"ROSALES\",\"treatment\":\"EXTRACTION\",\"cost_of_treatment\":\"1500\",\"amount_charged\":\"2000\",\"remarks\":\"THIS PATIENT IS SO FUCKING STUPUD\",\"modified_by\":\"sample\",\"updated_at\":\"2026-03-13T11:00:40.720305Z\"}}', NULL, '2026-03-13 11:00:40', '2026-03-13 11:00:40'),
+(234, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 115, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Scheduled\"},\"attributes\":{\"status\":\"Cancelled\"}}', NULL, '2026-03-13 11:07:12', '2026-03-13 11:07:12'),
+(235, 'default', 'Updated Appointment Status', 'App\\Models\\Appointment', 'appointment_updated', 119, 'App\\Models\\User', 2, '{\"old\":{\"status\":\"Pending\"},\"attributes\":{\"status\":\"Scheduled\"}}', NULL, '2026-03-13 11:30:01', '2026-03-13 11:30:01'),
+(236, 'default', 'Created Dental Chart', 'App\\Models\\DentalChart', 'dental_chart_created', 40, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":124,\"chart_data\":\"{\\\"teeth\\\":{\\\"11\\\":null,\\\"12\\\":null,\\\"13\\\":null,\\\"14\\\":null,\\\"15\\\":null,\\\"16\\\":{\\\"top\\\":{\\\"color\\\":\\\"blue\\\",\\\"code\\\":\\\"LC\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"LC\\\",\\\"color\\\":\\\"blue\\\"}},\\\"17\\\":{\\\"center\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"CI\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"CI\\\",\\\"color\\\":\\\"red\\\"}},\\\"18\\\":{\\\"center\\\":{\\\"color\\\":\\\"red\\\",\\\"code\\\":\\\"---\\\"},\\\"line_1\\\":{\\\"code\\\":\\\"---\\\",\\\"color\\\":\\\"red\\\"}}},\\\"oral_exam\\\":{\\\"oral_hygiene_status\\\":\\\"Poor\\\",\\\"gingiva\\\":\\\"Mildly Inflamed\\\",\\\"calcular_deposits\\\":\\\"Moderate\\\",\\\"stains\\\":\\\"None\\\",\\\"complete_denture\\\":\\\"None\\\",\\\"partial_denture\\\":\\\"None\\\"},\\\"comments\\\":{\\\"notes\\\":\\\"\\\",\\\"treatment_plan\\\":\\\"\\\"},\\\"meta\\\":{\\\"dentition_type\\\":\\\"adult\\\",\\\"numbering_system\\\":\\\"FDI\\\"}}\"}}', NULL, '2026-03-13 23:00:59', '2026-03-13 23:00:59'),
+(237, 'default', 'Created Treatment Record', 'App\\Models\\TreatmentRecord', 'treatment_record_created', 24, 'App\\Models\\User', 2, '{\"attributes\":{\"patient_id\":124,\"dmd\":\"ROSALES\",\"treatment\":\"MABUHAY\",\"cost_of_treatment\":\"5000\",\"amount_charged\":\"6000\",\"remarks\":\"HEHEHE\",\"modified_by\":\"sample\",\"updated_at\":\"2026-03-13T23:00:59.103884Z\"}}', NULL, '2026-03-13 23:00:59', '2026-03-13 23:00:59'),
+(238, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 124, 'App\\Models\\User', 2, '{\"old\":{\"id\":124,\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"mobile_number\":\"12345678\",\"middle_name\":null,\"nickname\":null,\"occupation\":null,\"birth_date\":null,\"gender\":null,\"civil_status\":null,\"home_address\":null,\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":null,\"emergency_contact_number\":null,\"relationship\":null,\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"cxhya47030@minitts.net\",\"created_at\":\"2026-03-13 19:25:15\",\"updated_at\":\"2026-03-13 19:25:15\"},\"attributes\":{\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLE\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"mobile_number\":\"12345678\",\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 23:12:03', '2026-03-13 23:12:03'),
+(239, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 124, 'App\\Models\\User', 2, '{\"old\":{\"id\":124,\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"mobile_number\":\"12345678\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLE\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\",\"created_at\":\"2026-03-13 19:25:15\",\"updated_at\":\"2026-03-14 07:12:03\"},\"attributes\":{\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLEAAAAAAA\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"mobile_number\":\"12345678\",\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 23:15:03', '2026-03-13 23:15:03'),
+(240, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 124, 'App\\Models\\User', 2, '{\"old\":{\"id\":124,\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"mobile_number\":\"12345678\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLEAAAAAAA\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\",\"created_at\":\"2026-03-13 19:25:15\",\"updated_at\":\"2026-03-14 07:15:03\"},\"attributes\":{\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLEAAAAAAADSADASDSA\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"mobile_number\":\"12345678\",\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 23:17:59', '2026-03-13 23:17:59'),
+(241, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 124, 'App\\Models\\User', 2, '{\"old\":{\"id\":124,\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"mobile_number\":\"12345678\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLEAAAAAAADSADASDSA\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\",\"created_at\":\"2026-03-13 19:25:15\",\"updated_at\":\"2026-03-14 07:17:59\"},\"attributes\":{\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLEAAAAAAADSADASDSAdsadsa\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"mobile_number\":\"12345678\",\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 23:22:58', '2026-03-13 23:22:58'),
+(242, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 124, 'App\\Models\\User', 2, '{\"old\":{\"id\":124,\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"mobile_number\":\"12345678\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLEAAAAAAADSADASDSAdsadsa\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\",\"created_at\":\"2026-03-13 19:25:15\",\"updated_at\":\"2026-03-14 07:22:58\"},\"attributes\":{\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLES\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"mobile_number\":\"12345678\",\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 23:26:13', '2026-03-13 23:26:13'),
+(243, 'default', 'Updated Patient', 'App\\Models\\Patient', 'patient_updated', 124, 'App\\Models\\User', 2, '{\"old\":{\"id\":124,\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"mobile_number\":\"12345678\",\"middle_name\":\"AS\",\"nickname\":null,\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLES\",\"home_address\":\"SDADSA\",\"office_address\":null,\"home_number\":null,\"office_number\":null,\"email_address\":\"cxhya47030@minitts.net\",\"referral\":null,\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\",\"created_at\":\"2026-03-13 19:25:15\",\"updated_at\":\"2026-03-14 07:26:13\"},\"attributes\":{\"last_name\":\"Monkey\",\"first_name\":\"Luffy\",\"middle_name\":\"AS\",\"nickname\":\"\",\"occupation\":\"WALA\",\"birth_date\":\"2003-11-21\",\"gender\":\"Female\",\"civil_status\":\"SINGLESafds\",\"home_address\":\"SDADSA\",\"office_address\":\"\",\"home_number\":\"\",\"office_number\":\"\",\"mobile_number\":\"12345678\",\"email_address\":\"cxhya47030@minitts.net\",\"referral\":\"\",\"emergency_contact_name\":\"SADDASDSA\",\"emergency_contact_number\":\"231231\",\"relationship\":\"ASDSA\",\"who_answering\":null,\"relationship_to_patient\":null,\"father_name\":null,\"father_number\":null,\"mother_name\":null,\"mother_number\":null,\"guardian_name\":null,\"guardian_number\":null,\"modified_by\":\"sample\"}}', NULL, '2026-03-13 23:28:13', '2026-03-13 23:28:13');
 
 -- --------------------------------------------------------
 
@@ -215,84 +324,127 @@ CREATE TABLE `appointments` (
   `dentist_id` int(11) DEFAULT NULL,
   `modified_by` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `booking_type` varchar(30) NOT NULL DEFAULT 'online_appointment'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `appointments`
 --
 
-INSERT INTO `appointments` (`id`, `appointment_date`, `status`, `service_id`, `patient_id`, `dentist_id`, `modified_by`, `created_at`, `updated_at`) VALUES
-(3, '2025-11-10 11:30:00', 'Scheduled', 2, 6, NULL, 'SYSTEM', '2025-11-16 15:10:32', '2025-11-16 15:10:32'),
-(4, '2025-11-10 13:30:00', 'Scheduled', 1, 7, NULL, 'SYSTEM', '2025-11-16 15:10:50', '2025-11-16 15:10:50'),
-(5, '2025-11-10 14:30:00', 'Scheduled', 1, 10, NULL, 'SYSTEM', '2025-11-16 15:13:48', '2025-11-16 15:13:48'),
-(6, '2025-11-10 15:30:00', 'Cancelled', 1, 11, NULL, 'SYSTEM', '2025-11-16 15:13:57', '2025-11-18 00:44:03'),
-(7, '2025-11-11 09:30:00', 'Scheduled', 1, 17, NULL, 'SYSTEM', '2025-11-16 15:14:49', '2025-11-16 15:14:49'),
-(8, '2025-11-11 10:30:00', 'Scheduled', 1, 20, NULL, 'SYSTEM', '2025-11-16 15:22:10', '2025-11-16 15:22:10'),
-(9, '2025-11-12 09:30:00', 'Ongoing', 2, 11, NULL, 'SYSTEM', '2025-11-16 15:22:18', '2025-11-18 12:02:47'),
-(10, '2025-11-10 10:00:00', 'Cancelled', 1, 21, NULL, 'SYSTEM', '2025-11-16 15:25:43', '2025-11-17 01:15:39'),
-(11, '2025-11-11 12:30:00', 'Scheduled', 3, 11, NULL, 'SYSTEM', '2025-11-16 15:32:06', '2025-11-16 15:32:06'),
-(12, '2025-11-10 12:30:00', 'Scheduled', 1, 22, NULL, 'SYSTEM', '2025-11-16 17:31:44', '2025-11-16 17:31:44'),
-(14, '2025-11-17 09:00:00', 'Completed', 3, 7, NULL, 'SYSTEM', '2025-11-17 00:23:27', '2025-11-17 01:13:34'),
-(15, '2025-11-17 10:30:00', 'Cancelled', 2, 24, NULL, 'SYSTEM', '2025-11-17 01:30:45', '2025-11-17 01:50:51'),
-(16, '2025-11-18 09:00:00', 'Ongoing', 3, 25, NULL, 'SYSTEM', '2025-11-17 03:53:26', '2025-11-17 03:53:40'),
-(17, '2025-11-17 12:00:00', 'Ongoing', 3, 26, NULL, 'SYSTEM', '2025-11-17 14:40:33', '2025-11-17 14:43:35'),
-(18, '2025-11-18 11:00:00', 'Ongoing', 2, 28, NULL, 'SYSTEM', '2025-11-18 22:41:05', '2025-11-19 00:27:42'),
-(19, '2025-12-08 09:00:00', 'Cancelled', 1, 42, NULL, 'SYSTEM', '2025-12-08 14:53:45', '2025-12-10 02:31:47'),
-(20, '2025-12-10 09:00:00', 'Completed', 2, 43, NULL, 'SYSTEM', '2025-12-10 02:35:58', '2025-12-10 04:55:15'),
-(21, '2025-12-09 09:00:00', 'Scheduled', 2, 62, NULL, 'SYSTEM', '2025-12-13 08:08:42', '2025-12-13 08:08:42'),
-(22, '2025-12-13 18:30:00', 'Scheduled', 1, 63, NULL, 'SYSTEM', '2025-12-13 10:26:10', '2025-12-13 10:26:10'),
-(24, '2025-12-13 22:00:00', 'Scheduled', 2, 65, NULL, 'SYSTEM', '2025-12-13 14:17:28', '2025-12-13 14:17:28'),
-(25, '2025-12-13 21:00:00', 'Scheduled', 2, 66, NULL, 'SYSTEM', '2025-12-13 14:18:00', '2025-12-13 14:18:00'),
-(26, '2025-12-11 18:30:00', 'Scheduled', 2, 67, NULL, 'SYSTEM', '2025-12-13 14:18:15', '2025-12-13 14:18:15'),
-(27, '2025-12-10 13:00:00', 'Scheduled', 2, 17, NULL, 'SYSTEM', '2025-12-13 14:45:16', '2025-12-13 14:45:16'),
-(28, '2025-12-14 09:00:00', 'Scheduled', 1, 67, NULL, 'SYSTEM', '2025-12-13 14:50:12', '2025-12-13 14:50:12'),
-(29, '2025-12-16 09:00:00', 'Completed', 1, 67, NULL, 'SYSTEM', '2025-12-16 13:29:02', '2025-12-16 13:40:39'),
-(30, '2025-12-16 11:00:00', 'Cancelled', 3, 68, NULL, 'SYSTEM', '2025-12-16 13:38:19', '2025-12-16 13:44:45'),
-(31, '2025-12-15 11:30:00', 'Completed', 2, 69, NULL, 'SYSTEM', '2025-12-16 13:45:38', '2025-12-16 17:14:33'),
-(32, '2025-12-16 13:00:00', 'Ongoing', 1, 64, NULL, 'SYSTEM', '2025-12-16 13:49:31', '2025-12-16 13:49:43'),
-(33, '2025-12-15 09:00:00', 'Ongoing', 2, 70, NULL, 'SYSTEM', '2025-12-16 14:12:10', '2025-12-16 14:27:13'),
-(35, '2025-12-18 09:00:00', 'Scheduled', 1, 72, NULL, 'SYSTEM', '2025-12-16 14:19:47', '2025-12-16 14:19:47'),
-(36, '2025-12-19 09:00:00', 'Scheduled', 3, 73, NULL, 'SYSTEM', '2025-12-16 14:20:02', '2025-12-16 14:20:02'),
-(37, '2025-12-18 11:00:00', 'Ongoing', 2, 74, NULL, 'SYSTEM', '2025-12-16 14:20:14', '2025-12-16 14:21:18'),
-(38, '2025-12-19 11:00:00', 'Scheduled', 2, 75, NULL, 'SYSTEM', '2025-12-16 14:20:25', '2025-12-16 14:20:25'),
-(39, '2025-12-19 12:00:00', 'Scheduled', 3, 76, NULL, 'SYSTEM', '2025-12-18 13:52:26', '2025-12-18 13:52:26'),
-(54, '2026-01-20 09:00:00', 'Completed', 3, 67, NULL, 'sample', '2026-01-19 18:59:13', '2026-01-19 18:59:25'),
-(55, '2026-01-20 10:30:00', 'Cancelled', 2, 86, NULL, 'sample', '2026-01-19 19:09:58', '2026-01-19 19:25:50'),
-(57, '2026-01-20 11:30:00', 'Ongoing', 3, 88, NULL, 'sample', '2026-01-19 19:33:59', '2026-01-19 19:37:52'),
-(58, '2026-01-21 00:40:01', 'Waiting', 1, 100, NULL, 'sample', '2026-01-20 16:40:01', '2026-01-20 16:40:01'),
-(59, '2026-01-21 09:00:00', 'Ongoing', 2, 101, NULL, 'sample', '2026-01-20 17:48:03', '2026-01-20 17:49:33'),
-(60, '2026-01-21 10:00:00', 'Scheduled', 3, 66, NULL, 'sample', '2026-01-20 18:43:22', '2026-01-20 18:43:22'),
-(61, '2026-01-21 11:30:00', 'Scheduled', 3, 72, NULL, 'sample', '2026-01-20 18:44:09', '2026-01-20 18:44:09'),
-(62, '2026-01-21 13:00:00', 'Completed', 3, 102, NULL, 'sample', '2026-01-20 18:44:32', '2026-01-21 14:11:59'),
-(63, '2026-01-21 14:30:00', 'Scheduled', 3, 103, NULL, 'sample', '2026-01-21 13:55:36', '2026-01-21 13:55:36'),
-(64, '2026-01-21 16:00:00', 'Arrived', 3, 104, NULL, 'sample', '2026-01-21 14:00:00', '2026-01-21 14:02:21'),
-(67, '2026-01-22 10:30:00', 'Completed', 2, 107, 2, 'staff', '2026-01-22 01:18:34', '2026-01-22 03:11:32'),
-(68, '2026-01-22 11:30:00', 'Ongoing', 1, 108, NULL, 'staff', '2026-01-22 01:19:30', '2026-01-22 02:00:34'),
-(69, '2026-01-22 13:30:00', 'Completed', 1, 109, NULL, 'sample1', '2026-01-22 01:42:26', '2026-01-22 04:32:16'),
-(70, '2026-01-22 14:30:00', 'Cancelled', 3, 110, NULL, 'sample', '2026-01-22 04:22:07', '2026-01-22 04:22:38'),
-(71, '2026-01-22 16:00:00', 'Completed', 1, 110, 12, 'sample', '2026-01-22 04:33:32', '2026-01-22 08:05:35'),
-(72, '2026-01-22 17:00:00', 'Cancelled', 3, 110, NULL, 'sample', '2026-01-22 04:34:34', '2026-01-22 05:22:01'),
-(73, '2026-01-22 12:56:43', 'Cancelled', 1, 111, NULL, 'sample', '2026-01-22 04:56:43', '2026-01-22 07:08:56'),
-(74, '2026-01-22 14:30:00', 'Cancelled', 2, 112, NULL, 'sample', '2026-01-22 05:19:46', '2026-01-22 07:07:05'),
-(75, '2026-01-22 14:30:00', 'Cancelled', 3, 113, NULL, 'Jerome_123', '2026-01-22 07:56:06', '2026-01-22 07:57:53'),
-(76, '2026-01-22 17:30:00', 'Arrived', 3, 110, NULL, 'sample', '2026-01-22 14:23:21', '2026-01-22 14:53:24'),
-(77, '2026-01-23 09:00:00', 'Arrived', 3, 114, NULL, 'sample', '2026-01-22 16:32:07', '2026-01-22 18:12:58'),
-(78, '2026-01-23 11:00:00', 'Arrived', 2, 25, NULL, 'sample', '2026-01-22 16:49:36', '2026-01-22 17:42:33'),
-(79, '2026-01-23 12:00:00', 'Cancelled', 3, 110, NULL, 'sample', '2026-01-22 16:51:33', '2026-01-22 16:55:05'),
-(80, '2026-01-23 12:30:00', 'Cancelled', 2, 70, NULL, 'sample', '2026-01-22 16:56:17', '2026-01-22 17:02:48'),
-(81, '2026-02-09 13:00:00', 'Scheduled', 1, 115, NULL, 'GUEST', '2026-02-07 16:28:37', '2026-02-07 17:43:38'),
-(82, '2026-02-10 12:00:00', 'Cancelled', 2, 116, NULL, 'GUEST', '2026-02-07 16:35:49', '2026-02-14 11:55:52'),
-(83, '2026-02-20 11:00:00', 'Cancelled', 2, 117, NULL, 'GUEST', '2026-02-07 17:14:19', '2026-02-14 11:55:56'),
-(84, '2026-02-10 11:00:00', 'Cancelled', 3, 117, NULL, 'GUEST', '2026-02-07 17:15:08', '2026-02-14 11:55:58'),
-(87, '2026-02-10 10:00:00', 'Scheduled', 1, 1, NULL, 'SYSTEM', '2026-02-08 10:07:21', '2026-02-08 10:07:21'),
-(88, '2026-02-10 10:00:00', 'Scheduled', 1, 3, NULL, 'SYSTEM', '2026-02-08 10:07:21', '2026-02-08 10:07:21'),
-(89, '2026-02-15 09:00:00', 'Ongoing', 2, 25, 2, 'sample', '2026-02-15 15:33:46', '2026-02-15 15:42:23'),
-(90, '2026-02-18 10:30:00', 'Ongoing', 1, 110, 2, 'sample', '2026-02-17 16:05:16', '2026-02-17 16:05:28'),
-(91, '2026-02-19 18:30:00', 'Scheduled', 2, 101, NULL, 'sample', '2026-02-19 09:21:57', '2026-02-19 09:21:57'),
-(92, '2026-02-19 15:00:00', 'Scheduled', 2, 66, NULL, 'sample', '2026-02-19 11:17:59', '2026-02-19 11:17:59'),
-(93, '2026-02-26 09:00:00', 'Pending', 1, 109, NULL, 'romebernacer123@gmail.com', '2026-02-22 07:38:16', '2026-02-22 07:38:16'),
-(94, '2026-02-26 09:00:00', 'Pending', 1, 109, NULL, 'romebernacer123@gmail.com', '2026-02-22 07:38:19', '2026-02-22 07:38:19');
+INSERT INTO `appointments` (`id`, `appointment_date`, `status`, `service_id`, `patient_id`, `dentist_id`, `modified_by`, `created_at`, `updated_at`, `booking_type`) VALUES
+(3, '2025-11-10 11:30:00', 'Scheduled', 2, 6, NULL, 'SYSTEM', '2025-11-16 15:10:32', '2025-11-16 15:10:32', 'online_appointment'),
+(4, '2025-11-10 13:30:00', 'Scheduled', 1, 7, NULL, 'SYSTEM', '2025-11-16 15:10:50', '2025-11-16 15:10:50', 'online_appointment'),
+(5, '2025-11-10 14:30:00', 'Scheduled', 1, 10, NULL, 'SYSTEM', '2025-11-16 15:13:48', '2025-11-16 15:13:48', 'online_appointment'),
+(6, '2025-11-10 15:30:00', 'Cancelled', 1, 11, NULL, 'SYSTEM', '2025-11-16 15:13:57', '2025-11-18 00:44:03', 'online_appointment'),
+(7, '2025-11-11 09:30:00', 'Scheduled', 1, 17, NULL, 'SYSTEM', '2025-11-16 15:14:49', '2025-11-16 15:14:49', 'online_appointment'),
+(8, '2025-11-11 10:30:00', 'Scheduled', 1, 20, NULL, 'SYSTEM', '2025-11-16 15:22:10', '2025-11-16 15:22:10', 'online_appointment'),
+(9, '2025-11-12 09:30:00', 'Ongoing', 2, 11, NULL, 'SYSTEM', '2025-11-16 15:22:18', '2025-11-18 12:02:47', 'online_appointment'),
+(10, '2025-11-10 10:00:00', 'Cancelled', 1, 21, NULL, 'SYSTEM', '2025-11-16 15:25:43', '2025-11-17 01:15:39', 'online_appointment'),
+(11, '2025-11-11 12:30:00', 'Scheduled', 3, 11, NULL, 'SYSTEM', '2025-11-16 15:32:06', '2025-11-16 15:32:06', 'online_appointment'),
+(12, '2025-11-10 12:30:00', 'Scheduled', 1, 22, NULL, 'SYSTEM', '2025-11-16 17:31:44', '2025-11-16 17:31:44', 'online_appointment'),
+(14, '2025-11-17 09:00:00', 'Completed', 3, 7, NULL, 'SYSTEM', '2025-11-17 00:23:27', '2025-11-17 01:13:34', 'online_appointment'),
+(15, '2025-11-17 10:30:00', 'Cancelled', 2, 24, NULL, 'SYSTEM', '2025-11-17 01:30:45', '2025-11-17 01:50:51', 'online_appointment'),
+(16, '2025-11-18 09:00:00', 'Ongoing', 3, 25, NULL, 'SYSTEM', '2025-11-17 03:53:26', '2025-11-17 03:53:40', 'online_appointment'),
+(17, '2025-11-17 12:00:00', 'Ongoing', 3, 26, NULL, 'SYSTEM', '2025-11-17 14:40:33', '2025-11-17 14:43:35', 'online_appointment'),
+(18, '2025-11-18 11:00:00', 'Ongoing', 2, 28, NULL, 'SYSTEM', '2025-11-18 22:41:05', '2025-11-19 00:27:42', 'online_appointment'),
+(19, '2025-12-08 09:00:00', 'Cancelled', 1, 42, NULL, 'SYSTEM', '2025-12-08 14:53:45', '2025-12-10 02:31:47', 'online_appointment'),
+(20, '2025-12-10 09:00:00', 'Completed', 2, 43, NULL, 'SYSTEM', '2025-12-10 02:35:58', '2025-12-10 04:55:15', 'online_appointment'),
+(21, '2025-12-09 09:00:00', 'Scheduled', 2, 62, NULL, 'SYSTEM', '2025-12-13 08:08:42', '2025-12-13 08:08:42', 'online_appointment'),
+(22, '2025-12-13 18:30:00', 'Scheduled', 1, 63, NULL, 'SYSTEM', '2025-12-13 10:26:10', '2025-12-13 10:26:10', 'online_appointment'),
+(24, '2025-12-13 22:00:00', 'Scheduled', 2, 65, NULL, 'SYSTEM', '2025-12-13 14:17:28', '2025-12-13 14:17:28', 'online_appointment'),
+(25, '2025-12-13 21:00:00', 'Scheduled', 2, 66, NULL, 'SYSTEM', '2025-12-13 14:18:00', '2025-12-13 14:18:00', 'online_appointment'),
+(26, '2025-12-11 18:30:00', 'Scheduled', 2, 67, NULL, 'SYSTEM', '2025-12-13 14:18:15', '2025-12-13 14:18:15', 'online_appointment'),
+(27, '2025-12-10 13:00:00', 'Scheduled', 2, 17, NULL, 'SYSTEM', '2025-12-13 14:45:16', '2025-12-13 14:45:16', 'online_appointment'),
+(28, '2025-12-14 09:00:00', 'Scheduled', 1, 67, NULL, 'SYSTEM', '2025-12-13 14:50:12', '2025-12-13 14:50:12', 'online_appointment'),
+(29, '2025-12-16 09:00:00', 'Completed', 1, 67, NULL, 'SYSTEM', '2025-12-16 13:29:02', '2025-12-16 13:40:39', 'online_appointment'),
+(30, '2025-12-16 11:00:00', 'Cancelled', 3, 68, NULL, 'SYSTEM', '2025-12-16 13:38:19', '2025-12-16 13:44:45', 'online_appointment'),
+(31, '2025-12-15 11:30:00', 'Completed', 2, 69, NULL, 'SYSTEM', '2025-12-16 13:45:38', '2025-12-16 17:14:33', 'online_appointment'),
+(32, '2025-12-16 13:00:00', 'Ongoing', 1, 64, NULL, 'SYSTEM', '2025-12-16 13:49:31', '2025-12-16 13:49:43', 'online_appointment'),
+(33, '2025-12-15 09:00:00', 'Ongoing', 2, 70, NULL, 'SYSTEM', '2025-12-16 14:12:10', '2025-12-16 14:27:13', 'online_appointment'),
+(35, '2025-12-18 09:00:00', 'Scheduled', 1, 72, NULL, 'SYSTEM', '2025-12-16 14:19:47', '2025-12-16 14:19:47', 'online_appointment'),
+(36, '2025-12-19 09:00:00', 'Scheduled', 3, 73, NULL, 'SYSTEM', '2025-12-16 14:20:02', '2025-12-16 14:20:02', 'online_appointment'),
+(37, '2025-12-18 11:00:00', 'Ongoing', 2, 74, NULL, 'SYSTEM', '2025-12-16 14:20:14', '2025-12-16 14:21:18', 'online_appointment'),
+(38, '2025-12-19 11:00:00', 'Scheduled', 2, 75, NULL, 'SYSTEM', '2025-12-16 14:20:25', '2025-12-16 14:20:25', 'online_appointment'),
+(39, '2025-12-19 12:00:00', 'Scheduled', 3, 76, NULL, 'SYSTEM', '2025-12-18 13:52:26', '2025-12-18 13:52:26', 'online_appointment'),
+(54, '2026-01-20 09:00:00', 'Completed', 3, 67, NULL, 'sample', '2026-01-19 18:59:13', '2026-01-19 18:59:25', 'online_appointment'),
+(55, '2026-01-20 10:30:00', 'Cancelled', 2, 86, NULL, 'sample', '2026-01-19 19:09:58', '2026-01-19 19:25:50', 'online_appointment'),
+(57, '2026-01-20 11:30:00', 'Ongoing', 3, 88, NULL, 'sample', '2026-01-19 19:33:59', '2026-01-19 19:37:52', 'online_appointment'),
+(58, '2026-01-21 00:40:01', 'Waiting', 1, 100, NULL, 'sample', '2026-01-20 16:40:01', '2026-01-20 16:40:01', 'online_appointment'),
+(59, '2026-01-21 09:00:00', 'Ongoing', 2, 101, NULL, 'sample', '2026-01-20 17:48:03', '2026-01-20 17:49:33', 'online_appointment'),
+(60, '2026-01-21 10:00:00', 'Scheduled', 3, 66, NULL, 'sample', '2026-01-20 18:43:22', '2026-01-20 18:43:22', 'online_appointment'),
+(61, '2026-01-21 11:30:00', 'Scheduled', 3, 72, NULL, 'sample', '2026-01-20 18:44:09', '2026-01-20 18:44:09', 'online_appointment'),
+(62, '2026-01-21 13:00:00', 'Completed', 3, 102, NULL, 'sample', '2026-01-20 18:44:32', '2026-01-21 14:11:59', 'online_appointment'),
+(63, '2026-01-21 14:30:00', 'Scheduled', 3, 103, NULL, 'sample', '2026-01-21 13:55:36', '2026-01-21 13:55:36', 'online_appointment'),
+(64, '2026-01-21 16:00:00', 'Arrived', 3, 104, NULL, 'sample', '2026-01-21 14:00:00', '2026-01-21 14:02:21', 'online_appointment'),
+(67, '2026-01-22 10:30:00', 'Completed', 2, 107, 2, 'staff', '2026-01-22 01:18:34', '2026-01-22 03:11:32', 'online_appointment'),
+(68, '2026-01-22 11:30:00', 'Ongoing', 1, 108, NULL, 'staff', '2026-01-22 01:19:30', '2026-01-22 02:00:34', 'online_appointment'),
+(69, '2026-01-22 13:30:00', 'Completed', 1, 109, NULL, 'sample1', '2026-01-22 01:42:26', '2026-01-22 04:32:16', 'online_appointment'),
+(70, '2026-01-22 14:30:00', 'Cancelled', 3, 110, NULL, 'sample', '2026-01-22 04:22:07', '2026-01-22 04:22:38', 'online_appointment'),
+(71, '2026-01-22 16:00:00', 'Completed', 1, 110, 12, 'sample', '2026-01-22 04:33:32', '2026-01-22 08:05:35', 'online_appointment'),
+(72, '2026-01-22 17:00:00', 'Cancelled', 3, 110, NULL, 'sample', '2026-01-22 04:34:34', '2026-01-22 05:22:01', 'online_appointment'),
+(73, '2026-01-22 12:56:43', 'Cancelled', 1, 111, NULL, 'sample', '2026-01-22 04:56:43', '2026-01-22 07:08:56', 'online_appointment'),
+(76, '2026-01-22 17:30:00', 'Arrived', 3, 110, NULL, 'sample', '2026-01-22 14:23:21', '2026-01-22 14:53:24', 'online_appointment'),
+(77, '2026-01-23 09:00:00', 'Arrived', 3, 114, NULL, 'sample', '2026-01-22 16:32:07', '2026-01-22 18:12:58', 'online_appointment'),
+(78, '2026-01-23 11:00:00', 'Arrived', 2, 25, NULL, 'sample', '2026-01-22 16:49:36', '2026-01-22 17:42:33', 'online_appointment'),
+(79, '2026-01-23 12:00:00', 'Cancelled', 3, 110, NULL, 'sample', '2026-01-22 16:51:33', '2026-01-22 16:55:05', 'online_appointment'),
+(80, '2026-01-23 12:30:00', 'Cancelled', 2, 70, NULL, 'sample', '2026-01-22 16:56:17', '2026-01-22 17:02:48', 'online_appointment'),
+(83, '2026-02-20 11:00:00', 'Cancelled', 2, 117, NULL, 'GUEST', '2026-02-07 17:14:19', '2026-02-14 11:55:56', 'online_appointment'),
+(84, '2026-02-10 11:00:00', 'Cancelled', 3, 117, NULL, 'GUEST', '2026-02-07 17:15:08', '2026-02-14 11:55:58', 'online_appointment'),
+(87, '2026-02-10 10:00:00', 'Scheduled', 1, 1, NULL, 'SYSTEM', '2026-02-08 10:07:21', '2026-02-08 10:07:21', 'online_appointment'),
+(88, '2026-02-10 10:00:00', 'Scheduled', 1, 3, NULL, 'SYSTEM', '2026-02-08 10:07:21', '2026-02-08 10:07:21', 'online_appointment'),
+(89, '2026-02-15 09:00:00', 'Ongoing', 2, 25, 2, 'sample', '2026-02-15 15:33:46', '2026-02-15 15:42:23', 'online_appointment'),
+(90, '2026-02-18 10:30:00', 'Cancelled', 1, 110, 2, 'sample', '2026-02-17 16:05:16', '2026-02-25 10:39:58', 'online_appointment'),
+(91, '2026-02-19 18:30:00', 'Scheduled', 2, 101, NULL, 'sample', '2026-02-19 09:21:57', '2026-02-19 09:21:57', 'online_appointment'),
+(92, '2026-02-19 15:00:00', 'Scheduled', 2, 66, NULL, 'sample', '2026-02-19 11:17:59', '2026-02-19 11:17:59', 'online_appointment'),
+(93, '2026-02-22 16:30:00', 'Scheduled', 1, 25, NULL, 'sample', '2026-02-22 11:43:37', '2026-02-22 11:43:37', 'online_appointment'),
+(94, '2026-02-21 12:30:00', 'Scheduled', 1, 118, NULL, 'GUEST', '2026-02-22 11:59:55', '2026-02-22 15:23:01', 'online_appointment'),
+(99, '2026-02-23 09:00:00', 'Completed', 1, 110, 2, 'sample', '2026-02-23 01:05:09', '2026-02-23 01:52:23', 'online_appointment'),
+(100, '2026-02-23 17:00:00', 'Cancelled', 1, 114, NULL, 'sample', '2026-02-23 02:25:07', '2026-02-25 10:39:51', 'online_appointment'),
+(101, '2026-03-06 11:00:00', 'Scheduled', 1, 110, NULL, 'sample', '2026-03-06 09:30:11', '2026-03-06 09:30:11', 'online_appointment'),
+(105, '2026-03-12 12:00:00', 'Scheduled', 3, 114, NULL, 'sample', '2026-03-12 12:53:46', '2026-03-12 12:53:46', 'online_appointment'),
+(106, '2026-03-12 12:00:00', 'Scheduled', 2, 25, NULL, 'sample', '2026-03-13 04:04:01', '2026-03-13 04:04:01', 'online_appointment'),
+(107, '2026-03-12 14:00:00', 'Scheduled', 2, 118, NULL, 'sample', '2026-03-13 04:05:53', '2026-03-13 04:05:53', 'online_appointment'),
+(108, '2026-03-13 15:00:00', 'Completed', 1, 119, 2, 'cerineo159@gmail.com', '2026-03-13 05:34:48', '2026-03-13 05:42:12', 'online_appointment'),
+(109, '2026-03-13 15:00:00', 'Completed', 3, 120, 2, 'cerineo123@gmail.com', '2026-03-13 05:39:51', '2026-03-13 05:41:51', 'online_appointment'),
+(110, '2026-03-13 16:00:00', 'Completed', 2, 119, 2, 'cerineo159@gmail.com', '2026-03-13 06:42:19', '2026-03-13 07:36:16', 'online_appointment'),
+(111, '2026-03-13 16:00:00', 'Completed', 3, 120, 2, 'cerineo123@gmail.com', '2026-03-13 06:42:50', '2026-03-13 07:44:04', 'online_appointment'),
+(112, '2026-03-13 18:00:00', 'Cancelled', 2, 27, NULL, 'sample', '2026-03-13 06:49:41', '2026-03-13 07:44:19', 'online_appointment'),
+(114, '2026-03-13 17:00:00', 'Scheduled', 3, 110, NULL, 'sample', '2026-03-13 07:01:53', '2026-03-13 07:01:53', 'online_appointment'),
+(115, '2026-03-13 19:00:00', 'Cancelled', 1, 121, NULL, 'sample', '2026-03-13 07:42:56', '2026-03-13 11:07:12', 'online_appointment'),
+(116, '2026-03-13 18:00:00', 'Scheduled', 1, 121, NULL, 'sample', '2026-03-13 07:46:09', '2026-03-13 07:46:09', 'online_appointment'),
+(117, '2026-03-13 15:49:07', 'Cancelled', 1, 122, 2, 'sample', '2026-03-13 07:49:07', '2026-03-13 07:53:09', 'online_appointment'),
+(118, '2026-03-13 19:00:00', 'Completed', 1, 123, 2, 'twgrd90335@minitts.net', '2026-03-13 08:01:41', '2026-03-13 08:14:06', 'online_appointment'),
+(119, '2026-03-14 11:00:00', 'Scheduled', 1, 124, NULL, 'cxhya47030@minitts.net', '2026-03-13 11:25:15', '2026-03-13 11:30:01', 'online_appointment');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `blocked_slots`
+--
+
+CREATE TABLE `blocked_slots` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `date` date NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `chair_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `blocked_slots`
+--
+
+INSERT INTO `blocked_slots` (`id`, `date`, `start_time`, `end_time`, `chair_id`, `reason`, `created_by`, `created_at`, `updated_at`) VALUES
+(4, '2026-03-13', '09:00:00', '10:00:00', NULL, 'MEETING', 'sample', '2026-03-13 02:40:52', '2026-03-13 05:45:11'),
+(5, '2026-03-13', '20:00:00', '21:00:00', NULL, NULL, 'sample', '2026-03-13 06:51:35', '2026-03-13 06:51:35'),
+(6, '2026-03-14', '09:00:00', '10:00:00', NULL, NULL, 'sample', '2026-03-13 21:01:42', '2026-03-13 21:01:42'),
+(7, '2026-03-14', '13:00:00', '14:00:00', NULL, NULL, 'sample', '2026-03-13 21:02:50', '2026-03-13 21:02:50'),
+(8, '2026-03-14', '14:00:00', '15:00:00', NULL, NULL, 'sample', '2026-03-13 21:03:03', '2026-03-13 21:03:03');
 
 -- --------------------------------------------------------
 
@@ -325,17 +477,24 @@ INSERT INTO `dental_charts` (`id`, `patient_id`, `chart_data`, `modified_by`, `c
 (16, 65, '{\"teeth\":{\"18\":{\"center\":{\"color\":\"red\",\"code\":\"C\"},\"line_1\":{\"code\":\"C\",\"color\":\"red\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"\",\"gingiva\":\"\",\"calcular_deposits\":\"\",\"stains\":\"\",\"complete_denture\":\"\",\"partial_denture\":\"\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2025-12-16 15:21:29', '2025-12-16 15:21:29'),
 (17, 65, '{\"teeth\":{\"18\":{\"center\":{\"color\":\"red\",\"code\":\"C\"},\"line_1\":{\"code\":\"C\",\"color\":\"red\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"\",\"gingiva\":\"\",\"calcular_deposits\":\"\",\"stains\":\"\",\"complete_denture\":\"\",\"partial_denture\":\"\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2025-12-16 15:22:05', '2025-12-16 15:22:05'),
 (18, 78, '{\"teeth\":{\"18\":{\"center\":{\"color\":\"red\",\"code\":\"CC\"},\"line_1\":{\"code\":\"CC\",\"color\":\"red\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"\",\"gingiva\":\"\",\"calcular_deposits\":\"\",\"stains\":\"\",\"complete_denture\":\"\",\"partial_denture\":\"\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-01-17 20:22:55', '2026-01-17 20:22:55'),
-(19, 112, '{\"teeth\":{\"11\":{\"center\":{\"color\":\"red\",\"code\":\"CD\"},\"line_1\":{\"code\":\"CD\",\"color\":\"red\"},\"left\":{\"color\":\"red\",\"code\":\"CD\"},\"right\":{\"color\":\"red\",\"code\":\"CD\"},\"top\":{\"color\":\"red\",\"code\":\"CD\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Fair\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Severe\",\"stains\":\"Moderate\",\"complete_denture\":\"Lower\",\"partial_denture\":\"Upper\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"SASDASDAASD\"}}', 'sample', '2026-01-22 07:50:35', '2026-01-22 07:50:35'),
-(20, 112, '{\"teeth\":{\"16\":{\"center\":{\"color\":\"red\",\"code\":\"CC\"},\"line_1\":{\"code\":\"CC\",\"color\":\"red\"},\"top\":{\"color\":\"red\",\"code\":\"CC\"},\"left\":{\"color\":\"red\",\"code\":\"CC\"},\"bottom\":{\"color\":\"red\",\"code\":\"CC\"},\"right\":{\"color\":\"red\",\"code\":\"CC\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Good\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Slight\",\"stains\":\"Slight\",\"complete_denture\":\"Upper & Lower\",\"partial_denture\":\"Upper & Lower\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"BUNITIN ANG DILA\"}}', 'sample', '2026-01-22 07:52:03', '2026-01-22 07:52:03'),
 (21, 110, '{\"teeth\":{\"32\":{\"bottom\":{\"color\":\"red\",\"code\":\"---\"},\"line_1\":{\"code\":\"---\",\"color\":\"red\"},\"left\":{\"color\":\"red\",\"code\":\"---\"},\"center\":{\"color\":\"red\",\"code\":\"---\"},\"right\":{\"color\":\"red\",\"code\":\"---\"},\"top\":{\"color\":\"red\",\"code\":\"---\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Bad\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Severe\",\"stains\":\"Moderate\",\"complete_denture\":\"Lower\",\"partial_denture\":\"Lower\"},\"comments\":{\"notes\":\"Help\",\"treatment_plan\":\"Tomorrow\"}}', 'Jerome_123', '2026-01-22 08:04:42', '2026-01-22 08:04:42'),
 (22, 114, '{\"teeth\":{\"17\":{\"top\":{\"color\":\"red\",\"code\":\"DR\"},\"line_1\":{\"code\":\"DR\",\"color\":\"red\"},\"center\":{\"color\":\"red\",\"code\":\"DR\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Fair\",\"gingiva\":\"Severe Inflamed\",\"calcular_deposits\":\"None\",\"stains\":\"Moderate\",\"complete_denture\":\"Lower\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-01-22 19:26:41', '2026-01-22 19:26:41'),
 (23, 114, '{\"teeth\":{\"17\":{\"top\":{\"color\":\"red\",\"code\":\"DR\"},\"line_1\":{\"code\":\"DR\",\"color\":\"red\"},\"center\":{\"color\":\"red\",\"code\":\"DR\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Fair\",\"gingiva\":\"Severe Inflamed\",\"calcular_deposits\":\"None\",\"stains\":\"Moderate\",\"complete_denture\":\"Lower\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-01-22 19:27:01', '2026-01-22 19:27:01'),
-(24, 113, '{\"teeth\":{\"17\":{\"center\":{\"color\":\"red\",\"code\":\"CP\"},\"line_1\":{\"code\":\"CP\",\"color\":\"red\"},\"left\":{\"color\":\"red\",\"code\":\"CP\"},\"bottom\":{\"color\":\"red\",\"code\":\"CP\"},\"right\":{\"color\":\"red\",\"code\":\"CP\"},\"top\":{\"color\":\"red\",\"code\":\"CP\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Poor\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Severe\",\"stains\":\"Severe\",\"complete_denture\":\"Upper\",\"partial_denture\":\"Lower\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-01-22 19:33:58', '2026-01-22 19:33:58'),
 (25, 117, '{\"teeth\":[],\"oral_exam\":{\"oral_hygiene_status\":\"Good\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"None\",\"stains\":\"Slight\",\"complete_denture\":\"Lower\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-14 07:54:52', '2026-02-14 07:54:52'),
 (26, 117, '{\"teeth\":[],\"oral_exam\":{\"oral_hygiene_status\":\"Bad\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Moderate\",\"stains\":\"Moderate\",\"complete_denture\":\"Upper\",\"partial_denture\":\"Upper\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-14 08:02:50', '2026-02-14 08:02:50'),
 (27, 117, '{\"teeth\":[],\"oral_exam\":{\"oral_hygiene_status\":\"Fair\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Moderate\",\"stains\":\"Slight\",\"complete_denture\":\"None\",\"partial_denture\":\"Upper\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-14 08:06:47', '2026-02-14 08:06:47'),
-(28, 116, '{\"teeth\":[],\"oral_exam\":{\"oral_hygiene_status\":\"Poor\",\"gingiva\":\"Healthy\",\"calcular_deposits\":\"Slight\",\"stains\":\"Slight\",\"complete_denture\":\"None\",\"partial_denture\":\"Upper\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-14 08:12:56', '2026-02-14 08:12:56'),
-(29, 117, '{\"teeth\":[null,null,null,null,null,null,null,null,null,null,null,null,null,{\"left\":{\"color\":\"red\",\"code\":\"CD\"},\"line_1\":{\"code\":\"CD\",\"color\":\"red\"},\"right\":{\"color\":\"red\",\"code\":\"---\"},\"line_2\":{\"code\":\"---\",\"color\":\"red\"},\"center\":{\"color\":\"red\",\"code\":\"C\"},\"line_3\":{\"code\":\"C\",\"color\":\"red\"}},null,null,null,{\"center\":{\"color\":\"blue\",\"code\":\"LC\"},\"line_1\":{\"code\":\"LC\",\"color\":\"blue\"},\"right\":{\"color\":\"red\",\"code\":\"CI\"},\"line_2\":{\"code\":\"CI\",\"color\":\"red\"}}],\"oral_exam\":{\"oral_hygiene_status\":\"Good\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Slight\",\"stains\":\"Severe\",\"complete_denture\":\"Upper\",\"partial_denture\":\"Upper\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-14 08:22:06', '2026-02-14 08:22:06');
+(29, 117, '{\"teeth\":[null,null,null,null,null,null,null,null,null,null,null,null,null,{\"left\":{\"color\":\"red\",\"code\":\"CD\"},\"line_1\":{\"code\":\"CD\",\"color\":\"red\"},\"right\":{\"color\":\"red\",\"code\":\"---\"},\"line_2\":{\"code\":\"---\",\"color\":\"red\"},\"center\":{\"color\":\"red\",\"code\":\"C\"},\"line_3\":{\"code\":\"C\",\"color\":\"red\"}},null,null,null,{\"center\":{\"color\":\"blue\",\"code\":\"LC\"},\"line_1\":{\"code\":\"LC\",\"color\":\"blue\"},\"right\":{\"color\":\"red\",\"code\":\"CI\"},\"line_2\":{\"code\":\"CI\",\"color\":\"red\"}}],\"oral_exam\":{\"oral_hygiene_status\":\"Good\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Slight\",\"stains\":\"Severe\",\"complete_denture\":\"Upper\",\"partial_denture\":\"Upper\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-14 08:22:06', '2026-02-14 08:22:06'),
+(30, 118, '{\"teeth\":[],\"oral_exam\":{\"oral_hygiene_status\":\"Fair\",\"gingiva\":\"Healthy\",\"calcular_deposits\":\"None\",\"stains\":\"None\",\"complete_denture\":\"None\",\"partial_denture\":\"Upper\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-24 17:41:37', '2026-02-24 17:41:37'),
+(31, 118, '{\"teeth\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{\"center\":{\"color\":\"red\",\"code\":\"CP\"},\"line_1\":{\"code\":\"CP\",\"color\":\"red\"}}],\"oral_exam\":{\"oral_hygiene_status\":\"Good\",\"gingiva\":\"Healthy\",\"calcular_deposits\":\"None\",\"stains\":\"None\",\"complete_denture\":\"None\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-25 04:56:26', '2026-02-25 04:56:26'),
+(32, 118, '{\"teeth\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{\"right\":{\"color\":\"red\",\"code\":\"CD\"},\"line_1\":{\"code\":\"CD\",\"color\":\"red\"}}],\"oral_exam\":{\"oral_hygiene_status\":\"Excellent\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Moderate\",\"stains\":\"None\",\"complete_denture\":\"None\",\"partial_denture\":\"Upper\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-25 06:12:10', '2026-02-25 06:12:10'),
+(33, 118, '{\"teeth\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{\"right\":{\"color\":\"red\",\"code\":\"C\"},\"line_1\":{\"code\":\"C\",\"color\":\"red\"}}],\"oral_exam\":{\"oral_hygiene_status\":\"Poor\",\"gingiva\":\"Healthy\",\"calcular_deposits\":\"None\",\"stains\":\"Slight\",\"complete_denture\":\"None\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(34, 118, '{\"teeth\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{\"bottom\":{\"color\":\"red\",\"code\":\"CD\"},\"line_1\":{\"code\":\"CD\",\"color\":\"red\"}}],\"oral_exam\":{\"oral_hygiene_status\":\"Excellent\",\"gingiva\":\"Healthy\",\"calcular_deposits\":\"Moderate\",\"stains\":\"Slight\",\"complete_denture\":\"None\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"}}', 'sample', '2026-02-25 06:32:37', '2026-02-25 06:32:37'),
+(35, 119, '{\"teeth\":{\"11\":null,\"12\":{\"right\":{\"color\":\"red\",\"code\":\"CD\"},\"line_1\":{\"code\":\"CD\",\"color\":\"red\"}},\"13\":null,\"14\":null,\"15\":null,\"16\":{\"center\":{\"color\":\"red\",\"code\":\"CI\"},\"line_1\":{\"code\":\"CI\",\"color\":\"red\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Good\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"None\",\"stains\":\"Slight\",\"complete_denture\":\"Upper\",\"partial_denture\":\"Lower\"},\"comments\":{\"notes\":\"asd\",\"treatment_plan\":\"step 123\"},\"meta\":{\"dentition_type\":\"adult\",\"numbering_system\":\"FDI\"}}', 'sample', '2026-03-13 06:46:37', '2026-03-13 06:46:37'),
+(36, 120, '{\"teeth\":{\"11\":{\"left\":{\"color\":\"red\",\"code\":\"C\"},\"line_1\":{\"code\":\"C\",\"color\":\"red\"}},\"12\":null,\"13\":null,\"14\":null,\"15\":null,\"16\":null,\"17\":null,\"18\":null,\"21\":null,\"22\":null,\"23\":null,\"24\":null,\"25\":null,\"26\":null,\"27\":null,\"28\":null,\"31\":null,\"32\":{\"right\":{\"color\":\"red\",\"code\":\"C\"},\"line_1\":{\"code\":\"C\",\"color\":\"red\"}},\"33\":null,\"34\":null,\"35\":null,\"36\":null,\"37\":null,\"38\":{\"center\":{\"color\":\"red\",\"code\":\"X\"},\"line_1\":{\"code\":\"X\",\"color\":\"red\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Excellent\",\"gingiva\":\"Healthy\",\"calcular_deposits\":\"Slight\",\"stains\":\"None\",\"complete_denture\":\"None\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"},\"meta\":{\"dentition_type\":\"adult\",\"numbering_system\":\"FDI\"}}', 'sample', '2026-03-13 07:38:46', '2026-03-13 07:38:46'),
+(37, 122, '{\"teeth\":[],\"oral_exam\":{\"oral_hygiene_status\":\"Excellent\",\"gingiva\":\"Healthy\",\"calcular_deposits\":\"None\",\"stains\":\"None\",\"complete_denture\":\"None\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"},\"meta\":{\"dentition_type\":\"adult\",\"numbering_system\":\"FDI\"}}', 'sample', '2026-03-13 07:52:29', '2026-03-13 07:52:29'),
+(38, 123, '{\"teeth\":[],\"oral_exam\":{\"oral_hygiene_status\":\"Excellent\",\"gingiva\":\"Healthy\",\"calcular_deposits\":\"None\",\"stains\":\"None\",\"complete_denture\":\"None\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"},\"meta\":{\"dentition_type\":\"adult\",\"numbering_system\":\"FDI\"}}', 'sample', '2026-03-13 08:13:41', '2026-03-13 08:13:41'),
+(39, 118, '{\"teeth\":{\"51\":{\"center\":{\"color\":\"red\",\"code\":\"CI\"},\"line_1\":{\"code\":\"CI\",\"color\":\"red\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Fair\",\"gingiva\":\"Severe Inflamed\",\"calcular_deposits\":\"Slight\",\"stains\":\"Slight\",\"complete_denture\":\"None\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"},\"meta\":{\"dentition_type\":\"child\",\"numbering_system\":\"FDI\"}}', 'sample', '2026-03-13 11:00:40', '2026-03-13 11:00:40'),
+(40, 124, '{\"teeth\":{\"11\":null,\"12\":null,\"13\":null,\"14\":null,\"15\":null,\"16\":{\"top\":{\"color\":\"blue\",\"code\":\"LC\"},\"line_1\":{\"code\":\"LC\",\"color\":\"blue\"}},\"17\":{\"center\":{\"color\":\"red\",\"code\":\"CI\"},\"line_1\":{\"code\":\"CI\",\"color\":\"red\"}},\"18\":{\"center\":{\"color\":\"red\",\"code\":\"---\"},\"line_1\":{\"code\":\"---\",\"color\":\"red\"}}},\"oral_exam\":{\"oral_hygiene_status\":\"Poor\",\"gingiva\":\"Mildly Inflamed\",\"calcular_deposits\":\"Moderate\",\"stains\":\"None\",\"complete_denture\":\"None\",\"partial_denture\":\"None\"},\"comments\":{\"notes\":\"\",\"treatment_plan\":\"\"},\"meta\":{\"dentition_type\":\"adult\",\"numbering_system\":\"FDI\"}}', 'sample', '2026-03-13 23:00:58', '2026-03-13 23:00:58');
 
 -- --------------------------------------------------------
 
@@ -392,7 +551,8 @@ INSERT INTO `health_histories` (`id`, `patient_id`, `when_last_visit_q1`, `what_
 (20, 109, '2017-11-22', 'cleanuing', 'hatddog', 0, 0, 0, 0, 0, 0, 0, '', 0, '', 0, '', 0, '', 0, '', 0, '', 0, 0, 0, 'sample1', '2026-01-22 01:44:08', '2026-01-22 01:44:08'),
 (21, 110, '2025-01-24', '', 'Swollen', 0, 0, 0, 0, 0, 0, 1, 'Concern Citizen', 0, '', 0, '', 0, '', 0, '', 0, '', 0, 0, 0, 'Jerome_123', '2026-01-22 04:47:50', '2026-01-22 08:03:23'),
 (22, 111, '2026-01-05', '', 'Check up', 0, 0, 0, 0, 0, 0, 0, '', 0, '', 0, '', 0, '', 0, '', 0, '', 0, 0, 0, 'sample', '2026-01-22 04:56:43', '2026-01-22 04:56:43'),
-(23, 112, NULL, '', 'dassdadsa', 0, 0, 0, 0, 0, 0, 0, '', 0, '', 0, '', 0, '', 0, '', 0, '', 0, 0, 0, 'sample', '2026-01-22 06:11:03', '2026-01-22 06:11:03');
+(24, 122, NULL, '', 'Check Up', 0, 0, 0, 0, 0, 0, 0, '', 0, '', 0, '', 0, '', 0, '', 0, '', 0, 0, 0, 'sample', '2026-03-13 07:49:07', '2026-03-13 07:49:07'),
+(25, 123, NULL, '', 'Cleaning', 0, 0, 0, 0, 0, 0, 0, '', 0, '', 0, '', 0, '', 0, '', 0, '', 0, 0, 0, 'sample', '2026-03-13 08:12:05', '2026-03-13 08:12:05');
 
 -- --------------------------------------------------------
 
@@ -417,7 +577,8 @@ INSERT INTO `notes` (`id`, `title`, `notes`, `updated_at`, `created_at`, `user_i
 (1, 'MeetingWTH', 'Meeting with client\nWTH', '2025-11-19 07:29:35', '2025-11-10 20:52:58', 2),
 (6, 'UWIAN TUWING 8 PM', 'clean toothbrush before uwian', '2026-01-18 03:34:35', '2026-01-18 03:34:35', 2),
 (10, 'DASDSADAS', '', '2026-01-22 13:16:55', '2026-01-22 13:16:55', 12),
-(11, 'Denture', 'No Lunch Break', '2026-01-22 15:54:12', '2026-01-22 15:54:12', 12);
+(11, 'Denture', 'No Lunch Break', '2026-01-22 15:54:12', '2026-01-22 15:54:12', 12),
+(12, 'DAS', 'DS', '2026-03-09 01:04:26', '2026-03-09 01:04:26', 2);
 
 -- --------------------------------------------------------
 
@@ -430,13 +591,6 @@ CREATE TABLE `password_reset_tokens` (
   `token` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `password_reset_tokens`
---
-
-INSERT INTO `password_reset_tokens` (`email`, `token`, `created_at`) VALUES
-('renzzluigi@gmail.com', 'hFcKZfwpiVAHbRnKErxNpjSqGgSohNDb07tGONJx1KUYUfMXti2Mtu5IoARH2ZMs', '2026-01-31 14:33:12');
 
 -- --------------------------------------------------------
 
@@ -517,7 +671,6 @@ INSERT INTO `patients` (`id`, `last_name`, `first_name`, `mobile_number`, `middl
 (77, 'Rosales', 'Rosales', '312132132', 'Rosales', NULL, NULL, '2026-01-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SYSTEM', '2026-01-17 18:33:57', '2026-01-17 18:33:57'),
 (78, 'RErerere', 'W', '231312', 'W', '', 'W', '2026-01-18', 'Male', 'W', 'W', '', '', '', '', '', 'W', '123', 'W', 'W', 'W', '', '', '', '', '', '', 'sample', '2026-01-17 19:49:22', '2026-01-17 19:56:51'),
 (79, 'ew', 'ew', '121', 'ew', NULL, NULL, '2026-01-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-18 08:53:11', '2026-01-18 08:53:11'),
-(81, 'TR', 'TR', '231321', 'TR', NULL, NULL, '2026-01-19', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-19 14:49:46', '2026-01-19 14:49:46'),
 (84, 'tyrertert', 'ewtwer', '31223132', 'werwerwer', NULL, NULL, '2026-01-20', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-19 18:19:51', '2026-01-19 18:19:51'),
 (85, 'uyiuy', 'ytuiyi', '234423', 'yui', NULL, NULL, '2026-01-09', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-19 18:46:01', '2026-01-19 18:46:01'),
 (86, 'dfgdfg', 'rgfwr', '321312', 'fgddfgdfg', NULL, NULL, '2026-01-20', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-19 19:09:58', '2026-01-19 19:09:58'),
@@ -530,15 +683,36 @@ INSERT INTO `patients` (`id`, `last_name`, `first_name`, `mobile_number`, `middl
 (105, 'WALKIN', 'WALK', '', 'IN', '', '', NULL, NULL, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'sample', '2026-01-21 14:14:49', '2026-01-21 14:14:49'),
 (107, 'legaspoijkln', 'davestaff', '12354324234', 'ad', NULL, NULL, '2026-01-17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'staff', '2026-01-22 01:18:34', '2026-01-22 01:18:34'),
 (108, 'k;aklwel', 'staff', '12351123123', 'dave', NULL, NULL, '2020-06-09', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'staff', '2026-01-22 01:19:30', '2026-01-22 01:19:30'),
-(109, 'Bernacer', 'Jerome', '0912345678', 'Parungao', 'kura', 'student', '2004-03-25', NULL, 'widowed', 'fairview', 'makati', 'asdasd', 'dadsa', 'romebernacer123@gmail.com', '123321', 'ASD', '213', 'asd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'romebernacer123@gmail.com', '2026-01-22 01:42:26', '2026-02-22 07:38:19'),
+(109, 'Morada', 'Christian Ace', '09494642734', 'Parungao', 'kura', 'student', '2004-03-25', NULL, 'widowed', 'fairview', 'makati', 'asdasd', 'dadsa', 'romebernacer123@gmail.com', '123321', 'ASD', '213', 'asd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample1', '2026-01-22 01:42:26', '2026-01-22 01:43:19'),
 (110, 'Legaspina', 'MDave', '0912345678', 'Dela Vega', NULL, 'Tech Support', '2003-07-08', 'Male', 'Married', 'San Bartolome', 'Datamex', '123456789', '123456789', 'romick@GMAIL.COM', 'ACE', 'SUSAN', '019231313', 'Mother', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Jerome_123', '2026-01-22 04:22:07', '2026-01-22 14:23:21'),
 (111, 'Legaspina', 'MDave', '0912345678', 'Dela Vega', 'MCDave', 'UTI', '2003-07-08', 'Male', 'Married', 'Winston', 'Datamex', '0912345678', '0912345678', 'dave@GMAIL.COM', 'ACE', 'NANAY', '926099304', 'Mother', '', '', '', '', '', '', '', '', 'sample', '2026-01-22 04:56:43', '2026-01-22 04:56:43'),
-(112, 'sadsads', 'fgdgd', '213231213', 'gfdfggfd', NULL, 'fsdfsd', '2026-01-21', 'Male', 'sdasa', '321321', NULL, NULL, NULL, NULL, NULL, 'Rosales', '321321321', 'sadsa', 'asdsasdsa', 'qewqew', NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-22 05:19:46', '2026-01-22 05:45:26'),
-(113, '9', 'Gloc', '123456789', '', NULL, NULL, '2026-01-13', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Jerome_123', '2026-01-22 07:56:06', '2026-01-22 07:56:06'),
 (114, 'Rosales', 'Dale', '0997727222', 'Salumbides', 'DAASDDAS', 'Construction Worker', '2000-01-22', 'Male', 'Single', '2107 Rosal St Batasan Hills Quezon City', NULL, NULL, NULL, NULL, NULL, 'Luis Rosales', '77237832782378', 'Father', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-01-22 16:32:07', '2026-01-22 19:25:26'),
-(115, 'ZCX', 'GHJK', '099873278', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'renzzluigi@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-07 16:25:23', '2026-02-07 16:28:37'),
-(116, 'DSA', 'ASD', '213', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sdjklsdfjkl@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-07 16:35:49', '2026-02-07 16:35:49'),
-(117, 'dasasdsda', 'sdaasd', '21', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'renzzluigi@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-02-07 17:14:19', '2026-02-22 00:41:09');
+(117, 'dasasdsda', 'sdaasd', '21', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'dasasd@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-07 17:14:19', '2026-02-07 17:15:08'),
+(118, 'nm', 'mn', '3456345345', NULL, NULL, NULL, '2003-01-22', NULL, NULL, NULL, NULL, NULL, NULL, 'jskdfjkdfs@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'GUEST', '2026-02-22 11:59:55', '2026-03-13 04:05:53'),
+(119, 'Cerineoo', 'Deeyowil', '09123456789', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'cerineo159@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'cerineo159@gmail.com', '2026-03-13 05:34:48', '2026-03-13 06:42:19'),
+(120, 'El', 'Jo', '123456789', 'Qu', NULL, 'Dancer', '2000-11-11', 'Male', 'Single', 'Bahay', NULL, NULL, NULL, 'cerineo123@gmail.com', NULL, 'Mama', '1231313', 'mama', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-03-13 05:39:51', '2026-03-13 07:34:15'),
+(121, 'Kawa', 'Ichi', '122333', '', NULL, NULL, '2003-01-02', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-03-13 07:42:56', '2026-03-13 07:42:56'),
+(122, 'Hinomori', 'Shisho', '123123132', 'Mori', '', 'Actress', '2002-02-02', 'Female', 'Single', 'School', '', '', '', 'Shisho@gmail.com', '', 'Emu', '12312323', 'BFF', '', '', '', '', '', '', '', '', 'sample', '2026-03-13 07:49:07', '2026-03-13 07:51:01'),
+(123, 'Rui', 'Rui', '1801233123', 'Rui', NULL, 'Inventor', '2003-03-31', 'Male', 'Single', 'WonderLand', NULL, NULL, NULL, 'twgrd90335@minitts.net', NULL, 'Emu', '123123123', 'Friend', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-03-13 08:01:41', '2026-03-13 08:07:01'),
+(124, 'Monkey', 'Luffy', '12345678', 'AS', '', 'WALA', '2003-11-21', 'Female', 'SINGLESafds', 'SDADSA', '', '', '', 'cxhya47030@minitts.net', '', 'SADDASDSA', '231231', 'ASDSA', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'sample', '2026-03-13 11:25:15', '2026-03-13 23:28:13');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `patient_form_drafts`
+--
+
+CREATE TABLE `patient_form_drafts` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `patient_id` bigint(20) UNSIGNED NOT NULL DEFAULT 0,
+  `mode` varchar(10) NOT NULL,
+  `step` tinyint(3) UNSIGNED NOT NULL DEFAULT 1,
+  `payload_json` longtext NOT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -570,7 +744,7 @@ CREATE TABLE `roles` (
 INSERT INTO `roles` (`id`, `role_name`) VALUES
 (1, 'admin'),
 (2, 'staff'),
-(3, 'user');
+(3, 'patient');
 
 -- --------------------------------------------------------
 
@@ -591,7 +765,7 @@ CREATE TABLE `services` (
 INSERT INTO `services` (`id`, `service_name`, `duration`) VALUES
 (1, 'Cleaning', '01:00:00'),
 (2, 'Tooth extractions', '01:00:00'),
-(3, 'Full Consultation', '01:30:00');
+(3, 'Full Consultation', '01:00:00');
 
 -- --------------------------------------------------------
 
@@ -622,15 +796,57 @@ INSERT INTO `treatment_records` (`id`, `patient_id`, `dental_chart_id`, `dmd`, `
 (1, 43, 12, 'TEST', 'TEST', 1.00, 1.00, 'TEST', NULL, 'sample', '2025-12-11 23:38:44', '2025-12-11 23:38:44'),
 (3, 65, 17, 'DSADSA', 'DSADAS', 21.00, 12.00, 'DSA', NULL, 'sample', '2025-12-16 15:22:05', '2025-12-16 15:22:05'),
 (4, 78, 18, 'Dr. Rosales', 'Extraction', 500.00, 500.00, 'I mess up', NULL, 'sample', '2026-01-17 20:22:55', '2026-01-17 20:22:55'),
-(5, 112, 19, 'asdssadsad', 'Extraction', 213.00, 213.00, 'qew', NULL, 'sample', '2026-01-22 07:50:35', '2026-01-22 07:50:35'),
-(6, 112, 20, 'DR JEROME', 'OPLAN BUNOT', 120.00, 5000.00, 'mABAHHO NA WAG PAPUNTAHIN', NULL, 'sample', '2026-01-22 07:52:03', '2026-01-22 07:52:03'),
 (7, 110, 21, 'Jerome', 'Extraction', 12455.00, 251.00, 'Mefenamic Acid', NULL, 'Jerome_123', '2026-01-22 08:04:42', '2026-01-22 08:04:42'),
-(8, 113, 24, 'dasasd', 'asdasd', 123.00, 321.00, 'wre', NULL, 'sample', '2026-01-22 19:33:58', '2026-01-22 19:33:58'),
 (9, 117, 25, 'Me', 'Plan', 123.00, 1231.00, 'Nothing', NULL, 'sample', '2026-02-14 07:54:52', '2026-02-14 07:54:52'),
 (10, 117, 26, 'abcd', 'Mbaba', 123345.00, 1232345.00, 'Adsa', NULL, 'sample', '2026-02-14 08:02:50', '2026-02-14 08:02:50'),
 (11, 117, 27, 'DSFSDF', 'FGDFDGDFG', 213.00, 345.00, 'SDF', NULL, 'sample', '2026-02-14 08:06:47', '2026-02-14 08:06:47'),
-(12, 116, 28, 'gdf', 'fgh', 345345.00, 6456456.00, 'ghfgh', NULL, 'sample', '2026-02-14 08:12:56', '2026-02-14 08:12:56'),
-(13, 117, 29, 'SDF', '123', 345345.00, 243234.00, 'GDFDFG', NULL, 'sample', '2026-02-14 08:22:06', '2026-02-14 08:22:06');
+(13, 117, 29, 'SDF', '123', 345345.00, 243234.00, 'GDFDFG', NULL, 'sample', '2026-02-14 08:22:06', '2026-02-14 08:22:06'),
+(14, 118, 30, 'eqwqew', 'eqwqwe', 231.00, 312.00, 'sdasd', NULL, 'sample', '2026-02-24 17:41:37', '2026-02-24 17:41:37'),
+(15, 118, 31, 'Dr. Rosales', 'Extraction', 500.00, 500.00, '', NULL, 'sample', '2026-02-25 04:56:27', '2026-02-25 04:56:27'),
+(16, 118, 32, 'Dr me', 'Longganog', 123.00, 345.00, 'asd', NULL, 'sample', '2026-02-25 06:12:10', '2026-02-25 06:12:10'),
+(17, 118, 33, 'SDA', 'QWE', 123.00, 342.00, 'DAS', NULL, 'sample', '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(18, 118, 34, 'DAS', 'ASD', 231.00, 231.00, 'ASD', NULL, 'sample', '2026-02-25 06:32:37', '2026-02-25 06:32:37'),
+(19, 119, 35, 'Dr. Hiluluk', 'Extraction', 1200.00, 1000.00, 'celan', NULL, 'sample', '2026-03-13 06:46:37', '2026-03-13 06:46:37'),
+(20, 120, 36, 'Dr. Dave', 'Cleaning', 1000.00, 1000.00, 'GUDS', NULL, 'sample', '2026-03-13 07:38:46', '2026-03-13 07:38:46'),
+(21, 122, 37, 'Dr. Dave', 'Cleaning', 1000.00, 1000.00, '', NULL, 'sample', '2026-03-13 07:52:29', '2026-03-13 07:52:29'),
+(22, 123, 38, 'Dr. Dave', 'Cleaning', 2000.00, 2000.00, 'Excellent!', NULL, 'sample', '2026-03-13 08:13:41', '2026-03-13 08:13:41'),
+(23, 118, 39, 'ROSALES', 'EXTRACTION', 1500.00, 2000.00, 'THIS PATIENT IS SO FUCKING STUPUD', NULL, 'sample', '2026-03-13 11:00:40', '2026-03-13 11:00:40'),
+(24, 124, 40, 'ROSALES', 'MABUHAY', 5000.00, 6000.00, 'HEHEHE', NULL, 'sample', '2026-03-13 23:00:59', '2026-03-13 23:00:59');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `treatment_record_images`
+--
+
+CREATE TABLE `treatment_record_images` (
+  `id` int(11) NOT NULL,
+  `treatment_record_id` int(11) NOT NULL,
+  `image_path` varchar(255) NOT NULL,
+  `image_type` enum('before','after','other') NOT NULL DEFAULT 'other',
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `treatment_record_images`
+--
+
+INSERT INTO `treatment_record_images` (`id`, `treatment_record_id`, `image_path`, `image_type`, `sort_order`, `created_at`, `updated_at`) VALUES
+(1, 16, 'treatment-records/2026/02/3V3tqSedBAagUxrdrBQfOkHwtDMwKNNi1uVfoTGx.png', 'other', 0, '2026-02-25 06:12:10', '2026-02-25 06:12:10'),
+(2, 17, 'treatment-records/2026/02/sj9AMW7x0WWOEyCxhNTYBsGg6zkzAhYbOisg99EN.png', 'other', 0, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(3, 17, 'treatment-records/2026/02/NWs12ppgw9841Rag26LZrq3T63QPC39TbWGDdaLb.png', 'other', 1, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(4, 17, 'treatment-records/2026/02/ieBNljlQeXVeQtF7ldllRVOSUy3hx39DS5L3lY1I.png', 'other', 2, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(5, 17, 'treatment-records/2026/02/BKu3JvzVrVwVNvNO1dUqBN5XQW95dUP33jkGE4cQ.png', 'other', 3, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(6, 17, 'treatment-records/2026/02/UGZiM8faEpAfqnEgYoqSx8iLDWiIMCzCzSzPGUf1.png', 'other', 4, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(7, 17, 'treatment-records/2026/02/3Ajg3ZPnBDy291oUgQhctJGFehfyJKEe9gfnXP7p.png', 'other', 5, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(8, 17, 'treatment-records/2026/02/POw0zhtc3QoZdiybdBbUwsbK0L7sx5tP8trcgUVv.png', 'other', 6, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(9, 17, 'treatment-records/2026/02/GtLiWcQmgXwAwdmmXmAWu7OVKHLLbSQRJQsDjcoc.png', 'other', 7, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(10, 17, 'treatment-records/2026/02/tLHngYYcHcPeX4ZwaVSh6HPuvgoyc5vjFeGjyDqh.png', 'other', 8, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(11, 17, 'treatment-records/2026/02/9NCZQmOwK9TcGmFbKCXvJ3T7dI54AiWJ1SRDGh7B.png', 'other', 9, '2026-02-25 06:17:55', '2026-02-25 06:17:55'),
+(12, 18, 'treatment-records/before/2026/02/5zI0h8uVimCTd7Dk3gxuZEGrzspiURlnY3aFsE84.png', 'before', 0, '2026-02-25 06:32:37', '2026-02-25 06:32:37'),
+(13, 18, 'treatment-records/after/2026/02/WATjkGznXLJ4DcqEN5oq4MYzOxWjTDmOEs0E1meV.png', 'after', 1, '2026-02-25 06:32:37', '2026-02-25 06:32:37');
 
 -- --------------------------------------------------------
 
@@ -647,8 +863,6 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `google_id` varchar(255) DEFAULT NULL,
   `role` int(11) NOT NULL,
-  `security_question` varchar(255) DEFAULT NULL,
-  `security_answer` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -657,33 +871,17 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `verification_token`, `password`, `google_id`, `role`, `security_question`, `security_answer`, `created_at`, `updated_at`) VALUES
-(2, 'sample', NULL, NULL, NULL, '$2y$12$mhpZDgiHO.QafpgDME7tBOyiBFqPL72sn759rVTjVPOgBR2smzOBe', NULL, 1, 'What was the name of your first pet?', '$2y$12$V3Fhk4cvEXzKc/RT1FV.te3WWEUuuUgOUkfMeg2f7zTzgit1yfM76', '2025-10-18 22:35:29', '2026-01-22 21:48:55'),
-(3, 'staff', NULL, NULL, NULL, '$2y$12$H2wUJzlDXoKZCt7N1wpod.riMDp00RGiUqBgN1bI.XfxH1vIrqUCm', NULL, 2, NULL, NULL, '2025-12-12 08:02:31', '2025-12-12 08:02:31'),
-(6, 'hoax', NULL, NULL, NULL, '$2y$12$MU7/gCnRBUPMK18UqF5O9.J7lf6pfFzQ.qplLzSsEZKJ/epKWRoWa', NULL, 1, NULL, NULL, '2026-01-18 00:12:04', '2026-01-18 04:08:21'),
-(7, 'sample1', NULL, NULL, NULL, '$2y$12$1KtwWXN4P14biU2QNqlLGeOgr45rjUm0Aq3eM0pOeH7CXKQelbLFS', NULL, 2, NULL, NULL, '2026-01-18 00:39:44', '2026-01-18 00:39:44'),
-(8, 'sample2', NULL, NULL, NULL, '$2y$12$qlglSHNydptPz.bHXqs6QeOSPiCZfIijywv97JoArgDmFXSAsDuBq', NULL, 2, NULL, NULL, '2026-01-18 00:41:28', '2026-01-18 00:41:28'),
-(9, 'sample5', NULL, NULL, NULL, '$2y$12$hn.4sy62p37W8tD2P2TSQuREHoBzVuyJFnT6pjIXipSe69N4RUExi', NULL, 2, NULL, NULL, '2026-01-18 01:07:14', '2026-01-18 01:07:14'),
-(12, 'Jerome_123', NULL, NULL, NULL, '$2y$12$qv./2RMGEKJnDRt0awF8W.t5gXtJlyupVZWR6yOpC9FF3lD49nO/m', NULL, 1, 'What is your mother\'s maiden name?', '$2y$12$VMh1IEbADryszjB5Fr9QGOT4JUideR6nAlrNwN7D5vRq28km/U6RG', '2026-01-22 13:08:04', '2026-01-22 13:08:04'),
-(14, 'hoaxilog', 'ytrevenger@gmail.com', '2026-01-27 09:32:58', NULL, '$2y$12$cgUobhZZ9g547MFMrP1zHuYaoSG288i1c/wwfwJvqdhAIolOYRI0G', NULL, 3, NULL, NULL, '2026-01-27 17:32:32', '2026-01-27 17:43:42'),
-(15, 'dfdsffsdfsd', 'asdasd@gmail.com', NULL, 'DH21rVvEKjbhG6hkvXZAh3uQfbc9k2PR7ZlUiYFVesatYe3kJQMoh4nO6Nz5c0bs', '$2y$12$qUsUYUVw5J/Irw6DdWLF.ecQKAV8bQXky2JW.xlis9QMhTvljC8yu', NULL, 3, NULL, NULL, '2026-01-27 17:36:47', '2026-01-27 17:38:37'),
-(16, 'zxc', 'abcde@gmail.com', '2026-01-29 07:37:23', NULL, '$2y$12$2.3ipJp2uNeplmt3DjSqEOJk2Rtb9f8BBNzMjl/Nr1Q4/NpRADURm', NULL, 3, NULL, NULL, '2026-01-29 15:37:02', '2026-01-29 15:37:23'),
-(17, 'RTY', 'j@gmail.com', NULL, 'X32m1mF7gWnCDpXuHget2jUIv4YZHtYs4uFkPPoUTgVTDz2Pg5aEX76GsCLBxXuu', '$2y$12$wUZiKrBhnhWb5Pz0LYApgOLsbmQGOnYU6go7CmCTc9QJ43BWqEZWa', NULL, 3, NULL, NULL, '2026-01-29 15:47:03', '2026-01-29 15:47:03'),
-(18, 'renzzluigi@gmail.com', 'renzzluigi@gmail.com', '2026-02-19 16:08:22', NULL, '$2y$12$Kdo6ERAeaIq3n0Ft.7kpkeCtsFbgJySVdW4xfGwvvb9eYI069iLnm', '114082662441983874861', 3, NULL, NULL, '2026-01-31 16:37:37', '2026-02-20 00:08:22'),
-(19, 'eeeee', 'e@gmail.com', '2026-01-31 10:22:16', NULL, '$2y$12$6gbPXhaTRC41xWa8vvzq9udbyVUVXFL/s2pcPPWmpV71AT/taEMD2', NULL, 3, NULL, NULL, '2026-01-31 17:27:49', '2026-01-31 18:22:16'),
-(20, 'jajdas@gmail.com', 'jajdas@gmail.com', NULL, 'WPgjEx8laN7VQTY7sOEGYPf8CR4mu5Gx1PXcREvIgPvsybuDFymsgCBg7VcwEG34', '$2y$12$Y/8VbD6bmsuCoX2NFqMx1..VvGY5zVPKaSW.1rfifzb6sdZT8zPWG', NULL, 3, NULL, NULL, '2026-01-31 18:02:54', '2026-01-31 18:02:54'),
-(21, 'sdkf@gmail.com', 'sdkf@gmail.com', '2026-01-31 10:22:56', NULL, '$2y$12$U6.RvIhNuBJHokLhYZTdweZDOsbL04SjkbrKXqg4DdDepcUdb3zpC', NULL, 3, NULL, NULL, '2026-01-31 18:22:07', '2026-01-31 18:22:56'),
-(22, 'asdasdasd@gmail.com', 'asdasdasd@gmail.com', '2026-01-31 10:26:02', NULL, '$2y$12$vVVTpdjQD.uq04tuYW3dAuVboIilEIgBPh6ZBMmKnnzg.A2N8daHe', NULL, 3, NULL, NULL, '2026-01-31 18:25:33', '2026-01-31 18:26:02'),
-(23, 'samplewe@gmail.com', 'samplewe@gmail.com', '2026-01-31 10:27:47', NULL, '$2y$12$.S7T7QfDUVcvvJ0zd2XWWOR3PnUT8rsuSAAapgsWp4DDgVr5uG7n2', NULL, 3, NULL, NULL, '2026-01-31 18:27:34', '2026-01-31 18:27:47'),
-(24, 'smasadsm@gmail.com', 'smasadsm@gmail.com', NULL, 'Pd9QmZujOOP5xmlqC5nse9zYGcSl3WJGiEtUZWdmoVFcHm4lDNDFePUa7utofcmA', '$2y$12$W2VmAnHNS5A9BDorga/ZOujMJWbjYGolqjOtxhdqxndC/8TmYRkyO', NULL, 3, NULL, NULL, '2026-01-31 19:48:50', '2026-01-31 19:48:50'),
-(25, 'samplesfdsfd@dsadas', 'samplesfdsfd@dsadas', NULL, 'EBT04MmK0364zpCY4vmaprfgF3uIefbwR3mfkhFxmJtKeKOi2gU9q6dESDQNONxg', '$2y$12$tB/u4TCTfewyfATY8EPxr.vi9424ZbSLKFvDnN72ba98HVHNh.uyK', NULL, 3, NULL, NULL, '2026-01-31 20:03:53', '2026-01-31 20:03:53'),
-(26, 'samplesfdsfd@xcvxcxcv', 'samplesfdsfd@xcvxcxcv', NULL, '2cRG1JQ78PvrpGo5QioMv8DrxEqiGGGoej9qzWiZIlGwROj5gWlYOLVVosM1LDJB', '$2y$12$Bj7BPuO/6KjGNgThz5/1FOGsSLOMPLZCbeylsihqjr1KhBknhx2em', NULL, 3, NULL, NULL, '2026-01-31 20:05:54', '2026-01-31 20:05:54'),
-(27, 'sampdsadsad@xcvxcxcv', 'sampdsadsad@xcvxcxcv', NULL, 'VAmftFircdqfvvT8ZqT30PueFwEjVzhel2pbJFMxMY3JInLpBmCVbwg9UQ1eR7cY', '$2y$12$SF.cox24u.9tvWvyz4lzU.Yl3DebjZkPL93CdKXXKP7Q802ivloeu', NULL, 3, NULL, NULL, '2026-01-31 20:06:12', '2026-01-31 20:06:12'),
-(28, 'sampleDAS@SDFSD', 'sampleDAS@SDFSD', NULL, 'p6j3sX0A1rhGIICLua07moCeLhC93yb2ZqNwIcimcRe1RY8hZLC07X3YpLXHT5qE', '$2y$12$.JZ8qP.R5ct.99wREDUSEeJ/N5cKvBDi8FUq/Mw1ddqv6EpZ45d6K', NULL, 3, NULL, NULL, '2026-01-31 20:07:05', '2026-01-31 20:07:05'),
-(29, 'asdasdasdasd@SDFSD', 'asdasdasdasd@SDFSD', NULL, 'tWHRug3RnKdNvcq81yiM8mC0gmpTGlzhEfeLZa7wR0tABWsQD348XGbHkX5Exb0m', '$2y$12$3LuJ55u.K4LccFFhXglQ.e7ntbAQSbUWPQgYJUSHVyWwMblmuQivW', NULL, 3, NULL, NULL, '2026-01-31 20:10:10', '2026-01-31 20:10:10'),
-(30, 'ertertert@SDFSD', 'ertertert@SDFSD', NULL, 'Axr2AAdjB5WKobOZUY4JA8VfErgBX8y1Gv999lSBJfTfSVOonaBHZCmAp5McDDxr', '$2y$12$SvAd2D3A1MeptEAxtpsBEOY2NpYTMVpB.qFGDlehttB2K8kNhYxXW', NULL, 3, NULL, NULL, '2026-01-31 20:15:08', '2026-01-31 20:15:08'),
-(31, 'xcvrewwercvx@SDFSD', 'xcvrewwercvx@SDFSD', NULL, 'zoarjeers8XDf57Tmx0h6wPM5gOozrzt81ZntW1ImpIYAMLj90ktoooHgQzxejfa', '$2y$12$FGU.47Sj.yPdu35MnTS6s.Km3LuirVuqKTTn6xKMYW2PKJStPb8jO', NULL, 3, NULL, NULL, '2026-01-31 20:15:25', '2026-01-31 20:15:25'),
-(38, 'romebernacer123@gmail.com', 'romebernacer123@gmail.com', '2026-02-22 07:06:15', NULL, '$2y$12$7JGDwFWPeCw/xOC6kiOyxOyJDuMgQf7xX99E7cHOYaLS7Yy.4co1W', '110245913908251152122', 3, NULL, NULL, '2026-02-22 13:16:48', '2026-02-22 15:06:15');
+INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `verification_token`, `password`, `google_id`, `role`, `created_at`, `updated_at`) VALUES
+(2, 'sample', 'renzzluigi@gmail.com', '2026-03-08 06:20:36', NULL, '$2y$12$mhpZDgiHO.QafpgDME7tBOyiBFqPL72sn759rVTjVPOgBR2smzOBe', '114082662441983874861', 1, '2025-10-18 22:35:29', '2026-03-14 10:12:13'),
+(3, 'staff', NULL, NULL, NULL, '$2y$12$H2wUJzlDXoKZCt7N1wpod.riMDp00RGiUqBgN1bI.XfxH1vIrqUCm', NULL, 2, '2025-12-12 08:02:31', '2025-12-12 08:02:31'),
+(6, 'hoax', NULL, NULL, NULL, '$2y$12$MU7/gCnRBUPMK18UqF5O9.J7lf6pfFzQ.qplLzSsEZKJ/epKWRoWa', NULL, 1, '2026-01-18 00:12:04', '2026-01-18 04:08:21'),
+(7, 'sample1', NULL, NULL, NULL, '$2y$12$1KtwWXN4P14biU2QNqlLGeOgr45rjUm0Aq3eM0pOeH7CXKQelbLFS', NULL, 2, '2026-01-18 00:39:44', '2026-01-18 00:39:44'),
+(8, 'sample2', NULL, NULL, NULL, '$2y$12$qlglSHNydptPz.bHXqs6QeOSPiCZfIijywv97JoArgDmFXSAsDuBq', NULL, 2, '2026-01-18 00:41:28', '2026-01-18 00:41:28'),
+(9, 'sample5', NULL, NULL, NULL, '$2y$12$hn.4sy62p37W8tD2P2TSQuREHoBzVuyJFnT6pjIXipSe69N4RUExi', NULL, 2, '2026-01-18 01:07:14', '2026-01-18 01:07:14'),
+(12, 'Jerome_123', NULL, NULL, NULL, '$2y$12$qv./2RMGEKJnDRt0awF8W.t5gXtJlyupVZWR6yOpC9FF3lD49nO/m', NULL, 1, '2026-01-22 13:08:04', '2026-01-22 13:08:04'),
+(37, 'cerineo159@gmail.com', 'cerineo159@gmail.com', '2026-03-13 05:33:59', NULL, '$2y$12$ABRPmzey5MLMnilBwMR1e.Hlbpu.rJHK6NAsPLnPV1cXVwiJgLzsy', '104819844258462214303', 3, '2026-03-13 13:33:59', '2026-03-13 13:33:59'),
+(38, 'cerineo123@gmail.com', 'cerineo123@gmail.com', '2026-03-13 05:39:25', NULL, '$2y$12$2nHnhtFVok4/A6.K5grLA.MWrLxvK4jMvQR4haJLBLwnsPEyDubaO', '113587128745289601695', 3, '2026-03-13 13:39:25', '2026-03-13 13:39:25'),
+(42, 'cxhya47030@minitts.net', 'cxhya47030@minitts.net', '2026-03-13 11:22:40', NULL, '$2y$12$T3NJCoQj8V2M8fEhhKRz3uzvR7GenLOjMFKkRp45IipLnFcH5WTiy', NULL, 3, '2026-03-13 19:22:27', '2026-03-13 19:22:40');
 
 --
 -- Indexes for dumped tables
@@ -716,6 +914,15 @@ ALTER TABLE `appointments`
   ADD KEY `patient_id` (`patient_id`),
   ADD KEY `service_id` (`service_id`),
   ADD KEY `fk_appointments_dentist` (`dentist_id`);
+
+--
+-- Indexes for table `blocked_slots`
+--
+ALTER TABLE `blocked_slots`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `blocked_slots_date_start_time_index` (`date`,`start_time`),
+  ADD KEY `blocked_slots_date_end_time_index` (`date`,`end_time`),
+  ADD KEY `blocked_slots_chair_id_index` (`chair_id`);
 
 --
 -- Indexes for table `dental_charts`
@@ -752,6 +959,14 @@ ALTER TABLE `patients`
 ALTER TABLE `patients` ADD FULLTEXT KEY `mobile_number_2` (`mobile_number`);
 
 --
+-- Indexes for table `patient_form_drafts`
+--
+ALTER TABLE `patient_form_drafts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `patient_form_drafts_context_unique` (`user_id`,`mode`,`patient_id`),
+  ADD KEY `patient_form_drafts_expires_at_index` (`expires_at`);
+
+--
 -- Indexes for table `patient_records`
 --
 ALTER TABLE `patient_records`
@@ -780,6 +995,13 @@ ALTER TABLE `treatment_records`
   ADD KEY `dental_chart_id` (`dental_chart_id`);
 
 --
+-- Indexes for table `treatment_record_images`
+--
+ALTER TABLE `treatment_record_images`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `treatment_record_images_treatment_record_id_idx` (`treatment_record_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -804,37 +1026,49 @@ ALTER TABLE `account_recovery_requests`
 -- AUTO_INCREMENT for table `activity_log`
 --
 ALTER TABLE `activity_log`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=244;
 
 --
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
+
+--
+-- AUTO_INCREMENT for table `blocked_slots`
+--
+ALTER TABLE `blocked_slots`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `dental_charts`
 --
 ALTER TABLE `dental_charts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `health_histories`
 --
 ALTER TABLE `health_histories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `notes`
 --
 ALTER TABLE `notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `patients`
 --
 ALTER TABLE `patients`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
+
+--
+-- AUTO_INCREMENT for table `patient_form_drafts`
+--
+ALTER TABLE `patient_form_drafts`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `patient_records`
@@ -858,24 +1092,23 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT for table `treatment_records`
 --
 ALTER TABLE `treatment_records`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT for table `treatment_record_images`
+--
+ALTER TABLE `treatment_record_images`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `account_recovery_requests`
---
-ALTER TABLE `account_recovery_requests`
-  ADD CONSTRAINT `arr_reviewed_by_fk` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `arr_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `appointments`
@@ -916,6 +1149,12 @@ ALTER TABLE `patient_records`
 ALTER TABLE `treatment_records`
   ADD CONSTRAINT `treatment_records_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `treatment_records_ibfk_2` FOREIGN KEY (`dental_chart_id`) REFERENCES `dental_charts` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `treatment_record_images`
+--
+ALTER TABLE `treatment_record_images`
+  ADD CONSTRAINT `treatment_record_images_treatment_record_id_fk` FOREIGN KEY (`treatment_record_id`) REFERENCES `treatment_records` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `users`

@@ -5,103 +5,114 @@
 
     <!-- Header (No change) -->
     <div class="flex flex-col gap-4 mb-6">
-        <!-- Title -->
-        <h1 class="text-3xl font-bold text-gray-800">{{ $isPatientUser ? 'My Records' : 'Patient Records' }}</h1>
-
         @if (!$showProfile)
-            <div class="flex  items-center  gap-3">
-                @if (!$isPatientUser)
-                    <div class="relative w-full sm:w-auto bg-white">
-                        <input type="text" placeholder="Search by name"
-                            class=" w-96 pl-10 pr-4 py-2.5 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            wire:model.live.debounce.300ms="search">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="lucide lucide-search absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400">
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.3-4.3" />
-                        </svg>
+            <div class="rounded-none border border-gray-200 bg-white p-4 shadow-sm lg:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center">
+                        @if (!$isPatientUser)
+                            <button wire:click="$dispatch('openAddPatientModal')" type="button"
+                                class="inline-flex items-center justify-center gap-2 rounded-none bg-[#0086da] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0073a8] active:outline-2 active:outline-dashed active:outline-offset-2 active:outline-black">
+                                <span class="text-base leading-none">+</span>
+                                <span>Add Patient</span>
+                            </button>
+                        @endif
                     </div>
-                @endif
 
-                <!-- Recent Button -->
-                @if (!$isPatientUser)
-                    <div class="relative" id="sortDropdown">
-                        <button onclick="document.getElementById('sortMenu').classList.toggle('hidden')"
-                            class="flex shrink-0 items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 w-full sm:w-40 justify-center transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                                color="currentColor" fill="none" stroke="#141B34" stroke-width="1.5"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M8.85746 12.5061C6.36901 10.6456 4.59564 8.59915 3.62734 7.44867C3.3276 7.09253 3.22938 6.8319 3.17033 6.3728C2.96811 4.8008 2.86701 4.0148 3.32795 3.5074C3.7889 3 4.60404 3 6.23433 3H17.7657C19.396 3 20.2111 3 20.672 3.5074C21.133 4.0148 21.0319 4.8008 20.8297 6.37281C20.7706 6.83191 20.6724 7.09254 20.3726 7.44867C19.403 8.60062 17.6261 10.6507 15.1326 12.5135C14.907 12.6821 14.7583 12.9567 14.7307 13.2614C14.4837 15.992 14.2559 17.4876 14.1141 18.2442C13.8853 19.4657 12.1532 20.2006 11.226 20.8563C10.6741 21.2466 10.0043 20.782 9.93278 20.1778C9.79643 19.0261 9.53961 16.6864 9.25927 13.2614C9.23409 12.9539 9.08486 12.6761 8.85746 12.5061Z" />
-                            </svg>
-                            <span>
-                                @switch($sortOption)
-                                    @case('oldest')
-                                        Oldest
-                                    @break
+                    <div class="flex flex-wrap items-center justify-end gap-2">
+                        @if (!$isPatientUser)
+                            <div class="relative w-full min-w-[16rem] bg-white md:w-[22rem]">
+                                <input type="text" placeholder="Search patient name..."
+                                    class="w-full rounded-none border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 shadow-sm focus:border-[#0086da] focus:outline-none focus:ring-2 focus:ring-[#0086da]"
+                                    wire:model.live.debounce.300ms="search">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.3-4.3" />
+                                </svg>
+                            </div>
 
-                                    @case('a_z')
+                            <div class="relative" id="sortDropdown">
+                                <button onclick="document.getElementById('sortMenu').classList.toggle('hidden')"
+                                    class="inline-flex items-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+                                    <span>
+                                        @switch($sortOption)
+                                            @case('oldest')
+                                                Oldest
+                                            @break
+
+                                            @case('a_z')
+                                                Name (A-Z)
+                                            @break
+
+                                            @case('z_a')
+                                                Name (Z-A)
+                                            @break
+
+                                            @default
+                                                Recent
+                                        @endswitch
+                                    </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <div id="sortMenu"
+                                    class="absolute right-0 z-50 mt-2 hidden w-52 rounded-none border border-gray-200 bg-white py-1 shadow-lg">
+                                    <button wire:click.stop="setSort('recent')"
+                                        class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 {{ $sortOption === 'recent' ? 'bg-blue-50 font-semibold text-blue-700' : '' }}">
+                                        Recent (Newest)
+                                    </button>
+                                    <button wire:click.stop="setSort('oldest')"
+                                        class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 {{ $sortOption === 'oldest' ? 'bg-blue-50 font-semibold text-blue-700' : '' }}">
+                                        Oldest First
+                                    </button>
+                                    <button wire:click.stop="setSort('a_z')"
+                                        class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 {{ $sortOption === 'a_z' ? 'bg-blue-50 font-semibold text-blue-700' : '' }}">
                                         Name (A-Z)
-                                    @break
-
-                                    @case('z_a')
+                                    </button>
+                                    <button wire:click.stop="setSort('z_a')"
+                                        class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 {{ $sortOption === 'z_a' ? 'bg-blue-50 font-semibold text-blue-700' : '' }}">
                                         Name (Z-A)
-                                    @break
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
 
-                                    @default
-                                        Recent
-                                @endswitch
-                            </span>
-                        </button>
-
-                        <!-- Dropdown Menu -->
-                        <div id="sortMenu"
-                            class="hidden absolute right-1 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50">
-                            <button wire:click.stop="setSort('recent')"
-                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'recent' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
-                                Recent (Newest)
+                        <div class="flex items-center rounded-none border border-gray-200 bg-white p-1 shadow-sm">
+                            <button type="button" wire:click="setViewMode('table')"
+                                class="rounded-none p-2 transition {{ $viewMode === 'table' ? 'bg-[#0086da] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100' }}"
+                                title="Table view" aria-label="Table view">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="h-4 w-4 lucide lucide-table-icon lucide-table">
+                                    <path d="M12 3v18" />
+                                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                                    <path d="M3 9h18" />
+                                    <path d="M3 15h18" />
+                                </svg>
                             </button>
-                            <button wire:click.stop="setSort('oldest')"
-                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'oldest' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
-                                Oldest First
-                            </button>
-                            <button wire:click.stop="setSort('a_z')"
-                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'a_z' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
-                                Name (A-Z)
-                            </button>
-                            <button wire:click.stop="setSort('z_a')"
-                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {{ $sortOption === 'z_a' ? 'bg-blue-50 text-blue-600 font-medium' : '' }}">
-                                Name (Z-A)
+                            <button type="button" wire:click="setViewMode('cards')"
+                                class="rounded-none p-2 transition {{ $viewMode === 'cards' ? 'bg-[#0086da] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100' }}"
+                                title="Card view" aria-label="Card view">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="h-4 w-4 lucide lucide-grid3x3-icon lucide-grid-3x3">
+                                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                                    <path d="M3 9h18" />
+                                    <path d="M3 15h18" />
+                                    <path d="M9 3v18" />
+                                    <path d="M15 3v18" />
+                                </svg>
                             </button>
                         </div>
                     </div>
-                @endif
-
-                @if (!$isPatientUser)
-                    <button wire:click="$dispatch('openAddPatientModal')" type="button"
-                        class="active:outline-2 active:outline-offset-3 active:outline-dashed active:outline-black flex shrink-0 items-center gap-2 px-4 py-2.5 bg-[#0086da] text-white rounded-lg shadow-sm text-sm font-medium hover:bg-blue-00 w-full sm:w-auto justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                            color="currentColor" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M2.5 12.0001C2.5 7.52171 2.5 5.28254 3.89124 3.8913C5.28249 2.50005 7.52166 2.50005 12 2.50005C16.4783 2.50005 18.7175 2.50005 20.1088 3.8913C21.5 5.28254 21.5 7.52171 21.5 12.0001C21.5 16.4784 21.5 18.7176 20.1088 20.1088C18.7175 21.5001 16.4783 21.5001 12 21.5001C7.52166 21.5001 5.28249 21.5001 3.89124 20.1088C2.5 18.7176 2.5 16.4784 2.5 12.0001Z" />
-                            <path d="M12 8.00005V16.0001M16 12.0001L8 12.0001" />
-                        </svg>
-                        Add new patient
-                    </button>
-                @endif
-
-                <div class="ml-auto flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-1">
-                    <button type="button" wire:click="setViewMode('table')"
-                        class="px-4 py-2 text-xs font-semibold rounded-md transition {{ $viewMode === 'table' ? 'bg-[#0789da] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-50' }}">
-                        Table
-                    </button>
-                    <button type="button" wire:click="setViewMode('cards')"
-                        class="px-4 py-2 text-xs font-semibold rounded-md transition {{ $viewMode === 'cards' ? 'bg-[#0789da] text-white shadow-sm' : 'text-gray-600 hover:bg-gray-50' }}">
-                        Cards
-                    </button>
                 </div>
             </div>
         @endif
@@ -130,7 +141,7 @@
                     <p class="text-xs text-gray-500">Patient Records / Profile</p>
                 </div>
                 <button type="button" wire:click="backToList"
-                    class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    class="rounded-none border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                     Back to Patient Records
                 </button>
             </div>
@@ -139,7 +150,7 @@
                 class="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#ccebff] scrollbar-thumb-[#0086da]">
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <div class="space-y-6">
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="rounded-none border border-gray-200 bg-white p-6 shadow-sm">
                             <div class="flex items-center gap-4">
                                 <div
                                     class="h-16 w-16 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
@@ -159,13 +170,13 @@
                             <div class="mt-5 flex items-center gap-2">
                                 <span
                                     class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide
-                            {{ $patientType === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
+                            {{ $patientType === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
                                     {{ $patientType }}
                                 </span>
                             </div>
                         </div>
 
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="rounded-none border border-gray-200 bg-white p-6 shadow-sm">
                             <div class="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6">
                                 <h2 class="text-xl font-bold text-black">Patient Information</h2>
                             </div>
@@ -332,25 +343,25 @@
                     </div>
 
                     <div class="lg:col-span-2 space-y-6">
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="rounded-none border border-gray-200 bg-white p-6 shadow-sm">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-900">Appointments</h3>
                                     <p class="text-xs text-gray-500">Manage upcoming and past visits.</p>
                                 </div>
                                 <a href="{{ route('appointment', ['patient_id' => $selectedPatient->id]) }}"
-                                    class="rounded-lg bg-[#0086da] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0073a8]">
+                                    class="rounded-none bg-[#0086da] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0073a8]">
                                     Add Appointment
                                 </a>
                             </div>
 
                             <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                                <div class="rounded-none border border-gray-200 bg-gray-50 p-4">
                                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Last Visit
                                     </div>
                                     <div class="mt-2 text-lg font-bold text-gray-900">{{ $lastVisitLabel }}</div>
                                 </div>
-                                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                                <div class="rounded-none border border-gray-200 bg-gray-50 p-4">
                                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Latest
                                         Status</div>
                                     <div class="mt-2 text-lg font-bold text-gray-900">
@@ -361,23 +372,23 @@
                             <div class="mt-5 flex flex-wrap gap-3">
                                 <button type="button"
                                     wire:click="$dispatch('open-history-modal', { patientId: {{ $selectedPatient->id }} })"
-                                    class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                    class="rounded-none border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
                                     Appointment History
                                 </button>
                                 <button type="button"
                                     wire:click="$dispatch('editPatient', { id: {{ $selectedPatient->id }}, startStep: 1 })"
-                                    class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                    class="rounded-none border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
                                     View Full Record
                                 </button>
                                 <button type="button"
                                     wire:click="$dispatch('editPatient', { id: {{ $selectedPatient->id }}, startStep: 3 })"
-                                    class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                    class="rounded-none border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
                                     Dental Chart
                                 </button>
                             </div>
                         </div>
 
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="rounded-none border border-gray-200 bg-white p-6 shadow-sm">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-900">Treatment Records</h3>
@@ -418,7 +429,7 @@
                                             </div>
                                             @if (!empty($record->remarks))
                                                 <div
-                                                    class="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-700">
+                                                    class="mt-3 rounded-none bg-gray-50 px-3 py-2 text-xs text-gray-700">
                                                     Notes:
                                                     {{ $record->remarks }}
                                                 </div>
@@ -428,7 +439,7 @@
                                 </div>
                             @else
                                 <div
-                                    class="mt-6 rounded-lg border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                    class="mt-6 rounded-none border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
                                     No treatment records found for this patient.
                                 </div>
                             @endif
@@ -443,34 +454,44 @@
             <div class="flex flex-col overflow-hidden">
                 <!-- List Container -->
                 @if ($viewMode === 'table')
-                    <div
-                        class="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#ccebff] scrollbar-thumb-[#0086da]">
-                        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                    <div class="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#f3f4f6] scrollbar-thumb-[#cbd5e1]">
+                        <div class="overflow-hidden rounded-none border border-gray-200 bg-white shadow-sm">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-600">
-                                    <thead
-                                        class="text-s font-semibold uppercase tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 ">
+                                    <thead class="border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         <tr>
-                                            <th class="px-5 py-6">Patient</th>
-                                            <th class="px-5 py-6">Contact</th>
-                                            <th class="px-5 py-6">Email</th>
-                                            <th class="px-5 py-6">Address</th>
-                                            <th class="px-5 py-6">Age</th>
-                                            <th class="px-5 py-6 text-right">Actions</th>
+                                            <th class="px-5 py-4">Patient</th>
+                                            <th class="px-5 py-4">Contact</th>
+                                            <th class="px-5 py-4">Email</th>
+                                            <th class="px-5 py-4">Address</th>
+                                            <th class="px-5 py-4">Age</th>
+                                            <th class="px-5 py-4 text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100">
                                         @forelse($patients as $patient)
                                             <tr
-                                                class="cursor-pointer hover:bg-gray-50
-                                            @if ($patient->id == $selectedPatient?->id) bg-blue-50 @endif">
-                                                <td class="px-5 py-4 font-semibold text-gray-900">
-                                                    {{ $patient->last_name }}, {{ $patient->first_name }}
-                                                </td>
+                                                wire:click="selectPatient({{ $patient->id }})"
+                                                class="cursor-pointer transition hover:bg-gray-50 @if ($patient->id == $selectedPatient?->id) bg-gray-100 @endif">
                                                 <td class="px-5 py-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-700">
+                                                            {{ strtoupper(substr($patient->first_name ?? 'P', 0, 1) . substr($patient->last_name ?? '', 0, 1)) }}
+                                                        </div>
+                                                        <div>
+                                                            <div class="font-semibold text-gray-900">
+                                                                {{ $patient->last_name }}, {{ $patient->first_name }}
+                                                            </div>
+                                                            <div class="text-[11px] font-medium uppercase text-gray-400">
+                                                                #{{ sprintf('PT%04d', $patient->id) }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-5 py-4 text-sm">
                                                     {{ $patient->mobile_number ?? 'N/A' }}
                                                 </td>
-                                                <td class="px-5 py-4 text-xs">
+                                                <td class="px-5 py-4 text-xs text-gray-500">
                                                     {{ $patient->email_address ?? 'N/A' }}
                                                     @if (!$isPatientUser && !empty($patient->pending_recovery_request_id))
                                                         <div class="mt-1">
@@ -481,17 +502,17 @@
                                                         </div>
                                                     @endif
                                                 </td>
-                                                <td class="px-5 py-4 text-xs truncate max-w-[240px]"
+                                                <td class="max-w-[240px] truncate px-5 py-4 text-xs text-gray-500"
                                                     title="{{ $patient->home_address ?? 'N/A' }}">
                                                     {{ $patient->home_address ?? 'N/A' }}
                                                 </td>
-                                                <td class="px-5 py-4">{{ $patient->age ?? 'N/A' }}</td>
+                                                <td class="px-5 py-4 text-sm font-semibold text-gray-700">{{ $patient->age ?? 'N/A' }}</td>
                                                 <td class="px-5 py-4 text-right">
                                                     <div class="relative inline-block text-left"
                                                         x-data="{ open: false }"
                                                         @close-patient-menus.window="open = false">
                                                         <button type="button"
-                                                            class="p-2 rounded-full hover:bg-gray-100"
+                                                            class="rounded-full p-2 hover:bg-gray-100"
                                                             @click.stop="$dispatch('close-patient-menus'); open = !open">
                                                             <svg xmlns="http://www.w3.org/2000/svg"
                                                                 viewBox="0 0 24 24" width="20" height="20"
@@ -503,31 +524,23 @@
                                                             </svg>
                                                         </button>
                                                         <div x-show="open" @click.away="open = false"
-                                                            class="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20"
+                                                            class="absolute right-0 z-20 mt-2 w-44 rounded-none border border-gray-200 bg-white shadow-lg"
                                                             style="display: none;">
                                                             <button type="button"
-                                                                class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                                                                class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
                                                                 wire:click="openProfile({{ $patient->id }})"
                                                                 onclick="event.stopPropagation();">
                                                                 View Profile
                                                             </button>
                                                             <button type="button"
-                                                                class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                                                                class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
                                                                 wire:click="$dispatch('editPatient', { id: {{ $patient->id }}, startStep: 1 })"
                                                                 onclick="event.stopPropagation();">
                                                                 View Full Record
                                                             </button>
                                                             @if (!$isPatientUser)
                                                                 <button type="button"
-                                                                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-                                                                    wire:click="openLinkEmailModal({{ $patient->id }})"
-                                                                    onclick="event.stopPropagation();">
-                                                                    Link New Email
-                                                                </button>
-                                                            @endif
-                                                            @if (!$isPatientUser)
-                                                                <button type="button"
-                                                                    class="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                                                                    class="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50"
                                                                     onclick="event.stopPropagation(); if (confirm('Delete this patient? This cannot be undone.')) { @this.deletePatient({{ $patient->id }}) }">
                                                                     Delete
                                                                 </button>
@@ -538,7 +551,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6" class="p-4 text-center text-gray-500">
+                                                <td colspan="6" class="p-6 text-center text-gray-500">
                                                     No patients found for "{{ $search }}".
                                                 </td>
                                             </tr>
@@ -549,8 +562,7 @@
                         </div>
                     </div>
                 @else
-                    <div
-                        class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#ccebff] scrollbar-thumb-[#0086da]">
+                    <div class="grid flex-1 grid-cols-1 gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-[#f3f4f6] scrollbar-thumb-[#cbd5e1] md:grid-cols-2 xl:grid-cols-3">
                         @forelse($patients as $patient)
                             @php
                                 $patientName = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
@@ -568,17 +580,16 @@
                             @endphp
 
                             <div wire:click="selectPatient({{ $patient->id }})"
-                                class="rounded-xl border bg-white p-5 shadow-sm transition
-                            @if ($patient->id == $selectedPatient?->id) border-[#0789da] ring-1 ring-[#0789da] @else border-gray-200 hover:shadow-md @endif">
+                                class="group rounded-none border bg-white p-5 shadow-sm transition @if ($patient->id == $selectedPatient?->id) border-[#0789da] ring-1 ring-[#0789da] @else border-gray-200 hover:shadow-md @endif">
                                 <div class="flex items-start justify-between">
                                     <span
                                         class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide
-                                    {{ $patient->patient_type === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">
+                                    {{ $patient->patient_type === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
                                         {{ $patient->patient_type ?? 'Inactive' }}
                                     </span>
                                     @if (!$isPatientUser)
                                         <button type="button"
-                                            class="p-2 rounded-full hover:bg-red-50 transition-colors"
+                                            class="rounded-full p-2 transition-colors hover:bg-red-50"
                                             title="Delete Patient"
                                             onclick="event.stopPropagation(); if (confirm('Delete this patient? This cannot be undone.')) { @this.deletePatient({{ $patient->id }}) }">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -597,7 +608,7 @@
 
                                 <div class="mt-4 flex flex-col items-center text-center">
                                     <div
-                                        class="h-14 w-14 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-lg font-bold">
+                                        class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-700 text-lg font-bold">
                                         {{ $patientInitials }}
                                     </div>
                                     <div class="mt-3 text-xs font-semibold text-gray-500">#{{ $patientCode }}</div>
@@ -606,8 +617,7 @@
                                     </div>
                                 </div>
 
-                                <div
-                                    class="mt-4 grid grid-cols-3 divide-x divide-gray-100 rounded-lg border border-gray-200">
+                                <div class="mt-4 grid grid-cols-3 divide-x divide-gray-100 rounded-none border border-gray-200 bg-gray-50">
                                     <div class="px-3 py-2 text-center">
                                         <div class="text-[10px] font-semibold uppercase text-gray-400">Last Visit</div>
                                         <div class="text-xs font-semibold text-gray-700">{{ $lastVisit }}</div>
@@ -625,18 +635,18 @@
 
                                 <div class="mt-4 flex items-center gap-2">
                                     <a href="{{ route('appointment', ['patient_id' => $patient->id]) }}"
-                                        class="flex-1 rounded-lg bg-[#0f172a] px-3 py-2 text-center text-xs font-semibold text-white hover:bg-black">
+                                        class="flex-1 rounded-none bg-[#0086da] px-3 py-2 text-center text-xs font-semibold text-white hover:bg-[#0073a8]">
                                         Add Appointment
                                     </a>
                                     <button type="button" wire:click="openProfile({{ $patient->id }})"
-                                        class="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                        class="flex-1 rounded-none border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
                                         View Record
                                     </button>
                                 </div>
                             </div>
 
                         @empty
-                            <div class="p-4 text-center text-gray-500">
+                            <div class="rounded-none border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-gray-500">
                                 No patients found for "{{ $search }}".
                             </div>
                         @endforelse
@@ -653,71 +663,6 @@
     @endif
 
     @include('components.flash-toast')
-
-    @if ($linkEmailModalOpen)
-        <div class="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/50" wire:click="closeLinkEmailModal"></div>
-            <div class="relative z-[71] w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-                <h3 class="text-xl font-semibold text-gray-800">Link New Email</h3>
-                <p class="mt-1 text-sm text-gray-600">
-                    Patient: <span class="font-semibold">{{ $linkEmailPatientLabel ?: 'N/A' }}</span>
-                </p>
-                <p class="text-sm text-gray-500">
-                    Current email: {{ $linkEmailOldEmail ?: 'N/A' }}
-                </p>
-
-                <form wire:submit.prevent="linkPatientEmail" class="mt-4 space-y-4">
-                    <div>
-                        <label class="mb-1 block text-sm font-medium text-gray-700">New Email Address</label>
-                        <input type="email" wire:model.defer="newLinkedEmail"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0086da] focus:outline-none">
-                        @error('newLinkedEmail')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label class="mb-1 block text-sm font-medium text-gray-700">Account Identifier
-                            (Optional)</label>
-                        <input type="text" wire:model.defer="linkAccountIdentifier"
-                            placeholder="Username or current email"
-                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0086da] focus:outline-none">
-                        @error('linkAccountIdentifier')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                        <label class="flex items-center gap-2 text-sm text-gray-700">
-                            <input type="checkbox" wire:model="confirmInPerson">
-                            In-person identity verified by staff
-                        </label>
-                        <label class="flex items-center gap-2 text-sm text-gray-700">
-                            <input type="checkbox" wire:model="confirmRecordMatch">
-                            Patient details match clinic records
-                        </label>
-                        @error('confirmInPerson')
-                            <p class="text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                        @error('confirmRecordMatch')
-                            <p class="text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" wire:click="closeLinkEmailModal"
-                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="rounded-lg bg-[#0086da] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0073a8]">
-                            Save & Send Verification
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endif
 
 </div>
 
@@ -738,3 +683,6 @@
         });
     </script>
 @endpush
+
+
+

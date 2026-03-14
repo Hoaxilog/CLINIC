@@ -10,6 +10,7 @@ use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 
 class AppointmentCalendar extends Component
 {
@@ -25,8 +26,14 @@ class AppointmentCalendar extends Component
     public $appointments = [];
     /** @var \Illuminate\Support\Collection<int, object> */
     protected $occupiedAppointments;
+    /** @var \Illuminate\Support\Collection<int, object> */
+    protected $blockedSlots;
+    protected ?bool $blockedSlotsTableExists = null;
     public $occupiedSlotCounts = [];
+    public $blockedSlotMap = [];
+    public $blockedSlotLookup = [];
     public $showAppointmentModal = false;
+    public $showBlockModal = false;
     /** @var \Illuminate\Support\Collection */
     public $servicesList = [];
     public $firstName = '';
@@ -43,6 +50,7 @@ class AppointmentCalendar extends Component
     public $endTime = null;
     public $isViewing = false; 
     public $viewingAppointmentId = null; 
+    public $viewingPatientId = null;
     public $appointmentStatus = '';     
     public $searchQuery = '';
     public $patientSearchResults = [];
@@ -52,6 +60,12 @@ class AppointmentCalendar extends Component
     public $prefillPatientId = null;
     public $prefillPatientLabel = null;
     public $pendingFilterDate = null;
+    public $isBlockMode = false;
+    public $blockingSlotId = null;
+    public $blockDate = null;
+    public $blockStartTime = null;
+    public $blockEndTime = null;
+    public $blockReason = '';
 
     protected $rules = [
         'firstName' => 'required|string|max:100',
@@ -68,6 +82,7 @@ class AppointmentCalendar extends Component
     public function mount()
     {
         $this->occupiedAppointments = collect();
+        $this->blockedSlots = collect();
 
         $this->currentDate = Carbon::now();
         $this->selectedDate = $this->currentDate->format('Y-m-d');
@@ -106,9 +121,6 @@ class AppointmentCalendar extends Component
         $this->timeSlots = [];
         for ($hour = 9; $hour <= 20; $hour++) {
             $this->timeSlots[] = sprintf('%02d:00', $hour);
-            if ($hour != 19) {
-                $this->timeSlots[] = sprintf('%02d:30', $hour);
-            }        
         }
     }
 
@@ -160,7 +172,10 @@ class AppointmentCalendar extends Component
     {
         if (count($this->weekDates) < 7) {
             $this->occupiedAppointments = collect();
+            $this->blockedSlots = collect();
             $this->occupiedSlotCounts = [];
+            $this->blockedSlotMap = [];
+            $this->blockedSlotLookup = [];
             return;
         }
 
@@ -178,6 +193,16 @@ class AppointmentCalendar extends Component
             )
             ->get()
             ->map(fn($appointment) => $this->hydrateAppointmentTiming($appointment));
+
+        if ($this->blockedSlotsEnabled()) {
+            $this->blockedSlots = DB::table('blocked_slots')
+                ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+                ->orderBy('date')
+                ->orderBy('start_time')
+                ->get();
+        } else {
+            $this->blockedSlots = collect();
+        }
 
         $this->rebuildOccupiedSlotCounts();
     }
@@ -245,10 +270,26 @@ class AppointmentCalendar extends Component
         $this->endTime = null;
         $this->isViewing = false; 
         $this->viewingAppointmentId = null;
+        $this->viewingPatientId = null;
         $this->appointmentStatus = '';
         $this->searchQuery = '';
         $this->patientSearchResults = [];   
         
+    }
+
+    protected function resetBlockForm(): void
+    {
+        $this->resetValidation([
+            'blockDate',
+            'blockStartTime',
+            'blockEndTime',
+            'blockReason',
+        ]);
+        $this->blockingSlotId = null;
+        $this->blockDate = $this->selectedDate ?: now()->toDateString();
+        $this->blockStartTime = null;
+        $this->blockEndTime = null;
+        $this->blockReason = '';
     }
 
     public function openAppointmentModal($date, $time)
@@ -272,6 +313,188 @@ class AppointmentCalendar extends Component
         if ($resetForm) {
             $this->resetForm();
         }
+    }
+
+    public function toggleBlockMode(): void
+    {
+        if (!$this->blockedSlotsEnabled()) {
+            session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+            return;
+        }
+
+        $this->isBlockMode = !$this->isBlockMode;
+
+        if ($this->isBlockMode) {
+            $this->closeAppointmentModal(true);
+            session()->flash('info', 'Select one calendar slot to block.');
+        }
+    }
+
+    public function blockSlot(string $date, string $time): void
+    {
+        if (!$this->blockedSlotsEnabled()) {
+            session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+            return;
+        }
+
+        $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
+        $slotStart = Carbon::parse($date . ' ' . $normalizedTime)->seconds(0);
+        $slotEnd = $slotStart->copy()->addHour();
+        $slotKey = $slotStart->format('Y-m-d H:i');
+
+        if (($this->blockedSlotMap[$slotKey] ?? false) === true) {
+            $this->isBlockMode = false;
+            session()->flash('info', 'That slot is already blocked.');
+            return;
+        }
+
+        if (($this->occupiedSlotCounts[$slotKey] ?? 0) > 0) {
+            $this->isBlockMode = false;
+            session()->flash('error', 'Cannot block a slot that already has appointments.');
+            return;
+        }
+
+        $hasOverlap = DB::table('blocked_slots')
+            ->whereDate('date', $slotStart->toDateString())
+            ->where('start_time', '<', $slotEnd->format('H:i:s'))
+            ->where('end_time', '>', $slotStart->format('H:i:s'))
+            ->exists();
+
+        if ($hasOverlap) {
+            $this->isBlockMode = false;
+            session()->flash('info', 'That slot is already blocked.');
+            return;
+        }
+
+        DB::table('blocked_slots')->insert([
+            'date' => $slotStart->toDateString(),
+            'start_time' => $slotStart->format('H:i:s'),
+            'end_time' => $slotEnd->format('H:i:s'),
+            'reason' => null,
+            'created_by' => Auth::check() ? Auth::user()->username : null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->refreshSlotCounts();
+        session()->flash('success', 'Time slot blocked. Select another slot to continue blocking.');
+    }
+
+    public function openBlockSlotModal(?string $date = null, ?string $time = null): void
+    {
+        if (!$this->blockedSlotsEnabled()) {
+            session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+            return;
+        }
+
+        $this->resetBlockForm();
+        $this->showBlockModal = true;
+        $this->blockDate = $date ?: ($this->selectedDate ?: now()->toDateString());
+        if ($time) {
+            $formatted = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
+            $this->blockStartTime = $formatted;
+            $this->blockEndTime = Carbon::parse($formatted)->addMinutes(60)->format('H:i');
+        }
+    }
+
+    public function closeBlockSlotModal(bool $reset = false): void
+    {
+        $this->showBlockModal = false;
+
+        if ($reset) {
+            $this->resetBlockForm();
+        }
+    }
+
+    public function editBlockedSlot(int $blockedSlotId): void
+    {
+        if (!$this->blockedSlotsEnabled()) {
+            return;
+        }
+
+        $slot = DB::table('blocked_slots')->where('id', $blockedSlotId)->first();
+        if (!$slot) {
+            return;
+        }
+
+        $this->resetBlockForm();
+        $this->blockingSlotId = (int) $slot->id;
+        $this->blockDate = $slot->date;
+        $this->blockStartTime = substr((string) $slot->start_time, 0, 5);
+        $this->blockEndTime = substr((string) $slot->end_time, 0, 5);
+        $this->blockReason = (string) ($slot->reason ?? '');
+        $this->showBlockModal = true;
+    }
+
+    public function saveBlockedSlot(): void
+    {
+        if (!$this->blockedSlotsEnabled()) {
+            session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+            return;
+        }
+
+        $this->validate([
+            'blockDate' => 'required|date',
+            'blockStartTime' => 'required|date_format:H:i',
+            'blockEndTime' => 'required|date_format:H:i|after:blockStartTime',
+            'blockReason' => 'nullable|string|max:255',
+        ]);
+
+        $start = Carbon::parse($this->blockDate . ' ' . $this->blockStartTime);
+        $end = Carbon::parse($this->blockDate . ' ' . $this->blockEndTime);
+
+        if (!$this->isAlignedToSlot($start) || !$this->isAlignedToSlot($end)) {
+            $this->addError('blockEndTime', 'Please use 1-hour boundaries (e.g. 10:00, 11:00).');
+            return;
+        }
+
+        $hasOverlap = DB::table('blocked_slots')
+            ->whereDate('date', $this->blockDate)
+            ->when($this->blockingSlotId, fn($query) => $query->where('id', '!=', $this->blockingSlotId))
+            ->where('start_time', '<', $end->format('H:i:s'))
+            ->where('end_time', '>', $start->format('H:i:s'))
+            ->exists();
+
+        if ($hasOverlap) {
+            $this->addError('blockStartTime', 'This range overlaps another blocked slot.');
+            return;
+        }
+
+        $isEditing = $this->blockingSlotId !== null;
+
+        $payload = [
+            'date' => $this->blockDate,
+            'start_time' => $start->format('H:i:s'),
+            'end_time' => $end->format('H:i:s'),
+            'reason' => trim($this->blockReason) !== '' ? trim($this->blockReason) : null,
+            'updated_at' => now(),
+        ];
+
+        if ($isEditing) {
+            DB::table('blocked_slots')
+                ->where('id', $this->blockingSlotId)
+                ->update($payload);
+        } else {
+            $payload['created_by'] = Auth::check() ? Auth::user()->username : null;
+            $payload['created_at'] = now();
+            DB::table('blocked_slots')->insert($payload);
+        }
+
+        $this->refreshSlotCounts();
+        $this->closeBlockSlotModal(true);
+        session()->flash('success', $isEditing ? 'Blocked slot updated.' : 'Time slot blocked.');
+    }
+
+    public function unblockSlot(int $blockedSlotId): void
+    {
+        if (!$this->blockedSlotsEnabled()) {
+            return;
+        }
+
+        DB::table('blocked_slots')->where('id', $blockedSlotId)->delete();
+        $this->refreshSlotCounts();
+        $this->closeBlockSlotModal(true);
+        session()->flash('success', 'Blocked slot removed.');
     }
 
     public function updatedSelectedService($serviceId)
@@ -317,6 +540,11 @@ class AppointmentCalendar extends Component
 
             $proposedStart = Carbon::parse($this->appointmentDate)->setTimeFromTimeString($this->selectedTime);
             $proposedEnd = $proposedStart->copy()->addMinutes($durationInMinutes);
+
+            if ($this->hasBlockedConflict($proposedStart, $proposedEnd)) {
+                $this->addError('conflict', 'This time range includes blocked slots.');
+                return;
+            }
             
             // Conflict Check: allow up to two approved appointments per overlapping slot.
             $conflicts = DB::table('appointments')
@@ -413,7 +641,7 @@ class AppointmentCalendar extends Component
                 ->toDateTimeString();
 
             // Insert Appointment
-            $newApptId = DB::table('appointments')->insertGetId([
+            $appointmentPayload = [
                 'patient_id' => $patientId, 
                 'service_id' => $this->selectedService,
                 'appointment_date' => $appointmentDateTime,
@@ -421,7 +649,13 @@ class AppointmentCalendar extends Component
                 'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM', 
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+
+            if (Schema::hasColumn('appointments', 'booking_type')) {
+                $appointmentPayload['booking_type'] = 'online_appointment';
+            }
+
+            $newApptId = DB::table('appointments')->insertGetId($appointmentPayload);
 
             $appointmentSubject = new Appointment();
             $appointmentSubject->id = $newApptId;
@@ -444,6 +678,7 @@ class AppointmentCalendar extends Component
             // Success!
             session()->flash('success', 'Appointment booked successfully!'); 
 
+            $this->clearPrefill();
             $this->loadAppointments();
             $this->closeAppointmentModal(true);
 
@@ -490,12 +725,39 @@ class AppointmentCalendar extends Component
     {
         $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
         $key = $date . ' ' . $normalizedTime;
+        if (($this->blockedSlotMap[$key] ?? false) === true) {
+            return true;
+        }
+
         return ($this->occupiedSlotCounts[$key] ?? 0) >= self::SLOT_CAPACITY;
+    }
+
+    public function isSlotBlocked($date, $time): bool
+    {
+        $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
+        $key = $date . ' ' . $normalizedTime;
+        return ($this->blockedSlotMap[$key] ?? false) === true;
+    }
+
+    public function hasAppointmentsInSlot(string $date, string $time): bool
+    {
+        $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
+        $key = $date . ' ' . $normalizedTime;
+        return ($this->occupiedSlotCounts[$key] ?? 0) > 0;
+    }
+
+    public function getBlockedSlotAt(string $date, string $time): ?object
+    {
+        $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
+        $key = $date . ' ' . $normalizedTime;
+        return $this->blockedSlotLookup[$key] ?? null;
     }
 
     protected function rebuildOccupiedSlotCounts(): void
     {
         $slotCounts = [];
+        $blockedMap = [];
+        $blockedLookup = [];
 
         foreach ($this->occupiedAppointments as $appointment) {
             $slotCursor = Carbon::parse($appointment->start_date . ' ' . $appointment->start_time)->seconds(0);
@@ -508,7 +770,48 @@ class AppointmentCalendar extends Component
             }
         }
 
+        foreach ($this->blockedSlots as $slot) {
+            $slotCursor = Carbon::parse($slot->date . ' ' . $slot->start_time)->seconds(0);
+            $slotEnd = Carbon::parse($slot->date . ' ' . $slot->end_time)->seconds(0);
+
+            while ($slotCursor < $slotEnd) {
+                $key = $slotCursor->format('Y-m-d H:i');
+                $blockedMap[$key] = true;
+                $blockedLookup[$key] = $slot;
+                $slotCursor->addMinutes(30);
+            }
+        }
+
         $this->occupiedSlotCounts = $slotCounts;
+        $this->blockedSlotMap = $blockedMap;
+        $this->blockedSlotLookup = $blockedLookup;
+    }
+
+    protected function hasBlockedConflict(Carbon $proposedStart, Carbon $proposedEnd): bool
+    {
+        if (!$this->blockedSlotsEnabled()) {
+            return false;
+        }
+
+        return DB::table('blocked_slots')
+            ->whereDate('date', $proposedStart->toDateString())
+            ->where('start_time', '<', $proposedEnd->format('H:i:s'))
+            ->where('end_time', '>', $proposedStart->format('H:i:s'))
+            ->exists();
+    }
+
+    protected function isAlignedToSlot(Carbon $dateTime): bool
+    {
+        return (int) $dateTime->minute === 0 && (int) $dateTime->second === 0;
+    }
+
+    protected function blockedSlotsEnabled(): bool
+    {
+        if ($this->blockedSlotsTableExists === null) {
+            $this->blockedSlotsTableExists = Schema::hasTable('blocked_slots');
+        }
+
+        return $this->blockedSlotsTableExists;
     }
 
     public function viewAppointment($appointmentId)
@@ -545,6 +848,7 @@ class AppointmentCalendar extends Component
             $this->contactNumber = $appointment->mobile_number;
             $this->birthDate = $appointment->birth_date;
             $this->viewingAppointmentId = $appointment->id;
+            $this->viewingPatientId = $appointment->patient_id ?? null;
             $this->appointmentStatus = $appointment->status;   
 
             // 3. Format Dates and Times
@@ -661,6 +965,7 @@ class AppointmentCalendar extends Component
         }
 
         $this->updateAppointmentStatusById($appointmentId, 'Scheduled');
+        session()->flash('success', 'Appointment request approved.');
     }
 
     public function rejectAppointment($appointmentId)
@@ -670,6 +975,7 @@ class AppointmentCalendar extends Component
         }
 
         $this->updateAppointmentStatusById($appointmentId, 'Cancelled');
+        session()->flash('info', 'Appointment request rejected.');
     }
 
     protected function updateAppointmentStatusById($appointmentId, $newStatus)
@@ -745,8 +1051,10 @@ class AppointmentCalendar extends Component
     // --- SEARCH FUNCTIONALITY ---
 
     // This runs automatically whenever $searchQuery changes (as you type)
-    public function updatedSearchQuery()
+    public function updatedSearchQuery($value)
     {
+        $this->searchQuery = is_string($value) ? trim($value) : '';
+
         // Don't search if empty or too short
         if (strlen($this->searchQuery) < 2) {
             $this->patientSearchResults = [];
@@ -816,25 +1124,50 @@ class AppointmentCalendar extends Component
 
     public function processPatient() 
     {
-         if ($this->viewingAppointmentId) {
-            $appt = DB::table('appointments')->find($this->viewingAppointmentId);
-            if ($appt) {
-                // Open Patient Modal (Step 1: Basic Info)
-                $this->dispatch('editPatient', id: $appt->patient_id, startStep: 1);
-                $this->closeAppointmentModal();
-            }
+        $patientId = $this->viewingPatientId;
+        if (!$patientId && $this->viewingAppointmentId) {
+            $patientId = DB::table('appointments')
+                ->where('id', $this->viewingAppointmentId)
+                ->value('patient_id');
         }
+
+        if ($patientId) {
+            $this->dispatch('editPatient', id: (int) $patientId, startStep: 1);
+            $this->closeAppointmentModal();
+        }
+    }
+
+    public function dispatchPatientForm(int $startStep = 1): void
+    {
+        $patientId = $this->viewingPatientId;
+
+        if (!$patientId && $this->viewingAppointmentId) {
+            $patientId = DB::table('appointments')
+                ->where('id', $this->viewingAppointmentId)
+                ->value('patient_id');
+        }
+
+        if (!$patientId) {
+            session()->flash('error', 'Patient record was not found for this appointment.');
+            $this->dispatch('patient-form-open-failed');
+            return;
+        }
+
+        $this->dispatch('editPatient', id: (int) $patientId, startStep: $startStep);
     }
 
     public function openPatientChart()
     {
-        if ($this->viewingAppointmentId) {
-            $appt = DB::table('appointments')->find($this->viewingAppointmentId);
-            if ($appt) {
-                // Open Patient Modal (Step 3: Dental Chart)
-                $this->dispatch('editPatient', id: $appt->patient_id, startStep: 3);
-                $this->closeAppointmentModal();
-            }
+        $patientId = $this->viewingPatientId;
+        if (!$patientId && $this->viewingAppointmentId) {
+            $patientId = DB::table('appointments')
+                ->where('id', $this->viewingAppointmentId)
+                ->value('patient_id');
+        }
+
+        if ($patientId) {
+            $this->dispatch('editPatient', id: (int) $patientId, startStep: 3);
+            $this->closeAppointmentModal();
         }
     }
 

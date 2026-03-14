@@ -11,6 +11,8 @@ class DentalChartGrid extends Component
     public $teeth = [];
     #[Reactive]
     public $isReadOnly = false;
+    #[Reactive]
+    public $dentitionType = 'adult';
     public $selectedTool = null;
     public $toolLabels = [];
     public $picker = ['open' => false, 'tooth' => null, 'part' => null, 'expanded' => false];
@@ -52,10 +54,11 @@ class DentalChartGrid extends Component
         ['label' => 'Erupting Tooth', 'code' => 'â†‘/â†“', 'color' => 'blue'],
     ];
 
-    public function mount($teeth = [], $isReadOnly = false)
+    public function mount($teeth = [], $isReadOnly = false, $dentitionType = 'adult')
     {
         $this->teeth = $teeth ?? [];
         $this->isReadOnly = $isReadOnly;
+        $this->dentitionType = in_array($dentitionType, ['adult', 'child'], true) ? $dentitionType : 'adult';
 
         foreach ($this->tools as $tool) {
             $this->toolLabels[$tool['code']] = $tool['label'];
@@ -175,8 +178,38 @@ class DentalChartGrid extends Component
             return in_array($tool['code'], $this->quickToolCodes, true);
         }));
 
+        $layout = $this->getDentitionLayout();
+
         return view('livewire.PatientFormViews.dental-chart-grid', [
             'quickTools' => $quickTools,
+            'layout' => $layout,
         ]);
+    }
+
+    private function getDentitionLayout(): array
+    {
+        if ($this->dentitionType === 'child') {
+            return [
+                'upper' => [
+                    'left' => [55, 54, 53, 52, 51],
+                    'right' => [61, 62, 63, 64, 65],
+                ],
+                'lower' => [
+                    'left' => [85, 84, 83, 82, 81],
+                    'right' => [71, 72, 73, 74, 75],
+                ],
+            ];
+        }
+
+        return [
+            'upper' => [
+                'left' => [18, 17, 16, 15, 14, 13, 12, 11],
+                'right' => [21, 22, 23, 24, 25, 26, 27, 28],
+            ],
+            'lower' => [
+                'left' => [48, 47, 46, 45, 44, 43, 42, 41],
+                'right' => [31, 32, 33, 34, 35, 36, 37, 38],
+            ],
+        ];
     }
 }

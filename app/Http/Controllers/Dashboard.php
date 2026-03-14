@@ -115,6 +115,9 @@ class Dashboard extends Controller
             ->whereBetween('appointment_date', [$cancellationStart, $cancellationEnd])
             ->where('status', 'Cancelled')
             ->count();
+        $cancellationRate = $bookedLast30 > 0
+            ? round(($cancelledLast30 / $bookedLast30) * 100, 1)
+            : 0.0;
 
         $todayAppointmentsCount = DB::table('appointments')
             ->whereDate('appointment_date', $today)
@@ -155,6 +158,13 @@ class Dashboard extends Controller
             ->whereDate('created_at', $today)
             ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0)), 0) as revenue')
             ->value('revenue') ?? 0);
+        $todayCost = (float) (DB::table('treatment_records')
+            ->whereDate('created_at', $today)
+            ->selectRaw('COALESCE(SUM(COALESCE(cost_of_treatment,0)), 0) as total_cost')
+            ->value('total_cost') ?? 0);
+        $todayProfitMargin = $todayRevenue > 0
+            ? round(($todayProfit / $todayRevenue) * 100, 1)
+            : null;
 
         $weekStart = $today->copy()->startOfWeek();
         $weekEnd = $today->copy()->endOfWeek();
@@ -184,6 +194,14 @@ class Dashboard extends Controller
             ->whereBetween('created_at', [$monthStart, $monthEnd])
             ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0) - COALESCE(cost_of_treatment,0)), 0) as profit')
             ->value('profit') ?? 0);
+        $monthRevenue = (float) (DB::table('treatment_records')
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0)), 0) as revenue')
+            ->value('revenue') ?? 0);
+        $monthCost = (float) (DB::table('treatment_records')
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->selectRaw('COALESCE(SUM(COALESCE(cost_of_treatment,0)), 0) as total_cost')
+            ->value('total_cost') ?? 0);
 
         $prevMonthProfit = (float) (DB::table('treatment_records')
             ->whereBetween('created_at', [$prevMonthStart, $prevMonthEnd])
@@ -288,11 +306,15 @@ class Dashboard extends Controller
             'todayUpcomingCount'     => max(0, $todayUpcomingCount),
             'todayProfit'            => $todayProfit,
             'todayRevenue'           => $todayRevenue,
+            'todayCost'              => $todayCost,
+            'todayProfitMargin'      => $todayProfitMargin,
             'yesterdayProfit'        => $yesterdayProfit,
             'todayProfitPct'         => $todayProfitPct,
             'weekProfit'             => $weekProfit,
             'weekProfitPct'          => $weekProfitPct,
             'monthProfit'            => $monthProfit,
+            'monthRevenue'           => $monthRevenue,
+            'monthCost'              => $monthCost,
             'monthProfitPct'         => $monthProfitPct,
             'trendDates'             => $trendDates,
             'trendAppointments'      => $trendAppointments,
@@ -301,6 +323,7 @@ class Dashboard extends Controller
             'statusCounts'           => $statusCounts,
             'bookedLast30'           => $bookedLast30,
             'cancelledLast30'        => $cancelledLast30,
+            'cancellationRate'       => $cancellationRate,
             'todayScheduleAppointments' => $todayScheduleAppointments,
             'pendingApprovalsCount'  => $pendingApprovalsCount,
             'totalPatients'          => $totalPatients,

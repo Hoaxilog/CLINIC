@@ -21,6 +21,7 @@ class BookAppointment extends Component
     public $selectedDate, $selectedSlot;
     public $recaptchaToken;
     protected $usesPatientUserId = null;
+    protected ?bool $blockedSlotsTableExists = null;
     protected $appointmentStatuses = null;
     
     // UI data
@@ -88,6 +89,14 @@ class BookAppointment extends Component
         $startTime = Carbon::parse($dateString . ' 09:00:00');
         $endTime = Carbon::parse($dateString . ' 20:00:00');
         $duration = 60; // minutes per slot
+        $blockedSlots = collect();
+
+        if ($this->blockedSlotsEnabled()) {
+            $blockedSlots = DB::table('blocked_slots')
+                ->whereDate('date', $dateString)
+                ->select('start_time', 'end_time')
+                ->get();
+        }
 
         $bookedCounts = DB::table('appointments')
             ->whereDate('appointment_date', $dateString)
@@ -103,12 +112,15 @@ class BookAppointment extends Component
             $slotTime = $startTime->format('H:i:00');
             $currentCount = $bookedCounts[$slotTime] ?? 0;
             $slotDateTime = Carbon::parse($dateString . ' ' . $slotTime);
+            $slotEndDateTime = $slotDateTime->copy()->addMinutes($duration);
             $isPast = $slotDateTime->lt(now());
+            $isBlocked = $this->isBlockedBySlotCollection($slotDateTime, $slotEndDateTime, $blockedSlots);
             $slots[] = [
                 'time' => $startTime->format('h:i A'),
                 'value' => $slotTime,
                 'is_full' => $currentCount >= self::SLOT_CAPACITY,
                 'is_past' => $isPast,
+                'is_blocked' => $isBlocked,
             ];
             $startTime->addMinutes($duration);
         }
@@ -151,6 +163,22 @@ class BookAppointment extends Component
         }
 
         $appointmentDateTime = Carbon::parse($this->selectedDate . ' ' . $this->selectedSlot)->toDateTimeString();
+        $slotStart = Carbon::parse($appointmentDateTime)->seconds(0);
+        $slotEnd = $slotStart->copy()->addHour();
+
+        if ($this->blockedSlotsEnabled()) {
+            $isBlocked = DB::table('blocked_slots')
+                ->whereDate('date', $slotStart->toDateString())
+                ->where('start_time', '<', $slotEnd->format('H:i:s'))
+                ->where('end_time', '>', $slotStart->format('H:i:s'))
+                ->exists();
+
+            if ($isBlocked) {
+                $this->addError('selectedSlot', 'This time slot is unavailable. Please choose another time.');
+                $this->availableSlots = $this->generateSlots($this->selectedDate);
+                return;
+            }
+        }
 
         $activeSlotBookings = DB::table('appointments')
             ->where('appointment_date', $appointmentDateTime)
@@ -233,7 +261,7 @@ class BookAppointment extends Component
             ]));
         }
 
-        DB::table('appointments')->insert([
+        $appointmentPayload = [
             'patient_id' => $patientId,
             'service_id' => $this->service_id,
             'appointment_date' => $appointmentDateTime,
@@ -241,7 +269,13 @@ class BookAppointment extends Component
             'modified_by' => Auth::check() ? Auth::user()->username : 'GUEST',
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
+        ];
+
+        if (Schema::hasColumn('appointments', 'booking_type')) {
+            $appointmentPayload['booking_type'] = 'online_appointment';
+        }
+
+        DB::table('appointments')->insert($appointmentPayload);
 
         $service = DB::table('services')->where('id', $this->service_id)->first();
 
@@ -341,5 +375,32 @@ class BookAppointment extends Component
         } catch (Throwable $e) {
             return false;
         }
+    }
+
+    protected function blockedSlotsEnabled(): bool
+    {
+        if ($this->blockedSlotsTableExists === null) {
+            $this->blockedSlotsTableExists = Schema::hasTable('blocked_slots');
+        }
+
+        return $this->blockedSlotsTableExists;
+    }
+
+    protected function isBlockedBySlotCollection(Carbon $slotStart, Carbon $slotEnd, $blockedSlots): bool
+    {
+        if (!$this->blockedSlotsEnabled() || $blockedSlots->isEmpty()) {
+            return false;
+        }
+
+        foreach ($blockedSlots as $blockedSlot) {
+            $blockedStart = Carbon::parse($slotStart->toDateString() . ' ' . $blockedSlot->start_time)->seconds(0);
+            $blockedEnd = Carbon::parse($slotStart->toDateString() . ' ' . $blockedSlot->end_time)->seconds(0);
+
+            if ($blockedStart < $slotEnd && $blockedEnd > $slotStart) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
