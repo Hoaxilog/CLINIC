@@ -185,6 +185,13 @@ class BasicInfo extends Component
         $this->reset();
     }
 
+    public function updated($propertyName): void
+    {
+        if (is_string($propertyName) && $propertyName !== '') {
+            $this->resetValidation($propertyName);
+        }
+    }
+
     public function render()
     {
         return view('livewire.PatientFormViews.basic-info');

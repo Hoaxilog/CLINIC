@@ -57,13 +57,13 @@
                 <form class="p-6" wire:submit.prevent="{{ $noteId && $isEditing ? 'update' : ($noteId ? 'update' : 'save') }}">
                     <div class="mb-4">
                         <label class="block text-lg font-medium text-gray-700 mb-2">Title</label>
-                        <input wire:model.defer="title" type="text" class="w-full border rounded px-4 py-3 text-base" placeholder="Note title" @if(!$isEditing && $noteId) readonly @endif />
+                        <input wire:model.live.debounce.200ms="title" type="text" class="w-full border rounded px-4 py-3 text-base @error('title') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror" placeholder="Note title" @if(!$isEditing && $noteId) readonly @endif />
                         @error('title') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-lg font-medium text-gray-700 mb-2">Notes</label>
-                        <textarea wire:model.defer="content" rows="6" class="w-full border rounded px-4 py-3 text-base" placeholder="Write something..." @if(!$isEditing && $noteId) readonly @endif></textarea>
+                        <textarea wire:model.live.debounce.200ms="content" rows="6" class="w-full border rounded px-4 py-3 text-base @error('content') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror" placeholder="Write something..." @if(!$isEditing && $noteId) readonly @endif></textarea>
                         @error('content') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                     </div>
 

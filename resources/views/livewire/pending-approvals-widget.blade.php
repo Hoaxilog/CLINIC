@@ -4,7 +4,7 @@
             <h2 class="text-lg font-semibold text-gray-900">Pending Appointment Requests</h2>
             <p class="text-xs text-gray-500">Latest 5 requests awaiting approval.</p>
         </div>
-        <a href="{{ route('appointment') }}"
+        <a href="{{ route('appointment.requests') }}"
             class="px-3.5 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-none hover:bg-gray-50 transition">
             View All Requests
         </a>
@@ -42,10 +42,10 @@
                         </td> -->
                         <td class="px-5 py-3">
                             <div class="flex items-center justify-start gap-2">
-                                <button type="button" wire:click="approveAppointment({{ $pending->id }})"
-                                    class="rounded-none border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">
-                                    Approve
-                                </button>
+                                <a href="{{ route('appointment.requests') }}"
+                                    class="rounded-none border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition">
+                                    Review Request
+                                </a>
                                 <button type="button" wire:click="rejectAppointment({{ $pending->id }})"
                                     wire:confirm="Reject this appointment request?"
                                     class="rounded-none border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition">
@@ -140,10 +140,10 @@
                             class="px-6 py-3 rounded-none bg-red-600 text-white text-lg font-bold shadow-md hover:bg-red-700 transition">
                             Reject Appointment
                         </button>
-                        <button type="button" wire:click="approveAppointment({{ $selectedApproval->id }})"
-                            class="px-6 py-3 rounded-none bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition">
-                            Approve Appointment
-                        </button>
+                        <a href="{{ route('appointment.requests') }}"
+                            class="px-6 py-3 rounded-none bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition text-center">
+                            Review Request
+                        </a>
                     </div>
                 </div>
             </div>

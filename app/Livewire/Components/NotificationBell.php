@@ -5,16 +5,13 @@ namespace App\Livewire\Components;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
 
 use Carbon\Carbon;
-use Throwable;
 
 class NotificationBell extends Component
 {
     public $unreadCount = 0;
     public $notifications = [];
-    protected $usesPatientUserId = null;
 
     public function mount()
     {
@@ -133,97 +130,8 @@ class NotificationBell extends Component
                 ]);
             }
         } else {
-            // Patient/User notifications
-        $patientIds = collect();
-        if ($this->patientsUsesUserId()) {
-            $patientIds = DB::table('patients')
-                ->where('user_id', $user->id)
-                ->pluck('id');
-        }
-        if ($patientIds->isEmpty() && $user->email) {
-            $patientIds = DB::table('patients')
-                ->where('email_address', $user->email)
-                ->pluck('id');
-        }
-
-            if ($patientIds->isNotEmpty()) {
-                // Daily summary
-                $todayCount = DB::table('appointments')
-                    ->whereIn('patient_id', $patientIds)
-                    ->whereDate('appointment_date', $now->toDateString())
-                    ->whereNotIn('status', ['Cancelled'])
-                    ->count();
-                $notifications->push((object) [
-                    'id' => 'daily-summary',
-                    'title' => 'Daily Summary',
-                    'message' => "You have {$todayCount} appointment(s) today.",
-                    'created_at' => $now,
-                    'status' => 'Info',
-                    'kind' => 'info',
-                    'meta' => 'Today',
-                    'is_read' => false,
-                    'link' => url('/appointment'),
-                ]);
-
-                // Next up reminder
-                $next = DB::table('appointments')
-                    ->join('services', 'appointments.service_id', '=', 'services.id')
-                    ->whereIn('appointments.patient_id', $patientIds)
-                    ->where('appointments.appointment_date', '>=', $now)
-                    ->whereNotIn('appointments.status', ['Cancelled', 'Completed'])
-                    ->orderBy('appointments.appointment_date', 'asc')
-                    ->select('appointments.appointment_date', 'services.service_name')
-                    ->first();
-
-                if ($next) {
-                    $nextTime = Carbon::parse($next->appointment_date)->format('M d, Y h:i A');
-                    $notifications->push((object) [
-                        'id' => 'next-up',
-                        'title' => 'Next Appointment',
-                        'message' => "{$next->service_name} on {$nextTime}.",
-                        'created_at' => $next->appointment_date,
-                        'status' => 'Scheduled',
-                        'kind' => 'scheduled',
-                        'meta' => $nextTime,
-                        'appointment_at' => $next->appointment_date,
-                        'is_read' => false,
-                        'link' => url('/appointment'),
-                    ]);
-                }
-
-                // Status changes (last 24h)
-                $statusUpdates = DB::table('appointments')
-                    ->join('services', 'appointments.service_id', '=', 'services.id')
-                    ->whereIn('appointments.patient_id', $patientIds)
-                    ->where('appointments.updated_at', '>=', $now->copy()->subDay())
-                    ->whereIn('appointments.status', ['Scheduled', 'Cancelled'])
-                    ->orderBy('appointments.updated_at', 'desc')
-                    ->select(
-                        'appointments.id',
-                        'appointments.appointment_date',
-                        'appointments.status',
-                        'appointments.updated_at',
-                        'services.service_name'
-                    )
-                    ->limit(5)
-                    ->get();
-
-                foreach ($statusUpdates as $update) {
-                    $dateTime = Carbon::parse($update->appointment_date)->format('M d, Y h:i A');
-                    $notifications->push((object) [
-                        'id' => "status-{$update->id}",
-                        'title' => 'Appointment Status Updated',
-                        'message' => "Your {$update->service_name} on {$dateTime} is now {$update->status}.",
-                        'created_at' => $update->updated_at,
-                        'status' => $update->status,
-                        'kind' => 'status',
-                        'meta' => "Status: {$update->status}",
-                        'appointment_at' => $update->appointment_date,
-                        'is_read' => false,
-                        'link' => url('/appointment'),
-                    ]);
-                }
-            }
+            // Patient account notifications are intentionally decoupled
+            // from medical records and patient rows.
         }
 
         $notifications = $notifications
@@ -340,21 +248,6 @@ class NotificationBell extends Component
     {
         $this->markAsRead($notificationId);
         return $this->redirect($link);
-    }
-
-    protected function patientsUsesUserId(): bool
-    {
-        if ($this->usesPatientUserId !== null) {
-            return $this->usesPatientUserId;
-        }
-
-        try {
-            $this->usesPatientUserId = Schema::hasColumn('patients', 'user_id');
-        } catch (Throwable $e) {
-            $this->usesPatientUserId = false;
-        }
-
-        return $this->usesPatientUserId;
     }
 
     protected function readSessionKey(int $userId): string

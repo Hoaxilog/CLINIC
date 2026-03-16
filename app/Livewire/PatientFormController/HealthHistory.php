@@ -98,6 +98,15 @@ class HealthHistory extends Component
             $this->dispatch('switchHealthHistory', historyId: $value); 
         }
     }
+
+    public function updated($propertyName): void
+    {
+        if (!is_string($propertyName) || $propertyName === '') {
+            return;
+        }
+
+        $this->resetValidation($propertyName);
+    }
     
     protected $casts = [
         'is_clicking_jaw_q3a' => 'boolean',

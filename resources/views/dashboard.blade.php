@@ -3,7 +3,7 @@
 @section('content')
     @php
         $isAdmin = auth()->user()?->role === 1;
-        $appointmentsQuickLink = $isAdmin ? route('reports.index', ['section' => 'appointments']) : '#today-schedule';
+        $appointmentsQuickLink = route('appointment.calendar');
         $profitQuickLink = $isAdmin ? route('reports.index', ['section' => 'overview']) : '#needs-attention';
         $marginQuickLink = $isAdmin ? route('reports.index', ['section' => 'overview']) : '#needs-attention';
         $cancellationQuickLink = $isAdmin ? route('reports.index', ['section' => 'appointments']) : '#status-breakdown';
@@ -110,16 +110,20 @@
                                     }
                                 @endphp
                                 <tr>
-                                    <td class="px-4 py-3 font-semibold text-gray-900">{{ \Carbon\Carbon::parse($appt->appointment_date)->format('h:i A') }}</td>
-                                    <td class="px-4 py-3 text-gray-800">{{ $appt->last_name }}, {{ $appt->first_name }}</td>
+                                    <td class="px-4 py-3 font-semibold text-gray-900">
+                                        {{ \Carbon\Carbon::parse($appt->appointment_date)->format('h:i A') }}</td>
+                                    <td class="px-4 py-3 text-gray-800">{{ $appt->last_name }}, {{ $appt->first_name }}
+                                    </td>
                                     <td class="px-4 py-3 text-gray-700">{{ $appt->service_name }}</td>
                                     <td class="px-4 py-3">
-                                        <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $badgeClass }}">{{ $appt->status }}</span>
+                                        <span
+                                            class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $badgeClass }}">{{ $appt->status }}</span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">No appointments scheduled today.</td>
+                                    <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">No appointments
+                                        scheduled today.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -138,33 +142,44 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <a href="#pending-approvals" class="block rounded-none bg-rose-50 p-4 transition hover:ring-1 hover:ring-rose-300">
+                    <a href="#pending-approvals"
+                        class="block rounded-none bg-rose-50 p-4 transition hover:ring-1 hover:ring-rose-300">
                         <div class="text-xs font-semibold uppercase tracking-wide text-rose-700">Pending Requests</div>
                         <div class="mt-2 text-3xl font-bold text-rose-800">{{ $pendingApprovalsCount ?? 0 }}</div>
-                        <p class="mt-1 text-xs text-rose-700/80">Unapproved appointment requests.<span class="float-right font-semibold text-rose-700">View</span></p>
+                        <p class="mt-1 text-xs text-rose-700/80">Unapproved appointment requests.<span
+                                class="float-right font-semibold text-rose-700">View</span></p>
                     </a>
-                    <a href="{{ route('queue') }}" class="block rounded-none bg-amber-50 p-4 transition hover:ring-1 hover:ring-amber-300">
+                    <a href="{{ route('queue') }}"
+                        class="block rounded-none bg-amber-50 p-4 transition hover:ring-1 hover:ring-amber-300">
                         <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Queue Load</div>
-                        <div class="mt-2 text-3xl font-bold text-amber-800">{{ ($waitingPatientsCount ?? 0) + ($arrivedPatientsCount ?? 0) }}</div>
+                        <div class="mt-2 text-3xl font-bold text-amber-800">
+                            {{ ($waitingPatientsCount ?? 0) + ($arrivedPatientsCount ?? 0) }}</div>
                         <p class="mt-1 text-xs text-amber-700/80">
                             Waiting {{ $waitingPatientsCount ?? 0 }} · Arrived {{ $arrivedPatientsCount ?? 0 }}
                             <span class="float-right font-semibold text-amber-700">View</span>
                         </p>
                     </a>
-                    <a href="{{ $cancellationQuickLink }}" class="block rounded-none bg-sky-50 p-4 transition hover:ring-1 hover:ring-sky-300">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">{{ $cancellationLabel ?? 'This Month' }} Cancellation</div>
-                        <div class="mt-2 text-3xl font-bold text-sky-800">{{ number_format($cancellationRate ?? 0, 1) }}%</div>
-                        <p class="mt-1 text-xs text-sky-700/80">{{ $cancelledLast30 ?? 0 }} of {{ $bookedLast30 ?? 0 }} booked appointments.<span class="float-right font-semibold text-sky-700">View</span></p>
+                    <a href="{{ $cancellationQuickLink }}"
+                        class="block rounded-none bg-sky-50 p-4 transition hover:ring-1 hover:ring-sky-300">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">
+                            {{ $cancellationLabel ?? 'This Month' }} Cancellation</div>
+                        <div class="mt-2 text-3xl font-bold text-sky-800">{{ number_format($cancellationRate ?? 0, 1) }}%
+                        </div>
+                        <p class="mt-1 text-xs text-sky-700/80">{{ $cancelledLast30 ?? 0 }} of {{ $bookedLast30 ?? 0 }}
+                            booked appointments.<span class="float-right font-semibold text-sky-700">View</span></p>
                     </a>
-                    <a href="{{ $monthlyProfitQuickLink }}" class="block rounded-none bg-emerald-50 p-4 transition hover:ring-1 hover:ring-emerald-300">
+                    <a href="{{ $monthlyProfitQuickLink }}"
+                        class="block rounded-none bg-emerald-50 p-4 transition hover:ring-1 hover:ring-emerald-300">
                         <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Monthly Profit</div>
-                        <div class="mt-2 text-3xl font-bold text-emerald-800">PHP {{ number_format($monthProfit ?? 0, 2) }}</div>
+                        <div class="mt-2 text-3xl font-bold text-emerald-800">PHP {{ number_format($monthProfit ?? 0, 2) }}
+                        </div>
                         <p class="mt-1 text-xs text-emerald-700/80">
-                            {{ $monthProfitPct === null ? 'No previous month baseline' : (($monthProfitPct >= 0 ? '+' : '') . $monthProfitPct . '% vs last month') }}
+                            {{ $monthProfitPct === null ? 'No previous month baseline' : ($monthProfitPct >= 0 ? '+' : '') . $monthProfitPct . '% vs last month' }}
                             <span class="float-right font-semibold text-emerald-700">View</span>
                         </p>
                         <p class="mt-1 text-xs text-emerald-700/80">
-                            Revenue PHP {{ number_format($monthRevenue ?? 0, 2) }} · Cost PHP {{ number_format($monthCost ?? 0, 2) }}
+                            Revenue PHP {{ number_format($monthRevenue ?? 0, 2) }} · Cost PHP
+                            {{ number_format($monthCost ?? 0, 2) }}
                         </p>
                     </a>
                 </div>
@@ -178,7 +193,8 @@
                 <div id="statusChartWrap" class="relative min-h-[260px] w-full">
                     <canvas id="dashboardStatusTodayChart"></canvas>
                 </div>
-                <div id="statusChartEmpty" class="hidden rounded-none border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm font-medium text-gray-500">
+                <div id="statusChartEmpty"
+                    class="hidden rounded-none border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm font-medium text-gray-500">
                     No appointments recorded today
                 </div>
             </section>
@@ -203,13 +219,17 @@
                         <tbody class="divide-y divide-gray-100 bg-white">
                             @forelse($recentActivities as $activity)
                                 <tr>
-                                    <td class="px-4 py-3 font-semibold text-gray-900">{{ $activity->causer_name ?? 'System' }}</td>
-                                    <td class="px-4 py-3 text-gray-700">{{ $activity->description ?: ($activity->event ?? 'Activity updated') }}</td>
-                                    <td class="px-4 py-3 text-gray-600">{{ \Carbon\Carbon::parse($activity->created_at)->format('M d, Y h:i A') }}</td>
+                                    <td class="px-4 py-3 font-semibold text-gray-900">
+                                        {{ $activity->causer_name ?? 'System' }}</td>
+                                    <td class="px-4 py-3 text-gray-700">
+                                        {{ $activity->description ?: $activity->event ?? 'Activity updated' }}</td>
+                                    <td class="px-4 py-3 text-gray-600">
+                                        {{ \Carbon\Carbon::parse($activity->created_at)->format('M d, Y h:i A') }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">No recent activity found.</td>
+                                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">No recent
+                                        activity found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -263,10 +283,8 @@
 
         <livewire:patient-form-controller.patient-form-modal />
 
-        <div id="dashboard-chart-data"
-            data-status-labels='@json($statusLabels ?? [])'
-            data-status-counts='@json($statusCounts ?? [])'
-            class="hidden">
+        <div id="dashboard-chart-data" data-status-labels='@json($statusLabels ?? [])'
+            data-status-counts='@json($statusCounts ?? [])' class="hidden">
         </div>
     </main>
 @endsection
@@ -313,7 +331,9 @@
                     labels: statusLabels,
                     datasets: [{
                         data: statusCounts,
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#06b6d4', '#10b981', '#16a34a', '#ef4444'],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#06b6d4', '#10b981', '#16a34a',
+                            '#ef4444'
+                        ],
                         borderWidth: 0,
                         hoverOffset: 8
                     }]
@@ -338,8 +358,3 @@
         });
     </script>
 @endpush
-
-
-
-
-

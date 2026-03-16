@@ -75,6 +75,9 @@ Route::middleware(['guest'])->group(function() {
 Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
 
+// Public booking route (supports both guests and authenticated users)
+Route::get('/book', BookAppointment::class)->name('book');
+
 // Authenticated user routes (all logged-in users)
 Route::middleware(['auth'])->group(function () {
     // Logout should be available to all authenticated users
@@ -85,7 +88,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::post('/profile/password/reset-link', [ProfileController::class, 'sendPasswordResetLink'])->name('profile.password.reset-link');
 
-    Route::get('/book', BookAppointment::class)->name('book');
 });
 
 // Staff/Dentist-only routes
@@ -95,7 +97,15 @@ Route::middleware(['auth', 'staffOrDentist'])->group(function () {
     Route::get('/queue', function () {
         return view('queue');
     })->name('queue');
-    Route::get('/appointment', function () { return view('appointment'); })->name('appointment');
+    Route::get('/appointment', function () {
+        return view('appointment', ['initialTab' => request()->query('tab')]);
+    })->name('appointment');
+    Route::get('/appointment/requests', function () {
+        return view('appointment', ['initialTab' => 'pending']);
+    })->name('appointment.requests');
+    Route::get('/appointment/calendar', function () {
+        return view('appointment', ['initialTab' => 'calendar']);
+    })->name('appointment.calendar');
     Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
 }); 
 

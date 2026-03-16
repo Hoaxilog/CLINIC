@@ -70,13 +70,19 @@
                             <h2 class="text-base font-semibold text-slate-900">Oral Exam</h2>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-8">
+                            @php
+                                $errorBag = session('errors');
+                                $selectClass = fn(string $field) => ($errorBag && $errorBag->has($field))
+                                    ? 'w-full border border-red-500 rounded px-4 py-3 text-base bg-white focus:ring-red-200 focus:border-red-500 disabled:bg-gray-100 disabled:text-gray-500'
+                                    : 'w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500';
+                            @endphp
 
                             {{-- ORAL HYGIENE --}}
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Oral Hygiene Status <span class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.oral_hygiene_status"
                                     @if ($isReadOnly) disabled @endif
-                                    class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                                    class="{{ $selectClass('oralExam.oral_hygiene_status') }}">
                                     <option value="" disabled>Select...</option>
                                     <option value="Excellent">Excellent</option>
                                     <option value="Good">Good</option>
@@ -94,7 +100,7 @@
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Calcular Deposits <span class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.calcular_deposits"
                                     @if ($isReadOnly) disabled @endif
-                                    class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                                    class="{{ $selectClass('oralExam.calcular_deposits') }}">
                                     <option value="" disabled>Select...</option>
                                     <option value="None">None</option>
                                     <option value="Slight">Slight</option>
@@ -110,7 +116,7 @@
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Gingiva <span class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.gingiva" @if ($isReadOnly) disabled @endif
-                                    class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                                    class="{{ $selectClass('oralExam.gingiva') }}">
                                     <option value="" disabled>Select...</option>
                                     <option value="Healthy">Healthy</option>
                                     <option value="Mildly Inflamed">Mildly Inflamed</option>
@@ -125,7 +131,7 @@
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Stains <span class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.stains" @if ($isReadOnly) disabled @endif
-                                    class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                                    class="{{ $selectClass('oralExam.stains') }}">
                                     <option value="" disabled>Select...</option>
                                     <option value="None">None</option>
                                     <option value="Slight">Slight</option>
@@ -142,7 +148,7 @@
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Complete Denture <span class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.complete_denture"
                                     @if ($isReadOnly) disabled @endif
-                                    class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                                    class="{{ $selectClass('oralExam.complete_denture') }}">
                                     <option value="" disabled>Select...</option>
                                     <option value="None">None</option>
                                     <option value="Upper">Upper</option>
@@ -159,7 +165,7 @@
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Partial Denture <span class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.partial_denture"
                                     @if ($isReadOnly) disabled @endif
-                                    class="w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                                    class="{{ $selectClass('oralExam.partial_denture') }}">
                                     <option value="" disabled>Select...</option>
                                     <option value="None">None</option>
                                     <option value="Upper">Upper</option>

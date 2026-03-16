@@ -62,7 +62,7 @@ class LoginController extends Controller
             if (empty($recaptchaToken)) {
                 session()->put('login_failed_attempts', $failedAttempts + 1);
                 RateLimiter::hit($throttleKey, 300);
-                return back()->with('failed', 'Please complete the captcha below');
+                return back()->with('failed', 'Please complete the captcha');
             }
 
             $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
@@ -159,11 +159,19 @@ class LoginController extends Controller
                 return $this->redirectByRole($user->role);
             }
 
+            $patientRoleId = DB::table('roles')
+                ->where('role_name', 'patient')
+                ->value('id');
+
+            if (!$patientRoleId) {
+                return redirect('/login')->with('failed', 'Patient role is not configured. Please contact administrator.');
+            }
+
             $newUserId = DB::table('users')->insertGetId([
                 'username' => $googleUser->email,
                 'email' => $googleUser->email,
                 'google_id' => $googleUser->id,
-                'role' => 3,
+                'role' => (int) $patientRoleId,
                 'password' => Hash::make(Str::random(40)),
                 'email_verified_at' => now(),
                 'created_at' => now(),

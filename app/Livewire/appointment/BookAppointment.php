@@ -6,8 +6,10 @@ use Livewire\Component;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
@@ -20,7 +22,12 @@ class BookAppointment extends Component
     public $first_name, $last_name, $age, $contact_number, $email, $service_id;
     public $selectedDate, $selectedSlot;
     public $recaptchaToken;
-    protected $usesPatientUserId = null;
+    public $guestEmailOtp = '';
+    public $guestEmailOtpHash = null;
+    public $guestEmailOtpExpiresAt = null;
+    public $guestEmailOtpVerified = false;
+    public $guestEmailOtpTargetEmail = null;
+    public $guestOtpStepActive = false;
     protected ?bool $blockedSlotsTableExists = null;
     protected $appointmentStatuses = null;
     
@@ -29,41 +36,17 @@ class BookAppointment extends Component
 
     public function mount()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
         $this->selectedDate = now()->toDateString();
         $this->availableSlots = $this->generateSlots($this->selectedDate);
 
         if (Auth::check()) {
             $user = Auth::user();
             $this->email = $user->email;
+            $this->contact_number = $user->contact ?? '';
 
-            $patient = null;
-            if ($this->patientsUsesUserId()) {
-                $patient = DB::table('patients')->where('user_id', $user->id)->first();
-            }
-
-            if (!$patient && $user->email) {
-                $patient = DB::table('patients')->where('email_address', $user->email)->first();
-
-                if ($patient && $this->patientsUsesUserId() && empty($patient->user_id)) {
-                    DB::table('patients')
-                        ->where('id', $patient->id)
-                        ->update([
-                            'user_id' => $user->id,
-                            'updated_at' => now(),
-                        ]);
-                    $patient->user_id = $user->id;
-                }
-            }
-
-            if ($patient) {
-                $this->first_name = $patient->first_name;
-                $this->last_name = $patient->last_name;
-                $this->contact_number = $patient->mobile_number;
-            }
+            $nameParts = preg_split('/\s+/', trim((string) ($user->username ?? '')));
+            $this->first_name = $nameParts[0] ?? '';
+            $this->last_name = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : '';
         }
     }
 
@@ -80,6 +63,43 @@ class BookAppointment extends Component
 
         $this->availableSlots = $this->generateSlots($date);
         $this->dispatch('book-calendar-refresh', selectedDate: $date);
+    }
+
+    public function updatedEmail($value): void
+    {
+        if (Auth::check()) {
+            return;
+        }
+
+        $normalizedEmail = $this->normalizeEmail($value);
+        if ($normalizedEmail === '' || $normalizedEmail !== $this->guestEmailOtpTargetEmail) {
+            $this->resetGuestEmailOtpState();
+        }
+    }
+
+    public function updated($propertyName): void
+    {
+        // Keep server-side error bag in sync with user edits so error UI does not reappear after rerenders.
+        $clearableFields = [
+            'first_name',
+            'last_name',
+            'age',
+            'contact_number',
+            'email',
+            'service_id',
+            'selectedDate',
+            'selectedSlot',
+            'recaptchaToken',
+            'guestEmailOtp',
+        ];
+
+        if (in_array($propertyName, $clearableFields, true)) {
+            $this->resetValidation($propertyName);
+        }
+
+        if ($propertyName === 'recaptchaToken') {
+            $this->resetValidation('recaptcha');
+        }
     }
 
     public function generateSlots($dateString)
@@ -129,15 +149,7 @@ class BookAppointment extends Component
 
     public function bookAppointment()
     {
-        $this->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'email' => 'required|email',
-            'service_id' => 'required',
-            'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
-            'selectedSlot' => 'required',
-            'contact_number' => 'required',
-        ]);
+        $this->validateBookingFormData();
 
         if (Auth::check() && empty(Auth::user()->email_verified_at)) {
             $this->addError('email', 'Please verify your email address before booking an appointment.');
@@ -145,127 +157,158 @@ class BookAppointment extends Component
         }
 
         if (!Auth::check()) {
-            if (empty($this->recaptchaToken)) {
-                $this->addError('recaptcha', 'Please complete the captcha.');
+            if (!$this->verifyRecaptchaForGuest()) {
                 return;
             }
 
-            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-                'secret' => env('RECAPTCHA_SECRET_KEY'),
-                'response' => $this->recaptchaToken,
-                'remoteip' => request()->ip(),
-            ]);
-
-            if (!$response->json('success')) {
-                $this->addError('recaptcha', 'CAPTCHA verification failed.');
+            if (!$this->assertBookingStillAvailable()) {
                 return;
             }
-        }
 
-        $appointmentDateTime = Carbon::parse($this->selectedDate . ' ' . $this->selectedSlot)->toDateTimeString();
-        $slotStart = Carbon::parse($appointmentDateTime)->seconds(0);
-        $slotEnd = $slotStart->copy()->addHour();
-
-        if ($this->blockedSlotsEnabled()) {
-            $isBlocked = DB::table('blocked_slots')
-                ->whereDate('date', $slotStart->toDateString())
-                ->where('start_time', '<', $slotEnd->format('H:i:s'))
-                ->where('end_time', '>', $slotStart->format('H:i:s'))
-                ->exists();
-
-            if ($isBlocked) {
-                $this->addError('selectedSlot', 'This time slot is unavailable. Please choose another time.');
-                $this->availableSlots = $this->generateSlots($this->selectedDate);
+            $this->sendGuestEmailOtp();
+            if ($this->getErrorBag()->isNotEmpty()) {
                 return;
             }
-        }
 
-        $activeSlotBookings = DB::table('appointments')
-            ->where('appointment_date', $appointmentDateTime)
-            ->whereIn('status', self::APPROVED_SLOT_STATUSES)
-            ->count();
-
-        if ($activeSlotBookings >= self::SLOT_CAPACITY) {
-            $this->addError('selectedSlot', 'This time slot is already full. Please choose another time.');
-            $this->availableSlots = $this->generateSlots($this->selectedDate);
+            $this->guestOtpStepActive = true;
             return;
         }
 
-        // Block booking if the patient already has a pending/active appointment
-        $existingPatient = null;
-        if (Auth::check() && $this->patientsUsesUserId()) {
-            $existingPatient = DB::table('patients')->where('user_id', Auth::id())->first();
-        }
-        if (!$existingPatient && $this->email) {
-            $existingPatient = DB::table('patients')->where('email_address', $this->email)->first();
-        }
+        return $this->createAppointmentAndRedirect();
+    }
 
-        if ($existingPatient) {
-            $hasActiveAppointment = DB::table('appointments')
-                ->where('patient_id', $existingPatient->id)
-                ->whereNotIn('status', ['Cancelled', 'Completed'])
-                ->exists();
-
-            if ($hasActiveAppointment) {
-                $this->addError('selectedSlot', 'You already have a pending or upcoming appointment. Please wait until your current appointment is completed before booking a new one.');
-                return;
-            }
-        }
-
-        $patient = null;
+    public function sendGuestEmailOtp(): void
+    {
         if (Auth::check()) {
-            $user = Auth::user();
-
-            if ($this->patientsUsesUserId()) {
-                $patient = DB::table('patients')->where('user_id', $user->id)->first();
-            }
-
-            if (!$patient && $user?->email) {
-                $patient = DB::table('patients')->where('email_address', $user->email)->first();
-
-                if ($patient && $this->patientsUsesUserId() && empty($patient->user_id)) {
-                    DB::table('patients')
-                        ->where('id', $patient->id)
-                        ->update([
-                            'user_id' => $user->id,
-                            'updated_at' => now(),
-                        ]);
-                    $patient->user_id = $user->id;
-                }
-            }
+            return;
         }
 
-        if (!$patient && $this->email) {
-            $patient = DB::table('patients')->where('email_address', $this->email)->first();
+        $this->validate([
+            'email' => 'required|email',
+        ]);
+
+        $normalizedEmail = $this->normalizeEmail($this->email);
+        if ($normalizedEmail === '') {
+            $this->addError('email', 'Please enter a valid email address.');
+            return;
         }
 
-        $patientData = [
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
-            'mobile_number' => $this->contact_number,
-            'email_address' => $this->email,
-            'modified_by' => Auth::check() ? Auth::user()->username : 'GUEST',
-            'updated_at' => now(),
-        ];
-
-        if (Auth::check() && $this->patientsUsesUserId()) {
-            $patientData['user_id'] = Auth::id();
+        $sendThrottleKey = $this->guestOtpSendThrottleKey($normalizedEmail, (string) request()->ip());
+        if (RateLimiter::tooManyAttempts($sendThrottleKey, 3)) {
+            $seconds = RateLimiter::availableIn($sendThrottleKey);
+            $minutes = max(1, (int) ceil($seconds / 60));
+            $this->addError('guestEmailOtp', "Too many OTP requests. Try again in {$minutes} minute(s).");
+            return;
         }
 
-        if ($patient) {
-            DB::table('patients')->where('id', $patient->id)->update($patientData);
-            $patientId = $patient->id;
-        } else {
-            $patientId = DB::table('patients')->insertGetId(array_merge($patientData, [
-                'created_at' => now(),
-            ]));
+        RateLimiter::hit($sendThrottleKey, 15 * 60);
+
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = now()->addMinutes(10);
+
+        $this->guestEmailOtpHash = Hash::make($code);
+        $this->guestEmailOtpExpiresAt = $expiresAt->toDateTimeString();
+        $this->guestEmailOtpVerified = false;
+        $this->guestEmailOtpTargetEmail = $normalizedEmail;
+        $this->guestEmailOtp = '';
+
+        Mail::send('appointment.emails.guest-booking-otp', [
+            'otp' => $code,
+            'email' => $normalizedEmail,
+            'expiresAt' => $expiresAt,
+        ], function ($message) use ($normalizedEmail) {
+            $message->to($normalizedEmail);
+            $message->subject('Your Tejadent Booking OTP');
+        });
+
+        session()->flash('otp_success', 'OTP sent. Check your email and enter the 6-digit code below.');
+    }
+
+    public function verifyGuestEmailOtp()
+    {
+        if (Auth::check()) {
+            return;
         }
+
+        $this->validateBookingFormData();
+
+        $this->validate([
+            'email' => 'required|email',
+            'guestEmailOtp' => 'required|digits:6',
+        ], [
+            'guestEmailOtp.required' => 'Please enter the OTP code.',
+            'guestEmailOtp.digits' => 'OTP must be 6 digits.',
+        ]);
+
+        $normalizedEmail = $this->normalizeEmail($this->email);
+        if ($normalizedEmail === '' || $normalizedEmail !== $this->guestEmailOtpTargetEmail) {
+            $this->addError('guestEmailOtp', 'Email changed. Please request a new OTP.');
+            $this->resetGuestEmailOtpState();
+            $this->guestOtpStepActive = false;
+            return;
+        }
+
+        if (empty($this->guestEmailOtpHash) || empty($this->guestEmailOtpExpiresAt)) {
+            $this->addError('guestEmailOtp', 'Please request an OTP first.');
+            return;
+        }
+
+        $verifyThrottleKey = $this->guestOtpVerifyThrottleKey($normalizedEmail, (string) request()->ip());
+        if (RateLimiter::tooManyAttempts($verifyThrottleKey, 5)) {
+            $seconds = RateLimiter::availableIn($verifyThrottleKey);
+            $minutes = max(1, (int) ceil($seconds / 60));
+            $this->addError('guestEmailOtp', "Too many OTP attempts. Try again in {$minutes} minute(s).");
+            return;
+        }
+
+        if (now()->greaterThan(Carbon::parse((string) $this->guestEmailOtpExpiresAt))) {
+            $this->resetGuestEmailOtpState();
+            $this->addError('guestEmailOtp', 'OTP expired. Please request a new one.');
+            return;
+        }
+
+        if (!Hash::check((string) $this->guestEmailOtp, (string) $this->guestEmailOtpHash)) {
+            RateLimiter::hit($verifyThrottleKey, 15 * 60);
+            $this->addError('guestEmailOtp', 'Invalid OTP code.');
+            return;
+        }
+
+        RateLimiter::clear($verifyThrottleKey);
+        $this->guestEmailOtpVerified = true;
+        $this->guestEmailOtp = '';
+        $this->guestEmailOtpHash = null;
+        $this->guestEmailOtpExpiresAt = null;
+
+        if (!$this->assertBookingStillAvailable()) {
+            $this->guestOtpStepActive = false;
+            $this->addError('guestEmailOtp', 'We could not complete your booking. Please review the form and try again.');
+            return;
+        }
+
+        $this->guestOtpStepActive = false;
+        return $this->createAppointmentAndRedirect();
+    }
+
+    public function cancelGuestOtpStep(): void
+    {
+        $this->guestOtpStepActive = false;
+        $this->resetGuestEmailOtpState();
+    }
+
+    protected function createAppointmentAndRedirect()
+    {
+        $appointmentDateTime = Carbon::parse($this->selectedDate . ' ' . $this->selectedSlot)->toDateTimeString();
 
         $appointmentPayload = [
-            'patient_id' => $patientId,
+            'patient_id' => null,
             'service_id' => $this->service_id,
             'appointment_date' => $appointmentDateTime,
             'status' => $this->resolveNewAppointmentStatus(),
+            'requester_user_id' => Auth::id(),
+            'requester_first_name' => $this->first_name,
+            'requester_last_name' => $this->last_name,
+            'requester_contact_number' => $this->contact_number,
+            'requester_email' => $this->email,
             'modified_by' => Auth::check() ? Auth::user()->username : 'GUEST',
             'created_at' => now(),
             'updated_at' => now(),
@@ -296,27 +339,104 @@ class BookAppointment extends Component
         return redirect()->to('/book');
     }
 
+    protected function validateBookingFormData(): void
+    {
+        $this->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'service_id' => 'required',
+            'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
+            'selectedSlot' => 'required',
+            'contact_number' => 'required',
+        ]);
+    }
+
+    protected function verifyRecaptchaForGuest(): bool
+    {
+        if (empty($this->recaptchaToken)) {
+            $this->addError('recaptcha', 'Please complete the CAPTCHA verification.');
+            return false;
+        }
+
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => env('RECAPTCHA_SECRET_KEY'),
+            'response' => $this->recaptchaToken,
+            'remoteip' => request()->ip(),
+        ]);
+
+        if (!$response->json('success')) {
+            $this->addError('recaptcha', 'CAPTCHA verification failed.');
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function assertBookingStillAvailable(): bool
+    {
+        $appointmentDateTime = Carbon::parse($this->selectedDate . ' ' . $this->selectedSlot)->toDateTimeString();
+        $slotStart = Carbon::parse($appointmentDateTime)->seconds(0);
+        $slotEnd = $slotStart->copy()->addHour();
+
+        if ($this->blockedSlotsEnabled()) {
+            $isBlocked = DB::table('blocked_slots')
+                ->whereDate('date', $slotStart->toDateString())
+                ->where('start_time', '<', $slotEnd->format('H:i:s'))
+                ->where('end_time', '>', $slotStart->format('H:i:s'))
+                ->exists();
+
+            if ($isBlocked) {
+                $this->addError('selectedSlot', 'This time slot is unavailable. Please choose another time.');
+                $this->availableSlots = $this->generateSlots($this->selectedDate);
+                return false;
+            }
+        }
+
+        $activeSlotBookings = DB::table('appointments')
+            ->where('appointment_date', $appointmentDateTime)
+            ->whereIn('status', self::APPROVED_SLOT_STATUSES)
+            ->count();
+
+        if ($activeSlotBookings >= self::SLOT_CAPACITY) {
+            $this->addError('selectedSlot', 'This time slot is already full. Please choose another time.');
+            $this->availableSlots = $this->generateSlots($this->selectedDate);
+            return false;
+        }
+
+        // Block duplicate active requests using requester identity (account/email), not patient records.
+        $hasActiveAppointmentQuery = DB::table('appointments')
+            ->whereNotIn('status', ['Cancelled', 'Completed'])
+            ->where(function ($query) {
+                if (Auth::check()) {
+                    $query->where('requester_user_id', Auth::id());
+
+                    if (!empty($this->email)) {
+                        $query->orWhere('requester_email', $this->email);
+                    }
+
+                    return;
+                }
+
+                $query->where('requester_email', $this->email);
+            });
+
+        $hasActiveAppointment = $hasActiveAppointmentQuery->exists();
+
+        if ($hasActiveAppointment) {
+            $this->addError('selectedSlot', 'You already have a pending or upcoming appointment request. Please wait until your current request is completed before booking a new one.');
+            return false;
+        }
+
+        return true;
+    }
+
     public function render()
     {
         $services = DB::table('services')->get();
-        $layout = (Auth::check() && Auth::user()?->role === 3) ? 'layouts.patient-portal' : 'layouts.app';
+        $layout = 'layouts.app';
         return view('livewire.appointment.book-appointment', compact('services'))
             ->layout($layout);
-    }
-
-    protected function patientsUsesUserId(): bool
-    {
-        if ($this->usesPatientUserId !== null) {
-            return $this->usesPatientUserId;
-        }
-
-        try {
-            $this->usesPatientUserId = Schema::hasColumn('patients', 'user_id');
-        } catch (Throwable $e) {
-            $this->usesPatientUserId = false;
-        }
-
-        return $this->usesPatientUserId;
     }
 
     protected function resolveNewAppointmentStatus(): string
@@ -402,5 +522,29 @@ class BookAppointment extends Component
         }
 
         return false;
+    }
+
+    protected function resetGuestEmailOtpState(): void
+    {
+        $this->guestEmailOtp = '';
+        $this->guestEmailOtpHash = null;
+        $this->guestEmailOtpExpiresAt = null;
+        $this->guestEmailOtpVerified = false;
+        $this->guestEmailOtpTargetEmail = null;
+    }
+
+    protected function normalizeEmail(mixed $email): string
+    {
+        return strtolower(trim((string) $email));
+    }
+
+    protected function guestOtpSendThrottleKey(string $email, string $ip): string
+    {
+        return 'guest-book-otp-send:' . sha1($email . '|' . $ip);
+    }
+
+    protected function guestOtpVerifyThrottleKey(string $email, string $ip): string
+    {
+        return 'guest-book-otp-verify:' . sha1($email . '|' . $ip);
     }
 }

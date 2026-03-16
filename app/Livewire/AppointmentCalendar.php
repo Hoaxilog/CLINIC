@@ -7,6 +7,7 @@ use Carbon\Exceptions\InvalidFormatException;
 use Livewire\Component;
 use App\Models\Appointment;
 use App\Models\Patient;
+use App\Support\PatientMatchService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -57,9 +58,14 @@ class AppointmentCalendar extends Component
     public $selectedMonthYear; // stores "YYYY-MM" format
     public $selectableMonthYears = [];
     public $activeTab = 'calendar';
+    public $isTabLocked = false;
+    public $lockedTab = null;
     public $prefillPatientId = null;
     public $prefillPatientLabel = null;
     public $pendingFilterDate = null;
+    public $pendingMatchCandidates = [];
+    public $pendingDuplicateWarnings = [];
+    public $selectedPendingPatientId = null;
     public $isBlockMode = false;
     public $blockingSlotId = null;
     public $blockDate = null;
@@ -79,7 +85,7 @@ class AppointmentCalendar extends Component
         'birthDate' => 'required'
     ];
 
-    public function mount()
+    public function mount(?string $initialTab = null)
     {
         $this->occupiedAppointments = collect();
         $this->blockedSlots = collect();
@@ -87,7 +93,17 @@ class AppointmentCalendar extends Component
         $this->currentDate = Carbon::now();
         $this->selectedDate = $this->currentDate->format('Y-m-d');
 
-        $this->activeTab = 'calendar';
+        $requestedTab = $initialTab ?: request()->query('tab');
+        if (!in_array($requestedTab, ['pending', 'calendar'], true)) {
+            $requestedTab = 'calendar';
+        }
+        if ($requestedTab === 'pending' && Auth::user()?->role === 3) {
+            $requestedTab = 'calendar';
+        }
+        $this->activeTab = $requestedTab;
+
+        $this->isTabLocked = in_array($initialTab, ['pending', 'calendar'], true);
+        $this->lockedTab = $this->isTabLocked ? $requestedTab : null;
 
         $this->generateWeekDates(); 
         $this->generateTimeSlots();
@@ -274,6 +290,9 @@ class AppointmentCalendar extends Component
         $this->appointmentStatus = '';
         $this->searchQuery = '';
         $this->patientSearchResults = [];   
+        $this->pendingMatchCandidates = [];
+        $this->pendingDuplicateWarnings = [];
+        $this->selectedPendingPatientId = null;
         
     }
 
@@ -509,6 +528,34 @@ class AppointmentCalendar extends Component
                                    ->format('H:i');
         } else {
             $this->endTime = null;
+        }
+    }
+
+    public function updated($propertyName): void
+    {
+        $clearableFields = [
+            'firstName',
+            'middleName',
+            'lastName',
+            'contactNumber',
+            'birthDate',
+            'selectedService',
+            'selectedDate',
+            'selectedTime',
+            'endTime',
+            'blockDate',
+            'blockStartTime',
+            'blockEndTime',
+            'blockReason',
+            'selectedPendingPatientId',
+        ];
+
+        if (in_array($propertyName, $clearableFields, true)) {
+            $this->resetValidation($propertyName);
+        }
+
+        if (in_array($propertyName, ['selectedService', 'selectedDate', 'selectedTime', 'endTime'], true)) {
+            $this->resetValidation('conflict');
         }
     }
 
@@ -822,14 +869,14 @@ class AppointmentCalendar extends Component
         // Fallback path for any appointment not in current in-memory collection.
         if (!$appointment) {
             $appointment = DB::table('appointments')
-                ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+                ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
                 ->join('services', 'appointments.service_id', '=', 'services.id')
                 ->select(
                     'appointments.*',
-                    'patients.first_name',
-                    'patients.last_name',
+                    DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
+                    DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
                     'patients.middle_name',
-                    'patients.mobile_number',
+                    DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
                     'patients.birth_date',
                     'services.service_name',
                     'services.duration'
@@ -850,6 +897,7 @@ class AppointmentCalendar extends Component
             $this->viewingAppointmentId = $appointment->id;
             $this->viewingPatientId = $appointment->patient_id ?? null;
             $this->appointmentStatus = $appointment->status;   
+            $this->hydratePendingReviewContext($appointment);
 
             // 3. Format Dates and Times
             $dt = Carbon::parse($appointment->appointment_date);
@@ -864,6 +912,7 @@ class AppointmentCalendar extends Component
             // 4. Set mode to Viewing and open modal
             $this->isViewing = true;
             $this->showAppointmentModal = true;
+            $this->dispatch('appointment-modal-opened');
         }
     }
 
@@ -879,46 +928,19 @@ class AppointmentCalendar extends Component
     public function updateStatus($newStatus)
     {
         if ($this->viewingAppointmentId) {
-            
-            // 1. Fetch Old Status (For the log)
-            $oldAppt = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
-            $oldStatus = $oldAppt ? $oldAppt->status : 'Unknown';
-
-            // 2. Perform the Update
-            DB::table('appointments')
-                ->where('id', $this->viewingAppointmentId)
-                ->update([
-                    'status' => $newStatus,
-                    'updated_at' => now(), // Good practice to update timestamp
-                ]);
-
-            // 3. === LOGGING BLOCK (Status Changed) ===
-            // Only log if the status actually changed
-            if ($oldStatus !== $newStatus) {
-                $subject = new Appointment();
-                $subject->id = $this->viewingAppointmentId;
-
-                activity()
-                    ->causedBy(Auth::user())
-                    ->performedOn($subject)
-                    ->event('appointment_updated')
-                    ->withProperties([
-                        'old' => ['status' => $oldStatus],
-                        'attributes' => ['status' => $newStatus]
-                    ])
-                    ->log('Updated Appointment Status');
+            $didUpdate = $this->updateAppointmentStatusById((int) $this->viewingAppointmentId, (string) $newStatus);
+            if ($didUpdate) {
+                $this->closeAppointmentModal();
             }
-            // ==========================================
-
-            $this->sendStatusEmail($this->viewingAppointmentId, $newStatus);
-
-            $this->loadAppointments();
-            $this->closeAppointmentModal();
         }
     }
 
     public function setActiveTab($tab)
     {
+        if ($this->isTabLocked) {
+            return;
+        }
+
         if ($tab === 'pending' && Auth::user()?->role === 3) {
             $this->activeTab = 'calendar';
             return;
@@ -933,7 +955,7 @@ class AppointmentCalendar extends Component
         }
 
         return DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.status', 'Pending')
             ->when($this->pendingFilterDate, function ($query) {
@@ -942,12 +964,13 @@ class AppointmentCalendar extends Component
             ->orderBy('appointments.appointment_date', 'asc')
             ->select(
                 'appointments.id',
+                'appointments.patient_id',
                 'appointments.appointment_date',
                 'appointments.status',
-                'patients.first_name',
-                'patients.last_name',
-                'patients.mobile_number',
-                'patients.email_address',
+                DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
+                DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
+                DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
+                DB::raw('COALESCE(patients.email_address, appointments.requester_email) as email_address'),
                 'services.service_name'
             )
             ->get();
@@ -964,8 +987,21 @@ class AppointmentCalendar extends Component
             return;
         }
 
-        $this->updateAppointmentStatusById($appointmentId, 'Scheduled');
-        session()->flash('success', 'Appointment request approved.');
+        $appointment = DB::table('appointments')->where('id', $appointmentId)->first();
+        if (!$appointment) {
+            return;
+        }
+
+        if (empty($appointment->patient_id)) {
+            $this->viewAppointment($appointmentId);
+            session()->flash('error', 'Review required: link to an existing patient or create a new patient before approval.');
+            return;
+        }
+
+        $didUpdate = $this->updateAppointmentStatusById($appointmentId, 'Scheduled');
+        if ($didUpdate) {
+            session()->flash('success', 'Appointment request approved.');
+        }
     }
 
     public function rejectAppointment($appointmentId)
@@ -978,11 +1014,16 @@ class AppointmentCalendar extends Component
         session()->flash('info', 'Appointment request rejected.');
     }
 
-    protected function updateAppointmentStatusById($appointmentId, $newStatus)
+    protected function updateAppointmentStatusById($appointmentId, $newStatus): bool
     {
         $oldAppt = DB::table('appointments')->where('id', $appointmentId)->first();
         if (!$oldAppt) {
-            return;
+            return false;
+        }
+
+        if ($newStatus === 'Scheduled' && empty($oldAppt->patient_id)) {
+            session()->flash('error', 'Cannot approve without a linked patient record.');
+            return false;
         }
 
         DB::table('appointments')
@@ -1007,23 +1048,216 @@ class AppointmentCalendar extends Component
                     'attributes' => ['status' => $newStatus]
                 ])
                 ->log('Updated Appointment Status');
+
+            if ($oldAppt->status === 'Pending' && $newStatus === 'Scheduled') {
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($subject)
+                    ->event('appointment_request_approved')
+                    ->withProperties([
+                        'attributes' => [
+                            'patient_id' => $oldAppt->patient_id,
+                            'appointment_id' => (int) $appointmentId,
+                        ],
+                    ])
+                    ->log('Approved Appointment Request');
+
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($subject)
+                    ->event('official_appointment_created')
+                    ->withProperties([
+                        'attributes' => [
+                            'appointment_id' => (int) $appointmentId,
+                            'patient_id' => $oldAppt->patient_id,
+                            'status' => $newStatus,
+                        ],
+                    ])
+                    ->log('Official Appointment Linked to Patient');
+            }
         }
 
         $this->sendStatusEmail($appointmentId, $newStatus);
 
         $this->loadAppointments();
+
+        return true;
+    }
+
+    protected function hydratePendingReviewContext(object $appointment): void
+    {
+        $this->pendingMatchCandidates = [];
+        $this->pendingDuplicateWarnings = [];
+        $this->selectedPendingPatientId = null;
+
+        if (($appointment->status ?? null) !== 'Pending') {
+            return;
+        }
+
+        $requestData = $this->resolveCurrentPendingRequestData($appointment);
+        $matcher = app(PatientMatchService::class);
+
+        $this->pendingMatchCandidates = $matcher->suggestMatches($requestData)->all();
+        $this->pendingDuplicateWarnings = $matcher->duplicateWarnings($requestData);
+        $this->selectedPendingPatientId = !empty($appointment->patient_id)
+            ? (int) $appointment->patient_id
+            : null;
+    }
+
+    public function linkPendingRequestToExistingPatient(): void
+    {
+        if (!$this->viewingAppointmentId || !$this->selectedPendingPatientId) {
+            session()->flash('error', 'Select a patient record to link.');
+            return;
+        }
+
+        $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
+        if (!$appointment || $appointment->status !== 'Pending') {
+            session()->flash('error', 'Only pending requests can be linked.');
+            return;
+        }
+
+        $patient = DB::table('patients')->where('id', $this->selectedPendingPatientId)->first();
+        if (!$patient) {
+            session()->flash('error', 'Selected patient record was not found.');
+            return;
+        }
+
+        DB::table('appointments')
+            ->where('id', $this->viewingAppointmentId)
+            ->update([
+                'patient_id' => (int) $patient->id,
+                'updated_at' => now(),
+            ]);
+
+        $this->viewingPatientId = (int) $patient->id;
+
+        $subject = new Appointment();
+        $subject->id = $this->viewingAppointmentId;
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($subject)
+            ->event('appointment_request_linked_existing')
+            ->withProperties([
+                'attributes' => [
+                    'appointment_id' => (int) $this->viewingAppointmentId,
+                    'patient_id' => (int) $patient->id,
+                ],
+            ])
+            ->log('Linked Appointment Request to Existing Patient');
+
+        session()->flash('success', 'Request linked to existing patient. You can now approve.');
+        $this->loadAppointments();
+    }
+
+    public function createPatientForPendingRequest(): void
+    {
+        if (!$this->viewingAppointmentId) {
+            return;
+        }
+
+        $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
+        if (!$appointment || $appointment->status !== 'Pending') {
+            session()->flash('error', 'Only pending requests can create a patient link.');
+            return;
+        }
+
+        $requestData = $this->resolveCurrentPendingRequestData($appointment);
+        $firstName = trim((string) ($requestData['first_name'] ?? ''));
+        $lastName = trim((string) ($requestData['last_name'] ?? ''));
+
+        if ($firstName === '' || $lastName === '') {
+            session()->flash('error', 'Request must have both first and last name before creating a patient record.');
+            return;
+        }
+
+        $patientId = DB::table('patients')->insertGetId([
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'mobile_number' => trim((string) ($requestData['mobile_number'] ?? '')),
+            'birth_date' => !empty($requestData['birth_date']) ? $requestData['birth_date'] : null,
+            'email_address' => !empty($requestData['email_address']) ? $requestData['email_address'] : null,
+            'modified_by' => Auth::user()?->username ?? 'SYSTEM',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('appointments')
+            ->where('id', $this->viewingAppointmentId)
+            ->update([
+                'patient_id' => $patientId,
+                'updated_at' => now(),
+            ]);
+
+        $patientSubject = new Patient();
+        $patientSubject->id = $patientId;
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($patientSubject)
+            ->event('patient_created_from_request')
+            ->withProperties([
+                'attributes' => [
+                    'patient_id' => (int) $patientId,
+                    'source_appointment_id' => (int) $this->viewingAppointmentId,
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                ],
+            ])
+            ->log('Created Patient from Appointment Request');
+
+        $appointmentSubject = new Appointment();
+        $appointmentSubject->id = $this->viewingAppointmentId;
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($appointmentSubject)
+            ->event('appointment_request_linked_new_patient')
+            ->withProperties([
+                'attributes' => [
+                    'appointment_id' => (int) $this->viewingAppointmentId,
+                    'patient_id' => (int) $patientId,
+                ],
+            ])
+            ->log('Linked Appointment Request to New Patient');
+
+        $this->viewingPatientId = (int) $patientId;
+        $this->selectedPendingPatientId = (int) $patientId;
+        $this->loadAppointments();
+        $this->hydratePendingReviewContext((object) array_merge((array) $appointment, ['patient_id' => $patientId]));
+        session()->flash('success', 'New patient created and linked. You can now approve.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function resolveCurrentPendingRequestData(object $appointment): array
+    {
+        $requestBirthDate = null;
+        if (Schema::hasColumn('appointments', 'requester_birth_date') && isset($appointment->requester_birth_date)) {
+            $requestBirthDate = $appointment->requester_birth_date;
+        }
+
+        return [
+            'first_name' => $appointment->requester_first_name ?? $appointment->first_name ?? '',
+            'last_name' => $appointment->requester_last_name ?? $appointment->last_name ?? '',
+            'mobile_number' => $appointment->requester_contact_number ?? $appointment->mobile_number ?? '',
+            'email_address' => $appointment->requester_email ?? $appointment->email_address ?? '',
+            'birth_date' => $requestBirthDate ?: ($appointment->birth_date ?? null),
+        ];
     }
 
     protected function sendStatusEmail($appointmentId, $newStatus)
     {
         $appointment = DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->select(
                 'appointments.appointment_date',
-                'patients.first_name',
-                'patients.last_name',
-                'patients.email_address',
+                DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
+                DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
+                DB::raw('COALESCE(patients.email_address, appointments.requester_email) as email_address'),
                 'services.service_name'
             )
             ->where('appointments.id', $appointmentId)

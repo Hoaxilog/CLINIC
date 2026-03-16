@@ -26,7 +26,7 @@ class RegisterController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'g-recaptcha-response' => 'required',
         ], [
-            'g-recaptcha-response.required' => 'Please complete the captcha below.',
+            'g-recaptcha-response.required' => 'Please complete the captcha.',
         ]);
 
         if ($validator->fails()) {
@@ -45,8 +45,14 @@ class RegisterController extends Controller
         if (!$response->json('success')) { return back()->withErrors(['g-recaptcha-response' => 'CAPTCHA verification failed.',])->withInput();
         }
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+        $patientRoleId = DB::table('roles')
+            ->where('role_name', 'patient')
+            ->value('id');
+
+        if (!$patientRoleId) {
+            return back()->withErrors([
+                'email' => 'Patient role is not configured. Please contact administrator.',
+            ])->withInput();
         }
 
         // 3. Proceed with account creation ONLY if validation above passed
@@ -56,7 +62,7 @@ class RegisterController extends Controller
             'username' => $request->email,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 3, // Role 3 = Patient
+            'role' => (int) $patientRoleId,
             'verification_token' => $token,
             'email_verified_at' => null,
             'created_at' => now(),

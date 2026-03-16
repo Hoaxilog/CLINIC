@@ -110,6 +110,15 @@ class DentalChart extends Component
         $this->teeth = $this->sanitizeTeethForDentition($this->teeth, $this->dentitionType);
     }
 
+    public function updated($propertyName): void
+    {
+        if (!is_string($propertyName) || $propertyName === '') {
+            return;
+        }
+
+        $this->resetValidation($propertyName);
+    }
+
     private function normalizeDentitionType($value): string
     {
         return in_array($value, ['adult', 'child'], true) ? $value : 'adult';

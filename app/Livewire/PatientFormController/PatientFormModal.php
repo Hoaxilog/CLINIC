@@ -40,6 +40,8 @@ class PatientFormModal extends Component
     public $dentalDataLoaded = false;
     public $pendingDentalDraft = null;
     public $hasPendingDentalDraft = false;
+    public $consentAuthorizationAccepted = false;
+    public $consentTruthfulnessAccepted = false;
 
     #[On('openAddPatientModal')]
     public function openForCreate()
@@ -119,9 +121,40 @@ class PatientFormModal extends Component
     public function save()
     {
         if ($this->isReadOnly) return;
+
+        if (!$this->validateConsentForUpdate()) {
+            return;
+        }
         
         $this->isSaving = true;
         $this->triggerStepValidation($this->currentStep);
+    }
+
+    private function validateConsentForUpdate(): bool
+    {
+        // Consent/signature is required for patient record updates.
+        if (!$this->isEditing) {
+            return true;
+        }
+
+        $this->resetErrorBag([
+            'consentAuthorizationAccepted',
+            'consentTruthfulnessAccepted',
+        ]);
+
+        $isValid = true;
+
+        if (!$this->consentAuthorizationAccepted) {
+            $this->addError('consentAuthorizationAccepted', 'Please authorize processing of personal information under the Data Privacy Act of 2012.');
+            $isValid = false;
+        }
+
+        if (!$this->consentTruthfulnessAccepted) {
+            $this->addError('consentTruthfulnessAccepted', 'Please confirm that the information provided is true and correct.');
+            $isValid = false;
+        }
+
+        return $isValid;
     }
 
     private function triggerStepValidation($step)
@@ -721,9 +754,21 @@ class PatientFormModal extends Component
     {
         $this->isReadOnly = false;
     }
+
+    public function updatedConsentAuthorizationAccepted(): void
+    {
+        $this->resetErrorBag('consentAuthorizationAccepted');
+    }
+
+    public function updatedConsentTruthfulnessAccepted(): void
+    {
+        $this->resetErrorBag('consentTruthfulnessAccepted');
+    }
     
     public function cancelEdit()
     {
+        $this->clearCurrentDraftAfterSuccessfulSave();
+
         if ($this->isEditing && !$this->isReadOnly) {
             $this->isReadOnly = true;
             $this->forceNewRecord = false;

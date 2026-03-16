@@ -28,7 +28,7 @@ class PendingApprovalsWidget extends Component
         }
 
         $this->pendingApprovals = DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.status', 'Pending')
             ->orderBy('appointments.appointment_date', 'asc')
@@ -36,10 +36,10 @@ class PendingApprovalsWidget extends Component
                 'appointments.id',
                 'appointments.appointment_date',
                 'appointments.status',
-                'patients.first_name',
-                'patients.last_name',
-                'patients.mobile_number',
-                'patients.email_address',
+                DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
+                DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
+                DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
+                DB::raw('COALESCE(patients.email_address, appointments.requester_email) as email_address'),
                 'services.service_name'
             )
             ->limit(5)
@@ -53,17 +53,17 @@ class PendingApprovalsWidget extends Component
         }
 
         $this->selectedApproval = DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.id', $appointmentId)
             ->select(
                 'appointments.id',
                 'appointments.appointment_date',
                 'appointments.status',
-                'patients.first_name',
-                'patients.last_name',
-                'patients.mobile_number',
-                'patients.email_address',
+                DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
+                DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
+                DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
+                DB::raw('COALESCE(patients.email_address, appointments.requester_email) as email_address'),
                 'services.service_name'
             )
             ->first();
@@ -83,12 +83,24 @@ class PendingApprovalsWidget extends Component
             return;
         }
 
-        $this->updateAppointmentStatusById($appointmentId, 'Scheduled');
-        session()->flash('success', 'Appointment request approved.');
-        $this->loadPendingApprovals();
+        $appointment = DB::table('appointments')->where('id', $appointmentId)->first();
+        if (!$appointment) {
+            return;
+        }
 
-        if ($this->selectedApproval && $this->selectedApproval->id === $appointmentId) {
-            $this->selectedApproval->status = 'Scheduled';
+        if (empty($appointment->patient_id)) {
+            session()->flash('error', 'Review required in Appointment Calendar before approval.');
+            return;
+        }
+
+        $didUpdate = $this->updateAppointmentStatusById($appointmentId, 'Scheduled');
+        if ($didUpdate) {
+            session()->flash('success', 'Appointment request approved.');
+            $this->loadPendingApprovals();
+
+            if ($this->selectedApproval && $this->selectedApproval->id === $appointmentId) {
+                $this->selectedApproval->status = 'Scheduled';
+            }
         }
     }
 
@@ -107,11 +119,16 @@ class PendingApprovalsWidget extends Component
         }
     }
 
-    protected function updateAppointmentStatusById($appointmentId, $newStatus)
+    protected function updateAppointmentStatusById($appointmentId, $newStatus): bool
     {
         $oldAppt = DB::table('appointments')->where('id', $appointmentId)->first();
         if (!$oldAppt) {
-            return;
+            return false;
+        }
+
+        if ($newStatus === 'Scheduled' && empty($oldAppt->patient_id)) {
+            session()->flash('error', 'Cannot approve without a linked patient record.');
+            return false;
         }
 
         DB::table('appointments')
@@ -139,18 +156,20 @@ class PendingApprovalsWidget extends Component
         }
 
         $this->sendStatusEmail($appointmentId, $newStatus);
+
+        return true;
     }
 
     protected function sendStatusEmail($appointmentId, $newStatus)
     {
         $appointment = DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->select(
                 'appointments.appointment_date',
-                'patients.first_name',
-                'patients.last_name',
-                'patients.email_address',
+                DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
+                DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
+                DB::raw('COALESCE(patients.email_address, appointments.requester_email) as email_address'),
                 'services.service_name'
             )
             ->where('appointments.id', $appointmentId)

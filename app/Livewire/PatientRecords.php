@@ -7,8 +7,6 @@ use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
-use Throwable;
 use App\Models\Patient;
 
 
@@ -23,7 +21,6 @@ class PatientRecords extends Component
     public $viewMode = 'cards';
     public $showProfile = false;
     public $treatmentRecords = [];
-    protected $usesPatientUserId = null;
 
     protected $paginationTheme = 'tailwind';
 
@@ -34,46 +31,11 @@ class PatientRecords extends Component
 
     public function selectPatient($patientId)
     {
-        $selectedPatient = null;
-
         if (Auth::check() && Auth::user()->role === 3) {
-            $user = Auth::user();
-
-            $query = DB::table('patients')->where('id', $patientId);
-            if ($this->patientsUsesUserId()) {
-                $query->where(function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                    if (!empty($user->email)) {
-                        $q->orWhere(function ($sub) use ($user) {
-                            $sub->whereNull('user_id')
-                                ->where('email_address', $user->email);
-                        });
-                    }
-                });
-            } else {
-                $query->where('email_address', $user?->email);
-            }
-
-            $selectedPatient = $query->first();
-            if (!$selectedPatient) {
-                return;
-            }
-
-            // One-time backfill for legacy rows that still rely on email linkage.
-            if ($this->patientsUsesUserId() && empty($selectedPatient->user_id)) {
-                DB::table('patients')
-                    ->where('id', $selectedPatient->id)
-                    ->update([
-                        'user_id' => $user->id,
-                        'updated_at' => now(),
-                    ]);
-                $selectedPatient->user_id = $user->id;
-            }
-
-            $patientId = $selectedPatient->id;
+            return;
         }
 
-        $this->selectedPatient = $selectedPatient ?: DB::table('patients')->where('id', $patientId)->first();
+        $this->selectedPatient = DB::table('patients')->where('id', $patientId)->first();
 
         $this->lastVisit = DB::table('appointments')
                             ->where('patient_id', $patientId)
@@ -144,23 +106,7 @@ class PatientRecords extends Component
         $query = DB::table('patients');
 
         if (Auth::check() && Auth::user()->role === 3) {
-            $user = Auth::user();
-
-            if ($this->patientsUsesUserId()) {
-                $query->where(function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-
-                    if (!empty($user->email)) {
-                        $q->orWhere(function ($sub) use ($user) {
-                            $sub->whereNull('user_id')
-                                ->where('email_address', $user->email);
-                        });
-                    }
-                });
-            } else {
-                $query->where('email_address', $user?->email);
-            }
-
+            $query->whereRaw('1 = 0');
             return $query;
         }
 
@@ -297,18 +243,4 @@ class PatientRecords extends Component
         return view('livewire.patient-records', compact('patients'));
     }
 
-    protected function patientsUsesUserId(): bool
-    {
-        if ($this->usesPatientUserId !== null) {
-            return $this->usesPatientUserId;
-        }
-
-        try {
-            $this->usesPatientUserId = Schema::hasColumn('patients', 'user_id');
-        } catch (Throwable $e) {
-            $this->usesPatientUserId = false;
-        }
-
-        return $this->usesPatientUserId;
-    }
 }

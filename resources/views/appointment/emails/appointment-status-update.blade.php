@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,11 +13,13 @@
             color: #163047;
             font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
         }
+
         .wrapper {
             width: 100%;
             background: linear-gradient(180deg, #eaf4fb 0%, #f9fcfe 100%);
             padding: 32px 16px;
         }
+
         .container {
             width: 100%;
             max-width: 640px;
@@ -27,11 +30,13 @@
             overflow: hidden;
             box-shadow: 0 18px 48px rgba(15, 57, 92, 0.12);
         }
+
         .hero {
             padding: 36px 40px 28px;
             background: linear-gradient(135deg, #0d7cc2 0%, #0f9ad6 100%);
             color: #ffffff;
         }
+
         .eyebrow {
             display: inline-block;
             margin-bottom: 14px;
@@ -43,12 +48,14 @@
             letter-spacing: 0.16em;
             text-transform: uppercase;
         }
+
         .brand {
             margin: 0;
             font-size: 28px;
             font-weight: 800;
             letter-spacing: 0.08em;
         }
+
         .hero-copy {
             margin: 12px 0 0;
             max-width: 450px;
@@ -56,21 +63,25 @@
             line-height: 1.7;
             color: #dff4ff;
         }
+
         .content {
             padding: 36px 40px 18px;
         }
+
         .title {
             margin: 0 0 14px;
             font-size: 28px;
             line-height: 1.25;
             color: #10283b;
         }
+
         .text {
             margin: 0 0 16px;
             font-size: 15px;
             line-height: 1.8;
             color: #486175;
         }
+
         .details {
             margin: 26px 0;
             padding: 12px 20px;
@@ -78,13 +89,16 @@
             border-radius: 20px;
             background: linear-gradient(180deg, #f7fbfe 0%, #eef8fd 100%);
         }
+
         .row {
             padding: 14px 0;
             border-bottom: 1px solid #deedf7;
         }
+
         .row.last {
             border-bottom: none;
         }
+
         .label {
             display: block;
             margin-bottom: 6px;
@@ -94,6 +108,7 @@
             text-transform: uppercase;
             color: #7e97aa;
         }
+
         .value {
             display: block;
             font-size: 16px;
@@ -101,6 +116,7 @@
             font-weight: 700;
             color: #10283b;
         }
+
         .status-pill {
             display: inline-block;
             padding: 8px 14px;
@@ -112,6 +128,7 @@
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
+
         .footer {
             padding: 0 40px 36px;
             font-size: 12px;
@@ -119,26 +136,31 @@
             color: #89a0b2;
             text-align: center;
         }
+
         @media only screen and (max-width: 600px) {
+
             .hero,
             .content,
             .footer {
                 padding-left: 24px !important;
                 padding-right: 24px !important;
             }
+
             .title {
                 font-size: 24px !important;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="wrapper">
         <div class="container">
             <div class="hero">
                 <div class="eyebrow">Tejadent Clinic</div>
                 <h1 class="brand">TEJADENT</h1>
-                <p class="hero-copy">There is a new update for your appointment. Please review the latest schedule status below.</p>
+                <p class="hero-copy">There is a new update for your appointment. Please review the latest schedule status
+                    below.</p>
             </div>
 
             <div class="content">
@@ -162,6 +184,21 @@
 
                 <p class="text">If you have questions about this update, please contact the clinic directly.</p>
                 <p class="text" style="margin-bottom: 0;">This is an automated message. Please do not reply.</p>
+
+                <div class="details" style="margin-top: 20px;">
+                    <div class="row">
+                        <span class="label">Clinic Address</span>
+                        <span class="value">251 Commonwealth Ave, Diliman, Quezon City</span>
+                    </div>
+                    <div class="row">
+                        <span class="label">Phone</span>
+                        <span class="value">+63 912 345 6789</span>
+                    </div>
+                    <div class="row last">
+                        <span class="label">Facebook</span>
+                        <span class="value">facebook.com/TejaDentClinic</span>
+                    </div>
+                </div>
             </div>
 
             <div class="footer">
@@ -170,4 +207,5 @@
         </div>
     </div>
 </body>
+
 </html>

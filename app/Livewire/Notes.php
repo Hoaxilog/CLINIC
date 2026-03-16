@@ -145,6 +145,13 @@ class Notes extends Component
         $this->resetForm();
     }
 
+    public function updated($propertyName): void
+    {
+        if (in_array($propertyName, ['title', 'content'], true)) {
+            $this->resetValidation($propertyName);
+        }
+    }
+
     protected function resetForm()
     {
         $this->noteId = null;

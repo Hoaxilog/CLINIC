@@ -62,6 +62,19 @@ class TreatmentRecord extends Component
         'amount_charged' => 'Amount Charged',
     ];
 
+    public function updated($propertyName): void
+    {
+        if (!is_string($propertyName) || $propertyName === '') {
+            return;
+        }
+
+        $this->resetValidation($propertyName);
+
+        if (in_array($propertyName, ['beforeImages', 'afterImages'], true)) {
+            $this->resetValidation(['beforeImages', 'beforeImages.*', 'afterImages', 'afterImages.*']);
+        }
+    }
+
     #[On('validateTreatmentRecord')]
     public function validateForm()
     {
