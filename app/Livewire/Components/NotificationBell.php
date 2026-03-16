@@ -129,6 +129,36 @@ class NotificationBell extends Component
                     'link' => url('/appointment'),
                 ]);
             }
+
+            $recentPatientCancellations = DB::table('activity_log')
+                ->leftJoin('users', function ($join) {
+                    $join->on('activity_log.causer_id', '=', 'users.id')
+                        ->where('activity_log.causer_type', '=', 'App\\Models\\User');
+                })
+                ->where('activity_log.event', 'appointment_cancelled_by_patient')
+                ->where('activity_log.created_at', '>=', $now->copy()->subDay())
+                ->orderByDesc('activity_log.created_at')
+                ->select(
+                    'activity_log.id',
+                    'activity_log.created_at',
+                    DB::raw("COALESCE(users.username, users.email, 'Patient') as patient_name")
+                )
+                ->limit(5)
+                ->get();
+
+            foreach ($recentPatientCancellations as $cancellation) {
+                $notifications->push((object) [
+                    'id' => "patient-cancel-{$cancellation->id}",
+                    'title' => 'Patient Cancelled Schedule',
+                    'message' => "{$cancellation->patient_name} cancelled a scheduled appointment.",
+                    'created_at' => $cancellation->created_at,
+                    'status' => 'Cancelled',
+                    'kind' => 'status',
+                    'meta' => 'Needs review',
+                    'is_read' => false,
+                    'link' => url('/appointment'),
+                ]);
+            }
         } else {
             // Patient account notifications are intentionally decoupled
             // from medical records and patient rows.

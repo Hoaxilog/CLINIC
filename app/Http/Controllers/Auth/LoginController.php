@@ -127,6 +127,8 @@ class LoginController extends Controller
 
             $user = DB::table('users')->where('email', $googleUser->email)->first();
 
+            
+
             if ($user) {
                 if (!empty($user->google_id)) {
                     if ($user->google_id !== $googleUser->id) {

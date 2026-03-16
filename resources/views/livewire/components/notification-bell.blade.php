@@ -2,7 +2,7 @@
     x-data="{ open: false }"
     x-init="$watch('open', value => { document.body.classList.toggle('overflow-hidden', value); })"
     @keydown.escape.window="open = false"
-    wire:poll.30s="buildNotifications"
+    wire:poll.10s="buildNotifications"
     class="relative z-50"
 >
     <button

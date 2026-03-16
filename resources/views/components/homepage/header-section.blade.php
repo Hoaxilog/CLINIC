@@ -51,6 +51,29 @@
         transform: translateY(-7px) rotate(-45deg);
         width: 22px;
     }
+
+    .profile-menu-item {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        gap: .5rem;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: .55rem .65rem;
+        color: #1a2e3b;
+        font-size: .76rem;
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    .profile-menu-item:hover {
+        border-color: #99d5f8;
+        background: #eff8fe;
+        color: #0086da;
+    }
 </style>
 
 <header class="sticky top-0 z-[100] border-b border-[#e4eff8] bg-white px-6 md:px-12 xl:px-20">
@@ -84,8 +107,6 @@
                     class="booking-nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">Dashboard</a>
                 <a href="{{ route('book') }}"
                     class="booking-nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">Book</a>
-                <a href="{{ route('profile.index') }}"
-                    class="booking-nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">Profile</a>
             @else
                 @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
                     <a href="/home#{{ $id }}"
@@ -96,17 +117,25 @@
 
         <div class="hidden items-center gap-3 lg:flex">
             @if ($isPatientUser)
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                        class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition duration-200 hover:-translate-y-px hover:bg-[#0086da] hover:text-white">
-                        Logout
+                <div class="relative" id="patient-profile-wrap">
+                    <button id="patient-profile-btn" type="button" aria-haspopup="true" aria-expanded="false"
+                        aria-controls="patient-profile-menu"
+                        class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#cde8f9] bg-[#eff8fe] text-[#0086da] transition duration-200 hover:border-[#7ec4ef] hover:bg-[#dff0fc]">
+                        <span class="sr-only">Open profile menu</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 2a4 4 0 100 8 4 4 0 000-8zM3 16a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
                     </button>
-                </form>
-                <a href="{{ route('book') }}"
-                    class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:-translate-y-px hover:bg-[#006ab0]">
-                    Book Now
-                </a>
+
+                    <div id="patient-profile-menu"
+                        class="absolute right-0 z-[220] mt-3 hidden min-w-[220px] rounded-xl border border-[#d7ebf8] bg-white p-2 shadow-[0_18px_45px_rgba(13,60,91,.16)]">
+                        <a href="{{ route('profile.index') }}" class="profile-menu-item">Profile</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="profile-menu-item">Logout</button>
+                        </form>
+                    </div>
+                </div>
             @else
                 <a href="{{ route('login') }}"
                     class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition duration-200 hover:-translate-y-px hover:bg-[#0086da] hover:text-white">
@@ -135,7 +164,7 @@
                     class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Book</a>
                 <a href="{{ route('profile.index') }}"
                     class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Profile</a>
-                <div class="px-7 pt-5 pb-6 space-y-3">
+                <div class="px-7 pt-5 pb-6">
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
@@ -143,9 +172,6 @@
                             Logout
                         </button>
                     </form>
-                    <a href="{{ route('book') }}"
-                        class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:bg-[#006ab0]">Book
-                        Appointment</a>
                 </div>
             @else
                 @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
@@ -168,6 +194,9 @@
     document.addEventListener('DOMContentLoaded', () => {
         const hamBtn = document.getElementById('booking-ham-btn');
         const mobMenu = document.getElementById('booking-mob-menu');
+        const patientProfileWrap = document.getElementById('patient-profile-wrap');
+        const patientProfileBtn = document.getElementById('patient-profile-btn');
+        const patientProfileMenu = document.getElementById('patient-profile-menu');
         if (!hamBtn || !mobMenu) return;
 
         hamBtn.addEventListener('click', () => {
@@ -183,5 +212,30 @@
                 hamBtn.setAttribute('aria-expanded', 'false');
             });
         });
+
+        if (patientProfileBtn && patientProfileMenu && patientProfileWrap) {
+            const closeProfileMenu = () => {
+                patientProfileMenu.classList.add('hidden');
+                patientProfileBtn.setAttribute('aria-expanded', 'false');
+            };
+
+            patientProfileBtn.addEventListener('click', () => {
+                const isOpen = !patientProfileMenu.classList.contains('hidden');
+                patientProfileMenu.classList.toggle('hidden', isOpen);
+                patientProfileBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!patientProfileWrap.contains(event.target)) {
+                    closeProfileMenu();
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeProfileMenu();
+                }
+            });
+        }
     });
 </script>

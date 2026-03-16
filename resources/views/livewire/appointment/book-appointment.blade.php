@@ -197,8 +197,8 @@
                             <div>
                                 <p class="{{ $mutedLabelClass }}">Select a Time <span class="text-red-600">*</span>
                                 </p>
-                                <div class="{{ $slotGridClass }}"
-                                    data-validate-field="selectedSlot" wire:loading.remove wire:target="selectedDate">
+                                <div class="{{ $slotGridClass }}" data-validate-field="selectedSlot"
+                                    wire:loading.remove wire:target="selectedDate">
                                     @forelse ($availableSlots as $slot)
                                         @php
                                             $isFull = !empty($slot['is_full']);
@@ -208,9 +208,8 @@
                                         @endphp
                                         <label class="{{ $isDisabled ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                                             <input type="radio" name="selectedSlot" wire:model="selectedSlot"
-                                                data-validate-field="selectedSlot"
-                                                value="{{ $slot['value'] }}" @disabled($isDisabled)
-                                                class="peer sr-only">
+                                                data-validate-field="selectedSlot" value="{{ $slot['value'] }}"
+                                                @disabled($isDisabled) class="peer sr-only">
                                             <div
                                                 class="text-center py-2 rounded-lg border text-sm font-medium transition-all {{ $isDisabled ? 'border-[#E5E7EB] text-[#C7CCD1] bg-[#F9FAFB]' : 'border-[#E5E7EB] text-[#374151] peer-checked:bg-sky-600 peer-checked:text-white' }}">
                                                 {{ $slot['time'] }}{{ $isFull ? ' (Full)' : '' }}

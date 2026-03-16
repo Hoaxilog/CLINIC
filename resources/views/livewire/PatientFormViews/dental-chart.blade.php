@@ -1,6 +1,5 @@
 <div class="relative flex h-[68vh] w-full flex-col rounded-2xl border border-slate-200 bg-white lg:flex-row"
-    x-data="{ chartLoading: {{ (count($history) > 0 || $isCreating) ? 'true' : 'false' }} }"
-    x-on:show-dental-loading.window="chartLoading = true"
+    x-data="{ chartLoading: {{ count($history) > 0 || $isCreating ? 'true' : 'false' }} }" x-on:show-dental-loading.window="chartLoading = true"
     x-on:dental-chart-ready.window="chartLoading = false">
     <div x-cloak x-show="chartLoading"
         class="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-sm text-center">
@@ -63,7 +62,8 @@
 
             <div data-form-scroll
                 class="flex-1 overflow-auto p-4 sm:px-6 lg:px-6 xl:p-8 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-slate-100 scrollbar-thumb-slate-300">
-                <livewire:PatientFormController.dental-chart-grid :teeth="$teeth" :isReadOnly="$isReadOnly" :dentitionType="$dentitionType" />
+                <livewire:PatientFormController.dental-chart-grid :teeth="$teeth" :isReadOnly="$isReadOnly"
+                    :dentitionType="$dentitionType" />
                 <div class="max-w-6xl mx-auto flex flex-col gap-12">
                     <section class="w-full">
                         <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -72,14 +72,15 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-8">
                             @php
                                 $errorBag = session('errors');
-                                $selectClass = fn(string $field) => ($errorBag && $errorBag->has($field))
+                                $selectClass = fn(string $field) => $errorBag && $errorBag->has($field)
                                     ? 'w-full border border-red-500 rounded px-4 py-3 text-base bg-white focus:ring-red-200 focus:border-red-500 disabled:bg-gray-100 disabled:text-gray-500'
                                     : 'w-full border rounded px-4 py-3 text-base bg-white focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500';
                             @endphp
 
                             {{-- ORAL HYGIENE --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Oral Hygiene Status <span class="text-red-600">*</span></label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Oral Hygiene Status <span
+                                        class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.oral_hygiene_status"
                                     @if ($isReadOnly) disabled @endif
                                     class="{{ $selectClass('oralExam.oral_hygiene_status') }}">
@@ -91,13 +92,15 @@
                                     <option value="Bad">Bad</option>
                                 </select>
                                 @error('oralExam.oral_hygiene_status')
-                                    <span data-error-for="oralExam.oral_hygiene_status" class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.oral_hygiene_status"
+                                        class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
                             {{-- CALCULAR DEPOSITS --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Calcular Deposits <span class="text-red-600">*</span></label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Calcular Deposits <span
+                                        class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.calcular_deposits"
                                     @if ($isReadOnly) disabled @endif
                                     class="{{ $selectClass('oralExam.calcular_deposits') }}">
@@ -108,14 +111,17 @@
                                     <option value="Severe">Severe</option>
                                 </select>
                                 @error('oralExam.calcular_deposits')
-                                    <span data-error-for="oralExam.calcular_deposits" class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.calcular_deposits"
+                                        class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
                             {{-- GINGIVA --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Gingiva <span class="text-red-600">*</span></label>
-                                <select wire:model.defer="oralExam.gingiva" @if ($isReadOnly) disabled @endif
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Gingiva <span
+                                        class="text-red-600">*</span></label>
+                                <select wire:model.defer="oralExam.gingiva"
+                                    @if ($isReadOnly) disabled @endif
                                     class="{{ $selectClass('oralExam.gingiva') }}">
                                     <option value="" disabled>Select...</option>
                                     <option value="Healthy">Healthy</option>
@@ -123,14 +129,17 @@
                                     <option value="Severe Inflamed">Severe Inflamed</option>
                                 </select>
                                 @error('oralExam.gingiva')
-                                    <span data-error-for="oralExam.gingiva" class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.gingiva"
+                                        class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
                             {{-- STAINS --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Stains <span class="text-red-600">*</span></label>
-                                <select wire:model.defer="oralExam.stains" @if ($isReadOnly) disabled @endif
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Stains <span
+                                        class="text-red-600">*</span></label>
+                                <select wire:model.defer="oralExam.stains"
+                                    @if ($isReadOnly) disabled @endif
                                     class="{{ $selectClass('oralExam.stains') }}">
                                     <option value="" disabled>Select...</option>
                                     <option value="None">None</option>
@@ -139,13 +148,15 @@
                                     <option value="Severe">Severe</option>
                                 </select>
                                 @error('oralExam.stains')
-                                    <span data-error-for="oralExam.stains" class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.stains"
+                                        class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
                             {{-- COMPLETE DENTURE --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Complete Denture <span class="text-red-600">*</span></label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Complete Denture <span
+                                        class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.complete_denture"
                                     @if ($isReadOnly) disabled @endif
                                     class="{{ $selectClass('oralExam.complete_denture') }}">
@@ -156,13 +167,15 @@
                                     <option value="Upper & Lower">Upper & Lower</option>
                                 </select>
                                 @error('oralExam.complete_denture')
-                                    <span data-error-for="oralExam.complete_denture" class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.complete_denture"
+                                        class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
 
                             {{-- PARTIAL DENTURE --}}
                             <div>
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Partial Denture <span class="text-red-600">*</span></label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Partial Denture <span
+                                        class="text-red-600">*</span></label>
                                 <select wire:model.defer="oralExam.partial_denture"
                                     @if ($isReadOnly) disabled @endif
                                     class="{{ $selectClass('oralExam.partial_denture') }}">
@@ -173,7 +186,8 @@
                                     <option value="Upper & Lower">Upper & Lower</option>
                                 </select>
                                 @error('oralExam.partial_denture')
-                                    <span data-error-for="oralExam.partial_denture" class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                                    <span data-error-for="oralExam.partial_denture"
+                                        class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>

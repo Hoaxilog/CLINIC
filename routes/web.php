@@ -112,6 +112,8 @@ Route::middleware(['auth', 'staffOrDentist'])->group(function () {
 // Patient-only routes
 Route::middleware(['auth', 'isPatient'])->group(function () {
     Route::get('/patient/dashboard', [PatientDashboardController::class, 'index'])->name('patient.dashboard');
+    Route::post('/patient/appointments/{appointment}/cancel', [PatientDashboardController::class, 'cancel'])
+        ->name('patient.appointments.cancel');
 });
 
 // Admin-only routes

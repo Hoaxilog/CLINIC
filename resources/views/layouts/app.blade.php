@@ -14,7 +14,11 @@
     @include('components.homepage.header-section')
 
     <main>
-        {{ $slot }}
+        @hasSection('content')
+            @yield('content')
+        @else
+            {{ $slot ?? '' }}
+        @endif
     </main>
 
     @include('components.homepage.footer-section')
