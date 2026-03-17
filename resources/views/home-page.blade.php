@@ -182,7 +182,7 @@
                 <a href="{{ route('login') }}"
                     class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Login</a>
                 <div class="px-7 pt-5 pb-6">
-                    <a href="#appointment"
+                    <a href="/book"
                         class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:bg-[#006ab0]">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="square">
@@ -215,7 +215,7 @@
                         in Diliman for over 10 years.
                     </p>
                     <div class="fu d4 mb-16 flex flex-wrap gap-[14px]">
-                        <a href="#appointment"
+                        <a href="/book"
                             class="inline-flex items-center gap-[9px] whitespace-nowrap bg-white px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#e8f4fc]">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.5" stroke-linecap="square">
@@ -247,7 +247,7 @@
                                 Patients</div>
                         </div>
                         <div class="pl-4">
-                            <div class="text-[2.6rem] leading-none font-extrabold tracking-[-.03em] text-white">6</div>
+                            <div class="text-[2.6rem] leading-none font-extrabold tracking-[-.03em] text-white">5</div>
                             <div class="mt-2 text-[.6rem] font-semibold uppercase tracking-[.18em] text-white/80">Days
                                 Open Weekly</div>
                         </div>
@@ -284,7 +284,7 @@
                         Dental Services<br><span class="font-light italic text-[#0086da]">For Every Smile</span>
                     </h2>
                 </div>
-                <a href="#appointment"
+                <a href="/book"
                     class="reveal inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2.5" stroke-linecap="square">
@@ -670,7 +670,7 @@
                     </div>
                     <h2
                         class="reveal mb-4 text-[clamp(1.8rem,2.6vw,2.6rem)] leading-[1.1] font-extrabold tracking-[-.025em] text-[#1a2e3b]">
-                        We're Open<br><span class="font-light italic text-[#0086da]">6 Days a Week.</span>
+                        We're Open<br><span class="font-light italic text-[#0086da]">5 Days a Week.</span>
                     </h2>
                     <p class="reveal mb-8 max-w-[300px] text-[.86rem] leading-[1.85] text-[#3d5a6e]">Walk-ins welcome.
                         Booking ahead is recommended for faster service and guaranteed slots.</p>
@@ -712,126 +712,6 @@
                             </span>
                         </div>
                     @endforeach
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="contact" class="border-t border-[#e4eff8] bg-white px-6 py-[88px] md:px-12 xl:px-20">
-        <div class="mx-auto w-full max-w-[1400px]">
-            <div class="grid grid-cols-1 items-start gap-16 lg:grid-cols-2">
-                <div>
-                    <div
-                        class="reveal mb-4 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
-                        <span class="block h-[2px] w-[22px] bg-[#0086da]"></span>Book an Appointment
-                    </div>
-                    <h2
-                        class="reveal mb-6 text-[clamp(1.9rem,3vw,2.9rem)] leading-[1.1] font-extrabold tracking-[-.025em] text-[#1a2e3b]">
-                        Ready for Your<br><span class="font-light italic text-[#0086da]">Next Visit?</span>
-                    </h2>
-                    <p class="reveal mb-10 max-w-[420px] text-[.88rem] leading-[1.9] text-[#3d5a6e]">Fill in the form
-                        and
-                        we'll confirm your slot as soon as possible. You can also reach us via phone or Facebook if you
-                        prefer a quicker response.</p>
-
-                    <div class="reveal flex flex-col gap-4">
-                        <a href="tel:+639123456789"
-                            class="inline-flex items-center gap-[14px] border border-[#e4eff8] bg-[#f6fafd] px-5 py-4 no-underline transition hover:border-[#0086da]">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0086da"
-                                stroke-width="2" stroke-linecap="square">
-                                <path
-                                    d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.1 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z" />
-                            </svg>
-                            <div>
-                                <div class="text-[.6rem] font-bold uppercase tracking-[.14em] text-[#0086da]">Phone /
-                                    WhatsApp</div>
-                                <div class="mt-0.5 text-[.88rem] font-semibold text-[#1a2e3b]">+63 912 345 6789</div>
-                            </div>
-                        </a>
-                        <a href="https://facebook.com/TejaDentClinic" target="_blank"
-                            class="inline-flex items-center gap-[14px] border border-[#e4eff8] bg-[#f6fafd] px-5 py-4 no-underline transition hover:border-[#0086da]">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0086da"
-                                stroke-width="2" stroke-linecap="square">
-                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-                            </svg>
-                            <div>
-                                <div class="text-[.6rem] font-bold uppercase tracking-[.14em] text-[#0086da]">Facebook
-                                </div>
-                                <div class="mt-0.5 text-[.88rem] font-semibold text-[#1a2e3b]">
-                                    facebook.com/TejaDentClinic
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-                <div id="appointment" class="reveal relative border border-[#e4eff8] bg-[#f6fafd] px-10 py-11">
-                    <div class="absolute top-0 left-8 h-[3px] w-12 bg-[#0086da]"></div>
-                    <form action="" method="POST">
-                        @csrf
-                        <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div>
-                                <label
-                                    class="mb-2 block text-[.63rem] font-bold uppercase tracking-[.13em] text-[#3d5a6e]">Full
-                                    Name</label>
-                                <input type="text" name="name" placeholder="Juan dela Cruz"
-                                    class="w-full border border-[#d4e8f5] bg-white px-4 py-[13px] text-[.83rem] text-[#1a2e3b] outline-none transition placeholder:font-normal placeholder:text-[#a8c8dc] focus:border-[#0086da]">
-                            </div>
-                            <div>
-                                <label
-                                    class="mb-2 block text-[.63rem] font-bold uppercase tracking-[.13em] text-[#3d5a6e]">Phone
-                                    /
-                                    WhatsApp</label>
-                                <input type="tel" name="phone" placeholder="+63 9XX XXX XXXX"
-                                    class="w-full border border-[#d4e8f5] bg-white px-4 py-[13px] text-[.83rem] text-[#1a2e3b] outline-none transition placeholder:font-normal placeholder:text-[#a8c8dc] focus:border-[#0086da]">
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label
-                                class="mb-2 block text-[.63rem] font-bold uppercase tracking-[.13em] text-[#3d5a6e]">Email
-                                Address</label>
-                            <input type="email" name="email" placeholder="juan@example.com"
-                                class="w-full border border-[#d4e8f5] bg-white px-4 py-[13px] text-[.83rem] text-[#1a2e3b] outline-none transition placeholder:font-normal placeholder:text-[#a8c8dc] focus:border-[#0086da]">
-                        </div>
-                        <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div>
-                                <label
-                                    class="mb-2 block text-[.63rem] font-bold uppercase tracking-[.13em] text-[#3d5a6e]">Service</label>
-                                <select name="service"
-                                    class="w-full cursor-pointer appearance-none border border-[#d4e8f5] bg-white bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230086da' stroke-width='1.5' fill='none' stroke-linecap='square'/%3E%3C/svg%3E\")] bg-[position:right_14px_center] bg-no-repeat px-4 py-[13px] pr-10 text-[.83rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da]">
-                                    <option value="">Select a service</option>
-                                    <option>General Checkup</option>
-                                    <option>Orthodontics</option>
-                                    <option>Teeth Whitening</option>
-                                    <option>Oral Surgery</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label
-                                    class="mb-2 block text-[.63rem] font-bold uppercase tracking-[.13em] text-[#3d5a6e]">Preferred
-                                    Date</label>
-                                <input type="date" name="date"
-                                    class="w-full border border-[#d4e8f5] bg-white px-4 py-[13px] text-[.83rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da]">
-                            </div>
-                        </div>
-                        <div class="mb-7">
-                            <label
-                                class="mb-2 block text-[.63rem] font-bold uppercase tracking-[.13em] text-[#3d5a6e]">Notes
-                                (Optional)</label>
-                            <textarea name="notes" rows="3" placeholder="Any concerns or questions?"
-                                class="w-full resize-none border border-[#d4e8f5] bg-white px-4 py-[13px] text-[.83rem] text-[#1a2e3b] outline-none transition placeholder:font-normal placeholder:text-[#a8c8dc] focus:border-[#0086da]"></textarea>
-                        </div>
-                        <button type="submit"
-                            class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
-                                <line x1="22" y1="2" x2="11" y2="13" />
-                                <polygon points="22 2 15 22 11 13 2 9 22 2" fill="none" stroke="currentColor"
-                                    stroke-width="2" />
-                            </svg>
-                            Submit Request
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>
@@ -921,7 +801,7 @@
                     </div>
 
                     <div class="reveal mt-8">
-                        <a href="#appointment"
+                        <a href="/book"
                             class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
@@ -1023,7 +903,7 @@
                     <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white/35">Ready to
                         Visit?
                     </div>
-                    <a href="#appointment"
+                    <a href="/book"
                         class="mb-[14px] inline-flex items-center gap-[9px] whitespace-nowrap bg-white px-6 py-[13px] text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#e8f4fc]">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="square">

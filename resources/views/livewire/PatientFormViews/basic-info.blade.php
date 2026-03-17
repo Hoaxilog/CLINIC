@@ -1,7 +1,7 @@
 <section class="space-y-8">
     @php
         $labelClass = 'mb-1.5 block text-sm font-semibold text-slate-700';
-        $errorBag = session('errors');
+        $errorBag = isset($errors) ? $errors : null;
         $inputClass =
             'w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100';
         $fieldClass = fn(string $field) => $errorBag && $errorBag->has($field)

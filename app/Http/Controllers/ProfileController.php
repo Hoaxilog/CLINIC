@@ -1,25 +1,47 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
     public function index()
     {
         $user = DB::table('users')->where('id', Auth::id())->first();
-        $isGoogleUser = $user && !empty($user->google_id);
+        $isGoogleUser = $user && ! empty($user->google_id);
         if ($user && (int) $user->role === 3) {
-            $patient = $this->resolvePatientForUser($user);
-            return view('patient.profile', compact('user', 'patient', 'isGoogleUser'));
+            $latestRequestIdentity = DB::table('appointments')
+                ->where(function ($query) use ($user) {
+                    $query->where('requester_user_id', $user->id);
+
+                    if (! empty($user->email)) {
+                        $query->orWhere('requester_email', $user->email);
+                    }
+                })
+                ->select('requester_first_name', 'requester_last_name')
+                ->orderByDesc('updated_at')
+                ->orderByDesc('appointment_date')
+                ->first();
+
+            $requesterDisplayName = trim(
+                (string) ($latestRequestIdentity->requester_first_name ?? '').' '.
+                (string) ($latestRequestIdentity->requester_last_name ?? '')
+            );
+
+            if ($requesterDisplayName === '') {
+                $requesterDisplayName = 'Patient';
+            }
+
+            return view('patient.profile', compact('user', 'isGoogleUser', 'requesterDisplayName'));
         }
 
         // Fetch role name for display
@@ -31,17 +53,31 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $userId = Auth::id();
+        $user = DB::table('users')->where('id', $userId)->first();
+
+        if ($user && (int) $user->role === 3) {
+            $validated = $request->validate([
+                'contact' => ['required', 'string', 'max:20'],
+            ]);
+
+            DB::table('users')->where('id', $userId)->update([
+                'contact' => $validated['contact'],
+                'updated_at' => now(),
+            ]);
+
+            return back()->with('success', 'Account updated successfully.');
+        }
 
         // Validate strictly against your existing columns
         $validated = $request->validate([
             'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($userId)],
-            'contact'  => ['required', 'string', 'max:20'],
+            'contact' => ['required', 'string', 'max:20'],
         ]);
 
         // Update strictly your existing columns
         DB::table('users')->where('id', $userId)->update([
             'username' => $validated['username'],
-            'contact'  => $validated['contact'],
+            'contact' => $validated['contact'],
             'updated_at' => now(),
         ]);
 
@@ -51,7 +87,7 @@ class ProfileController extends Controller
     public function updatePassword(Request $request)
     {
         $user = DB::table('users')->where('id', Auth::id())->first();
-        $isGoogleUser = $user && !empty($user->google_id);
+        $isGoogleUser = $user && ! empty($user->google_id);
 
         $rules = [
             'password' => ['required', 'confirmed', 'min:8'],
@@ -79,14 +115,15 @@ class ProfileController extends Controller
     {
         $user = DB::table('users')->where('id', Auth::id())->first();
 
-        if (!$user || empty($user->email)) {
+        if (! $user || empty($user->email)) {
             return back()->with('failed', 'We could not find an email address for your account.');
         }
 
-        $key = 'profile-reset:' . Str::lower($user->email) . '|' . $request->ip();
+        $key = 'profile-reset:'.Str::lower($user->email).'|'.$request->ip();
         if (RateLimiter::tooManyAttempts($key, 3)) {
             $seconds = RateLimiter::availableIn($key);
             $minutes = max(1, ceil($seconds / 60));
+
             return back()->with('failed', "Too many requests. Try again in {$minutes} minute(s).");
         }
 
@@ -108,10 +145,5 @@ class ProfileController extends Controller
         });
 
         return back()->with('success', 'We sent a password reset link to your email.');
-    }
-
-    private function resolvePatientForUser($user)
-    {
-        return null;
     }
 }

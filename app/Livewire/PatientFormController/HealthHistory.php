@@ -2,51 +2,75 @@
 
 namespace App\Livewire\PatientFormController;
 
-use Livewire\Component;
-use Livewire\Attributes\On;
-use Livewire\Attributes\Reactive; 
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Reactive;
+use Livewire\Component;
 
 class HealthHistory extends Component
 {
     public $when_last_visit_q1;
+
     public $what_last_visit_reason_q1 = '';
+
     public $what_seeing_dentist_reason_q2 = '';
+
     public $is_clicking_jaw_q3a = '';
+
     public $is_pain_jaw_q3b = '';
+
     public $is_difficulty_opening_closing_q3c = '';
+
     public $is_locking_jaw_q3d = '';
+
     public $is_clench_grind_q4 = '';
+
     public $is_bad_experience_q5 = '';
+
     public $is_nervous_q6 = '';
+
     public $what_nervous_concern_q6 = '';
 
     public $is_condition_q1 = '';
+
     public $what_condition_reason_q1 = '';
+
     public $is_hospitalized_q2 = '';
+
     public $what_hospitalized_reason_q2 = '';
+
     public $is_serious_illness_operation_q3 = '';
+
     public $what_serious_illness_operation_reason_q3 = '';
+
     public $is_taking_medications_q4 = '';
+
     public $what_medications_list_q4 = '';
+
     public $is_allergic_medications_q5 = '';
+
     public $what_allergies_list_q5 = '';
+
     public $is_allergic_latex_rubber_metals_q6 = '';
 
     public $is_pregnant_q7 = '';
+
     public $is_breast_feeding_q8 = '';
+
     public $gender;
 
-    public $historyList = []; 
+    public $historyList = [];
+
     public $selectedHistoryId = '';
 
     #[Reactive]
     public $isReadOnly = '';
+
     public $isCreating = '';
-    
+
     public function mount($data = [], $gender = null, $isReadOnly = false)
     {
-        if (!empty($data)) {
+        if (! empty($data)) {
             $this->fill($data);
         }
         if ($gender) {
@@ -72,14 +96,15 @@ class HealthHistory extends Component
             'is_taking_medications_q4', 'what_medications_list_q4',
             'is_allergic_medications_q5', 'what_allergies_list_q5',
             'is_allergic_latex_rubber_metals_q6',
-            'is_pregnant_q7', 'is_breast_feeding_q8'
+            'is_pregnant_q7', 'is_breast_feeding_q8',
         ]);
 
         $this->dispatch('enableEditMode');
     }
 
     #[On('setHealthHistoryContext')]
-    public function setContext($gender, $historyList, $selectedId) {
+    public function setContext($gender, $historyList, $selectedId)
+    {
         $this->gender = $gender;
         $this->historyList = $historyList;
         $this->selectedHistoryId = $selectedId;
@@ -95,19 +120,19 @@ class HealthHistory extends Component
             $this->triggerNewHistory();
         } else {
             $this->isCreating = false;
-            $this->dispatch('switchHealthHistory', historyId: $value); 
+            $this->dispatch('switchHealthHistory', historyId: $value);
         }
     }
 
     public function updated($propertyName): void
     {
-        if (!is_string($propertyName) || $propertyName === '') {
+        if (! is_string($propertyName) || $propertyName === '') {
             return;
         }
 
         $this->resetValidation($propertyName);
     }
-    
+
     protected $casts = [
         'is_clicking_jaw_q3a' => 'boolean',
         'is_pain_jaw_q3b' => 'boolean',
@@ -126,9 +151,6 @@ class HealthHistory extends Component
         'is_breast_feeding_q8' => 'boolean',
     ];
 
-    
-
-
     public function rules()
     {
         $isFemale = ($this->gender === 'Female');
@@ -137,20 +159,20 @@ class HealthHistory extends Component
             'when_last_visit_q1' => 'nullable|date',
             'what_last_visit_reason_q1' => 'nullable|string',
             'what_seeing_dentist_reason_q2' => 'required|string',
-            
+
             'is_clicking_jaw_q3a' => 'required|boolean',
             'is_pain_jaw_q3b' => 'required|boolean',
             'is_difficulty_opening_closing_q3c' => 'required|boolean',
             'is_locking_jaw_q3d' => 'required|boolean',
             'is_clench_grind_q4' => 'required|boolean',
             'is_bad_experience_q5' => 'required|boolean',
-            
+
             'is_nervous_q6' => 'required|boolean',
             'what_nervous_concern_q6' => 'required_if:is_nervous_q6,true|nullable|string',
 
             'is_condition_q1' => 'required|boolean',
             'what_condition_reason_q1' => 'required_if:is_condition_q1,true|nullable|string',
-            
+
             'is_hospitalized_q2' => 'required|boolean',
             'what_hospitalized_reason_q2' => 'required_if:is_hospitalized_q2,true|nullable|string',
 
@@ -164,9 +186,9 @@ class HealthHistory extends Component
             'what_allergies_list_q5' => 'required_if:is_allergic_medications_q5,true|nullable|string',
 
             'is_allergic_latex_rubber_metals_q6' => 'required|boolean',
-            
+
             'is_pregnant_q7' => $isFemale ? 'required|boolean' : 'nullable|boolean',
-            'is_breast_feeding_q8' => $isFemale? 'required|boolean' : 'nullable|boolean',
+            'is_breast_feeding_q8' => $isFemale ? 'required|boolean' : 'nullable|boolean',
         ];
     }
 
@@ -206,9 +228,10 @@ class HealthHistory extends Component
             if ($field) {
                 $this->dispatch('scroll-to-error', field: $field);
             }
+
             return;
         }
-        
+
         // 1. Sanitize Booleans (Convert '' or null to 0)
         // This fixes the "Incorrect integer value" error
         $booleans = [
@@ -216,15 +239,15 @@ class HealthHistory extends Component
             'is_locking_jaw_q3d', 'is_clench_grind_q4', 'is_bad_experience_q5', 'is_nervous_q6',
             'is_condition_q1', 'is_hospitalized_q2', 'is_serious_illness_operation_q3',
             'is_taking_medications_q4', 'is_allergic_medications_q5', 'is_allergic_latex_rubber_metals_q6',
-            'is_pregnant_q7', 'is_breast_feeding_q8'
+            'is_pregnant_q7', 'is_breast_feeding_q8',
         ];
 
         foreach ($booleans as $field) {
             // Force to integer: (int)'' becomes 0, (int)'1' becomes 1
             if (isset($validatedData[$field])) {
-                 $validatedData[$field] = (int) $validatedData[$field];
+                $validatedData[$field] = (int) $validatedData[$field];
             } else {
-                 $validatedData[$field] = 0; // Default to 0 if missing
+                $validatedData[$field] = 0; // Default to 0 if missing
             }
         }
 
@@ -235,18 +258,17 @@ class HealthHistory extends Component
         }
 
         // 3. Add the Context ID (for your edit logic)
-        $validatedData['selectedHistoryId'] = $this->selectedHistoryId; 
+        $validatedData['selectedHistoryId'] = $this->selectedHistoryId;
 
         // 4. Send the clean data to the parent
         $this->dispatch('healthHistoryValidated', data: $validatedData);
     }
 
-    
     #[On('fillHealthHistory')]
     public function fillForm($data, $gender)
-    {   
-        $this->fill($data); 
-        if($gender) {
+    {
+        $this->fill($data);
+        if ($gender) {
             $this->gender = $gender;
         }
     }
@@ -255,6 +277,7 @@ class HealthHistory extends Component
     public function resetForm()
     {
         $this->resetExcept(['isReadOnly']);
+        $this->resetErrorBag();
     }
 
     public function render()

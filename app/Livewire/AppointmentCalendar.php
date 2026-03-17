@@ -2,75 +2,131 @@
 
 namespace App\Livewire;
 
-use Carbon\Carbon;
-use Carbon\Exceptions\InvalidFormatException;
-use Livewire\Component;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Support\PatientMatchService;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Component;
 
 class AppointmentCalendar extends Component
 {
     protected const SLOT_CAPACITY = 2;
+
     protected const APPROVED_SLOT_STATUSES = ['Scheduled', 'Waiting', 'Ongoing'];
+
+    protected const REQUEST_SLOT_CAP = 5;
+
+    protected const INACTIVE_APPOINTMENT_STATUSES = ['Cancelled', 'Completed'];
 
     // ... (All other properties and methods are unchanged) ...
     public $currentDate;
+
     public $viewType = 'week';
+
     public $weekDates = [];
+
     public $timeSlots = [];
-    /** @var array<int, array<string, mixed>>|\Illuminate\Support\Collection<int, object> */
+
+    /** @var array<int, array<string, mixed>>|Collection<int, object> */
     public $appointments = [];
-    /** @var \Illuminate\Support\Collection<int, object> */
+
+    /** @var Collection<int, object> */
     protected $occupiedAppointments;
-    /** @var \Illuminate\Support\Collection<int, object> */
+
+    /** @var Collection<int, object> */
     protected $blockedSlots;
+
     protected ?bool $blockedSlotsTableExists = null;
+
     public $occupiedSlotCounts = [];
+
     public $blockedSlotMap = [];
+
     public $blockedSlotLookup = [];
+
     public $showAppointmentModal = false;
+
     public $showBlockModal = false;
-    /** @var \Illuminate\Support\Collection */
+
+    public $isRescheduling = false;
+
+    /** @var Collection */
     public $servicesList = [];
+
     public $firstName = '';
+
     public $lastName = '';
+
     public $middleName = '';
+
     public $recordNumber = '';
+
     public $contactNumber = '';
-    public $birthDate = null;  
+
+    public $birthDate = null;
+
     public $age = '';
+
     public $selectedService = '';
+
     public $selectedDate;      // For the date picker input (Y-m-d)
+
     public $appointmentDate;   // For the modal display (Y-m-d stored, formatted on display)
+
     public $selectedTime = null;
+
     public $endTime = null;
-    public $isViewing = false; 
-    public $viewingAppointmentId = null; 
+
+    public $isViewing = false;
+
+    public $viewingAppointmentId = null;
+
     public $viewingPatientId = null;
-    public $appointmentStatus = '';     
+
+    public $appointmentStatus = '';
+
     public $searchQuery = '';
+
     public $patientSearchResults = [];
+
     public $selectedMonthYear; // stores "YYYY-MM" format
+
     public $selectableMonthYears = [];
+
     public $activeTab = 'calendar';
+
     public $isTabLocked = false;
+
     public $lockedTab = null;
+
     public $prefillPatientId = null;
+
     public $prefillPatientLabel = null;
+
     public $pendingFilterDate = null;
+
     public $pendingMatchCandidates = [];
+
     public $pendingDuplicateWarnings = [];
+
     public $selectedPendingPatientId = null;
+
     public $isBlockMode = false;
+
     public $blockingSlotId = null;
+
     public $blockDate = null;
+
     public $blockStartTime = null;
+
     public $blockEndTime = null;
+
     public $blockReason = '';
 
     protected $rules = [
@@ -82,7 +138,7 @@ class AppointmentCalendar extends Component
         'selectedDate' => 'required',
         'selectedTime' => 'required',
         'endTime' => 'required',
-        'birthDate' => 'required'
+        'birthDate' => 'required',
     ];
 
     public function mount(?string $initialTab = null)
@@ -94,7 +150,7 @@ class AppointmentCalendar extends Component
         $this->selectedDate = $this->currentDate->format('Y-m-d');
 
         $requestedTab = $initialTab ?: request()->query('tab');
-        if (!in_array($requestedTab, ['pending', 'calendar'], true)) {
+        if (! in_array($requestedTab, ['pending', 'calendar'], true)) {
             $requestedTab = 'calendar';
         }
         if ($requestedTab === 'pending' && Auth::user()?->role === 3) {
@@ -105,18 +161,18 @@ class AppointmentCalendar extends Component
         $this->isTabLocked = in_array($initialTab, ['pending', 'calendar'], true);
         $this->lockedTab = $this->isTabLocked ? $requestedTab : null;
 
-        $this->generateWeekDates(); 
+        $this->generateWeekDates();
         $this->generateTimeSlots();
         $this->loadAppointments();
         $this->servicesList = DB::table('services')->get();
 
         $prefillId = request()->query('patient_id');
-        if (!empty($prefillId)) {
+        if (! empty($prefillId)) {
             $patient = DB::table('patients')->find($prefillId);
             if ($patient) {
                 $this->prefillPatientId = (int) $prefillId;
                 $this->prefillPatientLabel = trim(
-                    ($patient->first_name ?? '') . ' ' . ($patient->last_name ?? '')
+                    ($patient->first_name ?? '').' '.($patient->last_name ?? '')
                 );
             }
         }
@@ -126,7 +182,7 @@ class AppointmentCalendar extends Component
     {
         $this->weekDates = [];
         $startOfWeek = $this->currentDate->copy()->startOfWeek();
-        
+
         for ($i = 0; $i < 7; $i++) {
             $this->weekDates[] = $startOfWeek->copy()->addDays($i);
         }
@@ -150,6 +206,7 @@ class AppointmentCalendar extends Component
     {
         if (count($this->weekDates) < 7) {
             $this->appointments = collect();
+
             return;
         }
 
@@ -166,12 +223,12 @@ class AppointmentCalendar extends Component
                 'appointments.service_id',
                 'appointments.appointment_date',
                 'appointments.status',
-                'patients.first_name', 
-                'patients.last_name', 
-                'patients.middle_name', 
+                'patients.first_name',
+                'patients.last_name',
+                'patients.middle_name',
                 'patients.mobile_number',
                 'patients.birth_date',
-                'services.service_name', 
+                'services.service_name',
                 'services.duration'
             );
 
@@ -180,7 +237,7 @@ class AppointmentCalendar extends Component
             ->where('appointments.status', '!=', 'Cancelled')
             ->where('appointments.status', '!=', 'Pending')
             ->get()
-            ->map(fn($appointment) => $this->hydrateAppointmentTiming($appointment))
+            ->map(fn ($appointment) => $this->hydrateAppointmentTiming($appointment))
             ->values();
     }
 
@@ -192,6 +249,7 @@ class AppointmentCalendar extends Component
             $this->occupiedSlotCounts = [];
             $this->blockedSlotMap = [];
             $this->blockedSlotLookup = [];
+
             return;
         }
 
@@ -208,7 +266,7 @@ class AppointmentCalendar extends Component
                 'services.duration'
             )
             ->get()
-            ->map(fn($appointment) => $this->hydrateAppointmentTiming($appointment));
+            ->map(fn ($appointment) => $this->hydrateAppointmentTiming($appointment));
 
         if ($this->blockedSlotsEnabled()) {
             $this->blockedSlots = DB::table('blocked_slots')
@@ -238,14 +296,14 @@ class AppointmentCalendar extends Component
 
     protected function durationToMinutes(?string $duration): int
     {
-        if (!$duration) {
+        if (! $duration) {
             return 0;
         }
 
         sscanf($duration, '%d:%d:%d', $hours, $minutes, $seconds);
+
         return ((int) $hours * 60) + (int) $minutes;
     }
-    
 
     public function getAppointmentsForDay($date)
     {
@@ -270,7 +328,7 @@ class AppointmentCalendar extends Component
     {
         $this->viewType = $type;
     }
-    
+
     protected function resetForm()
     {
         $this->resetValidation();
@@ -279,21 +337,22 @@ class AppointmentCalendar extends Component
         $this->middleName = '';
         $this->recordNumber = '';
         $this->contactNumber = '';
-        $this->birthDate = null; 
+        $this->birthDate = null;
         $this->selectedService = '';
-        $this->appointmentDate = null;  
+        $this->appointmentDate = null;
         $this->selectedTime = null;
         $this->endTime = null;
-        $this->isViewing = false; 
+        $this->isViewing = false;
         $this->viewingAppointmentId = null;
         $this->viewingPatientId = null;
         $this->appointmentStatus = '';
         $this->searchQuery = '';
-        $this->patientSearchResults = [];   
+        $this->patientSearchResults = [];
         $this->pendingMatchCandidates = [];
         $this->pendingDuplicateWarnings = [];
         $this->selectedPendingPatientId = null;
-        
+        $this->isRescheduling = false;
+
     }
 
     protected function resetBlockForm(): void
@@ -314,8 +373,8 @@ class AppointmentCalendar extends Component
     public function openAppointmentModal($date, $time)
     {
         $this->resetForm();
-        $this->selectedDate = $date;      
-        $this->appointmentDate = $date;   
+        $this->selectedDate = $date;
+        $this->appointmentDate = $date;
         $this->selectedTime = $time;
         $this->showAppointmentModal = true;
 
@@ -336,12 +395,13 @@ class AppointmentCalendar extends Component
 
     public function toggleBlockMode(): void
     {
-        if (!$this->blockedSlotsEnabled()) {
+        if (! $this->blockedSlotsEnabled()) {
             session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+
             return;
         }
 
-        $this->isBlockMode = !$this->isBlockMode;
+        $this->isBlockMode = ! $this->isBlockMode;
 
         if ($this->isBlockMode) {
             $this->closeAppointmentModal(true);
@@ -351,25 +411,28 @@ class AppointmentCalendar extends Component
 
     public function blockSlot(string $date, string $time): void
     {
-        if (!$this->blockedSlotsEnabled()) {
+        if (! $this->blockedSlotsEnabled()) {
             session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+
             return;
         }
 
         $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
-        $slotStart = Carbon::parse($date . ' ' . $normalizedTime)->seconds(0);
+        $slotStart = Carbon::parse($date.' '.$normalizedTime)->seconds(0);
         $slotEnd = $slotStart->copy()->addHour();
         $slotKey = $slotStart->format('Y-m-d H:i');
 
         if (($this->blockedSlotMap[$slotKey] ?? false) === true) {
             $this->isBlockMode = false;
             session()->flash('info', 'That slot is already blocked.');
+
             return;
         }
 
         if (($this->occupiedSlotCounts[$slotKey] ?? 0) > 0) {
             $this->isBlockMode = false;
             session()->flash('error', 'Cannot block a slot that already has appointments.');
+
             return;
         }
 
@@ -382,6 +445,7 @@ class AppointmentCalendar extends Component
         if ($hasOverlap) {
             $this->isBlockMode = false;
             session()->flash('info', 'That slot is already blocked.');
+
             return;
         }
 
@@ -401,8 +465,9 @@ class AppointmentCalendar extends Component
 
     public function openBlockSlotModal(?string $date = null, ?string $time = null): void
     {
-        if (!$this->blockedSlotsEnabled()) {
+        if (! $this->blockedSlotsEnabled()) {
             session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+
             return;
         }
 
@@ -427,12 +492,12 @@ class AppointmentCalendar extends Component
 
     public function editBlockedSlot(int $blockedSlotId): void
     {
-        if (!$this->blockedSlotsEnabled()) {
+        if (! $this->blockedSlotsEnabled()) {
             return;
         }
 
         $slot = DB::table('blocked_slots')->where('id', $blockedSlotId)->first();
-        if (!$slot) {
+        if (! $slot) {
             return;
         }
 
@@ -447,8 +512,9 @@ class AppointmentCalendar extends Component
 
     public function saveBlockedSlot(): void
     {
-        if (!$this->blockedSlotsEnabled()) {
+        if (! $this->blockedSlotsEnabled()) {
             session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+
             return;
         }
 
@@ -459,23 +525,25 @@ class AppointmentCalendar extends Component
             'blockReason' => 'nullable|string|max:255',
         ]);
 
-        $start = Carbon::parse($this->blockDate . ' ' . $this->blockStartTime);
-        $end = Carbon::parse($this->blockDate . ' ' . $this->blockEndTime);
+        $start = Carbon::parse($this->blockDate.' '.$this->blockStartTime);
+        $end = Carbon::parse($this->blockDate.' '.$this->blockEndTime);
 
-        if (!$this->isAlignedToSlot($start) || !$this->isAlignedToSlot($end)) {
+        if (! $this->isAlignedToSlot($start) || ! $this->isAlignedToSlot($end)) {
             $this->addError('blockEndTime', 'Please use 1-hour boundaries (e.g. 10:00, 11:00).');
+
             return;
         }
 
         $hasOverlap = DB::table('blocked_slots')
             ->whereDate('date', $this->blockDate)
-            ->when($this->blockingSlotId, fn($query) => $query->where('id', '!=', $this->blockingSlotId))
+            ->when($this->blockingSlotId, fn ($query) => $query->where('id', '!=', $this->blockingSlotId))
             ->where('start_time', '<', $end->format('H:i:s'))
             ->where('end_time', '>', $start->format('H:i:s'))
             ->exists();
 
         if ($hasOverlap) {
             $this->addError('blockStartTime', 'This range overlaps another blocked slot.');
+
             return;
         }
 
@@ -506,7 +574,7 @@ class AppointmentCalendar extends Component
 
     public function unblockSlot(int $blockedSlotId): void
     {
-        if (!$this->blockedSlotsEnabled()) {
+        if (! $this->blockedSlotsEnabled()) {
             return;
         }
 
@@ -520,15 +588,27 @@ class AppointmentCalendar extends Component
     {
         $service = $this->servicesList->firstWhere('id', $serviceId);
 
-        if ($service) {
-            list($hours, $minutes, $seconds) = explode(':', $service->duration);
+        if ($service && ! empty($this->selectedTime)) {
+            [$hours, $minutes, $seconds] = explode(':', $service->duration);
             $this->endTime = Carbon::parse($this->selectedTime)
-                                   ->addHours((int)$hours)
-                                   ->addMinutes((int)$minutes)
-                                   ->format('H:i');
+                ->addHours((int) $hours)
+                ->addMinutes((int) $minutes)
+                ->format('H:i');
         } else {
             $this->endTime = null;
         }
+    }
+
+    public function updatedSelectedTime($value): void
+    {
+        if (! empty($this->selectedService)) {
+            $this->updatedSelectedService($this->selectedService);
+        }
+    }
+
+    public function updatedBirthDate($value): void
+    {
+        $this->resetValidation('birthDate');
     }
 
     public function updated($propertyName): void
@@ -562,9 +642,9 @@ class AppointmentCalendar extends Component
     public function saveAppointment()
     {
         if ($this->isViewing) {
-            return; 
+            return;
         }
-    
+
         $this->validate([
             'firstName' => 'required|string|max:100',
             'lastName' => 'required|string|max:100',
@@ -577,12 +657,13 @@ class AppointmentCalendar extends Component
 
         try {
             $service = collect($this->servicesList)->firstWhere('id', $this->selectedService);
-            
-            if (!$service) {
+
+            if (! $service) {
                 $this->addError('selectedService', 'Please select a valid service.');
+
                 return;
             }
-            
+
             $durationInMinutes = $this->durationToMinutes($service->duration);
 
             $proposedStart = Carbon::parse($this->appointmentDate)->setTimeFromTimeString($this->selectedTime);
@@ -590,24 +671,26 @@ class AppointmentCalendar extends Component
 
             if ($this->hasBlockedConflict($proposedStart, $proposedEnd)) {
                 $this->addError('conflict', 'This time range includes blocked slots.');
+
                 return;
             }
-            
+
             // Conflict Check: allow up to two approved appointments per overlapping slot.
             $conflicts = DB::table('appointments')
                 ->join('services', 'appointments.service_id', '=', 'services.id')
                 ->where(function ($query) use ($proposedStart, $proposedEnd) {
                     $existingStart = 'appointments.appointment_date';
-                    $existingEnd = DB::raw("DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)");
-                    
+                    $existingEnd = DB::raw('DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)');
+
                     $query->where($existingStart, '<', $proposedEnd->toDateTimeString())
                         ->where($existingEnd, '>', $proposedStart->toDateTimeString())
                         ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES);
                 })
-                ->count(); 
- 
+                ->count();
+
             if ($conflicts >= self::SLOT_CAPACITY) {
                 $this->addError('conflict', 'This time slot already has two approved appointments.');
+
                 return;
             }
 
@@ -623,7 +706,7 @@ class AppointmentCalendar extends Component
                     'first_name' => $this->firstName,
                     'last_name' => $this->lastName,
                     'middle_name' => $this->middleName,
-                    'birth_date' => $normalizedBirthDate
+                    'birth_date' => $normalizedBirthDate,
                 ];
 
                 DB::table('patients')->where('id', $patientId)->update($patientUpdates);
@@ -636,7 +719,7 @@ class AppointmentCalendar extends Component
                 );
 
                 if ($hasChanges) {
-                    $patientSubject = new Patient();
+                    $patientSubject = new Patient;
                     $patientSubject->id = $patientId;
 
                     activity()
@@ -661,10 +744,10 @@ class AppointmentCalendar extends Component
                     'middle_name' => $this->middleName,
                     'mobile_number' => $this->contactNumber,
                     'birth_date' => $normalizedBirthDate,
-                    'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM'
+                    'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM',
                 ]);
 
-                $patientSubject = new Patient();
+                $patientSubject = new Patient;
                 $patientSubject->id = $patientId;
 
                 activity()
@@ -689,11 +772,11 @@ class AppointmentCalendar extends Component
 
             // Insert Appointment
             $appointmentPayload = [
-                'patient_id' => $patientId, 
+                'patient_id' => $patientId,
                 'service_id' => $this->selectedService,
                 'appointment_date' => $appointmentDateTime,
                 'status' => 'Scheduled',
-                'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM', 
+                'modified_by' => Auth::check() ? Auth::user()->username : 'SYSTEM',
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -704,7 +787,7 @@ class AppointmentCalendar extends Component
 
             $newApptId = DB::table('appointments')->insertGetId($appointmentPayload);
 
-            $appointmentSubject = new Appointment();
+            $appointmentSubject = new Appointment;
             $appointmentSubject->id = $newApptId;
 
             activity()
@@ -723,7 +806,7 @@ class AppointmentCalendar extends Component
                 ->log('Created Appointment');
 
             // Success!
-            session()->flash('success', 'Appointment booked successfully!'); 
+            session()->flash('success', 'Appointment booked successfully!');
 
             $this->clearPrefill();
             $this->loadAppointments();
@@ -731,7 +814,7 @@ class AppointmentCalendar extends Component
 
         } catch (\Throwable $th) {
             // 3. FIX: Show the error instead of hiding it!
-            session()->flash('error', 'Error saving: ' . $th->getMessage());
+            session()->flash('error', 'Error saving: '.$th->getMessage());
         }
     }
 
@@ -752,7 +835,7 @@ class AppointmentCalendar extends Component
 
     protected function normalizeBirthDate(?string $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             throw new InvalidFormatException('Birth date is required.');
         }
 
@@ -771,7 +854,7 @@ class AppointmentCalendar extends Component
     public function isSlotOccupied($date, $time)
     {
         $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
-        $key = $date . ' ' . $normalizedTime;
+        $key = $date.' '.$normalizedTime;
         if (($this->blockedSlotMap[$key] ?? false) === true) {
             return true;
         }
@@ -782,21 +865,24 @@ class AppointmentCalendar extends Component
     public function isSlotBlocked($date, $time): bool
     {
         $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
-        $key = $date . ' ' . $normalizedTime;
+        $key = $date.' '.$normalizedTime;
+
         return ($this->blockedSlotMap[$key] ?? false) === true;
     }
 
     public function hasAppointmentsInSlot(string $date, string $time): bool
     {
         $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
-        $key = $date . ' ' . $normalizedTime;
+        $key = $date.' '.$normalizedTime;
+
         return ($this->occupiedSlotCounts[$key] ?? 0) > 0;
     }
 
     public function getBlockedSlotAt(string $date, string $time): ?object
     {
         $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
-        $key = $date . ' ' . $normalizedTime;
+        $key = $date.' '.$normalizedTime;
+
         return $this->blockedSlotLookup[$key] ?? null;
     }
 
@@ -807,7 +893,7 @@ class AppointmentCalendar extends Component
         $blockedLookup = [];
 
         foreach ($this->occupiedAppointments as $appointment) {
-            $slotCursor = Carbon::parse($appointment->start_date . ' ' . $appointment->start_time)->seconds(0);
+            $slotCursor = Carbon::parse($appointment->start_date.' '.$appointment->start_time)->seconds(0);
             $slotEnd = $slotCursor->copy()->addMinutes((int) $appointment->duration_in_minutes);
 
             while ($slotCursor < $slotEnd) {
@@ -818,8 +904,8 @@ class AppointmentCalendar extends Component
         }
 
         foreach ($this->blockedSlots as $slot) {
-            $slotCursor = Carbon::parse($slot->date . ' ' . $slot->start_time)->seconds(0);
-            $slotEnd = Carbon::parse($slot->date . ' ' . $slot->end_time)->seconds(0);
+            $slotCursor = Carbon::parse($slot->date.' '.$slot->start_time)->seconds(0);
+            $slotEnd = Carbon::parse($slot->date.' '.$slot->end_time)->seconds(0);
 
             while ($slotCursor < $slotEnd) {
                 $key = $slotCursor->format('Y-m-d H:i');
@@ -836,7 +922,7 @@ class AppointmentCalendar extends Component
 
     protected function hasBlockedConflict(Carbon $proposedStart, Carbon $proposedEnd): bool
     {
-        if (!$this->blockedSlotsEnabled()) {
+        if (! $this->blockedSlotsEnabled()) {
             return false;
         }
 
@@ -867,7 +953,7 @@ class AppointmentCalendar extends Component
         $appointment = collect($this->appointments)->firstWhere('id', (int) $appointmentId);
 
         // Fallback path for any appointment not in current in-memory collection.
-        if (!$appointment) {
+        if (! $appointment) {
             $appointment = DB::table('appointments')
                 ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
                 ->join('services', 'appointments.service_id', '=', 'services.id')
@@ -886,7 +972,7 @@ class AppointmentCalendar extends Component
         }
 
         if ($appointment) {
-            $this->resetForm(); 
+            $this->resetForm();
 
             // 2. Populate the form fields
             $this->firstName = $appointment->first_name;
@@ -896,7 +982,7 @@ class AppointmentCalendar extends Component
             $this->birthDate = $appointment->birth_date;
             $this->viewingAppointmentId = $appointment->id;
             $this->viewingPatientId = $appointment->patient_id ?? null;
-            $this->appointmentStatus = $appointment->status;   
+            $this->appointmentStatus = $appointment->status;
             $this->hydratePendingReviewContext($appointment);
 
             // 3. Format Dates and Times
@@ -924,7 +1010,7 @@ class AppointmentCalendar extends Component
     //         $this->age = '';
     //     }
     // }
-    
+
     public function updateStatus($newStatus)
     {
         if ($this->viewingAppointmentId) {
@@ -943,6 +1029,7 @@ class AppointmentCalendar extends Component
 
         if ($tab === 'pending' && Auth::user()?->role === 3) {
             $this->activeTab = 'calendar';
+
             return;
         }
         $this->activeTab = $tab;
@@ -988,13 +1075,14 @@ class AppointmentCalendar extends Component
         }
 
         $appointment = DB::table('appointments')->where('id', $appointmentId)->first();
-        if (!$appointment) {
+        if (! $appointment) {
             return;
         }
 
         if (empty($appointment->patient_id)) {
             $this->viewAppointment($appointmentId);
             session()->flash('error', 'Review required: link to an existing patient or create a new patient before approval.');
+
             return;
         }
 
@@ -1014,15 +1102,135 @@ class AppointmentCalendar extends Component
         session()->flash('info', 'Appointment request rejected.');
     }
 
+    public function beginPendingReschedule(): void
+    {
+        if (! $this->isViewing || $this->appointmentStatus !== 'Pending' || Auth::user()?->role === 3) {
+            return;
+        }
+
+        $this->isRescheduling = true;
+        $this->selectedDate = $this->appointmentDate ?: $this->selectedDate;
+        if (! empty($this->selectedTime)) {
+            $this->selectedTime = substr((string) $this->selectedTime, 0, 5);
+        }
+        $this->updatedSelectedService($this->selectedService);
+        $this->resetValidation(['selectedDate', 'selectedTime', 'conflict']);
+    }
+
+    public function cancelPendingReschedule(): void
+    {
+        $this->isRescheduling = false;
+        $this->resetValidation(['selectedDate', 'selectedTime', 'conflict']);
+
+        if ($this->viewingAppointmentId) {
+            $this->viewAppointment((int) $this->viewingAppointmentId);
+        }
+    }
+
+    public function savePendingReschedule(): void
+    {
+        if (! $this->viewingAppointmentId || ! $this->isViewing || $this->appointmentStatus !== 'Pending') {
+            return;
+        }
+
+        if (Auth::user()?->role === 3) {
+            return;
+        }
+
+        $this->validate([
+            'selectedDate' => 'required|date|after_or_equal:today',
+            'selectedTime' => 'required|date_format:H:i',
+            'selectedService' => 'required',
+        ]);
+
+        $service = collect($this->servicesList)->firstWhere('id', $this->selectedService);
+        if (! $service) {
+            $this->addError('selectedService', 'Please select a valid service.');
+
+            return;
+        }
+
+        $durationInMinutes = $this->durationToMinutes($service->duration);
+        $proposedStart = Carbon::parse($this->selectedDate.' '.$this->selectedTime)->seconds(0);
+        $proposedEnd = $proposedStart->copy()->addMinutes($durationInMinutes);
+
+        if ($this->hasBlockedConflict($proposedStart, $proposedEnd)) {
+            $this->addError('conflict', 'This time range includes blocked slots.');
+
+            return;
+        }
+
+        $approvedConflicts = DB::table('appointments')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->where('appointments.id', '!=', $this->viewingAppointmentId)
+            ->where(function ($query) use ($proposedStart, $proposedEnd) {
+                $existingStart = 'appointments.appointment_date';
+                $existingEnd = DB::raw('DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)');
+
+                $query->where($existingStart, '<', $proposedEnd->toDateTimeString())
+                    ->where($existingEnd, '>', $proposedStart->toDateTimeString())
+                    ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES);
+            })
+            ->count();
+
+        if ($approvedConflicts >= self::SLOT_CAPACITY) {
+            $this->addError('conflict', 'This time slot already has two approved appointments.');
+
+            return;
+        }
+
+        $requestCountInTargetSlot = DB::table('appointments')
+            ->where('id', '!=', $this->viewingAppointmentId)
+            ->where('appointment_date', $proposedStart->toDateTimeString())
+            ->whereNotIn('status', self::INACTIVE_APPOINTMENT_STATUSES)
+            ->count();
+
+        if ($requestCountInTargetSlot >= self::REQUEST_SLOT_CAP) {
+            $this->addError('conflict', 'This time slot already reached the maximum of 5 requests.');
+
+            return;
+        }
+
+        DB::table('appointments')
+            ->where('id', $this->viewingAppointmentId)
+            ->update([
+                'appointment_date' => $proposedStart->toDateTimeString(),
+                'service_id' => $this->selectedService,
+                'updated_at' => now(),
+            ]);
+
+        $subject = new Appointment;
+        $subject->id = $this->viewingAppointmentId;
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($subject)
+            ->event('appointment_request_rescheduled')
+            ->withProperties([
+                'attributes' => [
+                    'appointment_id' => (int) $this->viewingAppointmentId,
+                    'appointment_date' => $proposedStart->toDateTimeString(),
+                    'service_id' => $this->selectedService,
+                ],
+            ])
+            ->log('Rescheduled Appointment Request');
+
+        $this->isRescheduling = false;
+        $this->loadAppointments();
+        $this->viewAppointment((int) $this->viewingAppointmentId);
+        session()->flash('success', 'Appointment request rescheduled successfully.');
+    }
+
     protected function updateAppointmentStatusById($appointmentId, $newStatus): bool
     {
         $oldAppt = DB::table('appointments')->where('id', $appointmentId)->first();
-        if (!$oldAppt) {
+        if (! $oldAppt) {
             return false;
         }
 
         if ($newStatus === 'Scheduled' && empty($oldAppt->patient_id)) {
             session()->flash('error', 'Cannot approve without a linked patient record.');
+
             return false;
         }
 
@@ -1034,7 +1242,7 @@ class AppointmentCalendar extends Component
             ]);
 
         if ($oldAppt->status !== $newStatus) {
-            $subject = new Appointment();
+            $subject = new Appointment;
             $subject->id = $appointmentId;
 
             $eventName = $newStatus === 'Cancelled' ? 'appointment_cancelled' : 'appointment_updated';
@@ -1045,7 +1253,7 @@ class AppointmentCalendar extends Component
                 ->event($eventName)
                 ->withProperties([
                     'old' => ['status' => $oldAppt->status],
-                    'attributes' => ['status' => $newStatus]
+                    'attributes' => ['status' => $newStatus],
                 ])
                 ->log('Updated Appointment Status');
 
@@ -1099,27 +1307,30 @@ class AppointmentCalendar extends Component
 
         $this->pendingMatchCandidates = $matcher->suggestMatches($requestData)->all();
         $this->pendingDuplicateWarnings = $matcher->duplicateWarnings($requestData);
-        $this->selectedPendingPatientId = !empty($appointment->patient_id)
+        $this->selectedPendingPatientId = ! empty($appointment->patient_id)
             ? (int) $appointment->patient_id
             : null;
     }
 
     public function linkPendingRequestToExistingPatient(): void
     {
-        if (!$this->viewingAppointmentId || !$this->selectedPendingPatientId) {
+        if (! $this->viewingAppointmentId || ! $this->selectedPendingPatientId) {
             session()->flash('error', 'Select a patient record to link.');
+
             return;
         }
 
         $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
-        if (!$appointment || $appointment->status !== 'Pending') {
+        if (! $appointment || $appointment->status !== 'Pending') {
             session()->flash('error', 'Only pending requests can be linked.');
+
             return;
         }
 
         $patient = DB::table('patients')->where('id', $this->selectedPendingPatientId)->first();
-        if (!$patient) {
+        if (! $patient) {
             session()->flash('error', 'Selected patient record was not found.');
+
             return;
         }
 
@@ -1132,7 +1343,7 @@ class AppointmentCalendar extends Component
 
         $this->viewingPatientId = (int) $patient->id;
 
-        $subject = new Appointment();
+        $subject = new Appointment;
         $subject->id = $this->viewingAppointmentId;
 
         activity()
@@ -1153,13 +1364,14 @@ class AppointmentCalendar extends Component
 
     public function createPatientForPendingRequest(): void
     {
-        if (!$this->viewingAppointmentId) {
+        if (! $this->viewingAppointmentId) {
             return;
         }
 
         $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
-        if (!$appointment || $appointment->status !== 'Pending') {
+        if (! $appointment || $appointment->status !== 'Pending') {
             session()->flash('error', 'Only pending requests can create a patient link.');
+
             return;
         }
 
@@ -1169,6 +1381,7 @@ class AppointmentCalendar extends Component
 
         if ($firstName === '' || $lastName === '') {
             session()->flash('error', 'Request must have both first and last name before creating a patient record.');
+
             return;
         }
 
@@ -1176,8 +1389,8 @@ class AppointmentCalendar extends Component
             'first_name' => $firstName,
             'last_name' => $lastName,
             'mobile_number' => trim((string) ($requestData['mobile_number'] ?? '')),
-            'birth_date' => !empty($requestData['birth_date']) ? $requestData['birth_date'] : null,
-            'email_address' => !empty($requestData['email_address']) ? $requestData['email_address'] : null,
+            'birth_date' => ! empty($requestData['birth_date']) ? $requestData['birth_date'] : null,
+            'email_address' => ! empty($requestData['email_address']) ? $requestData['email_address'] : null,
             'modified_by' => Auth::user()?->username ?? 'SYSTEM',
             'created_at' => now(),
             'updated_at' => now(),
@@ -1190,7 +1403,7 @@ class AppointmentCalendar extends Component
                 'updated_at' => now(),
             ]);
 
-        $patientSubject = new Patient();
+        $patientSubject = new Patient;
         $patientSubject->id = $patientId;
 
         activity()
@@ -1207,7 +1420,7 @@ class AppointmentCalendar extends Component
             ])
             ->log('Created Patient from Appointment Request');
 
-        $appointmentSubject = new Appointment();
+        $appointmentSubject = new Appointment;
         $appointmentSubject->id = $this->viewingAppointmentId;
 
         activity()
@@ -1263,13 +1476,13 @@ class AppointmentCalendar extends Component
             ->where('appointments.id', $appointmentId)
             ->first();
 
-        if (!$appointment || empty($appointment->email_address)) {
+        if (! $appointment || empty($appointment->email_address)) {
             return;
         }
 
         try {
             Mail::send('appointment.emails.appointment-status-update', [
-                'name' => trim($appointment->first_name . ' ' . $appointment->last_name),
+                'name' => trim($appointment->first_name.' '.$appointment->last_name),
                 'appointment_date' => Carbon::parse($appointment->appointment_date)->format('F j, Y g:i A'),
                 'service_name' => $appointment->service_name,
                 'status' => $newStatus,
@@ -1292,6 +1505,7 @@ class AppointmentCalendar extends Component
         // Don't search if empty or too short
         if (strlen($this->searchQuery) < 2) {
             $this->patientSearchResults = [];
+
             return;
         }
 
@@ -1299,9 +1513,9 @@ class AppointmentCalendar extends Component
         $this->patientSearchResults = DB::table('patients')
             ->select('id', 'first_name', 'last_name', 'middle_name', 'mobile_number', 'birth_date')
             ->where(function ($query) {
-                $query->where('first_name', 'like', '%' . $this->searchQuery . '%')
-                    ->orWhere('last_name', 'like', '%' . $this->searchQuery . '%')
-                    ->orWhere('mobile_number', 'like', '%' . $this->searchQuery . '%');
+                $query->where('first_name', 'like', '%'.$this->searchQuery.'%')
+                    ->orWhere('last_name', 'like', '%'.$this->searchQuery.'%')
+                    ->orWhere('mobile_number', 'like', '%'.$this->searchQuery.'%');
             })
             ->orderBy('last_name')
             ->orderBy('first_name')
@@ -1322,7 +1536,7 @@ class AppointmentCalendar extends Component
             $this->birthDate = $patient->birth_date;
 
             // Optional: If you store record_number in DB, map it here too
-            // $this->recordNumber = $patient->record_number; 
+            // $this->recordNumber = $patient->record_number;
 
             // Clear the search so the dropdown disappears
             $this->searchQuery = '';
@@ -1332,7 +1546,7 @@ class AppointmentCalendar extends Component
 
     public function goToDate()
     {
-        if (!$this->selectedDate) {
+        if (! $this->selectedDate) {
             return;
         }
 
@@ -1347,7 +1561,7 @@ class AppointmentCalendar extends Component
         $this->selectedDate = $this->currentDate->format('Y-m-d');
         $this->generateWeekDates();
         $this->loadAppointments();
-        
+
     }
 
     public function clearPrefill()
@@ -1356,10 +1570,10 @@ class AppointmentCalendar extends Component
         $this->prefillPatientLabel = null;
     }
 
-    public function processPatient() 
+    public function processPatient()
     {
         $patientId = $this->viewingPatientId;
-        if (!$patientId && $this->viewingAppointmentId) {
+        if (! $patientId && $this->viewingAppointmentId) {
             $patientId = DB::table('appointments')
                 ->where('id', $this->viewingAppointmentId)
                 ->value('patient_id');
@@ -1375,15 +1589,16 @@ class AppointmentCalendar extends Component
     {
         $patientId = $this->viewingPatientId;
 
-        if (!$patientId && $this->viewingAppointmentId) {
+        if (! $patientId && $this->viewingAppointmentId) {
             $patientId = DB::table('appointments')
                 ->where('id', $this->viewingAppointmentId)
                 ->value('patient_id');
         }
 
-        if (!$patientId) {
+        if (! $patientId) {
             session()->flash('error', 'Patient record was not found for this appointment.');
             $this->dispatch('patient-form-open-failed');
+
             return;
         }
 
@@ -1393,7 +1608,7 @@ class AppointmentCalendar extends Component
     public function openPatientChart()
     {
         $patientId = $this->viewingPatientId;
-        if (!$patientId && $this->viewingAppointmentId) {
+        if (! $patientId && $this->viewingAppointmentId) {
             $patientId = DB::table('appointments')
                 ->where('id', $this->viewingAppointmentId)
                 ->value('patient_id');
@@ -1409,12 +1624,14 @@ class AppointmentCalendar extends Component
     {
         $appointment = DB::table('appointments')->find($this->viewingAppointmentId);
         $service = DB::table('services')->where('id', $this->selectedService)->first();
-        
-        if (!$appointment || !$service) return;
+
+        if (! $appointment || ! $service) {
+            return;
+        }
 
         // Use Original Time
-        $startTime = Carbon::parse($appointment->appointment_date); 
-        
+        $startTime = Carbon::parse($appointment->appointment_date);
+
         $durationMinutes = $this->durationToMinutes($service->duration);
         $endTime = $startTime->copy()->addMinutes($durationMinutes);
 
@@ -1428,7 +1645,7 @@ class AppointmentCalendar extends Component
             ->whereDate('appointment_date', $startTime->toDateString())
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where('appointment_date', '<', $endTime)
-                      ->whereRaw("DATE_ADD(appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND) > ?", [$startTime]);
+                    ->whereRaw('DATE_ADD(appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND) > ?', [$startTime]);
             })
             ->exists();
 
@@ -1444,16 +1661,17 @@ class AppointmentCalendar extends Component
                     'status' => 'Ongoing',
                     'service_id' => $this->selectedService,
                     'dentist_id' => $dentistId, // <--- ADD THIS LINE TO CLAIM THE PATIENT
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
 
-            if (!$updated) {
+            if (! $updated) {
                 session()->flash('error', 'This appointment was already admitted or updated. Please refresh.');
+
                 return;
             }
             // ===================
 
-            $appointmentSubject = new Appointment();
+            $appointmentSubject = new Appointment;
             $appointmentSubject->id = $this->viewingAppointmentId;
 
             activity()
@@ -1473,7 +1691,7 @@ class AppointmentCalendar extends Component
                     ],
                 ])
                 ->log('Admitted Appointment');
-            
+
             $this->loadAppointments();
             $this->closeAppointmentModal();
             $this->dispatch('editPatient', id: $appointment->patient_id, startStep: 3);

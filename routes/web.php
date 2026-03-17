@@ -1,20 +1,19 @@
 <?php
 
-use App\Http\Controllers\Dashboard;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\PatientDashboardController;
 use App\Http\Controllers\PatientsController;
-use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\UserController;
 use App\Livewire\appointment\BookAppointment;
-use App\Http\Controllers\Auth\VerificationController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-
+use Illuminate\Support\Facades\Route;
 
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
 Route::view('/terms-of-service', 'terms-of-service')->name('terms-of-service');
@@ -37,19 +36,17 @@ Route::prefix('services')->group(function () {
 });
 
 // Public (guest) routes
-Route::middleware(['guest'])->group(function() {
+Route::middleware(['guest'])->group(function () {
     Route::get('/login', [LoginController::class, 'index'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
     Route::get('/login/otp', [LoginController::class, 'showOtpForm'])->name('login.otp');
     Route::post('/login/otp', [LoginController::class, 'verifyOtp'])->name('login.otp.verify');
     Route::post('/login/otp/resend', [LoginController::class, 'resendOtp'])->name('login.otp.resend');
 
-
     Route::get('auth/google/redirect', [LoginController::class, 'redirectToGoogle'])
         ->name('auth.google.redirect');
     Route::get('auth/google/callback', [LoginController::class, 'handleGoogleCallback'])
         ->name('auth.google.callback');
-
 
     // Forgot Password Routes
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.forgot');
@@ -57,14 +54,12 @@ Route::middleware(['guest'])->group(function() {
 
     // (Reset routes moved below to allow both guests and authenticated users)
 
-    
     // Registration Routes (Manual)
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
 
-    
     Route::get('/email/verify-notice', [VerificationController::class, 'showNotice'])->name('verification.notice');
-    
+
     // 2. The Verification Link (Clicked from email)
     Route::get('/email/verify/{id}/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
     Route::get('/email/verified', [VerificationController::class, 'showSuccess'])->name('verification.success');
@@ -107,11 +102,15 @@ Route::middleware(['auth', 'staffOrDentist'])->group(function () {
         return view('appointment', ['initialTab' => 'calendar']);
     })->name('appointment.calendar');
     Route::get('/patient-records', [PatientsController::class, 'index'])->name('patient-records');
-}); 
+});
 
 // Patient-only routes
 Route::middleware(['auth', 'isPatient'])->group(function () {
     Route::get('/patient/dashboard', [PatientDashboardController::class, 'index'])->name('patient.dashboard');
+    Route::get('/patient/appointments/{appointment}/reschedule', [PatientDashboardController::class, 'editReschedule'])
+        ->name('patient.appointments.reschedule.edit');
+    Route::post('/patient/appointments/{appointment}/reschedule', [PatientDashboardController::class, 'updateReschedule'])
+        ->name('patient.appointments.reschedule.update');
     Route::post('/patient/appointments/{appointment}/cancel', [PatientDashboardController::class, 'cancel'])
         ->name('patient.appointments.cancel');
 });
@@ -127,7 +126,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
         Route::put('/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
-    
+
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs');
 
     Route::redirect('/admin/reports', '/reports');

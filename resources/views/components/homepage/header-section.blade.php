@@ -101,29 +101,32 @@
             </div>
         </a>
 
-        <nav class="hidden items-center gap-9 lg:flex">
-            @if ($isPatientUser)
-                <a href="{{ route('patient.dashboard') }}"
-                    class="booking-nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">Dashboard</a>
-                <a href="{{ route('book') }}"
-                    class="booking-nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">Book</a>
-            @else
+        {{-- Desktop nav — only shown for non-patient users --}}
+        @if (!$isPatientUser)
+            <nav class="hidden items-center gap-9 lg:flex">
                 @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
                     <a href="/home#{{ $id }}"
                         class="booking-nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">{{ $label }}</a>
                 @endforeach
-            @endif
-        </nav>
+            </nav>
+        @endif
 
-        <div class="hidden items-center gap-3 lg:flex">
+        {{-- Desktop right actions --}}
+        <div class="{{ $isPatientUser ? 'flex items-center gap-2' : 'hidden items-center gap-2 lg:flex' }}">
             @if ($isPatientUser)
+                {{-- Notification bell --}}
+                @livewire('components.notification-bell')
+
+                {{-- Profile icon --}}
                 <div class="relative" id="patient-profile-wrap">
                     <button id="patient-profile-btn" type="button" aria-haspopup="true" aria-expanded="false"
                         aria-controls="patient-profile-menu"
                         class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#cde8f9] bg-[#eff8fe] text-[#0086da] transition duration-200 hover:border-[#7ec4ef] hover:bg-[#dff0fc]">
                         <span class="sr-only">Open profile menu</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M10 2a4 4 0 100 8 4 4 0 000-8zM3 16a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"
+                            aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 2a4 4 0 100 8 4 4 0 000-8zM3 16a7 7 0 1114 0H3z"
+                                clip-rule="evenodd" />
                         </svg>
                     </button>
 
@@ -148,20 +151,22 @@
             @endif
         </div>
 
+        {{-- Mobile hamburger --}}
         <button id="booking-ham-btn" aria-label="Toggle menu"
-            class="flex flex-col items-end gap-[5px] border-none bg-transparent p-2 lg:hidden">
+            class="{{ $isPatientUser ? 'hidden' : 'flex flex-col items-end gap-[5px] border-none bg-transparent p-2 lg:hidden' }}">
             <span id="book-bar1"></span>
             <span id="book-bar2"></span>
             <span id="book-bar3"></span>
         </button>
 
+        {{-- Mobile menu --}}
         <div id="booking-mob-menu"
             class="absolute top-full right-0 left-0 z-[200] hidden border-t border-[#e4eff8] bg-white shadow-[0_8px_32px_rgba(0,0,0,.08)]">
             @if ($isPatientUser)
                 <a href="{{ route('patient.dashboard') }}"
                     class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Dashboard</a>
                 <a href="{{ route('book') }}"
-                    class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Book</a>
+                    class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Book Appointment</a>
                 <a href="{{ route('profile.index') }}"
                     class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Profile</a>
                 <div class="px-7 pt-5 pb-6">
@@ -194,48 +199,48 @@
     document.addEventListener('DOMContentLoaded', () => {
         const hamBtn = document.getElementById('booking-ham-btn');
         const mobMenu = document.getElementById('booking-mob-menu');
-        const patientProfileWrap = document.getElementById('patient-profile-wrap');
-        const patientProfileBtn = document.getElementById('patient-profile-btn');
-        const patientProfileMenu = document.getElementById('patient-profile-menu');
-        if (!hamBtn || !mobMenu) return;
-
-        hamBtn.addEventListener('click', () => {
-            const open = mobMenu.classList.toggle('hidden') === false;
-            hamBtn.classList.toggle('active', open);
-            hamBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-        });
-
-        mobMenu.querySelectorAll('a').forEach((link) => {
-            link.addEventListener('click', () => {
-                mobMenu.classList.add('hidden');
-                hamBtn.classList.remove('active');
-                hamBtn.setAttribute('aria-expanded', 'false');
+        const profileWrap = document.getElementById('patient-profile-wrap');
+        const profileBtn = document.getElementById('patient-profile-btn');
+        const profileMenu = document.getElementById('patient-profile-menu');
+        if (hamBtn && mobMenu) {
+            hamBtn.addEventListener('click', () => {
+                const open = mobMenu.classList.toggle('hidden') === false;
+                hamBtn.classList.toggle('active', open);
+                hamBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
             });
-        });
-
-        if (patientProfileBtn && patientProfileMenu && patientProfileWrap) {
-            const closeProfileMenu = () => {
-                patientProfileMenu.classList.add('hidden');
-                patientProfileBtn.setAttribute('aria-expanded', 'false');
-            };
-
-            patientProfileBtn.addEventListener('click', () => {
-                const isOpen = !patientProfileMenu.classList.contains('hidden');
-                patientProfileMenu.classList.toggle('hidden', isOpen);
-                patientProfileBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+            mobMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobMenu.classList.add('hidden');
+                    hamBtn.classList.remove('active');
+                    hamBtn.setAttribute('aria-expanded', 'false');
+                });
             });
+        }
 
-            document.addEventListener('click', (event) => {
-                if (!patientProfileWrap.contains(event.target)) {
-                    closeProfileMenu();
-                }
-            });
+        const closeAll = () => {
+            profileMenu?.classList.add('hidden');
+            profileBtn?.setAttribute('aria-expanded', 'false');
+        };
 
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    closeProfileMenu();
+        if (profileBtn && profileMenu && profileWrap) {
+            profileBtn.addEventListener('click', () => {
+                const isOpen = !profileMenu.classList.contains('hidden');
+                closeAll();
+                if (!isOpen) {
+                    profileMenu.classList.remove('hidden');
+                    profileBtn.setAttribute('aria-expanded', 'true');
                 }
             });
         }
+
+        document.addEventListener('click', event => {
+            if (profileWrap && !profileWrap.contains(event.target)) {
+                closeAll();
+            }
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') { closeAll(); }
+        });
     });
 </script>

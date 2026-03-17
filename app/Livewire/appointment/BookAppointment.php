@@ -2,35 +2,78 @@
 
 namespace App\Livewire\appointment;
 
-use Livewire\Component;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Component;
 use Throwable;
 
 class BookAppointment extends Component
 {
     protected const SLOT_CAPACITY = 2;
+
     protected const APPROVED_SLOT_STATUSES = ['Scheduled', 'Waiting', 'Ongoing'];
 
+    protected const REQUEST_SLOT_CAP = 5;
+
+    protected const INACTIVE_APPOINTMENT_STATUSES = ['Cancelled', 'Completed'];
+
+    protected const OTP_MAX_SEND_ATTEMPTS = 4;
+
+    protected const OTP_MAX_SEND_WINDOW_SECONDS = 15 * 60;
+
+    protected const OTP_RESEND_COOLDOWN_SECONDS = 60;
+
+    protected const OTP_MAX_RESENDS = 3;
+
+    protected const OTP_EXPIRES_IN_MINUTES = 10;
+
     // Form data
-    public $first_name, $last_name, $age, $contact_number, $email, $service_id;
-    public $selectedDate, $selectedSlot;
+    public $first_name;
+
+    public $last_name;
+
+    public $birth_date;
+
+    public $contact_number;
+
+    public $email;
+
+    public $service_id;
+
+    public $selectedDate;
+
+    public $selectedSlot;
+
     public $recaptchaToken;
+
+    public $booking_agreement = false;
+
     public $guestEmailOtp = '';
+
     public $guestEmailOtpHash = null;
+
     public $guestEmailOtpExpiresAt = null;
+
+    public $guestEmailOtpCooldownUntil = null;
+
     public $guestEmailOtpVerified = false;
+
     public $guestEmailOtpTargetEmail = null;
+
     public $guestOtpStepActive = false;
+
+    public $guestEmailOtpResendCount = 0;
+
     protected ?bool $blockedSlotsTableExists = null;
+
     protected $appointmentStatuses = null;
-    
+
     // UI data
     public $availableSlots = [];
 
@@ -44,20 +87,29 @@ class BookAppointment extends Component
             $this->email = $user->email;
             $this->contact_number = $user->contact ?? '';
 
-            $nameParts = preg_split('/\s+/', trim((string) ($user->username ?? '')));
-            $this->first_name = $nameParts[0] ?? '';
-            $this->last_name = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : '';
+            $username = trim((string) ($user->username ?? ''));
+            if ($username !== '' && ! filter_var($username, FILTER_VALIDATE_EMAIL)) {
+                $nameParts = preg_split('/\s+/', $username);
+                $this->first_name = $nameParts[0] ?? '';
+                $this->last_name = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : '';
+            } else {
+                $this->first_name = '';
+                $this->last_name = '';
+            }
+
+            $this->prefillFromPreviousBooking();
         }
     }
 
     // This runs automatically when $selectedDate is updated via JavaScript
     public function updatedSelectedDate($date)
     {
-        if (empty($date) || !$this->isValidSelectedDate($date)) {
+        if (empty($date) || ! $this->isValidSelectedDate($date)) {
             $this->availableSlots = [];
             $this->selectedSlot = null;
             $this->selectedDate = null;
             $this->dispatch('book-calendar-refresh', selectedDate: null);
+
             return;
         }
 
@@ -67,14 +119,17 @@ class BookAppointment extends Component
 
     public function updatedEmail($value): void
     {
-        if (Auth::check()) {
-            return;
-        }
-
         $normalizedEmail = $this->normalizeEmail($value);
         if ($normalizedEmail === '' || $normalizedEmail !== $this->guestEmailOtpTargetEmail) {
             $this->resetGuestEmailOtpState();
         }
+
+        if ($normalizedEmail === '') {
+            return;
+        }
+
+        $this->email = $normalizedEmail;
+        $this->prefillFromPreviousBooking();
     }
 
     public function updated($propertyName): void
@@ -83,12 +138,13 @@ class BookAppointment extends Component
         $clearableFields = [
             'first_name',
             'last_name',
-            'age',
+            'birth_date',
             'contact_number',
             'email',
             'service_id',
             'selectedDate',
             'selectedSlot',
+            'booking_agreement',
             'recaptchaToken',
             'guestEmailOtp',
         ];
@@ -106,8 +162,8 @@ class BookAppointment extends Component
     {
         $date = Carbon::parse($dateString);
         // Default hours since schedules table does not exist
-        $startTime = Carbon::parse($dateString . ' 09:00:00');
-        $endTime = Carbon::parse($dateString . ' 20:00:00');
+        $startTime = Carbon::parse($dateString.' 09:00:00');
+        $endTime = Carbon::parse($dateString.' 20:00:00');
         $duration = 60; // minutes per slot
         $blockedSlots = collect();
 
@@ -126,24 +182,34 @@ class BookAppointment extends Component
             ->pluck('total', 'time_slot')
             ->toArray();
 
+        $requestCounts = DB::table('appointments')
+            ->whereDate('appointment_date', $dateString)
+            ->whereNotIn('status', self::INACTIVE_APPOINTMENT_STATUSES)
+            ->selectRaw('TIME(appointment_date) as time_slot, COUNT(*) as total')
+            ->groupBy('time_slot')
+            ->pluck('total', 'time_slot')
+            ->toArray();
+
         $slots = [];
 
         while ($startTime->lte($endTime)) {
             $slotTime = $startTime->format('H:i:00');
             $currentCount = $bookedCounts[$slotTime] ?? 0;
-            $slotDateTime = Carbon::parse($dateString . ' ' . $slotTime);
+            $currentRequests = $requestCounts[$slotTime] ?? 0;
+            $slotDateTime = Carbon::parse($dateString.' '.$slotTime);
             $slotEndDateTime = $slotDateTime->copy()->addMinutes($duration);
             $isPast = $slotDateTime->lt(now());
             $isBlocked = $this->isBlockedBySlotCollection($slotDateTime, $slotEndDateTime, $blockedSlots);
             $slots[] = [
                 'time' => $startTime->format('h:i A'),
                 'value' => $slotTime,
-                'is_full' => $currentCount >= self::SLOT_CAPACITY,
+                'is_full' => $currentCount >= self::SLOT_CAPACITY || $currentRequests >= self::REQUEST_SLOT_CAP,
                 'is_past' => $isPast,
                 'is_blocked' => $isBlocked,
             ];
             $startTime->addMinutes($duration);
         }
+
         return $slots;
     }
 
@@ -153,15 +219,29 @@ class BookAppointment extends Component
 
         if (Auth::check() && empty(Auth::user()->email_verified_at)) {
             $this->addError('email', 'Please verify your email address before booking an appointment.');
+
             return;
         }
 
-        if (!Auth::check()) {
-            if (!$this->verifyRecaptchaForGuest()) {
+        if (! Auth::check()) {
+            if ($this->canResumeGuestOtpStep()) {
+                if (! $this->assertBookingStillAvailable()) {
+                    return;
+                }
+
+                $this->guestEmailOtp = '';
+                $this->resetValidation('guestEmailOtp');
+                session()->flash('otp_success', 'Enter the 6-digit code we already sent to your email.');
+                $this->guestOtpStepActive = true;
+
                 return;
             }
 
-            if (!$this->assertBookingStillAvailable()) {
+            if (! $this->verifyRecaptchaForGuest()) {
+                return;
+            }
+
+            if (! $this->assertBookingStillAvailable()) {
                 return;
             }
 
@@ -171,6 +251,7 @@ class BookAppointment extends Component
             }
 
             $this->guestOtpStepActive = true;
+
             return;
         }
 
@@ -178,6 +259,16 @@ class BookAppointment extends Component
     }
 
     public function sendGuestEmailOtp(): void
+    {
+        $this->issueGuestEmailOtp(false);
+    }
+
+    public function resendGuestEmailOtp(): void
+    {
+        $this->issueGuestEmailOtp(true);
+    }
+
+    protected function issueGuestEmailOtp(bool $isResend): void
     {
         if (Auth::check()) {
             return;
@@ -190,27 +281,54 @@ class BookAppointment extends Component
         $normalizedEmail = $this->normalizeEmail($this->email);
         if ($normalizedEmail === '') {
             $this->addError('email', 'Please enter a valid email address.');
+
+            return;
+        }
+
+        if ($isResend && ! $this->canResumeGuestOtpStep()) {
+            $this->addError('guestEmailOtp', 'Your current OTP session is no longer active. Please submit the form again.');
+
+            return;
+        }
+
+        if ($isResend && $this->remainingGuestOtpResends() < 1) {
+            $this->addError('guestEmailOtp', 'You can only resend the OTP 3 times. Please submit the form again to request a new OTP session.');
+
             return;
         }
 
         $sendThrottleKey = $this->guestOtpSendThrottleKey($normalizedEmail, (string) request()->ip());
-        if (RateLimiter::tooManyAttempts($sendThrottleKey, 3)) {
-            $seconds = RateLimiter::availableIn($sendThrottleKey);
-            $minutes = max(1, (int) ceil($seconds / 60));
-            $this->addError('guestEmailOtp', "Too many OTP requests. Try again in {$minutes} minute(s).");
+        $cooldownKey = $this->guestOtpCooldownThrottleKey($normalizedEmail, (string) request()->ip());
+
+        if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
+            $seconds = max(1, RateLimiter::availableIn($cooldownKey));
+            $this->addError('guestEmailOtp', "Please wait {$seconds} second(s) before resending OTP.");
+
             return;
         }
 
-        RateLimiter::hit($sendThrottleKey, 15 * 60);
+        if (RateLimiter::tooManyAttempts($sendThrottleKey, self::OTP_MAX_SEND_ATTEMPTS)) {
+            $seconds = RateLimiter::availableIn($sendThrottleKey);
+            $minutes = max(1, (int) ceil($seconds / 60));
+            $this->addError('guestEmailOtp', 'You have reached the maximum of '.self::OTP_MAX_SEND_ATTEMPTS." OTP sends. Try again in {$minutes} minute(s).");
+
+            return;
+        }
+
+        RateLimiter::hit($cooldownKey, self::OTP_RESEND_COOLDOWN_SECONDS);
+        RateLimiter::hit($sendThrottleKey, self::OTP_MAX_SEND_WINDOW_SECONDS);
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $expiresAt = now()->addMinutes(10);
+        $expiresAt = now()->addMinutes(self::OTP_EXPIRES_IN_MINUTES);
+        $cooldownUntil = now()->addSeconds(self::OTP_RESEND_COOLDOWN_SECONDS);
 
         $this->guestEmailOtpHash = Hash::make($code);
         $this->guestEmailOtpExpiresAt = $expiresAt->toDateTimeString();
+        $this->guestEmailOtpCooldownUntil = $cooldownUntil->toDateTimeString();
         $this->guestEmailOtpVerified = false;
         $this->guestEmailOtpTargetEmail = $normalizedEmail;
         $this->guestEmailOtp = '';
+        $this->guestEmailOtpResendCount = $isResend ? ((int) $this->guestEmailOtpResendCount + 1) : 0;
 
         Mail::send('appointment.emails.guest-booking-otp', [
             'otp' => $code,
@@ -221,7 +339,13 @@ class BookAppointment extends Component
             $message->subject('Your Tejadent Booking OTP');
         });
 
-        session()->flash('otp_success', 'OTP sent. Check your email and enter the 6-digit code below.');
+        $remainingResends = $this->remainingGuestOtpResends();
+        session()->flash(
+            'otp_success',
+            $isResend
+                ? "A new OTP was sent. You have {$remainingResends} resend attempt(s) left."
+                : 'OTP sent. Check your email and enter the 6-digit code below.'
+        );
     }
 
     public function verifyGuestEmailOtp()
@@ -245,11 +369,13 @@ class BookAppointment extends Component
             $this->addError('guestEmailOtp', 'Email changed. Please request a new OTP.');
             $this->resetGuestEmailOtpState();
             $this->guestOtpStepActive = false;
+
             return;
         }
 
         if (empty($this->guestEmailOtpHash) || empty($this->guestEmailOtpExpiresAt)) {
             $this->addError('guestEmailOtp', 'Please request an OTP first.');
+
             return;
         }
 
@@ -258,18 +384,21 @@ class BookAppointment extends Component
             $seconds = RateLimiter::availableIn($verifyThrottleKey);
             $minutes = max(1, (int) ceil($seconds / 60));
             $this->addError('guestEmailOtp', "Too many OTP attempts. Try again in {$minutes} minute(s).");
+
             return;
         }
 
         if (now()->greaterThan(Carbon::parse((string) $this->guestEmailOtpExpiresAt))) {
             $this->resetGuestEmailOtpState();
             $this->addError('guestEmailOtp', 'OTP expired. Please request a new one.');
+
             return;
         }
 
-        if (!Hash::check((string) $this->guestEmailOtp, (string) $this->guestEmailOtpHash)) {
+        if (! Hash::check((string) $this->guestEmailOtp, (string) $this->guestEmailOtpHash)) {
             RateLimiter::hit($verifyThrottleKey, 15 * 60);
             $this->addError('guestEmailOtp', 'Invalid OTP code.');
+
             return;
         }
 
@@ -279,25 +408,29 @@ class BookAppointment extends Component
         $this->guestEmailOtpHash = null;
         $this->guestEmailOtpExpiresAt = null;
 
-        if (!$this->assertBookingStillAvailable()) {
+        if (! $this->assertBookingStillAvailable()) {
             $this->guestOtpStepActive = false;
             $this->addError('guestEmailOtp', 'We could not complete your booking. Please review the form and try again.');
+
             return;
         }
 
         $this->guestOtpStepActive = false;
+
         return $this->createAppointmentAndRedirect();
     }
 
     public function cancelGuestOtpStep(): void
     {
         $this->guestOtpStepActive = false;
-        $this->resetGuestEmailOtpState();
+        $this->guestEmailOtp = '';
+        $this->resetValidation('guestEmailOtp');
+        $this->resetRecaptchaState();
     }
 
     protected function createAppointmentAndRedirect()
     {
-        $appointmentDateTime = Carbon::parse($this->selectedDate . ' ' . $this->selectedSlot)->toDateTimeString();
+        $appointmentDateTime = Carbon::parse($this->selectedDate.' '.$this->selectedSlot)->toDateTimeString();
 
         $appointmentPayload = [
             'patient_id' => null,
@@ -318,25 +451,34 @@ class BookAppointment extends Component
             $appointmentPayload['booking_type'] = 'online_appointment';
         }
 
+        if (Schema::hasColumn('appointments', 'requester_birth_date')) {
+            $appointmentPayload['requester_birth_date'] = ! empty($this->birth_date) ? $this->birth_date : null;
+        }
+
         DB::table('appointments')->insert($appointmentPayload);
 
         $service = DB::table('services')->where('id', $this->service_id)->first();
 
         try {
             Mail::send('appointment.emails.appointment-confirmation', [
-                'name' => trim($this->first_name . ' ' . $this->last_name),
+                'name' => trim($this->first_name.' '.$this->last_name),
                 'appointment_date' => Carbon::parse($appointmentDateTime)->format('F j, Y g:i A'),
                 'service_name' => $service?->service_name ?? 'Service',
             ], function ($message) {
                 $message->to($this->email);
                 $message->subject('Appointment Confirmation');
             });
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             // Do not block booking if email fails
         }
 
         session()->flash('success', 'Appointment requested! Please check your email for the details of your appointment.');
-        return redirect()->to('/book');
+
+        if (Auth::check() && (int) (Auth::user()->role ?? 0) === 3) {
+            return redirect()->route('patient.dashboard');
+        }
+
+        return redirect()->route('book');
     }
 
     protected function validateBookingFormData(): void
@@ -344,18 +486,90 @@ class BookAppointment extends Component
         $this->validate([
             'first_name' => 'required',
             'last_name' => 'required',
+            'birth_date' => 'required|date|before_or_equal:today',
             'email' => 'required|email',
             'service_id' => 'required',
             'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
             'selectedSlot' => 'required',
             'contact_number' => 'required',
+            'booking_agreement' => 'accepted',
+        ], [
+            'booking_agreement.accepted' => 'Please confirm the booking agreement before submitting your request.',
         ]);
+    }
+
+    protected function prefillFromPreviousBooking(): void
+    {
+        $previousBooking = $this->findPreviousBookingProfile();
+        if (! $previousBooking) {
+            return;
+        }
+
+        $this->first_name = $this->preferExistingValue($this->first_name, $previousBooking->first_name ?? null);
+        $this->last_name = $this->preferExistingValue($this->last_name, $previousBooking->last_name ?? null);
+        $this->contact_number = $this->preferExistingValue($this->contact_number, $previousBooking->contact_number ?? null);
+        $this->birth_date = $this->preferExistingValue($this->birth_date, $previousBooking->birth_date ?? null);
+    }
+
+    protected function findPreviousBookingProfile(): ?object
+    {
+        $email = $this->normalizeEmail($this->email);
+        $hasRequesterBirthDate = Schema::hasColumn('appointments', 'requester_birth_date');
+
+        $query = DB::table('appointments as appointments')
+            ->leftJoin('patients', 'patients.id', '=', 'appointments.patient_id')
+            ->selectRaw(
+                'COALESCE(appointments.requester_first_name, patients.first_name) as first_name,
+                COALESCE(appointments.requester_last_name, patients.last_name) as last_name,
+                COALESCE(appointments.requester_contact_number, patients.mobile_number) as contact_number,
+                '.($hasRequesterBirthDate
+                    ? 'COALESCE(appointments.requester_birth_date, patients.birth_date)'
+                    : 'patients.birth_date').' as birth_date'
+            )
+            ->orderByDesc('appointments.appointment_date');
+
+        if (Auth::check()) {
+            $userId = Auth::id();
+
+            $query->where(function ($builder) use ($userId, $email) {
+                $builder->where('appointments.requester_user_id', $userId);
+
+                if ($email !== '') {
+                    $builder->orWhereRaw('LOWER(appointments.requester_email) = ?', [$email])
+                        ->orWhereRaw('LOWER(patients.email_address) = ?', [$email]);
+                }
+            });
+        } else {
+            if ($email === '') {
+                return null;
+            }
+
+            $query->where(function ($builder) use ($email) {
+                $builder->whereRaw('LOWER(appointments.requester_email) = ?', [$email])
+                    ->orWhereRaw('LOWER(patients.email_address) = ?', [$email]);
+            });
+        }
+
+        return $query->first();
+    }
+
+    protected function preferExistingValue(mixed $currentValue, mixed $fallbackValue): mixed
+    {
+        $current = trim((string) ($currentValue ?? ''));
+        if ($current !== '') {
+            return $currentValue;
+        }
+
+        $fallback = trim((string) ($fallbackValue ?? ''));
+
+        return $fallback !== '' ? $fallbackValue : $currentValue;
     }
 
     protected function verifyRecaptchaForGuest(): bool
     {
         if (empty($this->recaptchaToken)) {
             $this->addError('recaptcha', 'Please complete the CAPTCHA verification.');
+
             return false;
         }
 
@@ -365,17 +579,21 @@ class BookAppointment extends Component
             'remoteip' => request()->ip(),
         ]);
 
-        if (!$response->json('success')) {
+        if (! $response->json('success')) {
+            $this->resetRecaptchaState();
             $this->addError('recaptcha', 'CAPTCHA verification failed.');
+
             return false;
         }
+
+        $this->resetRecaptchaState();
 
         return true;
     }
 
     protected function assertBookingStillAvailable(): bool
     {
-        $appointmentDateTime = Carbon::parse($this->selectedDate . ' ' . $this->selectedSlot)->toDateTimeString();
+        $appointmentDateTime = Carbon::parse($this->selectedDate.' '.$this->selectedSlot)->toDateTimeString();
         $slotStart = Carbon::parse($appointmentDateTime)->seconds(0);
         $slotEnd = $slotStart->copy()->addHour();
 
@@ -389,6 +607,7 @@ class BookAppointment extends Component
             if ($isBlocked) {
                 $this->addError('selectedSlot', 'This time slot is unavailable. Please choose another time.');
                 $this->availableSlots = $this->generateSlots($this->selectedDate);
+
                 return false;
             }
         }
@@ -401,6 +620,19 @@ class BookAppointment extends Component
         if ($activeSlotBookings >= self::SLOT_CAPACITY) {
             $this->addError('selectedSlot', 'This time slot is already full. Please choose another time.');
             $this->availableSlots = $this->generateSlots($this->selectedDate);
+
+            return false;
+        }
+
+        $totalActiveRequestsInSlot = DB::table('appointments')
+            ->where('appointment_date', $appointmentDateTime)
+            ->whereNotIn('status', self::INACTIVE_APPOINTMENT_STATUSES)
+            ->count();
+
+        if ($totalActiveRequestsInSlot >= self::REQUEST_SLOT_CAP) {
+            $this->addError('selectedSlot', 'This time slot already reached the maximum of 5 requests. Please choose another time.');
+            $this->availableSlots = $this->generateSlots($this->selectedDate);
+
             return false;
         }
 
@@ -411,7 +643,7 @@ class BookAppointment extends Component
                 if (Auth::check()) {
                     $query->where('requester_user_id', Auth::id());
 
-                    if (!empty($this->email)) {
+                    if (! empty($this->email)) {
                         $query->orWhere('requester_email', $this->email);
                     }
 
@@ -425,6 +657,7 @@ class BookAppointment extends Component
 
         if ($hasActiveAppointment) {
             $this->addError('selectedSlot', 'You already have a pending or upcoming appointment request. Please wait until your current request is completed before booking a new one.');
+
             return false;
         }
 
@@ -435,6 +668,7 @@ class BookAppointment extends Component
     {
         $services = DB::table('services')->get();
         $layout = 'layouts.app';
+
         return view('livewire.appointment.book-appointment', compact('services'))
             ->layout($layout);
     }
@@ -471,9 +705,10 @@ class BookAppointment extends Component
             $column = DB::selectOne("SHOW COLUMNS FROM appointments LIKE 'status'");
             $type = $column->Type ?? $column->type ?? '';
 
-            if (preg_match("/^enum\\((.*)\\)$/i", $type, $matches) === 1) {
+            if (preg_match('/^enum\\((.*)\\)$/i', $type, $matches) === 1) {
                 $rawValues = str_getcsv($matches[1], ',', "'");
                 $this->appointmentStatuses = array_values(array_filter($rawValues, fn ($v) => $v !== null && $v !== ''));
+
                 return $this->appointmentStatuses;
             }
         } catch (Throwable $e) {
@@ -481,12 +716,13 @@ class BookAppointment extends Component
         }
 
         $this->appointmentStatuses = [];
+
         return $this->appointmentStatuses;
     }
 
     protected function isValidSelectedDate(string $date): bool
     {
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             return false;
         }
 
@@ -508,13 +744,13 @@ class BookAppointment extends Component
 
     protected function isBlockedBySlotCollection(Carbon $slotStart, Carbon $slotEnd, $blockedSlots): bool
     {
-        if (!$this->blockedSlotsEnabled() || $blockedSlots->isEmpty()) {
+        if (! $this->blockedSlotsEnabled() || $blockedSlots->isEmpty()) {
             return false;
         }
 
         foreach ($blockedSlots as $blockedSlot) {
-            $blockedStart = Carbon::parse($slotStart->toDateString() . ' ' . $blockedSlot->start_time)->seconds(0);
-            $blockedEnd = Carbon::parse($slotStart->toDateString() . ' ' . $blockedSlot->end_time)->seconds(0);
+            $blockedStart = Carbon::parse($slotStart->toDateString().' '.$blockedSlot->start_time)->seconds(0);
+            $blockedEnd = Carbon::parse($slotStart->toDateString().' '.$blockedSlot->end_time)->seconds(0);
 
             if ($blockedStart < $slotEnd && $blockedEnd > $slotStart) {
                 return true;
@@ -529,8 +765,20 @@ class BookAppointment extends Component
         $this->guestEmailOtp = '';
         $this->guestEmailOtpHash = null;
         $this->guestEmailOtpExpiresAt = null;
+        $this->guestEmailOtpCooldownUntil = null;
         $this->guestEmailOtpVerified = false;
         $this->guestEmailOtpTargetEmail = null;
+        $this->guestEmailOtpResendCount = 0;
+    }
+
+    public function getGuestOtpResendsRemainingProperty(): int
+    {
+        return $this->remainingGuestOtpResends();
+    }
+
+    protected function remainingGuestOtpResends(): int
+    {
+        return max(0, self::OTP_MAX_RESENDS - (int) $this->guestEmailOtpResendCount);
     }
 
     protected function normalizeEmail(mixed $email): string
@@ -538,13 +786,46 @@ class BookAppointment extends Component
         return strtolower(trim((string) $email));
     }
 
+    protected function canResumeGuestOtpStep(): bool
+    {
+        if ($this->guestEmailOtpVerified) {
+            return false;
+        }
+
+        $normalizedEmail = $this->normalizeEmail($this->email);
+        if ($normalizedEmail === '' || $normalizedEmail !== $this->guestEmailOtpTargetEmail) {
+            return false;
+        }
+
+        if (empty($this->guestEmailOtpHash) || empty($this->guestEmailOtpExpiresAt)) {
+            return false;
+        }
+
+        try {
+            return now()->lessThanOrEqualTo(Carbon::parse((string) $this->guestEmailOtpExpiresAt));
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
+    protected function resetRecaptchaState(): void
+    {
+        $this->recaptchaToken = null;
+        $this->dispatch('reset-recaptcha');
+    }
+
     protected function guestOtpSendThrottleKey(string $email, string $ip): string
     {
-        return 'guest-book-otp-send:' . sha1($email . '|' . $ip);
+        return 'guest-book-otp-send:'.sha1($email.'|'.$ip);
+    }
+
+    protected function guestOtpCooldownThrottleKey(string $email, string $ip): string
+    {
+        return 'guest-book-otp-cooldown:'.sha1($email.'|'.$ip);
     }
 
     protected function guestOtpVerifyThrottleKey(string $email, string $ip): string
     {
-        return 'guest-book-otp-verify:' . sha1($email . '|' . $ip);
+        return 'guest-book-otp-verify:'.sha1($email.'|'.$ip);
     }
 }

@@ -9,9 +9,7 @@
     @vite('resources/css/app.css')
 
     <style>
-        @yield("style")
-
-        ;
+        @yield("style");
     </style>
     @livewireStyles
 

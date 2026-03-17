@@ -189,6 +189,13 @@
                                     class="{{ $btnSm }} {{ $btnPrimary }}">
                                     Review
                                 </button>
+                                <button type="button" @click="modalOpen = true"
+                                    wire:click="viewAppointment({{ $pending->id }})"
+                                    wire:loading.attr="disabled"
+                                    wire:target="viewAppointment({{ $pending->id }})"
+                                    class="{{ $btnSm }} {{ $btnOutlinePrimary }}">
+                                    Reschedule
+                                </button>
                                 <button type="button" wire:click="rejectAppointment({{ $pending->id }})"
                                     wire:loading.attr="disabled" wire:target="rejectAppointment({{ $pending->id }})"
                                     class="{{ $btnSm }} {{ $btnDanger }}">
@@ -552,16 +559,39 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Date</label>
-                                <input type="text"
-                                    value="{{ \Carbon\Carbon::parse($selectedDate)->format('F j, Y') }}"
-                                    class="w-full border-0 bg-transparent p-0 text-xl font-bold text-gray-800"
-                                    readonly />
+                                @if ($isViewing && $appointmentStatus === 'Pending' && $isRescheduling)
+                                    <input type="date" wire:model.live="selectedDate"
+                                        min="{{ now()->toDateString() }}"
+                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-base font-semibold text-gray-800 focus:border-[#0086da] focus:ring-2 focus:ring-[#bfe7ff]">
+                                    @error('selectedDate')
+                                        <span class="mt-1 block text-xs text-red-600">{{ $message }}</span>
+                                    @enderror
+                                @else
+                                    <input type="text"
+                                        value="{{ \Carbon\Carbon::parse($selectedDate)->format('F j, Y') }}"
+                                        class="w-full border-0 bg-transparent p-0 text-xl font-bold text-gray-800"
+                                        readonly />
+                                @endif
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Start Time</label>
-                                <input type="text" value="{{ $selectedTime }}"
-                                    class="w-full border-0 bg-transparent p-0 text-xl font-bold text-gray-800"
-                                    readonly />
+                                @if ($isViewing && $appointmentStatus === 'Pending' && $isRescheduling)
+                                    <select wire:model.live="selectedTime"
+                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-base font-semibold text-gray-800 focus:border-[#0086da] focus:ring-2 focus:ring-[#bfe7ff]">
+                                        <option value="">Select time</option>
+                                        @foreach ($timeSlots as $time)
+                                            <option value="{{ $time }}">
+                                                {{ \Carbon\Carbon::parse($time)->format('h:i A') }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('selectedTime')
+                                        <span class="mt-1 block text-xs text-red-600">{{ $message }}</span>
+                                    @enderror
+                                @else
+                                    <input type="text" value="{{ $selectedTime }}"
+                                        class="w-full border-0 bg-transparent p-0 text-xl font-bold text-gray-800"
+                                        readonly />
+                                @endif
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">End Time</label>
@@ -689,7 +719,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Birth Date <span
                                     class="text-red-600">*</span></label>
-                            <input wire:model="birthDate" type="date" class="{{ $birthDateInputClass }}"
+                            <input wire:model.live="birthDate" type="date" class="{{ $birthDateInputClass }}"
                                 @if ($isViewing) readonly class="w-full border rounded px-4 py-3 text-base bg-gray-100 cursor-not-allowed" @endif />
                             @error('birthDate')
                                 <span class="text-xs text-red-600">{{ $message }}</span>
@@ -814,6 +844,25 @@
 
                             @if ($appointmentStatus === 'Pending')
                                 @if (auth()->user()->role !== 3)
+                                    @if ($isRescheduling)
+                                        <button type="button" wire:click="cancelPendingReschedule"
+                                            wire:loading.attr="disabled" wire:target="cancelPendingReschedule"
+                                            class="{{ $btnLg }} {{ $btnSecondary }}">
+                                            Cancel Reschedule
+                                        </button>
+                                        <button type="button" wire:click="savePendingReschedule"
+                                            wire:loading.attr="disabled" wire:target="savePendingReschedule"
+                                            wire:confirm="Save the new date and time for this request?"
+                                            class="{{ $btnLg }} {{ $btnPrimary }}">
+                                            Save New Schedule
+                                        </button>
+                                    @else
+                                        <button type="button" wire:click="beginPendingReschedule"
+                                            wire:loading.attr="disabled" wire:target="beginPendingReschedule"
+                                            class="{{ $btnLg }} {{ $btnSecondary }}">
+                                            Reschedule
+                                        </button>
+                                    @endif
                                     <button type="button" wire:click="updateStatus('Scheduled')"
                                         wire:loading.attr="disabled" wire:target="updateStatus"
                                         wire:confirm="Approve this appointment request?"

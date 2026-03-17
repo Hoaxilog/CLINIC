@@ -70,15 +70,12 @@
             class="flex-1 overflow-y-auto p-4 lg:p-6 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-slate-100 scrollbar-thumb-slate-300">
 
             @php
-                $lastVisitDateClass = $errors->has('when_last_visit_q1')
-                    ? 'w-full border border-red-500 rounded px-4 py-3 text-base focus:ring-red-200 focus:border-red-500'
-                    : 'w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500';
-                $lastVisitReasonClass = $errors->has('what_last_visit_reason_q1')
-                    ? 'w-full border border-red-500 rounded px-4 py-3 text-base focus:ring-red-200 focus:border-red-500'
-                    : 'w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500';
-                $todayReasonClass = $errors->has('what_seeing_dentist_reason_q2')
-                    ? 'w-full border border-red-500 rounded px-4 py-3 text-base focus:ring-red-200 focus:border-red-500'
-                    : 'w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500';
+                $inputBase = 'w-full border rounded px-4 py-3 text-base focus:ring-2';
+                $inputClass = $inputBase . ' border-gray-300 focus:border-blue-500 focus:ring-blue-100';
+                $inputErrorClass = $inputBase . ' border-red-500 focus:border-red-500 focus:ring-red-200';
+                $fieldClass = fn(string $field) => ($errors->has($field))
+                    ? $inputErrorClass
+                    : $inputClass;
             @endphp
 
             <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -91,7 +88,7 @@
                         <label class="block text-lg font-medium text-gray-700 mb-2">1. Date of last dental visit
                             (Optional)</label>
                         <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="when_last_visit_q1"
-                            type="date" class="{{ $lastVisitDateClass }}">
+                            type="date" class="{{ $fieldClass('when_last_visit_q1') }}">
                         @error('when_last_visit_q1')
                             <span data-error-for="when_last_visit_q1"
                                 class="text-red-500 text-sm">{{ $message }}</span>
@@ -102,7 +99,7 @@
                             (Optional)</label>
                         <input @if ($isReadOnly && !$isCreating) disabled @endif
                             wire:model.defer="what_last_visit_reason_q1" type="text"
-                            class="{{ $lastVisitReasonClass }}" placeholder="e.g., Cleaning, Filling...">
+                            class="{{ $fieldClass('what_last_visit_reason_q1') }}" placeholder="e.g., Cleaning, Filling...">
                         @error('what_last_visit_reason_q1')
                             <span data-error-for="what_last_visit_reason_q1"
                                 class="text-red-500 text-sm">{{ $message }}</span>
@@ -114,7 +111,7 @@
                     <label class="block text-lg font-medium text-gray-700 mb-2">2. Reason for seeing dentist
                         today? <span class="text-red-600">*</span></label>
                     <input @if ($isReadOnly && !$isCreating) disabled @endif
-                        wire:model.defer="what_seeing_dentist_reason_q2" type="text" class="{{ $todayReasonClass }}"
+                        wire:model.defer="what_seeing_dentist_reason_q2" type="text" class="{{ $fieldClass('what_seeing_dentist_reason_q2') }}"
                         placeholder="e.g., Check-up...">
                     @error('what_seeing_dentist_reason_q2')
                         <span data-error-for="what_seeing_dentist_reason_q2"
@@ -187,7 +184,7 @@
                             <div x-cloak x-show="nervous === '1'" class="mt-2 pl-4 border-l-2 border-blue-200">
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif
                                     wire:model.defer="{{ $item['detail'] }}" type="text"
-                                    class="w-full border rounded px-3 py-2 text-sm @error($item['detail']) border-red-500 focus:border-red-500 focus:ring-red-200 @enderror"
+                                    class="{{ $errors->has($item['detail']) ? 'w-full border border-red-500 rounded px-3 py-2 text-sm focus:ring-2 focus:border-red-500 focus:ring-red-200' : 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:border-blue-500 focus:ring-blue-100' }}"
                                     placeholder="{{ $item['placeholder'] }}">
 
                                 {{-- ADDED: Validation Error for Detail Input --}}
@@ -254,7 +251,7 @@
                                 class="mt-2 pl-4 border-l-2 border-blue-200">
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif
                                     wire:model.defer="{{ $med['detail'] }}" type="text"
-                                    class="w-full border rounded px-3 py-2 text-sm @error($med['detail']) border-red-500 focus:border-red-500 focus:ring-red-200 @enderror"
+                                    class="{{ $errors->has($med['detail']) ? 'w-full border border-red-500 rounded px-3 py-2 text-sm focus:ring-2 focus:border-red-500 focus:ring-red-200' : 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:border-blue-500 focus:ring-blue-100' }}"
                                     placeholder="Please specify details...">
 
                                 {{-- ADDED: Validation Error for Detail Input --}}
