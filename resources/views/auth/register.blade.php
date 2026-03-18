@@ -6,7 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - TEJADENT</title>
     <x-brand.meta />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap"
+        rel="stylesheet">
     @vite('resources/css/app.css')
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
         function toggleRegisterPassword(fieldId, eyeOpenId, eyeClosedId) {
@@ -23,51 +33,50 @@
     </script>
 </head>
 
-<body class="min-h-screen bg-[#eef5fb] text-[#1a2e3b]">
+<body class="min-h-screen bg-[#f6fafd] text-[#1a2e3b] antialiased">
     @php($guestActionMode = 'login')
     @include('components.homepage.header-section')
 
-    <main class="px-4 py-10 md:px-8 md:py-14 xl:py-16">
-        <div class="mx-auto grid max-w-5xl overflow-hidden rounded-[28px] border border-[#d9e9f5] bg-white shadow-[0_30px_80px_rgba(13,60,91,.12)] lg:grid-cols-[1.02fr_.98fr]">
-            <div class="hidden min-h-[760px] bg-gradient-to-br from-[#0086da] via-[#1593e5] to-[#0f6fb8] px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
-                <div>
-                    <p class="text-[.68rem] font-bold uppercase tracking-[.22em] text-white/70">Create Account</p>
-                    <h2 class="mt-4 max-w-md text-[2.2rem] font-extrabold leading-[1.08] tracking-[-.03em]">
-                        Start your Tejada Clinic patient access in a few quick steps.
-                    </h2>
-                    <p class="mt-4 max-w-md text-[.94rem] leading-[1.9] text-white/80">
-                        Register once to manage future bookings faster and keep your clinic information in one secure place.
-                    </p>
+    <main class="px-6 py-8 md:px-12 xl:px-20">
+        <div class="mx-auto w-full max-w-[1200px]">
+            <div class="mb-6 border-b border-[#e4eff8] pb-6">
+                <div class="mb-4 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
+                    <span class="block h-[2px] w-[22px] bg-[#0086da]"></span>Patient Registration
                 </div>
-
-                <div class="space-y-4">
-                    <div class="rounded-2xl border border-white/20 bg-white/10 px-5 py-5">
-                        <p class="text-[.7rem] font-bold uppercase tracking-[.18em] text-white/65">Faster booking</p>
-                        <p class="mt-2 text-[.95rem] leading-[1.7] text-white">Save time on future appointments with your account details ready to go.</p>
-                    </div>
-                    <div class="rounded-2xl border border-white/20 bg-white/10 px-5 py-5">
-                        <p class="text-[.7rem] font-bold uppercase tracking-[.18em] text-white/65">Easy updates</p>
-                        <p class="mt-2 text-[.95rem] leading-[1.7] text-white">Keep your contact information current and stay informed with clinic updates.</p>
-                    </div>
-                </div>
+                <h1 class="text-[clamp(1.8rem,3.2vw,2.5rem)] font-extrabold leading-[1.1] tracking-[-.02em] text-[#1a2e3b]">Create your account</h1>
+                <p class="mt-3 max-w-3xl text-[.9rem] leading-[1.8] text-[#587189]">
+                    Use the same profile details you use for appointments so staff can verify and link your records faster.
+                </p>
             </div>
 
-            <div class="px-6 py-10 sm:px-10 md:px-14 lg:px-12 xl:px-14">
-                <div class="mb-8 flex items-center justify-center lg:justify-start">
-                    <x-brand.logo href="{{ route('home') }}" class="pointer-events-none" iconClass="flex h-[52px] w-[52px] shrink-0 items-center justify-center" />
-                </div>
+            <div class="grid border border-[#e4eff8] bg-[#e4eff8] lg:grid-cols-[.9fr_1.1fr]">
+                <section class="border-r border-[#e4eff8] bg-white px-6 py-7 sm:px-8 md:px-10">
+                    <div class="mb-7 flex items-center gap-3 border-b border-[#e4eff8] pb-6">
+                        <x-brand.logo href="{{ route('home') }}" class="pointer-events-none" iconClass="flex h-[50px] w-[50px] shrink-0 items-center justify-center" />
+                        <div>
+                            <p class="text-[.68rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Tejada Clinic</p>
+                            <p class="text-[1.05rem] font-extrabold text-[#1a2e3b]">Account Access</p>
+                        </div>
+                    </div>
 
-                <div class="mb-8 text-center lg:text-left">
-                    <p class="text-[.72rem] font-bold uppercase tracking-[.22em] text-[#0086da]">Patient Registration</p>
-                    <h1 class="mt-3 text-[clamp(2rem,4vw,3rem)] font-extrabold tracking-[-.03em] text-[#1a2e3b]">
-                        Create your account
-                    </h1>
-                    <p class="mt-3 text-[.95rem] leading-[1.8] text-[#5a7689]">
-                        Enter your details below to set up your Tejada Clinic login.
-                    </p>
-                </div>
+                    <div class="space-y-4">
+                        <div class="border border-[#e4eff8] bg-[#f6fafd] p-5">
+                            <p class="text-[.7rem] font-bold uppercase tracking-[.18em] text-[#0086da]">Faster booking</p>
+                            <p class="mt-2 text-[.9rem] leading-[1.75] text-[#587189]">Your next requests can prefill from your account details.</p>
+                        </div>
+                        <div class="border border-[#e4eff8] bg-[#f6fafd] p-5">
+                            <p class="text-[.7rem] font-bold uppercase tracking-[.18em] text-[#0086da]">Safer linking</p>
+                            <p class="mt-2 text-[.9rem] leading-[1.75] text-[#587189]">Staff still verifies records before permanent patient linking.</p>
+                        </div>
+                        <div class="border border-[#e4eff8] bg-[#f6fafd] p-5">
+                            <p class="text-[.7rem] font-bold uppercase tracking-[.18em] text-[#0086da]">One profile</p>
+                            <p class="mt-2 text-[.9rem] leading-[1.75] text-[#587189]">Keep your account name and mobile consistent across dashboard and profile.</p>
+                        </div>
+                    </div>
+                </section>
 
-                <form method="POST" action="{{ route('register.submit') }}" class="space-y-5">
+                <section class="bg-white px-6 py-7 sm:px-8 md:px-10">
+                    <form method="POST" action="{{ route('register.submit') }}" class="space-y-5">
                     @csrf
 
                     <div class="grid gap-5 sm:grid-cols-2">
@@ -185,15 +194,16 @@
                     </div>
 
                     <button type="submit"
-                        class="inline-flex w-full items-center justify-center rounded-xl bg-[#0086DA] px-6 py-3.5 text-[.95rem] font-bold uppercase tracking-[.12em] text-white transition hover:bg-[#0073A8] focus:outline-none focus:ring-4 focus:ring-[#0086da]/20">
+                        class="inline-flex w-full items-center justify-center rounded-sm bg-[#0086da] px-6 py-[13px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0] focus:outline-none focus:ring-2 focus:ring-[#0086da]/20">
                         Create Account
                     </button>
-                </form>
+                    </form>
 
-                <p class="mt-8 text-center text-[.92rem] text-[#5a7689] lg:text-left">
-                    Already have an account?
-                    <a href="{{ route('login') }}" class="font-semibold text-[#0086da] transition hover:text-[#006ab0] hover:underline">Sign In</a>
-                </p>
+                    <div class="mt-6 border-t border-[#e4eff8] pt-5 text-[.9rem] text-[#587189]">
+                        Already have an account?
+                        <a href="{{ route('login') }}" class="font-semibold text-[#0086da] transition hover:text-[#006ab0] hover:underline">Sign In</a>
+                    </div>
+                </section>
             </div>
         </div>
     </main>
