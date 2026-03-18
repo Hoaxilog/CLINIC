@@ -8,7 +8,7 @@
         </div>
 
         <section>
-            @livewire('appointment.appointment-requests')
+            @livewire(\App\Livewire\appointment\AppointmentRequests::class)
         </section>
     </main>
 @endsection

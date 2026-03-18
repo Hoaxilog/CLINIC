@@ -49,12 +49,16 @@
                         <div class="border-b border-[#e4eff8] px-6 py-6 sm:px-8">
                             <h2 class="text-[1.5rem] leading-[1.15] font-extrabold tracking-[-.02em] text-[#1a2e3b]">Account Information</h2>
                         </div>
-                        <div class="grid grid-cols-2 gap-[2px] bg-[#e4eff8] sm:grid-cols-4 px-0 py-0">
+                        <div class="grid grid-cols-1 gap-[2px] bg-[#e4eff8] sm:grid-cols-3 px-0 py-0">
                             <div class="bg-white px-6 py-5">
                                 <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Name</div>
                                 <div class="mt-2 text-sm font-semibold text-[#1a2e3b]">{{ $accountName }}</div>
                             </div>
-                            <div class="bg-white px-6 py-5 col-span-2">
+                            <div class="bg-white px-6 py-5">
+                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Mobile</div>
+                                <div class="mt-2 truncate text-sm font-semibold text-[#1a2e3b]">{{ $accountMobileNumber ?: 'N/A' }}</div>
+                            </div>
+                            <div class="bg-white px-6 py-5">
                                 <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Email</div>
                                 <div class="mt-2 truncate text-sm font-semibold text-[#1a2e3b]">{{ $user->email ?? 'N/A' }}</div>
                             </div>
@@ -76,14 +80,21 @@
                                     <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">Name</label>
                                     <input type="text" value="{{ $accountName }}" readonly
                                         class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
-                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">Shown from your latest appointment request details.</p>
+                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">This is shown from your account profile.</p>
                                 </div>
 
                                 <div class="space-y-2">
+                                    <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">Mobile Number</label>
+                                    <input type="text" value="{{ $accountMobileNumber ?: 'N/A' }}" readonly
+                                        class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
+                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">Used as your account contact. Clinic records are still staff-verified.</p>
+                                </div>
+
+                                <div class="space-y-2 sm:col-span-2">
                                     <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">Email Address</label>
                                     <input type="text" value="{{ $user->email ?? 'N/A' }}" readonly
                                         class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
-                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">Your appointment contact details come from your booking records and are managed separately from this login account.</p>
+                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">Your login email and account contact are separate from booking record verification.</p>
                                 </div>
                             </div>
 

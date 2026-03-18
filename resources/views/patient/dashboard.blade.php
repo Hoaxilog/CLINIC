@@ -2,7 +2,10 @@
 
 @section('content')
     @php
-        $displayName = $requesterDisplayName ?? ($user->username ?? (auth()->user()->username ?? 'Patient'));
+        $displayName = $requesterDisplayName
+            ?? trim((string) ($user->first_name ?? '').' '.(string) ($user->last_name ?? ''))
+            ?? ($user->username ?? (auth()->user()->username ?? 'Patient'));
+        $displayName = trim((string) $displayName) !== '' ? trim((string) $displayName) : 'Patient';
         $hasPending = ($pendingRequests ?? collect())->count() > 0;
         $hasUpcoming = ($upcomingAppointments ?? collect())->count() > 0;
         $hasActiveRequest = $hasPending || $hasUpcoming;
@@ -368,6 +371,12 @@
                                         class="text-[.72rem] font-semibold uppercase tracking-[.1em] text-[#7a9db5]">Email</span>
                                     <span
                                         class="max-w-[160px] truncate text-sm font-semibold text-[#1a2e3b]">{{ $user->email ?? 'N/A' }}</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-[#f6fafd] px-4 py-3">
+                                    <span
+                                        class="text-[.72rem] font-semibold uppercase tracking-[.1em] text-[#7a9db5]">Mobile</span>
+                                    <span
+                                        class="max-w-[160px] truncate text-sm font-semibold text-[#1a2e3b]">{{ $user->mobile_number ?? 'N/A' }}</span>
                                 </div>
                             </div>
                         </div>

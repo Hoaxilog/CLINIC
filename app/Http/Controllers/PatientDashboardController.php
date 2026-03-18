@@ -101,8 +101,10 @@ class PatientDashboardController extends Controller
             ->count();
 
         $profileChecklist = [
-            filled($user->username ?? null),
+            filled($user->first_name ?? null),
+            filled($user->last_name ?? null),
             filled($user->email ?? null),
+            filled($user->mobile_number ?? null),
         ];
 
         $completedProfileItems = collect($profileChecklist)->filter()->count();
@@ -136,10 +138,14 @@ class PatientDashboardController extends Controller
                 : 'No appointment yet',
         ];
 
-        $requesterDisplayName = trim(
+        $requesterDisplayName = trim((string) ($user->first_name ?? '').' '.(string) ($user->last_name ?? ''));
+
+        if ($requesterDisplayName === '') {
+            $requesterDisplayName = trim(
             (string) ($latestRequestIdentity->requester_first_name ?? '').' '.
             (string) ($latestRequestIdentity->requester_last_name ?? '')
-        );
+            );
+        }
 
         if ($requesterDisplayName === '') {
             $requesterDisplayName = 'Patient';

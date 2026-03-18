@@ -18,6 +18,9 @@ class ProfileController extends Controller
     {
         $user = DB::table('users')->where('id', Auth::id())->first();
         $isGoogleUser = $user && ! empty($user->google_id);
+        $accountDisplayName = trim((string) ($user->first_name ?? '').' '.(string) ($user->last_name ?? ''));
+        $accountMobileNumber = trim((string) ($user->mobile_number ?? ''));
+
         if ($user && (int) $user->role === User::ROLE_PATIENT) {
             $latestRequestIdentity = DB::table('appointments')
                 ->where(function ($query) use ($user) {
@@ -32,7 +35,7 @@ class ProfileController extends Controller
                 ->orderByDesc('appointment_date')
                 ->first();
 
-            $requesterDisplayName = trim(
+            $requesterDisplayName = $accountDisplayName !== '' ? $accountDisplayName : trim(
                 (string) ($latestRequestIdentity->requester_first_name ?? '').' '.
                 (string) ($latestRequestIdentity->requester_last_name ?? '')
             );
@@ -41,13 +44,13 @@ class ProfileController extends Controller
                 $requesterDisplayName = 'Patient';
             }
 
-            return view('patient.profile', compact('user', 'isGoogleUser', 'requesterDisplayName'));
+            return view('patient.profile', compact('user', 'isGoogleUser', 'requesterDisplayName', 'accountMobileNumber'));
         }
 
         // Fetch role name for display
         $roleName = User::roleLabelFromId($user?->role !== null ? (int) $user->role : null);
 
-        return view('profile', compact('user', 'roleName', 'isGoogleUser'));
+        return view('profile', compact('user', 'roleName', 'isGoogleUser', 'accountDisplayName', 'accountMobileNumber'));
     }
 
     public function update(Request $request)

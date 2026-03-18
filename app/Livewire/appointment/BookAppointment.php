@@ -101,17 +101,9 @@ class BookAppointment extends Component
         if (Auth::check()) {
             $user = Auth::user();
             $this->email = $user->email;
-            $this->contact_number = $user->contact ?? '';
-
-            $username = trim((string) ($user->username ?? ''));
-            if ($username !== '' && ! filter_var($username, FILTER_VALIDATE_EMAIL)) {
-                $nameParts = preg_split('/\s+/', $username);
-                $this->first_name = $nameParts[0] ?? '';
-                $this->last_name = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : '';
-            } else {
-                $this->first_name = '';
-                $this->last_name = '';
-            }
+            $this->contact_number = $user->mobile_number ?? '';
+            $this->first_name = trim((string) ($user->first_name ?? ''));
+            $this->last_name = trim((string) ($user->last_name ?? ''));
 
             $this->prefillFromPreviousBooking();
         }

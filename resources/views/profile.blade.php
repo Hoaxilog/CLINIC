@@ -16,6 +16,8 @@
         $createdDate = !empty($user->created_at) ? \Carbon\Carbon::parse($user->created_at)->format('M d, Y') : 'N/A';
         $updatedDate = !empty($user->updated_at) ? \Carbon\Carbon::parse($user->updated_at)->format('M d, Y') : 'N/A';
         $authMethod = !empty($isGoogleUser) ? 'Google Login' : 'Password Login';
+        $resolvedAccountName = trim((string) ($accountDisplayName ?? ''));
+        $resolvedAccountName = $resolvedAccountName !== '' ? $resolvedAccountName : 'N/A';
     @endphp
 
     <main id="staff-profile-wrap"
@@ -67,6 +69,16 @@
                                 <div class="mt-2 text-sm font-semibold text-[#1a2e3b]">{{ $displayRole }}</div>
                             </div>
                             <div class="bg-white px-6 py-5">
+                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Name</div>
+                                <div class="mt-2 break-all text-sm font-semibold text-[#1a2e3b]">{{ $resolvedAccountName }}
+                                </div>
+                            </div>
+                            <div class="bg-white px-6 py-5">
+                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Mobile</div>
+                                <div class="mt-2 break-all text-sm font-semibold text-[#1a2e3b]">{{ $accountMobileNumber ?: 'N/A' }}
+                                </div>
+                            </div>
+                            <div class="bg-white px-6 py-5">
                                 <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Email</div>
                                 <div class="mt-2 break-all text-sm font-semibold text-[#1a2e3b]">{{ $user->email ?: 'N/A' }}
                                 </div>
@@ -85,9 +97,25 @@
                             <div class="grid gap-5">
                                 <div class="space-y-2">
                                     <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
+                                        Full Name
+                                    </label>
+                                    <input type="text" value="{{ $resolvedAccountName }}" readonly
+                                        class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
                                         Email Address
                                     </label>
                                     <input type="text" value="{{ $user->email ?: 'N/A' }}" readonly
+                                        class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
+                                        Mobile Number
+                                    </label>
+                                    <input type="text" value="{{ $accountMobileNumber ?: 'N/A' }}" readonly
                                         class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
                                 </div>
 

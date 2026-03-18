@@ -70,6 +70,33 @@
                 <form method="POST" action="{{ route('register.submit') }}" class="space-y-5">
                     @csrf
 
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">First Name</label>
+                            <input type="text" name="first_name" value="{{ old('first_name') }}"
+                                @class([
+                                    'w-full rounded-xl border bg-[#f7fbfe] px-4 py-3.5 text-[.95rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:bg-white focus:ring-4 focus:ring-[#0086da]/10',
+                                    'border-red-500' => $errors->has('first_name'),
+                                    'border-[#cfe3f2]' => !$errors->has('first_name'),
+                                ]) placeholder="Juan" required>
+                            @error('first_name')
+                                <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">Last Name</label>
+                            <input type="text" name="last_name" value="{{ old('last_name') }}"
+                                @class([
+                                    'w-full rounded-xl border bg-[#f7fbfe] px-4 py-3.5 text-[.95rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:bg-white focus:ring-4 focus:ring-[#0086da]/10',
+                                    'border-red-500' => $errors->has('last_name'),
+                                    'border-[#cfe3f2]' => !$errors->has('last_name'),
+                                ]) placeholder="Dela Cruz" required>
+                            @error('last_name')
+                                <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
                     <div>
                         <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">Email Address</label>
                         <input type="email" name="email" value="{{ old('email') }}"
@@ -79,6 +106,19 @@
                                 'border-[#cfe3f2]' => !$errors->has('email'),
                             ]) placeholder="john@example.com" required>
                         @error('email')
+                            <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">Mobile Number (Optional)</label>
+                        <input type="text" name="mobile_number" value="{{ old('mobile_number') }}"
+                            @class([
+                                'w-full rounded-xl border bg-[#f7fbfe] px-4 py-3.5 text-[.95rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:bg-white focus:ring-4 focus:ring-[#0086da]/10',
+                                'border-red-500' => $errors->has('mobile_number'),
+                                'border-[#cfe3f2]' => !$errors->has('mobile_number'),
+                            ]) placeholder="09XXXXXXXXX">
+                        @error('mobile_number')
                             <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
@@ -162,4 +202,3 @@
 </body>
 
 </html>
-
