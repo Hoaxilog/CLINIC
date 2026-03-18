@@ -13,6 +13,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
 use App\Livewire\appointment\BookAppointment;
+use App\Support\Services\ServiceCatalog;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
@@ -20,20 +21,19 @@ Route::view('/terms-of-service', 'terms-of-service')->name('terms-of-service');
 
 // Public home page
 Route::get('/', function () {
-    return view('home-page');
+    return view('home-page', [
+        'services' => ServiceCatalog::all(),
+    ]);
 })->name('home');
 
 Route::get('/home', function () {
-    return view('home-page');
+    return view('home-page', [
+        'services' => ServiceCatalog::all(),
+    ]);
 });
 
 // Service pages
-Route::prefix('services')->group(function () {
-    Route::get('/general-checkup', [ServiceController::class, 'generalCheckup'])->name('services.general-checkup');
-    Route::get('/orthodontics', [ServiceController::class, 'orthodontics'])->name('services.orthodontics');
-    Route::get('/teeth-whitening', [ServiceController::class, 'teethWhitening'])->name('services.teeth-whitening');
-    Route::get('/oral-surgery', [ServiceController::class, 'oralSurgery'])->name('services.oral-surgery');
-});
+Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 
 // Public (guest) routes
 Route::middleware(['guest'])->group(function () {

@@ -117,84 +117,7 @@
 
 <body class="overflow-x-hidden bg-white text-[#1a2e3b] antialiased">
 
-    <header class="sticky top-0 z-[100] border-b border-[#e4eff8] bg-white px-6 md:px-12 xl:px-20">
-        <div class="relative mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between">
-            <a href="/" class="flex shrink-0 items-center gap-3 no-underline">
-                <div class="flex h-[38px] w-[38px] shrink-0 items-center justify-center">
-                    <svg width="56" height="45" viewBox="0 0 56 45" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <mask id="mask0_664_212" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="56"
-                            height="45">
-                            <path
-                                d="M11.783 0.465134C6.04622 2.04593 1.64903 6.81758 0.396845 12.7602C-0.127324 15.307 -0.127324 16.9171 0.367724 19.3468C1.70727 25.6993 7.88082 33.5154 18.5972 42.444L21.0724 44.5225L21.3927 43.1173C22.1499 39.8972 23.402 37.9944 25.6152 36.7941C27.2751 35.8574 28.3525 35.9159 30.158 36.9698C31.5849 37.8187 33.2739 40.5412 33.7398 42.7367C33.9437 43.7321 34.1766 44.5225 34.264 44.5225C34.5261 44.5225 40.8161 39.0775 43.5243 36.5307C51.7363 28.7438 56.0461 20.9862 55.4637 15.0436C55.0269 10.711 53.2797 7.05178 50.2511 4.24147C44.2814 -1.37913 35.4579 -1.4084 29.5756 4.12438L27.7701 5.82227L25.9646 4.15365C22.9361 1.34335 19.4708 -0.00325012 15.3939 0.0552979C14.2 0.0552979 12.5692 0.260216 11.783 0.465134ZM32.7206 9.36442C38.7486 12.3504 41.1947 19.4932 38.1953 25.4066C37.2634 27.2801 34.7008 29.8269 32.808 30.7344C27.0712 33.4862 20.0532 31.0857 17.2867 25.4066C16.0054 22.7134 15.6851 20.6934 16.151 17.9417C16.7626 14.341 19.1796 11.0916 22.5284 9.42297C24.596 8.39838 25.4405 8.22274 28.2943 8.33983C30.4492 8.42765 31.119 8.57402 32.7206 9.36442Z"
-                                fill="black" />
-                            <path
-                                d="M24.0136 9.97903C21.0142 11.15 18.9757 13.2577 17.7235 16.4193C16.7917 18.7612 16.9664 22.3619 18.1021 24.616C19.2378 26.8116 21.2471 28.8022 23.3729 29.7975C24.9163 30.5001 25.4987 30.6172 27.7701 30.6172C29.9833 30.6172 30.653 30.5001 32.0217 29.8561C39.1271 26.4896 40.5831 17.5024 34.8755 12.2039C32.6624 10.1547 30.7113 9.39355 27.6828 9.39355C26.1976 9.42283 24.9745 9.59847 24.0136 9.97903ZM31.0316 13.4334C30.9151 14.0188 30.9151 15.0142 31.0025 15.5996L31.1772 16.6828L33.2739 16.7706L35.3414 16.8584V20.0493V23.2694L33.3613 23.2987C32.2838 23.328 31.3228 23.4451 31.2063 23.5329C31.119 23.65 31.0025 24.616 31.0025 25.6992L30.9734 27.6898L27.6828 27.7776L24.4213 27.8654V25.6699V23.5036L23.0526 23.328C22.2663 23.2401 21.3345 23.2109 20.9268 23.2401L20.1988 23.2987L20.1114 19.9907L20.0241 16.712H22.2372H24.4213V14.5165V12.321H27.7992H31.2063L31.0316 13.4334Z"
-                                fill="black" />
-                        </mask>
-                        <g mask="url(#mask0_664_212)">
-                            <rect x="-25.5311" y="-23.4609" width="106.265" height="91.7739" fill="#0086DA" />
-                        </g>
-                    </svg>
-                </div>
-                <div class="leading-[1.25]">
-                    <div class="text-[.92rem] font-extrabold tracking-[.04em] text-[#1a2e3b]">TEJADA CLINIC</div>
-                    <div class="text-[.57rem] font-semibold uppercase tracking-[.2em] text-[#0086da]">Dental Care</div>
-                </div>
-            </a>
-
-            <nav class="hidden items-center gap-9 lg:flex">
-                @foreach (['Services' => 'services', 'About Us' => 'about', 'Why Us' => 'why-us', 'Contact' => 'hours'] as $label => $id)
-                    <a href="#{{ $id }}"
-                        class="nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">{{ $label }}</a>
-                @endforeach
-            </nav>
-
-            <div class="hidden items-center gap-3 lg:flex">
-                <a href="{{ route('login') }}"
-                    class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition duration-200 hover:-translate-y-px hover:bg-[#0086da] hover:text-white">
-                    Login
-                </a>
-                <a href="/book"
-                    class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:-translate-y-px hover:bg-[#006ab0]">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.5" stroke-linecap="square">
-                        <rect x="3" y="4" width="18" height="18" />
-                        <path d="M16 2v4M8 2v4M3 10h18" />
-                    </svg>
-                    Book Appointment
-                </a>
-            </div>
-
-            <button id="ham-btn" aria-label="Toggle menu"
-                class="flex flex-col items-end gap-[5px] border-none bg-transparent p-2 lg:hidden">
-                <span id="bar1"></span>
-                <span id="bar2"></span>
-                <span id="bar3"></span>
-            </button>
-
-            <div id="mob-menu"
-                class="absolute top-full right-0 left-0 z-[200] hidden border-t border-[#e4eff8] bg-white shadow-[0_8px_32px_rgba(0,0,0,.08)]">
-                @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Contact' => 'hours'] as $label => $id)
-                    <a href="#{{ $id }}"
-                        class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">{{ $label }}</a>
-                @endforeach
-                <a href="{{ route('login') }}"
-                    class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Login</a>
-                <div class="px-7 pt-5 pb-6">
-                    <a href="/book"
-                        class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:bg-[#006ab0]">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="square">
-                            <rect x="3" y="4" width="18" height="18" />
-                            <path d="M16 2v4M8 2v4M3 10h18" />
-                        </svg>
-                        Book Appointment
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+    @include('components.homepage.header-section')
 
     <section id="hero-wrap" class="bg-[#0086da] px-6 md:px-12 xl:px-20">
         <div class="mx-auto grid min-h-[calc(100vh-70px)] w-full max-w-[1400px] grid-cols-1 min-[1120px]:grid-cols-2">
@@ -296,106 +219,7 @@
             </div>
 
             <div class="grid grid-cols-1 border border-[#e4eff8] bg-[#e4eff8] sm:grid-cols-2 lg:grid-cols-4">
-                @php
-                    $svcs = [
-                        [
-                            'num' => '01',
-                            'title' => 'General Checkup',
-                            'desc' =>
-                                'Comprehensive oral exams, professional cleaning, X-rays, and preventive care to keep your teeth healthy long-term.',
-                        ],
-                        [
-                            'num' => '02',
-                            'title' => 'Orthodontics',
-                            'desc' =>
-                                'Braces and modern clear aligners crafted to straighten teeth and correct bite issues for children, teens, and adults.',
-                        ],
-                        [
-                            'num' => '03',
-                            'title' => 'Teeth Whitening',
-                            'desc' =>
-                                'Professional-grade whitening that safely lifts stubborn stains and restores the natural brightness of your smile.',
-                        ],
-                        [
-                            'num' => '04',
-                            'title' => 'Oral Surgery',
-                            'desc' =>
-                                'Tooth extractions, implant placement, and minor surgical procedures performed by our experienced dental team.',
-                        ],
-                        [
-                            'num' => '05',
-                            'title' => 'Dental Fillings',
-                            'desc' =>
-                                'Tooth-colored composite fillings that repair cavities and restore strength while keeping a natural look.',
-                        ],
-                        [
-                            'num' => '06',
-                            'title' => 'Root Canal Therapy',
-                            'desc' =>
-                                'Pain-relieving root canal treatment that saves infected teeth and prevents further oral complications.',
-                        ],
-                        [
-                            'num' => '07',
-                            'title' => 'Dental Crowns',
-                            'desc' =>
-                                'Custom-made crowns that protect damaged teeth and restore full function and appearance.',
-                        ],
-                        [
-                            'num' => '08',
-                            'title' => 'Dental Bridges',
-                            'desc' =>
-                                'Fixed bridge solutions to replace missing teeth and bring back comfortable chewing and confidence.',
-                        ],
-                        [
-                            'num' => '09',
-                            'title' => 'Dentures',
-                            'desc' =>
-                                'Full and partial dentures designed for comfort, stability, and natural-looking smiles.',
-                        ],
-                        [
-                            'num' => '10',
-                            'title' => 'Pediatric Dentistry',
-                            'desc' =>
-                                'Gentle dental care for children focused on prevention, comfort, and healthy oral habits.',
-                        ],
-                        [
-                            'num' => '11',
-                            'title' => 'Periodontal Care',
-                            'desc' =>
-                                'Specialized gum treatment to manage gingivitis and periodontitis and protect long-term oral health.',
-                        ],
-                        [
-                            'num' => '12',
-                            'title' => 'Tooth Extraction',
-                            'desc' =>
-                                'Safe extractions for severely damaged or problematic teeth with careful aftercare support.',
-                        ],
-                        [
-                            'num' => '13',
-                            'title' => 'Dental Implants',
-                            'desc' =>
-                                'Durable implant restorations that replace missing teeth and restore bite stability.',
-                        ],
-                        [
-                            'num' => '14',
-                            'title' => 'Veneers',
-                            'desc' => 'Thin porcelain veneers to improve shape, color, and overall smile symmetry.',
-                        ],
-                        [
-                            'num' => '15',
-                            'title' => 'TMJ Management',
-                            'desc' =>
-                                'Assessment and treatment options for jaw pain, clenching, and bite-related discomfort.',
-                        ],
-                        [
-                            'num' => '16',
-                            'title' => 'Emergency Dental Care',
-                            'desc' =>
-                                'Urgent dental treatment for sudden pain, trauma, and other immediate oral concerns.',
-                        ],
-                    ];
-                @endphp
-                @foreach ($svcs as $idx => $s)
+                @foreach ($services as $idx => $s)
                     <div @class([
                         'service-card reveal relative overflow-hidden border-r border-b border-[#e4eff8] bg-white px-10 py-12 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(0,134,218,.1)] before:absolute before:top-0 before:right-0 before:left-0 before:h-[3px] before:bg-transparent hover:before:bg-[#0086da]',
                         'hidden' => $idx >= 4,
@@ -406,8 +230,8 @@
                         </div>
                         <h3 class="mb-3 text-[.98rem] font-bold tracking-[-.01em] text-[#1a2e3b]">{{ $s['title'] }}
                         </h3>
-                        <p class="mb-7 text-[.81rem] leading-[1.8] text-[#3d5a6e]">{{ $s['desc'] }}</p>
-                        <a href="/book"
+                        <p class="mb-7 text-[.81rem] leading-[1.8] text-[#3d5a6e]">{{ $s['summary'] }}</p>
+                        <a href="{{ route('services.show', $s['slug']) }}"
                             class="inline-flex items-center gap-[7px] text-[.67rem] font-bold uppercase tracking-[.1em] text-[#0086da] no-underline transition-[gap] hover:gap-[13px]">
                             Learn More
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -419,7 +243,7 @@
                     </div>
                 @endforeach
             </div>
-            @if (count($svcs) > 4)
+            @if (count($services) > 4)
                 <div class="mt-8 flex justify-center">
                     <button id="view-more-services" type="button"
                         class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] bg-transparent px-8 py-[13px] text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#0086da] hover:text-white">
@@ -527,7 +351,7 @@
                     </div>
                 </div>
                 <div class="reveal flex shrink-0 flex-col gap-3">
-                    <a href="#appointment"
+                    <a href="/book"
                         class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
                         Schedule a Visit
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -667,7 +491,7 @@
         </div>
     </section>
 
-    <section class="border-t border-[#e4eff8] bg-[#f6fafd] px-6 py-[88px] md:px-12 xl:px-20">
+    <section id="contact" class="border-t border-[#e4eff8] bg-[#f6fafd] px-6 py-[88px] md:px-12 xl:px-20">
         <div class="mx-auto w-full max-w-[1400px]">
             <div class="grid grid-cols-1 border border-[#e4eff8] lg:grid-cols-[1fr_1.6fr]">
                 <div class="flex flex-col justify-center border-r border-[#e4eff8] bg-white px-12 py-14">
@@ -756,121 +580,8 @@
         </div>
     </section>
 
-    <footer class="border-t-[3px] border-t-[#006ab0] bg-[#0086da] px-6 md:px-12 xl:px-20">
-        <div class="mx-auto w-full max-w-[1400px]">
-            <div class="flex flex-wrap justify-between gap-12 border-b border-white/10 py-[68px] pb-12">
-                <div class="max-w-[260px]">
-                    <div class="mb-5 flex items-center gap-3">
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center ">
-                            <svg width="56" height="45" viewBox="0 0 56 45" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <mask id="mask0_664_212" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0"
-                                    width="56" height="45">
-                                    <path
-                                        d="M11.783 0.465134C6.04622 2.04593 1.64903 6.81758 0.396845 12.7602C-0.127324 15.307 -0.127324 16.9171 0.367724 19.3468C1.70727 25.6993 7.88082 33.5154 18.5972 42.444L21.0724 44.5225L21.3927 43.1173C22.1499 39.8972 23.402 37.9944 25.6152 36.7941C27.2751 35.8574 28.3525 35.9159 30.158 36.9698C31.5849 37.8187 33.2739 40.5412 33.7398 42.7367C33.9437 43.7321 34.1766 44.5225 34.264 44.5225C34.5261 44.5225 40.8161 39.0775 43.5243 36.5307C51.7363 28.7438 56.0461 20.9862 55.4637 15.0436C55.0269 10.711 53.2797 7.05178 50.2511 4.24147C44.2814 -1.37913 35.4579 -1.4084 29.5756 4.12438L27.7701 5.82227L25.9646 4.15365C22.9361 1.34335 19.4708 -0.00325012 15.3939 0.0552979C14.2 0.0552979 12.5692 0.260216 11.783 0.465134ZM32.7206 9.36442C38.7486 12.3504 41.1947 19.4932 38.1953 25.4066C37.2634 27.2801 34.7008 29.8269 32.808 30.7344C27.0712 33.4862 20.0532 31.0857 17.2867 25.4066C16.0054 22.7134 15.6851 20.6934 16.151 17.9417C16.7626 14.341 19.1796 11.0916 22.5284 9.42297C24.596 8.39838 25.4405 8.22274 28.2943 8.33983C30.4492 8.42765 31.119 8.57402 32.7206 9.36442Z"
-                                        fill="black" />
-                                    <path
-                                        d="M24.0136 9.97903C21.0142 11.15 18.9757 13.2577 17.7235 16.4193C16.7917 18.7612 16.9664 22.3619 18.1021 24.616C19.2378 26.8116 21.2471 28.8022 23.3729 29.7975C24.9163 30.5001 25.4987 30.6172 27.7701 30.6172C29.9833 30.6172 30.653 30.5001 32.0217 29.8561C39.1271 26.4896 40.5831 17.5024 34.8755 12.2039C32.6624 10.1547 30.7113 9.39355 27.6828 9.39355C26.1976 9.42283 24.9745 9.59847 24.0136 9.97903ZM31.0316 13.4334C30.9151 14.0188 30.9151 15.0142 31.0025 15.5996L31.1772 16.6828L33.2739 16.7706L35.3414 16.8584V20.0493V23.2694L33.3613 23.2987C32.2838 23.328 31.3228 23.4451 31.2063 23.5329C31.119 23.65 31.0025 24.616 31.0025 25.6992L30.9734 27.6898L27.6828 27.7776L24.4213 27.8654V25.6699V23.5036L23.0526 23.328C22.2663 23.2401 21.3345 23.2109 20.9268 23.2401L20.1988 23.2987L20.1114 19.9907L20.0241 16.712H22.2372H24.4213V14.5165V12.321H27.7992H31.2063L31.0316 13.4334Z"
-                                        fill="black" />
-                                </mask>
-                                <g mask="url(#mask0_664_212)">
-                                    <rect x="-25.5311" y="-23.4609" width="106.265" height="91.7739"
-                                        fill="#ffffff" />
-                                </g>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="text-[.88rem] font-extrabold tracking-[.05em] text-white">TEJADA CLINIC
-                            </div>
-                            <div class="text-[.57rem] font-semibold uppercase tracking-[.2em] text-[#1a2e3b]">Dental
-                                Care
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-[.8rem] leading-[1.75] italic text-white">"We don't just treat teeth; we care for
-                        the people behind the smiles."</p>
-                </div>
-
-                <div>
-                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white">Quick Links
-                    </div>
-                    <div class="flex flex-col gap-[11px]">
-                        @foreach (['Services' => 'services', 'About Us' => 'about', 'Why Us' => 'why-us', 'Contact' => 'hours'] as $label => $id)
-                            <a href="#{{ $id }}"
-                                class="text-[.8rem] font-medium text-white/60 no-underline transition hover:text-white">{{ $label }}</a>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div>
-                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white">Contact</div>
-                    <div class="flex flex-col gap-[14px]">
-                        <div class="flex items-start gap-[11px]">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="square"
-                                class="mt-0.5 shrink-0">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                <circle cx="12" cy="10" r="3" />
-                            </svg>
-                            <span class="text-[.8rem] leading-[1.6] text-white">251 Commonwealth Ave,<br>Diliman,
-                                Quezon City</span>
-                        </div>
-                        <div class="flex items-center gap-[11px]">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="square">
-                                <path
-                                    d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.1 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z" />
-                            </svg>
-                            <a href="tel:+639123456789" class="text-[.8rem] text-white no-underline">+63 912 345
-                                6789</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white">Ready to
-                        Visit?
-                    </div>
-                    <a href="/book"
-                        class="mb-[14px] inline-flex items-center gap-[9px] whitespace-nowrap bg-white px-6 py-[13px] text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#e8f4fc]">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="square">
-                            <rect x="3" y="4" width="18" height="18" />
-                            <path d="M16 2v4M8 2v4M3 10h18" />
-                        </svg>
-                        Book Appointment
-                    </a>
-                    <p class="mt-3 text-[.7rem] leading-[1.6] text-white/70">Mon – Sat · 9:00 AM – 7:00 PM</p>
-                </div>
-            </div>
-
-            <div
-                class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-5 md:px-12 xl:px-20">
-                <p class="text-[.7rem] text-white">&copy; {{ date('Y') }} Tejada Clinic. All rights reserved.
-                </p>
-                <p class="text-[.7rem] text-white">251 Commonwealth Ave, Diliman, Quezon City</p>
-            </div>
-        </div>
-    </footer>
-
+    @include('components.homepage.footer-section')
     <script>
-        const hamBtn = document.getElementById('ham-btn');
-        const mobMenu = document.getElementById('mob-menu');
-
-        hamBtn.addEventListener('click', () => {
-            const open = mobMenu.classList.toggle('hidden') === false;
-            hamBtn.classList.toggle('active', open);
-            hamBtn.setAttribute('aria-expanded', open);
-        });
-
-        mobMenu.querySelectorAll('a').forEach(a => {
-            a.addEventListener('click', () => {
-                mobMenu.classList.add('hidden');
-                hamBtn.classList.remove('active');
-                hamBtn.setAttribute('aria-expanded', 'false');
-            });
-        });
-
         document.querySelectorAll('a[href^="#"]').forEach(a => {
             a.addEventListener('click', e => {
                 const target = document.querySelector(a.getAttribute('href'));
@@ -931,3 +642,4 @@
 </body>
 
 </html>
+
