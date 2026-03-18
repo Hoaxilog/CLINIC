@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class Dashboard extends Controller
 {
@@ -64,24 +64,25 @@ class Dashboard extends Controller
     public function patientStats(Request $request)
     {
         $patientStatsRange = $request->query('patient_stats_range', 'monthly');
-        if (!in_array($patientStatsRange, ['weekly', 'monthly'], true)) {
+        if (! in_array($patientStatsRange, ['weekly', 'monthly'], true)) {
             $patientStatsRange = 'monthly';
         }
 
         return response()->json($this->buildPatientStats($patientStatsRange));
     }
 
-    public function index() {
+    public function index()
+    {
         $today = Carbon::today();
         $range = request('range', '15d');
         $patientStatsRange = request('patient_stats_range', 'monthly');
         $cancellationRange = request('cancellation_range', 'monthly');
 
-        if (!in_array($patientStatsRange, ['weekly', 'monthly'], true)) {
+        if (! in_array($patientStatsRange, ['weekly', 'monthly'], true)) {
             $patientStatsRange = 'monthly';
         }
 
-        if (!in_array($cancellationRange, ['weekly', 'monthly'], true)) {
+        if (! in_array($cancellationRange, ['weekly', 'monthly'], true)) {
             $cancellationRange = 'monthly';
         }
 
@@ -121,6 +122,7 @@ class Dashboard extends Controller
 
         $todayAppointmentsCount = DB::table('appointments')
             ->whereDate('appointment_date', $today)
+            ->where('status', '!=', 'Pending')
             ->count();
 
         $todayCompletedCount = DB::table('appointments')
@@ -301,51 +303,50 @@ class Dashboard extends Controller
 
         return view('dashboard', [
             'todayAppointmentsCount' => $todayAppointmentsCount,
-            'todayCompletedCount'    => $todayCompletedCount,
-            'todayCancelledCount'    => $todayCancelledCount,
-            'todayUpcomingCount'     => max(0, $todayUpcomingCount),
-            'todayProfit'            => $todayProfit,
-            'todayRevenue'           => $todayRevenue,
-            'todayCost'              => $todayCost,
-            'todayProfitMargin'      => $todayProfitMargin,
-            'yesterdayProfit'        => $yesterdayProfit,
-            'todayProfitPct'         => $todayProfitPct,
-            'weekProfit'             => $weekProfit,
-            'weekProfitPct'          => $weekProfitPct,
-            'monthProfit'            => $monthProfit,
-            'monthRevenue'           => $monthRevenue,
-            'monthCost'              => $monthCost,
-            'monthProfitPct'         => $monthProfitPct,
-            'trendDates'             => $trendDates,
-            'trendAppointments'      => $trendAppointments,
-            'trendProfit'            => $trendProfit,
-            'statusLabels'           => $statusLabels,
-            'statusCounts'           => $statusCounts,
-            'bookedLast30'           => $bookedLast30,
-            'cancelledLast30'        => $cancelledLast30,
-            'cancellationRate'       => $cancellationRate,
+            'todayCompletedCount' => $todayCompletedCount,
+            'todayCancelledCount' => $todayCancelledCount,
+            'todayUpcomingCount' => max(0, $todayUpcomingCount),
+            'todayProfit' => $todayProfit,
+            'todayRevenue' => $todayRevenue,
+            'todayCost' => $todayCost,
+            'todayProfitMargin' => $todayProfitMargin,
+            'yesterdayProfit' => $yesterdayProfit,
+            'todayProfitPct' => $todayProfitPct,
+            'weekProfit' => $weekProfit,
+            'weekProfitPct' => $weekProfitPct,
+            'monthProfit' => $monthProfit,
+            'monthRevenue' => $monthRevenue,
+            'monthCost' => $monthCost,
+            'monthProfitPct' => $monthProfitPct,
+            'trendDates' => $trendDates,
+            'trendAppointments' => $trendAppointments,
+            'trendProfit' => $trendProfit,
+            'statusLabels' => $statusLabels,
+            'statusCounts' => $statusCounts,
+            'bookedLast30' => $bookedLast30,
+            'cancelledLast30' => $cancelledLast30,
+            'cancellationRate' => $cancellationRate,
             'todayScheduleAppointments' => $todayScheduleAppointments,
-            'pendingApprovalsCount'  => $pendingApprovalsCount,
-            'totalPatients'          => $totalPatients,
-            'waitingPatientsCount'   => $waitingPatientsCount,
-            'arrivedPatientsCount'   => $arrivedPatientsCount,
-            'ongoingPatientsCount'   => $ongoingPatientsCount,
+            'pendingApprovalsCount' => $pendingApprovalsCount,
+            'totalPatients' => $totalPatients,
+            'waitingPatientsCount' => $waitingPatientsCount,
+            'arrivedPatientsCount' => $arrivedPatientsCount,
+            'ongoingPatientsCount' => $ongoingPatientsCount,
             'completedPatientsCount' => $completedPatientsCount,
-            'recentActivities'       => $recentActivities,
-            'patientStatsTotal'      => $patientStats['patientStatsTotal'],
-            'patientStatsDates'      => $patientStats['patientStatsDates'],
-            'newPatientCounts'       => $patientStats['newPatientCounts'],
+            'recentActivities' => $recentActivities,
+            'patientStatsTotal' => $patientStats['patientStatsTotal'],
+            'patientStatsDates' => $patientStats['patientStatsDates'],
+            'newPatientCounts' => $patientStats['newPatientCounts'],
             'returningPatientCounts' => $patientStats['returningPatientCounts'],
-            'patientStatsRange'      => $patientStats['patientStatsRange'],
-            'patientStatsLabel'      => $patientStats['patientStatsLabel'],
+            'patientStatsRange' => $patientStats['patientStatsRange'],
+            'patientStatsLabel' => $patientStats['patientStatsLabel'],
             'topRevenueTreatmentNames' => $topRevenueTreatmentNames,
             'topRevenueTreatmentAmounts' => $topRevenueTreatmentAmounts,
-            'topRevenueTotal'        => $topRevenueTotal,
-            'cancellationRange'      => $cancellationRange,
-            'cancellationLabel'      => $cancellationLabel,
-            'range'                  => $range,
-            'rangeLabel'             => $rangeLabel,
+            'topRevenueTotal' => $topRevenueTotal,
+            'cancellationRange' => $cancellationRange,
+            'cancellationLabel' => $cancellationLabel,
+            'range' => $range,
+            'rangeLabel' => $rangeLabel,
         ]);
     }
-
 }

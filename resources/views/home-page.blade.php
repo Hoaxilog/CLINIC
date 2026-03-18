@@ -162,7 +162,7 @@
                         <rect x="3" y="4" width="18" height="18" />
                         <path d="M16 2v4M8 2v4M3 10h18" />
                     </svg>
-                    Book Now
+                    Book Appointment
                 </a>
             </div>
 
@@ -303,143 +303,95 @@
                             'title' => 'General Checkup',
                             'desc' =>
                                 'Comprehensive oral exams, professional cleaning, X-rays, and preventive care to keep your teeth healthy long-term.',
-                            'icon' =>
-                                '<path d="M10 1.5C7.6 1.5 5.7 2.8 4.1 4.5C2.5 6.2 1.5 8.2 1.5 10.5C1.5 13.2 2.5 15.8 3.5 17.9C4.5 20 5.6 22 7 22.3C8 22.5 8.5 21.6 9.1 20.1C9.6 18.8 9.9 17.6 10 17.6C10.1 17.6 10.4 18.8 10.9 20.1C11.5 21.6 12 22.5 13 22.3C14.4 22 15.5 20 16.5 17.9C17.5 15.8 18.5 13.2 18.5 10.5C18.5 8.2 17.5 6.2 15.9 4.5C14.3 2.8 12.4 1.5 10 1.5Z" fill="#0086da"/>',
-                            'vb' => '0 0 20 23',
                         ],
                         [
                             'num' => '02',
                             'title' => 'Orthodontics',
                             'desc' =>
                                 'Braces and modern clear aligners crafted to straighten teeth and correct bite issues for children, teens, and adults.',
-                            'icon' =>
-                                '<path d="M3 5h18M3 9h18M3 13h18M3 17h18" stroke="#0086da" stroke-width="2" stroke-linecap="square"/><circle cx="7" cy="5" r="2" stroke="#0086da" stroke-width="2" fill="none"/><circle cx="13" cy="9" r="2" stroke="#0086da" stroke-width="2" fill="none"/><circle cx="17" cy="13" r="2" stroke="#0086da" stroke-width="2" fill="none"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '03',
                             'title' => 'Teeth Whitening',
                             'desc' =>
                                 'Professional-grade whitening that safely lifts stubborn stains and restores the natural brightness of your smile.',
-                            'icon' =>
-                                '<circle cx="12" cy="12" r="4" stroke="#0086da" stroke-width="2" fill="none"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="#0086da" stroke-width="2" stroke-linecap="square"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '04',
                             'title' => 'Oral Surgery',
                             'desc' =>
                                 'Tooth extractions, implant placement, and minor surgical procedures performed by our experienced dental team.',
-                            'icon' =>
-                                '<path d="M9 3H5a2 2 0 00-2 2v4M9 3h6M9 3v18m6-18h4a2 2 0 012 2v4M15 3v18m0 0H9m6 0h4a2 2 0 002-2V9M3 9h18" stroke="#0086da" stroke-width="2" stroke-linecap="square" fill="none"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '05',
                             'title' => 'Dental Fillings',
                             'desc' =>
                                 'Tooth-colored composite fillings that repair cavities and restore strength while keeping a natural look.',
-                            'icon' =>
-                                '<path d="M4 10c0-4 3-7 8-7s8 3 8 7c0 6-4 11-8 11s-8-5-8-11Z" stroke="#0086da" stroke-width="2" fill="none"/><path d="M9 10h6" stroke="#0086da" stroke-width="2" stroke-linecap="square"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '06',
                             'title' => 'Root Canal Therapy',
                             'desc' =>
                                 'Pain-relieving root canal treatment that saves infected teeth and prevents further oral complications.',
-                            'icon' =>
-                                '<path d="M12 3v18M8 6v12M16 6v12" stroke="#0086da" stroke-width="2" stroke-linecap="square"/><path d="M6 4h12" stroke="#0086da" stroke-width="2" stroke-linecap="square"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '07',
                             'title' => 'Dental Crowns',
                             'desc' =>
                                 'Custom-made crowns that protect damaged teeth and restore full function and appearance.',
-                            'icon' =>
-                                '<path d="M5 8l2-4 5 3 5-3 2 4-2 10H7L5 8Z" stroke="#0086da" stroke-width="2" fill="none"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '08',
                             'title' => 'Dental Bridges',
                             'desc' =>
                                 'Fixed bridge solutions to replace missing teeth and bring back comfortable chewing and confidence.',
-                            'icon' =>
-                                '<circle cx="6" cy="12" r="3" stroke="#0086da" stroke-width="2" fill="none"/><circle cx="18" cy="12" r="3" stroke="#0086da" stroke-width="2" fill="none"/><rect x="9" y="10" width="6" height="4" stroke="#0086da" stroke-width="2" fill="none"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '09',
                             'title' => 'Dentures',
                             'desc' =>
                                 'Full and partial dentures designed for comfort, stability, and natural-looking smiles.',
-                            'icon' =>
-                                '<path d="M4 12c0 4 3.5 7 8 7s8-3 8-7" stroke="#0086da" stroke-width="2" fill="none"/><path d="M6 12h12" stroke="#0086da" stroke-width="2" stroke-linecap="square"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '10',
                             'title' => 'Pediatric Dentistry',
                             'desc' =>
                                 'Gentle dental care for children focused on prevention, comfort, and healthy oral habits.',
-                            'icon' =>
-                                '<circle cx="12" cy="10" r="5" stroke="#0086da" stroke-width="2" fill="none"/><path d="M7 20c1.2-2 2.8-3 5-3s3.8 1 5 3" stroke="#0086da" stroke-width="2" fill="none"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '11',
                             'title' => 'Periodontal Care',
                             'desc' =>
                                 'Specialized gum treatment to manage gingivitis and periodontitis and protect long-term oral health.',
-                            'icon' =>
-                                '<path d="M4 6h16M6 10h12M8 14h8M10 18h4" stroke="#0086da" stroke-width="2" stroke-linecap="square"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '12',
                             'title' => 'Tooth Extraction',
                             'desc' =>
                                 'Safe extractions for severely damaged or problematic teeth with careful aftercare support.',
-                            'icon' =>
-                                '<path d="M8 4l8 8M16 4l-8 8" stroke="#0086da" stroke-width="2" stroke-linecap="square"/><path d="M7 13c0 4 2 7 5 7s5-3 5-7" stroke="#0086da" stroke-width="2" fill="none"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '13',
                             'title' => 'Dental Implants',
                             'desc' =>
                                 'Durable implant restorations that replace missing teeth and restore bite stability.',
-                            'icon' =>
-                                '<path d="M12 3v14" stroke="#0086da" stroke-width="2" stroke-linecap="square"/><circle cx="12" cy="19" r="3" stroke="#0086da" stroke-width="2" fill="none"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '14',
                             'title' => 'Veneers',
                             'desc' => 'Thin porcelain veneers to improve shape, color, and overall smile symmetry.',
-                            'icon' =>
-                                '<rect x="6" y="4" width="12" height="16" rx="3" stroke="#0086da" stroke-width="2" fill="none"/><path d="M9 8h6" stroke="#0086da" stroke-width="2" stroke-linecap="square"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '15',
                             'title' => 'TMJ Management',
                             'desc' =>
                                 'Assessment and treatment options for jaw pain, clenching, and bite-related discomfort.',
-                            'icon' =>
-                                '<path d="M4 8h16M6 12h12M8 16h8" stroke="#0086da" stroke-width="2" stroke-linecap="square"/><circle cx="7" cy="8" r="1" fill="#0086da"/><circle cx="17" cy="8" r="1" fill="#0086da"/>',
-                            'vb' => '0 0 24 24',
                         ],
                         [
                             'num' => '16',
                             'title' => 'Emergency Dental Care',
                             'desc' =>
                                 'Urgent dental treatment for sudden pain, trauma, and other immediate oral concerns.',
-                            'icon' =>
-                                '<path d="M13 2L6 13h5l-1 9 8-12h-5l0-8Z" stroke="#0086da" stroke-width="2" fill="none" stroke-linejoin="round"/>',
-                            'vb' => '0 0 24 24',
                         ],
                     ];
                 @endphp
@@ -449,17 +401,13 @@
                         'hidden' => $idx >= 4,
                     ])>
                         <div class="mb-8 flex items-start justify-between">
-                            <div class="flex h-[52px] w-[52px] shrink-0 items-center justify-center bg-[#e8f4fc]">
-                                <svg width="24" height="24" viewBox="{{ $s['vb'] }}"
-                                    fill="none">{!! $s['icon'] !!}</svg>
-                            </div>
                             <span
                                 class="select-none text-[2rem] leading-none font-extrabold tracking-[-.04em] text-[#d4e8f5]">{{ $s['num'] }}</span>
                         </div>
                         <h3 class="mb-3 text-[.98rem] font-bold tracking-[-.01em] text-[#1a2e3b]">{{ $s['title'] }}
                         </h3>
                         <p class="mb-7 text-[.81rem] leading-[1.8] text-[#3d5a6e]">{{ $s['desc'] }}</p>
-                        <a href="#appointment"
+                        <a href="/book"
                             class="inline-flex items-center gap-[7px] text-[.67rem] font-bold uppercase tracking-[.1em] text-[#0086da] no-underline transition-[gap] hover:gap-[13px]">
                             Learn More
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -562,10 +510,12 @@
                         we care for the people behind the smiles."</p>
                     <div class="flex items-center gap-3">
                         <div class="flex h-[34px] w-[34px] shrink-0 items-center justify-center bg-[#0086da]">
-                            <svg width="16" height="19" viewBox="0 0 20 23" fill="none">
-                                <path
-                                    d="M10 1.5C7.6 1.5 5.7 2.8 4.1 4.5C2.5 6.2 1.5 8.2 1.5 10.5C1.5 13.2 2.5 15.8 3.5 17.9C4.5 20 5.6 22 7 22.3C8 22.5 8.5 21.6 9.1 20.1C9.6 18.8 9.9 17.6 10 17.6C10.1 17.6 10.4 18.8 10.9 20.1C11.5 21.6 12 22.5 13 22.3C14.4 22 15.5 20 16.5 17.9C17.5 15.8 18.5 13.2 18.5 10.5C18.5 8.2 17.5 6.2 15.9 4.5C14.3 2.8 12.4 1.5 10 1.5Z"
-                                    fill="white" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                class="lucide lucide-user-icon lucide-user">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
                             </svg>
                         </div>
                         <div>
@@ -629,7 +579,7 @@
                         [
                             'title' => 'Online Appointments',
                             'desc' =>
-                                'Book, reschedule, or cancel anytime through our seamless online patient portal — quick and effortless.',
+                                'Book, reschedule, or cancel anytime through our seamless online patient portal, quick and effortless.',
                             'icon' =>
                                 '<rect x="3" y="4" width="18" height="18" stroke="#0086da" stroke-width="2" fill="none" stroke-linecap="square"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" stroke="#0086da" stroke-width="2" stroke-linecap="square"/>',
                             'vb' => '0 0 24 24',
@@ -637,7 +587,7 @@
                         [
                             'title' => 'Smart Reminders',
                             'desc' =>
-                                'Automated SMS and email notifications keep you updated so you never miss a scheduled dental visit.',
+                                'Automated email notifications keep you updated so you never miss a scheduled dental visit.',
                             'icon' =>
                                 '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#0086da" stroke-width="2" fill="none" stroke-linecap="square"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="#0086da" stroke-width="2" stroke-linecap="square" fill="none"/>',
                             'vb' => '0 0 24 24',
@@ -766,21 +716,6 @@
                             </div>
                         </div>
 
-                        <div class="reveal flex items-start gap-4 border-b border-[#e4eff8] py-[22px]">
-                            <div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center bg-[#e8f4fc]">
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                                    stroke="#0086da" stroke-width="2" stroke-linecap="square">
-                                    <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="mb-[5px] text-[.6rem] font-bold uppercase tracking-[.16em] text-[#0086da]">
-                                    Facebook</div>
-                                <a href="https://facebook.com/TejaDentClinic" target="_blank"
-                                    class="text-[.9rem] font-semibold text-[#1a2e3b] no-underline transition hover:text-[#0086da]">facebook.com/TejaDentClinic</a>
-                            </div>
-                        </div>
-
                         <div class="reveal flex items-start gap-4 py-[22px]">
                             <div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center bg-[#e8f4fc]">
                                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
@@ -826,7 +761,7 @@
             <div class="flex flex-wrap justify-between gap-12 border-b border-white/10 py-[68px] pb-12">
                 <div class="max-w-[260px]">
                     <div class="mb-5 flex items-center gap-3">
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center bg-white/15">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center ">
                             <svg width="56" height="45" viewBox="0 0 56 45" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <mask id="mask0_664_212" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0"
@@ -840,23 +775,24 @@
                                 </mask>
                                 <g mask="url(#mask0_664_212)">
                                     <rect x="-25.5311" y="-23.4609" width="106.265" height="91.7739"
-                                        fill="#0086DA" />
+                                        fill="#ffffff" />
                                 </g>
                             </svg>
                         </div>
                         <div>
-                            <div class="text-[.88rem] font-extrabold tracking-[.05em] text-white">TEJADA CLINIC</div>
-                            <div class="text-[.57rem] font-semibold uppercase tracking-[.2em] text-white/50">Dental
+                            <div class="text-[.88rem] font-extrabold tracking-[.05em] text-white">TEJADA CLINIC
+                            </div>
+                            <div class="text-[.57rem] font-semibold uppercase tracking-[.2em] text-[#1a2e3b]">Dental
                                 Care
                             </div>
                         </div>
                     </div>
-                    <p class="text-[.8rem] leading-[1.75] italic text-white/52">"We don't just treat teeth; we care for
+                    <p class="text-[.8rem] leading-[1.75] italic text-white">"We don't just treat teeth; we care for
                         the people behind the smiles."</p>
                 </div>
 
                 <div>
-                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white/35">Quick Links
+                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white">Quick Links
                     </div>
                     <div class="flex flex-col gap-[11px]">
                         @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
@@ -867,7 +803,7 @@
                 </div>
 
                 <div>
-                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white/35">Contact</div>
+                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white">Contact</div>
                     <div class="flex flex-col gap-[14px]">
                         <div class="flex items-start gap-[11px]">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -876,7 +812,7 @@
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                                 <circle cx="12" cy="10" r="3" />
                             </svg>
-                            <span class="text-[.8rem] leading-[1.6] text-white/60">251 Commonwealth Ave,<br>Diliman,
+                            <span class="text-[.8rem] leading-[1.6] text-white">251 Commonwealth Ave,<br>Diliman,
                                 Quezon City</span>
                         </div>
                         <div class="flex items-center gap-[11px]">
@@ -885,22 +821,14 @@
                                 <path
                                     d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.1 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z" />
                             </svg>
-                            <a href="tel:+639123456789" class="text-[.8rem] text-white/60 no-underline">+63 912 345
+                            <a href="tel:+639123456789" class="text-[.8rem] text-white no-underline">+63 912 345
                                 6789</a>
-                        </div>
-                        <div class="flex items-center gap-[11px]">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="square">
-                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
-                            </svg>
-                            <a href="https://facebook.com/TejaDentClinic" target="_blank"
-                                class="text-[.8rem] text-white/60 no-underline">TejaDentClinic</a>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white/35">Ready to
+                    <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white">Ready to
                         Visit?
                     </div>
                     <a href="/book"
@@ -912,15 +840,15 @@
                         </svg>
                         Book Appointment
                     </a>
-                    <p class="mt-3 text-[.7rem] leading-[1.6] text-white/38">Mon – Sat · 9:00 AM – 6:00 PM</p>
+                    <p class="mt-3 text-[.7rem] leading-[1.6] text-white/70">Mon – Sat · 9:00 AM – 7:00 PM</p>
                 </div>
             </div>
 
             <div
                 class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-5 md:px-12 xl:px-20">
-                <p class="text-[.7rem] text-white/28">&copy; {{ date('Y') }} Tejada Clinic. All rights reserved.
+                <p class="text-[.7rem] text-white">&copy; {{ date('Y') }} Tejada Clinic. All rights reserved.
                 </p>
-                <p class="text-[.7rem] text-white/28">251 Commonwealth Ave, Diliman, Quezon City</p>
+                <p class="text-[.7rem] text-white">251 Commonwealth Ave, Diliman, Quezon City</p>
             </div>
         </div>
     </footer>

@@ -103,7 +103,6 @@ class PatientDashboardController extends Controller
         $profileChecklist = [
             filled($user->username ?? null),
             filled($user->email ?? null),
-            filled($user->contact ?? null),
         ];
 
         $completedProfileItems = collect($profileChecklist)->filter()->count();

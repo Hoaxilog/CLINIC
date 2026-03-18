@@ -19,6 +19,8 @@ use Laravel\Socialite\Facades\Socialite;
 
 class LoginController extends Controller
 {
+    private const OTP_EXPIRES_IN_MINUTES = 5;
+
     private const OTP_RESEND_COOLDOWN_SECONDS = 60;
 
     private const OTP_MAX_SENDS_PER_SESSION = 3;
@@ -386,7 +388,7 @@ class LoginController extends Controller
     private function issueOtpChallenge(Request $request, $user, ?array $previousOtpData = null): void
     {
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $expiresAt = now()->addMinutes(10);
+        $expiresAt = now()->addMinutes(self::OTP_EXPIRES_IN_MINUTES);
         $newSendCount = ((int) ($previousOtpData['send_count'] ?? 0)) + 1;
         $sentAt = now();
 

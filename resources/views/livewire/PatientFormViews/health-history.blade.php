@@ -1,13 +1,14 @@
 <div class="relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white"
     x-data="{
-        historyLoading: {{ count($historyList) > 0 || $isCreating ? 'true' : 'false' }},
+        historyLoading: {{ (count($historyList) > 0 || $isCreating) ? 'true' : 'false' }},
         nervous: @js((string) $is_nervous_q6),
         condition: @js((string) $is_condition_q1),
         hospitalized: @js((string) $is_hospitalized_q2),
         seriousIllness: @js((string) $is_serious_illness_operation_q3),
         medications: @js((string) $is_taking_medications_q4),
         allergies: @js((string) $is_allergic_medications_q5)
-    }" x-on:show-health-history-loading.window="historyLoading = true"
+    }"
+    x-on:show-health-history-loading.window="historyLoading = true"
     x-on:health-history-ready.window="historyLoading = false">
     <div x-cloak x-show="historyLoading"
         class="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-sm text-center">
@@ -27,16 +28,15 @@
                 {{-- History Dropdown: DO NOT DISABLE (User needs to switch views) --}}
                 @if (count($historyList) > 1 && $isReadOnly && !$isCreating)
                     <div class="flex items-center gap-2">
-                        <select wire:model.live="selectedHistoryId"
-                            x-on:change="$dispatch('show-health-history-loading')"
+                        <select wire:model.live="selectedHistoryId" x-on:change="$dispatch('show-health-history-loading')"
                             class="px-3 py-2 border border-gray-300 rounded-md text-sm w-full focus:border-blue-500 focus:ring-blue-500 min-w-[200px]">
-
-                            @if ($isCreating)
+                            
+                            @if($isCreating)
                                 <option value="new" class="font-bold text-blue-600">New Record (Unsaved)</option>
                             @else
                                 <option value="" disabled>Select History Record...</option>
                             @endif
-
+                                                
                             <optgroup label="Past Records">
                                 @foreach ($historyList as $history)
                                     <option value="{{ $history['id'] }}">
@@ -70,12 +70,15 @@
             class="flex-1 overflow-y-auto p-4 lg:p-6 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-slate-100 scrollbar-thumb-slate-300">
 
             @php
-                $inputBase = 'w-full border rounded px-4 py-3 text-base focus:ring-2';
-                $inputClass = $inputBase . ' border-gray-300 focus:border-blue-500 focus:ring-blue-100';
-                $inputErrorClass = $inputBase . ' border-red-500 focus:border-red-500 focus:ring-red-200';
-                $fieldClass = fn(string $field) => ($errors->has($field))
-                    ? $inputErrorClass
-                    : $inputClass;
+                $lastVisitDateClass = $errors->has('when_last_visit_q1')
+                    ? 'w-full border border-red-500 rounded px-4 py-3 text-base focus:ring-red-200 focus:border-red-500'
+                    : 'w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500';
+                $lastVisitReasonClass = $errors->has('what_last_visit_reason_q1')
+                    ? 'w-full border border-red-500 rounded px-4 py-3 text-base focus:ring-red-200 focus:border-red-500'
+                    : 'w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500';
+                $todayReasonClass = $errors->has('what_seeing_dentist_reason_q2')
+                    ? 'w-full border border-red-500 rounded px-4 py-3 text-base focus:ring-red-200 focus:border-red-500'
+                    : 'w-full border rounded px-4 py-3 text-base focus:ring-blue-500 focus:border-blue-500';
             @endphp
 
             <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -85,24 +88,20 @@
             <div class="space-y-6 mb-10">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-lg font-medium text-gray-700 mb-2">1. Date of last dental visit
-                            (Optional)</label>
-                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="when_last_visit_q1"
-                            type="date" class="{{ $fieldClass('when_last_visit_q1') }}">
+                        <label class="block text-lg font-medium text-gray-700 mb-2">1. Date of last dental visit (Optional)</label>
+                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="when_last_visit_q1" type="date"
+                            class="{{ $lastVisitDateClass }}">
                         @error('when_last_visit_q1')
-                            <span data-error-for="when_last_visit_q1"
-                                class="text-red-500 text-sm">{{ $message }}</span>
+                            <span data-error-for="when_last_visit_q1" class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
                     </div>
                     <div>
-                        <label class="block text-lg font-medium text-gray-700 mb-2">What was done in your last dental
-                            (Optional)</label>
-                        <input @if ($isReadOnly && !$isCreating) disabled @endif
-                            wire:model.defer="what_last_visit_reason_q1" type="text"
-                            class="{{ $fieldClass('what_last_visit_reason_q1') }}" placeholder="e.g., Cleaning, Filling...">
+                        <label class="block text-lg font-medium text-gray-700 mb-2">What was done in your last dental (Optional)</label>
+                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="what_last_visit_reason_q1" type="text"
+                            class="{{ $lastVisitReasonClass }}"
+                            placeholder="e.g., Cleaning, Filling...">
                         @error('what_last_visit_reason_q1')
-                            <span data-error-for="what_last_visit_reason_q1"
-                                class="text-red-500 text-sm">{{ $message }}</span>
+                            <span data-error-for="what_last_visit_reason_q1" class="text-red-500 text-sm">{{ $message }}</span>
                         @enderror
                     </div>
                 </div>
@@ -110,18 +109,16 @@
                 <div>
                     <label class="block text-lg font-medium text-gray-700 mb-2">2. Reason for seeing dentist
                         today? <span class="text-red-600">*</span></label>
-                    <input @if ($isReadOnly && !$isCreating) disabled @endif
-                        wire:model.defer="what_seeing_dentist_reason_q2" type="text" class="{{ $fieldClass('what_seeing_dentist_reason_q2') }}"
+                    <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="what_seeing_dentist_reason_q2" type="text"
+                        class="{{ $todayReasonClass }}"
                         placeholder="e.g., Check-up...">
                     @error('what_seeing_dentist_reason_q2')
-                        <span data-error-for="what_seeing_dentist_reason_q2"
-                            class="text-red-500 text-sm">{{ $message }}</span>
+                        <span data-error-for="what_seeing_dentist_reason_q2" class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block text-lg font-medium text-gray-700 mb-2">3. Have you experienced? <span
-                            class="text-red-600">*</span></label>
+                    <label class="block text-lg font-medium text-gray-700 mb-2">3. Have you experienced? <span class="text-red-600">*</span></label>
                     <div
                         class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pl-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
 
@@ -130,22 +127,21 @@
                                 <label class="block text-base font-medium text-gray-700">{{ $q['label'] }}</label>
                                 <div class="flex gap-x-6 mt-1">
                                     <label class="flex items-center cursor-pointer">
-                                        <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                            wire:model.defer="{{ $q['model'] }}" type="radio" value="1"
+                                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $q['model'] }}"
+                                            type="radio" value="1"
                                             class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                         <span class="ml-2 text-sm font-bold text-blue-700">YES</span>
                                     </label>
                                     <label class="flex items-center cursor-pointer">
-                                        <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                            wire:model.defer="{{ $q['model'] }}" type="radio" value="0"
+                                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $q['model'] }}"
+                                            type="radio" value="0"
                                             class="h-4 w-4 text-gray-400 border-gray-300 focus:ring-gray-500">
                                         <span class="ml-2 text-sm text-gray-600">NO</span>
                                     </label>
                                 </div>
                                 {{-- ADDED: Validation Error --}}
                                 @error($q['model'])
-                                    <span data-error-for="{{ $q['model'] }}"
-                                        class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                    <span data-error-for="{{ $q['model'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
                         @endforeach
@@ -154,43 +150,37 @@
 
                 @foreach ([['q' => '4. Do you clench or grind your teeth?', 'model' => 'is_clench_grind_q4'], ['q' => '5. Bad experience in dental office?', 'model' => 'is_bad_experience_q5'], ['q' => '6. Feel nervous about treatment?', 'model' => 'is_nervous_q6', 'detail' => 'what_nervous_concern_q6', 'placeholder' => 'What is your concern?']] as $item)
                     <div class="border-b border-gray-100 pb-4">
-                        <label class="block text-lg font-medium text-gray-700">{{ $item['q'] }} <span
-                                class="text-red-600">*</span></label>
+                        <label class="block text-lg font-medium text-gray-700">{{ $item['q'] }} <span class="text-red-600">*</span></label>
                         <div class="flex gap-x-6 mt-2">
                             <label class="flex items-center cursor-pointer">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                    wire:model.defer="{{ $item['model'] }}"
-                                    @if (($item['model'] ?? null) === 'is_nervous_q6') x-model="nervous" @endif type="radio"
-                                    value="1" class="h-4 w-4 text-blue-600">
+                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $item['model'] }}"
+                                    @if (($item['model'] ?? null) === 'is_nervous_q6') x-model="nervous" @endif
+                                    type="radio" value="1" class="h-4 w-4 text-blue-600">
                                 <span class="ml-2 text-sm font-bold text-blue-700">YES</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                    wire:model.defer="{{ $item['model'] }}"
-                                    @if (($item['model'] ?? null) === 'is_nervous_q6') x-model="nervous" @endif type="radio"
-                                    value="0" class="h-4 w-4 text-gray-400">
+                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $item['model'] }}"
+                                    @if (($item['model'] ?? null) === 'is_nervous_q6') x-model="nervous" @endif
+                                    type="radio" value="0" class="h-4 w-4 text-gray-400">
                                 <span class="ml-2 text-sm text-gray-600">NO</span>
                             </label>
                         </div>
-
+                        
                         {{-- ADDED: Validation Error for Radio --}}
                         @error($item['model'])
-                            <span data-error-for="{{ $item['model'] }}"
-                                class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                            <span data-error-for="{{ $item['model'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                         @enderror
 
                         {{-- Conditional Detail Input --}}
                         @if (isset($item['detail']))
                             <div x-cloak x-show="nervous === '1'" class="mt-2 pl-4 border-l-2 border-blue-200">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                    wire:model.defer="{{ $item['detail'] }}" type="text"
-                                    class="{{ $errors->has($item['detail']) ? 'w-full border border-red-500 rounded px-3 py-2 text-sm focus:ring-2 focus:border-red-500 focus:ring-red-200' : 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:border-blue-500 focus:ring-blue-100' }}"
+                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $item['detail'] }}" type="text"
+                                    class="w-full border rounded px-3 py-2 text-sm @error($item['detail']) border-red-500 focus:border-red-500 focus:ring-red-200 @enderror"
                                     placeholder="{{ $item['placeholder'] }}">
-
+                                
                                 {{-- ADDED: Validation Error for Detail Input --}}
                                 @error($item['detail'])
-                                    <span data-error-for="{{ $item['detail'] }}"
-                                        class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                    <span data-error-for="{{ $item['detail'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
                         @endif
@@ -205,59 +195,53 @@
             <div class="space-y-6">
                 @foreach ([['q' => '1. Treated for medical condition (present/past 2 years)?', 'model' => 'is_condition_q1', 'detail' => 'what_condition_reason_q1'], ['q' => '2. Ever been hospitalized?', 'model' => 'is_hospitalized_q2', 'detail' => 'what_hospitalized_reason_q2'], ['q' => '3. Serious illness or operation?', 'model' => 'is_serious_illness_operation_q3', 'detail' => 'what_serious_illness_operation_reason_q3'], ['q' => '4. Taking any medications?', 'model' => 'is_taking_medications_q4', 'detail' => 'what_medications_list_q4'], ['q' => '5. Allergic to medications?', 'model' => 'is_allergic_medications_q5', 'detail' => 'what_allergies_list_q5'], ['q' => '6. Allergic to latex/rubber/metals?', 'model' => 'is_allergic_latex_rubber_metals_q6']] as $med)
                     <div class="border-b border-gray-100 pb-4">
-                        <label class="block text-lg font-medium text-gray-700">{{ $med['q'] }} <span
-                                class="text-red-600">*</span></label>
+                        <label class="block text-lg font-medium text-gray-700">{{ $med['q'] }} <span class="text-red-600">*</span></label>
                         <div class="flex gap-x-6 mt-2">
                             <label class="flex items-center cursor-pointer">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                    wire:model.defer="{{ $med['model'] }}"
+                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $med['model'] }}"
                                     @if (($med['model'] ?? null) === 'is_condition_q1') x-model="condition" @endif
                                     @if (($med['model'] ?? null) === 'is_hospitalized_q2') x-model="hospitalized" @endif
                                     @if (($med['model'] ?? null) === 'is_serious_illness_operation_q3') x-model="seriousIllness" @endif
                                     @if (($med['model'] ?? null) === 'is_taking_medications_q4') x-model="medications" @endif
-                                    @if (($med['model'] ?? null) === 'is_allergic_medications_q5') x-model="allergies" @endif type="radio"
-                                    value="1" class="h-4 w-4 text-blue-600">
+                                    @if (($med['model'] ?? null) === 'is_allergic_medications_q5') x-model="allergies" @endif
+                                    type="radio" value="1" class="h-4 w-4 text-blue-600">
                                 <span class="ml-2 text-sm font-bold text-blue-700">YES</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                    wire:model.defer="{{ $med['model'] }}"
+                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $med['model'] }}"
                                     @if (($med['model'] ?? null) === 'is_condition_q1') x-model="condition" @endif
                                     @if (($med['model'] ?? null) === 'is_hospitalized_q2') x-model="hospitalized" @endif
                                     @if (($med['model'] ?? null) === 'is_serious_illness_operation_q3') x-model="seriousIllness" @endif
                                     @if (($med['model'] ?? null) === 'is_taking_medications_q4') x-model="medications" @endif
-                                    @if (($med['model'] ?? null) === 'is_allergic_medications_q5') x-model="allergies" @endif type="radio"
-                                    value="0" class="h-4 w-4 text-gray-400">
+                                    @if (($med['model'] ?? null) === 'is_allergic_medications_q5') x-model="allergies" @endif
+                                    type="radio" value="0" class="h-4 w-4 text-gray-400">
                                 <span class="ml-2 text-sm text-gray-600">NO</span>
                             </label>
                         </div>
 
                         {{-- ADDED: Validation Error for Radio --}}
                         @error($med['model'])
-                            <span data-error-for="{{ $med['model'] }}"
-                                class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                            <span data-error-for="{{ $med['model'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                         @enderror
 
                         @if (isset($med['detail']))
-                            <div x-cloak
+                            <div
+                                x-cloak
                                 x-show="
-                                    ('{{ $med['model'] }}' === 'is_condition_q1' && condition === '1')
-||
+                                    ('{{ $med['model'] }}' === 'is_condition_q1' && condition === '1') ||
                                     ('{{ $med['model'] }}' === 'is_hospitalized_q2' && hospitalized === '1') ||
                                     ('{{ $med['model'] }}' === 'is_serious_illness_operation_q3' && seriousIllness === '1') ||
                                     ('{{ $med['model'] }}' === 'is_taking_medications_q4' && medications === '1') ||
                                     ('{{ $med['model'] }}' === 'is_allergic_medications_q5' && allergies === '1')
                                 "
                                 class="mt-2 pl-4 border-l-2 border-blue-200">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                    wire:model.defer="{{ $med['detail'] }}" type="text"
-                                    class="{{ $errors->has($med['detail']) ? 'w-full border border-red-500 rounded px-3 py-2 text-sm focus:ring-2 focus:border-red-500 focus:ring-red-200' : 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:border-blue-500 focus:ring-blue-100' }}"
+                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $med['detail'] }}" type="text"
+                                    class="w-full border rounded px-3 py-2 text-sm @error($med['detail']) border-red-500 focus:border-red-500 focus:ring-red-200 @enderror"
                                     placeholder="Please specify details...">
-
+                                
                                 {{-- ADDED: Validation Error for Detail Input --}}
                                 @error($med['detail'])
-                                    <span data-error-for="{{ $med['detail'] }}"
-                                        class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                    <span data-error-for="{{ $med['detail'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
                         @endif
@@ -272,27 +256,23 @@
                 <div class="space-y-4">
                     @foreach ([['q' => '7. Are you pregnant?', 'model' => 'is_pregnant_q7'], ['q' => '8. Are you breast feeding?', 'model' => 'is_breast_feeding_q8']] as $fem)
                         <div>
-                            <label class="block text-lg font-medium text-gray-700">{{ $fem['q'] }} <span
-                                    class="text-red-600">*</span></label>
+                            <label class="block text-lg font-medium text-gray-700">{{ $fem['q'] }} <span class="text-red-600">*</span></label>
                             <div class="flex gap-x-6 mt-2">
                                 <label class="flex items-center cursor-pointer">
-                                    <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                        wire:model.defer="{{ $fem['model'] }}" type="radio" value="1"
-                                        class="h-4 w-4 text-pink-600">
+                                    <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $fem['model'] }}"
+                                        type="radio" value="1" class="h-4 w-4 text-pink-600">
                                     <span class="ml-2 text-sm font-bold text-pink-700">YES</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer">
-                                    <input @if ($isReadOnly && !$isCreating) disabled @endif
-                                        wire:model.defer="{{ $fem['model'] }}" type="radio" value="0"
-                                        class="h-4 w-4 text-gray-400">
+                                    <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $fem['model'] }}"
+                                        type="radio" value="0" class="h-4 w-4 text-gray-400">
                                     <span class="ml-2 text-sm text-gray-600">NO</span>
                                 </label>
                             </div>
-
+                            
                             {{-- ADDED: Validation Error --}}
                             @error($fem['model'])
-                                <span data-error-for="{{ $fem['model'] }}"
-                                    class="text-red-500 text-sm block mt-1">{{ $message }}</span>
+                                <span data-error-for="{{ $fem['model'] }}" class="text-red-500 text-sm block mt-1">{{ $message }}</span>
                             @enderror
                         </div>
                     @endforeach

@@ -207,7 +207,6 @@ class BasicInfo extends Component
     public function resetForm()
     {
         $this->reset();
-        $this->resetErrorBag();
     }
 
     public function updated($propertyName): void

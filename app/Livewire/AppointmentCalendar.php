@@ -16,6 +16,8 @@ use Livewire\Component;
 
 class AppointmentCalendar extends Component
 {
+    private const PH_CONTACT_RULE = 'regex:/^\d{11}$/';
+
     protected const SLOT_CAPACITY = 2;
 
     protected const APPROVED_SLOT_STATUSES = ['Scheduled', 'Waiting', 'Ongoing'];
@@ -91,6 +93,18 @@ class AppointmentCalendar extends Component
 
     public $appointmentStatus = '';
 
+    public $viewingBookingForOther = false;
+
+    public $viewingRequesterFirstName = '';
+
+    public $viewingRequesterLastName = '';
+
+    public $viewingRequesterContactNumber = '';
+
+    public $viewingRequesterEmail = '';
+
+    public $viewingRequesterRelationship = '';
+
     public $searchQuery = '';
 
     public $patientSearchResults = [];
@@ -117,6 +131,9 @@ class AppointmentCalendar extends Component
 
     public $selectedPendingPatientId = null;
 
+    /** @var array<string, mixed> */
+    public $pendingApprovalSafety = [];
+
     public $isBlockMode = false;
 
     public $blockingSlotId = null;
@@ -133,12 +150,16 @@ class AppointmentCalendar extends Component
         'firstName' => 'required|string|max:100',
         'lastName' => 'required|string|max:100',
         'middleName' => 'nullable|string|max:100',
-        'contactNumber' => 'required|string|max:20',
+        'contactNumber' => ['required', 'string', self::PH_CONTACT_RULE],
         'selectedService' => 'required',
         'selectedDate' => 'required',
         'selectedTime' => 'required',
         'endTime' => 'required',
         'birthDate' => 'required',
+    ];
+
+    protected $messages = [
+        'contactNumber.regex' => 'Contact number must be exactly 11 digits.',
     ];
 
     public function mount(?string $initialTab = null)
@@ -174,6 +195,23 @@ class AppointmentCalendar extends Component
                 $this->prefillPatientLabel = trim(
                     ($patient->first_name ?? '').' '.($patient->last_name ?? '')
                 );
+            }
+        }
+
+        $requestedAppointmentId = (int) request()->query('appointment', 0);
+        if ($requestedAppointmentId > 0 && $this->activeTab === 'pending' && Auth::user()?->role !== 3) {
+            $requestedAppointment = DB::table('appointments')
+                ->select('id', 'appointment_date')
+                ->where('id', $requestedAppointmentId)
+                ->first();
+
+            if ($requestedAppointment) {
+                $appointmentDate = Carbon::parse($requestedAppointment->appointment_date);
+                $this->currentDate = $appointmentDate->copy();
+                $this->selectedDate = $appointmentDate->toDateString();
+                $this->generateWeekDates();
+                $this->loadAppointments();
+                $this->viewAppointment($requestedAppointmentId);
             }
         }
     }
@@ -212,25 +250,43 @@ class AppointmentCalendar extends Component
 
         $startOfWeek = $this->weekDates[0]->startOfDay();
         $endOfWeek = $this->weekDates[6]->endOfDay();
+        $calendarSelect = [
+            'appointments.id',
+            'appointments.patient_id',
+            'appointments.service_id',
+            'appointments.appointment_date',
+            'appointments.status',
+            DB::raw($this->appointmentPatientFirstNameExpression().' as first_name'),
+            DB::raw($this->appointmentPatientLastNameExpression().' as last_name'),
+            'patients.middle_name',
+            DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
+            DB::raw($this->appointmentPatientBirthDateExpression().' as birth_date'),
+            'services.service_name',
+            'services.duration',
+        ];
+
+        foreach ([
+            'booking_for_other',
+            'requested_patient_first_name',
+            'requested_patient_last_name',
+            'requested_patient_birth_date',
+            'requester_first_name',
+            'requester_last_name',
+            'requester_contact_number',
+            'requester_email',
+            'requester_relationship_to_patient',
+            'requester_birth_date',
+        ] as $column) {
+            if (Schema::hasColumn('appointments', $column)) {
+                $calendarSelect[] = 'appointments.'.$column;
+            }
+        }
 
         $calendarQuery = DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->whereBetween('appointment_date', [$startOfWeek, $endOfWeek])
-            ->select(
-                'appointments.id',
-                'appointments.patient_id',
-                'appointments.service_id',
-                'appointments.appointment_date',
-                'appointments.status',
-                'patients.first_name',
-                'patients.last_name',
-                'patients.middle_name',
-                'patients.mobile_number',
-                'patients.birth_date',
-                'services.service_name',
-                'services.duration'
-            );
+            ->select($calendarSelect);
 
         // For display: hide Pending, show everything else except Cancelled
         $this->appointments = (clone $calendarQuery)
@@ -346,11 +402,18 @@ class AppointmentCalendar extends Component
         $this->viewingAppointmentId = null;
         $this->viewingPatientId = null;
         $this->appointmentStatus = '';
+        $this->viewingBookingForOther = false;
+        $this->viewingRequesterFirstName = '';
+        $this->viewingRequesterLastName = '';
+        $this->viewingRequesterContactNumber = '';
+        $this->viewingRequesterEmail = '';
+        $this->viewingRequesterRelationship = '';
         $this->searchQuery = '';
         $this->patientSearchResults = [];
         $this->pendingMatchCandidates = [];
         $this->pendingDuplicateWarnings = [];
         $this->selectedPendingPatientId = null;
+        $this->pendingApprovalSafety = [];
         $this->isRescheduling = false;
 
     }
@@ -648,7 +711,7 @@ class AppointmentCalendar extends Component
         $this->validate([
             'firstName' => 'required|string|max:100',
             'lastName' => 'required|string|max:100',
-            'contactNumber' => 'required|string|max:20',
+            'contactNumber' => ['required', 'string', self::PH_CONTACT_RULE],
             'selectedService' => 'required',
             'selectedDate' => 'required',
             'selectedTime' => 'required',
@@ -823,7 +886,7 @@ class AppointmentCalendar extends Component
         $this->validate([
             'firstName' => 'required|string|max:100',
             'lastName' => 'required|string|max:100',
-            'contactNumber' => 'required|string|max:20',
+            'contactNumber' => ['required', 'string', self::PH_CONTACT_RULE],
             'selectedService' => 'required',
             'selectedDate' => 'required',
             'selectedTime' => 'required',
@@ -959,11 +1022,11 @@ class AppointmentCalendar extends Component
                 ->join('services', 'appointments.service_id', '=', 'services.id')
                 ->select(
                     'appointments.*',
-                    DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
-                    DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
+                    DB::raw($this->appointmentPatientFirstNameExpression().' as first_name'),
+                    DB::raw($this->appointmentPatientLastNameExpression().' as last_name'),
                     'patients.middle_name',
                     DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
-                    'patients.birth_date',
+                    DB::raw($this->appointmentPatientBirthDateExpression().' as birth_date'),
                     'services.service_name',
                     'services.duration'
                 )
@@ -983,7 +1046,16 @@ class AppointmentCalendar extends Component
             $this->viewingAppointmentId = $appointment->id;
             $this->viewingPatientId = $appointment->patient_id ?? null;
             $this->appointmentStatus = $appointment->status;
+            $this->viewingBookingForOther = ! empty($appointment->booking_for_other);
+            $this->viewingRequesterFirstName = (string) ($appointment->requester_first_name ?? '');
+            $this->viewingRequesterLastName = (string) ($appointment->requester_last_name ?? '');
+            $this->viewingRequesterContactNumber = (string) ($appointment->requester_contact_number ?? $appointment->mobile_number ?? '');
+            $this->viewingRequesterEmail = (string) ($appointment->requester_email ?? $appointment->email_address ?? '');
+            $this->viewingRequesterRelationship = (string) ($appointment->requester_relationship_to_patient ?? '');
             $this->hydratePendingReviewContext($appointment);
+            $this->pendingApprovalSafety = $appointment->status === 'Pending'
+                ? $this->buildPendingApprovalSafetySummary($appointment)
+                : [];
 
             // 3. Format Dates and Times
             $dt = Carbon::parse($appointment->appointment_date);
@@ -991,9 +1063,9 @@ class AppointmentCalendar extends Component
             $this->selectedTime = $dt->format('H:i:s');
             $this->selectedService = $appointment->service_id;
 
-            // Calculate End Time for display
+            // Keep the internal value in 24-hour time; the view formats it for display.
             $durationInMinutes = $this->durationToMinutes($appointment->duration);
-            $this->endTime = $dt->copy()->addMinutes($durationInMinutes)->format('H:i A');
+            $this->endTime = $dt->copy()->addMinutes($durationInMinutes)->format('H:i');
 
             // 4. Set mode to Viewing and open modal
             $this->isViewing = true;
@@ -1054,8 +1126,18 @@ class AppointmentCalendar extends Component
                 'appointments.patient_id',
                 'appointments.appointment_date',
                 'appointments.status',
-                DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
-                DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
+                'appointments.booking_for_other',
+                'appointments.requester_first_name',
+                'appointments.requester_last_name',
+                'appointments.requester_contact_number',
+                'appointments.requester_email',
+                'appointments.requester_relationship_to_patient',
+                'appointments.requester_birth_date',
+                'appointments.requested_patient_first_name',
+                'appointments.requested_patient_last_name',
+                'appointments.requested_patient_birth_date',
+                DB::raw($this->appointmentPatientFirstNameExpression().' as first_name'),
+                DB::raw($this->appointmentPatientLastNameExpression().' as last_name'),
                 DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
                 DB::raw('COALESCE(patients.email_address, appointments.requester_email) as email_address'),
                 'services.service_name'
@@ -1076,13 +1158,6 @@ class AppointmentCalendar extends Component
 
         $appointment = DB::table('appointments')->where('id', $appointmentId)->first();
         if (! $appointment) {
-            return;
-        }
-
-        if (empty($appointment->patient_id)) {
-            $this->viewAppointment($appointmentId);
-            session()->flash('error', 'Review required: link to an existing patient or create a new patient before approval.');
-
             return;
         }
 
@@ -1228,10 +1303,20 @@ class AppointmentCalendar extends Component
             return false;
         }
 
-        if ($newStatus === 'Scheduled' && empty($oldAppt->patient_id)) {
-            session()->flash('error', 'Cannot approve without a linked patient record.');
+        if ($oldAppt->status === 'Pending' && $newStatus === 'Scheduled') {
+            $pendingApprovalSafety = $this->buildPendingApprovalSafetySummary($oldAppt);
 
-            return false;
+            if (! ($pendingApprovalSafety['can_approve'] ?? false)) {
+                $message = (string) ($pendingApprovalSafety['summary'] ?? 'This request cannot be approved right now.');
+                session()->flash('error', $message);
+
+                if ((int) ($this->viewingAppointmentId ?? 0) === (int) $appointmentId) {
+                    $this->addError('conflict', $message);
+                    $this->pendingApprovalSafety = $pendingApprovalSafety;
+                }
+
+                return false;
+            }
         }
 
         DB::table('appointments')
@@ -1298,7 +1383,7 @@ class AppointmentCalendar extends Component
         $this->pendingDuplicateWarnings = [];
         $this->selectedPendingPatientId = null;
 
-        if (($appointment->status ?? null) !== 'Pending') {
+        if (! empty($appointment->patient_id) || ! in_array(($appointment->status ?? null), ['Waiting', 'Scheduled'], true)) {
             return;
         }
 
@@ -1312,6 +1397,112 @@ class AppointmentCalendar extends Component
             : null;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    protected function buildPendingApprovalSafetySummary(object $appointment): array
+    {
+        $appointmentAt = Carbon::parse($appointment->appointment_date)->seconds(0);
+        $serviceId = (int) ($appointment->service_id ?? 0);
+        $service = $this->servicesList->firstWhere('id', $serviceId);
+
+        if (! $service && $serviceId > 0) {
+            $service = DB::table('services')->where('id', $serviceId)->first();
+        }
+
+        $durationInMinutes = $this->durationToMinutes($service->duration ?? null);
+        $appointmentEnd = $appointmentAt->copy()->addMinutes($durationInMinutes);
+
+        $approvedOverlaps = DB::table('appointments')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->where('appointments.id', '!=', $appointment->id)
+            ->whereDate('appointments.appointment_date', $appointmentAt->toDateString())
+            ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES)
+            ->orderBy('appointments.appointment_date')
+            ->select(
+                'appointments.id',
+                'appointments.appointment_date',
+                'appointments.status',
+                DB::raw($this->appointmentPatientFirstNameExpression().' as first_name'),
+                DB::raw($this->appointmentPatientLastNameExpression().' as last_name'),
+                'services.service_name',
+                'services.duration'
+            )
+            ->get()
+            ->filter(function (object $conflict) use ($appointmentAt, $appointmentEnd): bool {
+                $conflictStart = Carbon::parse($conflict->appointment_date)->seconds(0);
+                $conflictEnd = $conflictStart->copy()->addMinutes(
+                    $this->durationToMinutes($conflict->duration ?? null)
+                );
+
+                return $conflictStart < $appointmentEnd && $conflictEnd > $appointmentAt;
+            })
+            ->map(function (object $conflict): array {
+                $conflictAt = Carbon::parse($conflict->appointment_date);
+
+                return [
+                    'id' => (int) $conflict->id,
+                    'patient_name' => trim((string) (($conflict->first_name ?? '').' '.($conflict->last_name ?? ''))),
+                    'service_name' => (string) ($conflict->service_name ?? 'Appointment'),
+                    'status' => (string) ($conflict->status ?? ''),
+                    'time' => $conflictAt->format('g:i A'),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $sameTimePendingCount = DB::table('appointments')
+            ->where('id', '!=', $appointment->id)
+            ->where('status', 'Pending')
+            ->where('appointment_date', $appointmentAt->toDateTimeString())
+            ->count();
+
+        $sameDayActiveCount = DB::table('appointments')
+            ->whereDate('appointment_date', $appointmentAt->toDateString())
+            ->whereNotIn('status', self::INACTIVE_APPOINTMENT_STATUSES)
+            ->count();
+
+        $hasBlockedConflict = $durationInMinutes > 0
+            ? $this->hasBlockedConflict($appointmentAt, $appointmentEnd)
+            : false;
+
+        $approvedOverlapCount = count($approvedOverlaps);
+        $remainingCapacity = max(0, self::SLOT_CAPACITY - $approvedOverlapCount);
+        $canApprove = ! $hasBlockedConflict && $approvedOverlapCount < self::SLOT_CAPACITY;
+
+        if ($hasBlockedConflict) {
+            $headline = 'Reschedule before approval';
+            $summary = 'This request overlaps a blocked slot, so approving it now would create an unsafe schedule.';
+            $tone = 'rose';
+        } elseif ($approvedOverlapCount >= self::SLOT_CAPACITY) {
+            $headline = 'Slot already full';
+            $summary = 'This request overlaps '.self::SLOT_CAPACITY.' approved appointments. Reschedule it before approval.';
+            $tone = 'amber';
+        } elseif ($approvedOverlapCount === self::SLOT_CAPACITY - 1) {
+            $headline = 'Safe to approve with caution';
+            $summary = 'One approved appointment already overlaps this time. You can still approve, but this will use the last available chair slot.';
+            $tone = 'amber';
+        } else {
+            $headline = 'Safe to approve';
+            $summary = 'No approved appointment conflicts were found for this request, so staff can approve it without leaving this review.';
+            $tone = 'emerald';
+        }
+
+        return [
+            'can_approve' => $canApprove,
+            'headline' => $headline,
+            'summary' => $summary,
+            'tone' => $tone,
+            'approved_overlap_count' => $approvedOverlapCount,
+            'remaining_capacity' => $remainingCapacity,
+            'same_time_pending_count' => $sameTimePendingCount,
+            'same_day_active_count' => $sameDayActiveCount,
+            'has_blocked_conflict' => $hasBlockedConflict,
+            'overlapping_appointments' => $approvedOverlaps,
+        ];
+    }
+
     public function linkPendingRequestToExistingPatient(): void
     {
         if (! $this->viewingAppointmentId || ! $this->selectedPendingPatientId) {
@@ -1321,8 +1512,8 @@ class AppointmentCalendar extends Component
         }
 
         $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
-        if (! $appointment || $appointment->status !== 'Pending') {
-            session()->flash('error', 'Only pending requests can be linked.');
+        if (! $appointment || ! in_array($appointment->status, ['Waiting', 'Scheduled'], true)) {
+            session()->flash('error', 'Only waiting or scheduled appointments can be linked.');
 
             return;
         }
@@ -1358,7 +1549,9 @@ class AppointmentCalendar extends Component
             ])
             ->log('Linked Appointment Request to Existing Patient');
 
-        session()->flash('success', 'Request linked to existing patient. You can now approve.');
+        session()->flash('success', $appointment->status === 'Waiting'
+            ? 'Patient record linked. You can now admit the patient.'
+            : 'Request linked to existing patient.');
         $this->loadAppointments();
     }
 
@@ -1369,8 +1562,8 @@ class AppointmentCalendar extends Component
         }
 
         $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
-        if (! $appointment || $appointment->status !== 'Pending') {
-            session()->flash('error', 'Only pending requests can create a patient link.');
+        if (! $appointment || ! in_array($appointment->status, ['Waiting', 'Scheduled'], true)) {
+            session()->flash('error', 'Only waiting or scheduled appointments can create a patient link.');
 
             return;
         }
@@ -1439,7 +1632,9 @@ class AppointmentCalendar extends Component
         $this->selectedPendingPatientId = (int) $patientId;
         $this->loadAppointments();
         $this->hydratePendingReviewContext((object) array_merge((array) $appointment, ['patient_id' => $patientId]));
-        session()->flash('success', 'New patient created and linked. You can now approve.');
+        session()->flash('success', $appointment->status === 'Waiting'
+            ? 'New patient created and linked. You can now admit the patient.'
+            : 'New patient created and linked successfully.');
     }
 
     /**
@@ -1448,16 +1643,34 @@ class AppointmentCalendar extends Component
     protected function resolveCurrentPendingRequestData(object $appointment): array
     {
         $requestBirthDate = null;
+        if (Schema::hasColumn('appointments', 'requested_patient_birth_date') && isset($appointment->requested_patient_birth_date)) {
+            $requestBirthDate = $appointment->requested_patient_birth_date;
+        }
+
         if (Schema::hasColumn('appointments', 'requester_birth_date') && isset($appointment->requester_birth_date)) {
-            $requestBirthDate = $appointment->requester_birth_date;
+            $requestBirthDate = $requestBirthDate ?: $appointment->requester_birth_date;
         }
 
         return [
-            'first_name' => $appointment->requester_first_name ?? $appointment->first_name ?? '',
-            'last_name' => $appointment->requester_last_name ?? $appointment->last_name ?? '',
-            'mobile_number' => $appointment->requester_contact_number ?? $appointment->mobile_number ?? '',
-            'email_address' => $appointment->requester_email ?? $appointment->email_address ?? '',
-            'birth_date' => $requestBirthDate ?: ($appointment->birth_date ?? null),
+            'first_name' => $this->appointmentRequestedPatientValue(
+                $appointment,
+                'requested_patient_first_name',
+                'requester_first_name',
+                'first_name'
+            ),
+            'last_name' => $this->appointmentRequestedPatientValue(
+                $appointment,
+                'requested_patient_last_name',
+                'requester_last_name',
+                'last_name'
+            ),
+            'mobile_number' => $this->appointmentUsesRequestedPatientIdentity($appointment)
+                ? ''
+                : ($appointment->requester_contact_number ?? $appointment->mobile_number ?? ''),
+            'email_address' => $this->appointmentUsesRequestedPatientIdentity($appointment)
+                ? ''
+                : ($appointment->requester_email ?? $appointment->email_address ?? ''),
+            'birth_date' => $this->appointmentRequestedPatientBirthDate($appointment, $requestBirthDate),
         ];
     }
 
@@ -1468,8 +1681,8 @@ class AppointmentCalendar extends Component
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->select(
                 'appointments.appointment_date',
-                DB::raw('COALESCE(patients.first_name, appointments.requester_first_name) as first_name'),
-                DB::raw('COALESCE(patients.last_name, appointments.requester_last_name) as last_name'),
+                DB::raw($this->appointmentPatientFirstNameExpression().' as first_name'),
+                DB::raw($this->appointmentPatientLastNameExpression().' as last_name'),
                 DB::raw('COALESCE(patients.email_address, appointments.requester_email) as email_address'),
                 'services.service_name'
             )
@@ -1605,6 +1818,27 @@ class AppointmentCalendar extends Component
         $this->dispatch('editPatient', id: (int) $patientId, startStep: $startStep);
     }
 
+    public function previewPendingPatientRecord(int $patientId, int $startStep = 1): void
+    {
+        if ($patientId <= 0) {
+            session()->flash('error', 'Patient record was not found.');
+            $this->dispatch('patient-form-open-failed');
+
+            return;
+        }
+
+        $patientExists = DB::table('patients')->where('id', $patientId)->exists();
+
+        if (! $patientExists) {
+            session()->flash('error', 'Patient record was not found.');
+            $this->dispatch('patient-form-open-failed');
+
+            return;
+        }
+
+        $this->dispatch('editPatient', id: $patientId, startStep: $startStep);
+    }
+
     public function openPatientChart()
     {
         $patientId = $this->viewingPatientId;
@@ -1626,6 +1860,12 @@ class AppointmentCalendar extends Component
         $service = DB::table('services')->where('id', $this->selectedService)->first();
 
         if (! $appointment || ! $service) {
+            return;
+        }
+
+        if (empty($appointment->patient_id)) {
+            session()->flash('error', 'Link or create a patient record before admitting this appointment.');
+
             return;
         }
 
@@ -1696,6 +1936,125 @@ class AppointmentCalendar extends Component
             $this->closeAppointmentModal();
             $this->dispatch('editPatient', id: $appointment->patient_id, startStep: 3);
         }
+    }
+
+    protected function appointmentPatientFirstNameExpression(): string
+    {
+        if (Schema::hasColumn('appointments', 'requested_patient_first_name')) {
+            return 'COALESCE(patients.first_name, appointments.requested_patient_first_name, appointments.requester_first_name)';
+        }
+
+        return 'COALESCE(patients.first_name, appointments.requester_first_name)';
+    }
+
+    protected function appointmentPatientLastNameExpression(): string
+    {
+        if (Schema::hasColumn('appointments', 'requested_patient_last_name')) {
+            return 'COALESCE(patients.last_name, appointments.requested_patient_last_name, appointments.requester_last_name)';
+        }
+
+        return 'COALESCE(patients.last_name, appointments.requester_last_name)';
+    }
+
+    protected function appointmentPatientBirthDateExpression(): string
+    {
+        if (Schema::hasColumn('appointments', 'requested_patient_birth_date') && Schema::hasColumn('appointments', 'requester_birth_date')) {
+            return 'COALESCE(patients.birth_date, appointments.requested_patient_birth_date, appointments.requester_birth_date)';
+        }
+
+        if (Schema::hasColumn('appointments', 'requested_patient_birth_date')) {
+            return 'COALESCE(patients.birth_date, appointments.requested_patient_birth_date)';
+        }
+
+        if (Schema::hasColumn('appointments', 'requester_birth_date')) {
+            return 'COALESCE(patients.birth_date, appointments.requester_birth_date)';
+        }
+
+        return 'patients.birth_date';
+    }
+
+    protected function appointmentUsesRequestedPatientIdentity(object $appointment): bool
+    {
+        if (! Schema::hasColumn('appointments', 'booking_for_other')) {
+            return false;
+        }
+
+        return ! empty($appointment->booking_for_other);
+    }
+
+    protected function appointmentRequestedPatientValue(
+        object $appointment,
+        string $requestedField,
+        string $fallbackField,
+        string $displayField
+    ): string {
+        if ($this->appointmentUsesRequestedPatientIdentity($appointment)) {
+            $requestedValue = trim((string) ($appointment->{$requestedField} ?? ''));
+            if ($requestedValue !== '') {
+                return $requestedValue;
+            }
+        }
+
+        $fallbackValue = trim((string) ($appointment->{$fallbackField} ?? ''));
+        if ($fallbackValue !== '') {
+            return $fallbackValue;
+        }
+
+        return trim((string) ($appointment->{$displayField} ?? ''));
+    }
+
+    protected function appointmentRequestedPatientBirthDate(object $appointment, mixed $legacyBirthDate): mixed
+    {
+        if ($this->appointmentUsesRequestedPatientIdentity($appointment) && isset($appointment->requested_patient_birth_date)) {
+            return $appointment->requested_patient_birth_date;
+        }
+
+        return $legacyBirthDate ?: ($appointment->birth_date ?? null);
+    }
+
+    public function appointmentHasSeparateRequester(object $appointment): bool
+    {
+        return $this->appointmentUsesRequestedPatientIdentity($appointment);
+    }
+
+    public function appointmentPatientDisplayName(object $appointment): string
+    {
+        return trim((string) (($appointment->first_name ?? '').' '.($appointment->last_name ?? '')));
+    }
+
+    public function appointmentRequesterDisplayName(object $appointment): string
+    {
+        $firstName = trim((string) ($appointment->requester_first_name ?? ''));
+        $lastName = trim((string) ($appointment->requester_last_name ?? ''));
+
+        return trim($firstName.' '.$lastName);
+    }
+
+    public function appointmentPatientBirthDateDisplay(object $appointment): ?string
+    {
+        $birthDate = $this->appointmentRequestedPatientBirthDate($appointment, $appointment->birth_date ?? null);
+
+        if (empty($birthDate)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($birthDate)->format('F j, Y');
+        } catch (\Throwable) {
+            return (string) $birthDate;
+        }
+    }
+
+    public function appointmentRequesterRelationshipLabel(object $appointment): ?string
+    {
+        $relationship = trim((string) ($appointment->requester_relationship_to_patient ?? ''));
+
+        return $relationship !== '' ? $relationship : null;
+    }
+
+    public function appointmentNeedsPatientLink(object $appointment): bool
+    {
+        return empty($appointment->patient_id) && in_array(($appointment->status ?? null), ['Scheduled', 'Waiting'], true);
     }
 
     public function render()

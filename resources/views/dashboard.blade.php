@@ -19,7 +19,7 @@
                 <p class="text-sm font-semibold text-gray-600">Total Patients</p>
                 <div class="mt-3 text-4xl font-bold text-gray-900">{{ $totalPatients ?? 0 }}</div>
                 <div class="mt-2 flex items-center justify-between gap-3">
-                    <p class="text-xs font-medium text-gray-500">All registered patients</p>
+                    <p class="text-xs font-medium text-gray-500">All Patients</p>
                     <p class="text-xs font-semibold text-[#0086DA]">View</p>
                 </div>
             </a>

@@ -5,37 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Appointment Reminder</title>
 </head>
-<body style="margin:0;padding:0;background:#f6fafd;font-family:Arial,sans-serif;color:#1a2e3b;">
-    <div style="max-width:640px;margin:0 auto;padding:32px 20px;">
-        <div style="background:#0086da;padding:28px 32px;color:#ffffff;">
-            <div style="font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.75;">Tejada Clinic</div>
-            <h1 style="margin:12px 0 0;font-size:28px;line-height:1.15;">Appointment Reminder</h1>
-        </div>
+<body style="margin:0;padding:0;background:#f6fafd;color:#1a2e3b;font-family:Arial,'Segoe UI',sans-serif;">
+    <div style="width:100%;background:#f6fafd;padding:40px 16px;">
+        <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e4eff8;border-top:4px solid #0086da;">
 
-        <div style="background:#ffffff;border:1px solid #d7ebf8;padding:32px;">
-            <p style="margin:0 0 16px;font-size:16px;line-height:1.8;">
-                Hello {{ $patientName }},
-            </p>
-            <p style="margin:0 0 20px;font-size:15px;line-height:1.8;color:#587189;">
-                This is your {{ strtolower($metaLabel) }} reminder for your upcoming appointment with Tejada Clinic.
-            </p>
-
-            <div style="border:1px solid #e4eff8;background:#f8fbfe;padding:20px 22px;margin:0 0 22px;">
-                <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0086da;">Appointment Details</p>
-                <p style="margin:0 0 8px;font-size:15px;"><strong>Service:</strong> {{ $serviceName }}</p>
-                <p style="margin:0 0 8px;font-size:15px;"><strong>Date:</strong> {{ $appointmentAt->format('F d, Y') }}</p>
-                <p style="margin:0 0 8px;font-size:15px;"><strong>Time:</strong> {{ $appointmentAt->format('h:i A') }}</p>
-                <p style="margin:0;font-size:15px;"><strong>Status:</strong> {{ $status }}</p>
+            <div style="padding:32px 40px;background:#0086da;color:#ffffff;">
+                <h1 style="margin:0;font-size:26px;font-weight:800;letter-spacing:.06em;">TEJADA CLINIC</h1>
+                <p style="margin:10px 0 0;font-size:14px;line-height:1.75;color:rgba(255,255,255,0.85);">
+                    This is your {{ strtolower($metaLabel) }} reminder for your upcoming appointment.
+                </p>
             </div>
 
-            <p style="margin:0 0 20px;font-size:15px;line-height:1.8;color:#587189;">
-                If you need to review your appointment details, please log in to your patient account.
-            </p>
+            <div style="padding:36px 40px 20px;">
+                <h2 style="margin:0 0 12px;font-size:22px;font-weight:800;color:#1a2e3b;letter-spacing:-.02em;">Appointment Reminder</h2>
+                <p style="margin:0 0 16px;font-size:14px;line-height:1.8;color:#587189;">
+                    Hello {{ $patientName }}, this is your reminder for your upcoming appointment with Tejada Clinic.
+                </p>
 
-            <a href="{{ route('patient.dashboard') }}"
-                style="display:inline-block;background:#0086da;color:#ffffff;text-decoration:none;padding:14px 24px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;">
-                View Appointment
-            </a>
+                <div style="margin:22px 0;border:1px solid #e4eff8;background:#f6fafd;">
+                    <div style="padding:14px 20px;border-bottom:1px solid #e4eff8;">
+                        <span style="display:block;margin-bottom:5px;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#7a9db5;">Service</span>
+                        <span style="display:block;font-size:14px;font-weight:700;color:#1a2e3b;">{{ $serviceName }}</span>
+                    </div>
+                    <div style="padding:14px 20px;border-bottom:1px solid #e4eff8;">
+                        <span style="display:block;margin-bottom:5px;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#7a9db5;">Date</span>
+                        <span style="display:block;font-size:14px;font-weight:700;color:#1a2e3b;">{{ $appointmentAt->format('F d, Y') }}</span>
+                    </div>
+                    <div style="padding:14px 20px;border-bottom:1px solid #e4eff8;">
+                        <span style="display:block;margin-bottom:5px;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#7a9db5;">Time</span>
+                        <span style="display:block;font-size:14px;font-weight:700;color:#1a2e3b;">{{ $appointmentAt->format('h:i A') }}</span>
+                    </div>
+                    <div style="padding:14px 20px;">
+                        <span style="display:block;margin-bottom:5px;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#7a9db5;">Status</span>
+                        <span style="display:inline-block;padding:4px 12px;border:1px solid #bae6fd;background:#f0f9ff;color:#0369a1;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;">{{ $status }}</span>
+                    </div>
+                </div>
+
+                <p style="margin:0 0 24px;font-size:14px;line-height:1.8;color:#587189;">
+                    If you need to review your appointment details, please log in to your patient account.
+                </p>
+
+                <a href="{{ route('patient.dashboard') }}"
+                    style="display:inline-block;background:#0086da;color:#ffffff;text-decoration:none;padding:14px 28px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;">
+                    View Appointment
+                </a>
+            </div>
+
+            <div style="padding:20px 40px;border-top:1px solid #e4eff8;font-size:11px;line-height:1.7;color:#7a9db5;text-align:center;background:#f6fafd;">
+                &copy; {{ date('Y') }} Tejadent Clinic &mdash; All rights reserved.
+            </div>
+
         </div>
     </div>
 </body>

@@ -7,6 +7,28 @@
     <title>Forgot Password - Tejadent</title>
     @vite('resources/css/app.css')
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailInput = document.getElementById('forgot-password-email');
+            const emailError = document.getElementById('forgot-password-email-error');
+
+            if (!emailInput) {
+                return;
+            }
+
+            const clearEmailErrorState = () => {
+                emailInput.classList.remove('border-red-500');
+                emailInput.classList.add('border-gray-200');
+
+                if (emailError) {
+                    emailError.classList.add('hidden');
+                }
+            };
+
+            emailInput.addEventListener('input', clearEmailErrorState);
+            emailInput.addEventListener('focus', clearEmailErrorState);
+        });
+    </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md {{ session('reset_email') ? 'hidden' : '' }}">
@@ -21,11 +43,23 @@
 
         <form action="{{ route('password.email') }}" method="POST" class="space-y-5">
             @csrf
-            <div class="">
+            <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                <input type="email" name="email" class="@error('email') border-red-500 @else border-gray-200 @enderror w-full border-2 rounded-lg px-4 py-3 focus:outline-none focus:border-[#0086DA] transition" placeholder="yourgmail@gmail.com" required>
+                <input
+                    type="email"
+                    id="forgot-password-email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    @class([
+                        'w-full border-2 rounded-lg px-4 py-3 focus:outline-none transition',
+                        'border-red-500 focus:border-red-500' => $errors->has('email'),
+                        'border-gray-200 focus:border-[#0086DA]' => ! $errors->has('email'),
+                    ])
+                    placeholder="yourgmail@gmail.com"
+                    required
+                >
                 @error('email')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    <p id="forgot-password-email-error" class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
 

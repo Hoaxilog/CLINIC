@@ -1,220 +1,186 @@
 @extends('index')
 
 @section('style')
-    :root {
-    --profile-ink: #0f172a;
-    --profile-muted: #64748b;
-    --profile-border: #e2e8f0;
-    --profile-bg: #f6f8fb;
-    --profile-accent: #0b84d8;
-    }
-    .profile-shell {
-    background:
-    radial-gradient(900px 500px at 10% -10%, rgba(11, 132, 216, 0.10), transparent 60%),
-    radial-gradient(700px 500px at 90% 0%, rgba(14, 116, 144, 0.10), transparent 60%),
-    var(--profile-bg);
-    }
-    .profile-card {
-    background: #fff;
-    border: 1px solid var(--profile-border);
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    @import
+    url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap');
+
+    #staff-profile-wrap * {
+    font-family: 'Montserrat', sans-serif;
     }
 @endsection
 
 @section('content')
-    <main id="mainContent" class="min-h-screen profile-shell ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
-        <div class="max-w-6xl mx-auto px-6 lg:px-10 py-8">
-            <div class="profile-card rounded-2xl p-6 lg:p-8 mb-6">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div class="flex items-center gap-5">
-                        <div
-                            class="h-16 w-16 rounded-2xl bg-white ring-1 ring-slate-200 flex items-center justify-center text-slate-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="flex flex-wrap items-center gap-2">
-                                <h1 class="text-2xl lg:text-3xl font-extrabold text-[color:var(--profile-ink)]">
-                                    {{ $user->username }}</h1>
-                                <span
-                                    class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-50 text-[color:var(--profile-accent)] border border-blue-100">
-                                    {{ ucfirst($roleName ?? 'Administrator') }}
-                                </span>
-                            </div>
-                            <p class="text-sm text-[color:var(--profile-muted)] mt-1">
-                                Member since {{ \Carbon\Carbon::parse($user->created_at)->format('M Y') }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        <div class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-600">
-                            Created {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}
-                        </div>
-                        <div class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-600">
-                            Updated {{ \Carbon\Carbon::parse($user->updated_at)->format('M d, Y') }}
-                        </div>
-                    </div>
+    @php
+        $displayRole = ucfirst($roleName ?? 'Administrator');
+        $memberSince = !empty($user->created_at) ? \Carbon\Carbon::parse($user->created_at)->format('M Y') : 'Recently';
+        $createdDate = !empty($user->created_at) ? \Carbon\Carbon::parse($user->created_at)->format('M d, Y') : 'N/A';
+        $updatedDate = !empty($user->updated_at) ? \Carbon\Carbon::parse($user->updated_at)->format('M d, Y') : 'N/A';
+        $authMethod = !empty($isGoogleUser) ? 'Google Login' : 'Password Login';
+    @endphp
+
+    <main id="staff-profile-wrap"
+        class="min-h-screen bg-[#f6fafd] ml-64 mt-14 px-6 py-8 transition-all duration-300 peer-[.collapsed]:ml-16 md:px-10 xl:px-14">
+        <div class="mx-auto flex w-full max-w-[1400px] flex-col gap-7">
+
+            @if (session('success'))
+                <div class="border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    {{ session('success') }}
                 </div>
+            @endif
+            @if (session('failed'))
+                <div class="border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    {{ session('failed') }}
+                </div>
+            @endif
+
+            <div class="border-b border-[#e4eff8] pb-6">
+                <h1 class="text-[1.7rem] font-extrabold leading-[1.1] tracking-[-.02em] text-[#1a2e3b]">My Profile</h1>
+                <p class="mt-3 max-w-3xl text-[.88rem] leading-[1.7] text-[#587189]">
+                    Review your clinic account details and manage your password from one place. Email and role access
+                    are managed by the clinic system.
+                </p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="profile-card rounded-2xl p-6 lg:p-8">
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h2 class="text-lg font-bold text-[color:var(--profile-ink)]">Profile Information</h2>
-                                <p class="text-sm text-[color:var(--profile-muted)]">Update your basic details.</p>
+            <div class="grid gap-6 lg:grid-cols-[1.6fr_.9fr]">
+                <div class="space-y-6">
+                    <article class="border border-[#e4eff8] bg-white">
+                        <div class="border-b border-[#e4eff8] px-6 py-6 sm:px-8">
+                            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                                <p class="max-w-3xl text-[.82rem] leading-[1.7] text-[#7a9db5]">
+                                    Member since <span class="font-semibold text-[#587189]">{{ $memberSince }}</span>.
+                                    Your role and account access are managed inside the clinic system.
+                                </p>
                             </div>
                         </div>
 
-                        <form id="profile-form" action="{{ route('profile.update') }}" method="POST">
-                            @csrf
-                            @method('PATCH')
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div class="space-y-1">
-                                    <label
-                                        class="text-xs font-bold text-slate-500 uppercase tracking-wider">Username</label>
-                                    <input type="text" name="username" value="{{ old('username', $user->username) }}"
-                                        class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5 transition-all"
-                                        placeholder="Jane Doe">
-                                    @error('username')
-                                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                                    @enderror
-                                </div>
-
-                                {{-- <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Number</label>
-                                <input type="text" name="contact" value="{{ old('contact', $user->contact) }}"
-                                    class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5 transition-all"
-                                    placeholder="e.g. +63 912 345 6789">
-                                @error('contact') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div> --}}
-
-                                <div class="space-y-1 md:col-span-2">
-                                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Position /
-                                        Title</label>
-                                    <input type="text" name="position"
-                                        value="{{ old('position', $user->position ?? '') }}"
-                                        class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5 transition-all"
-                                        placeholder="e.g. Dentist, Staff Nurse, Patient">
+                        <div class="grid gap-[2px] bg-[#e4eff8]">
+                            <div class="bg-white px-6 py-5">
+                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Created</div>
+                                <div class="mt-2 text-sm font-semibold text-[#1a2e3b]">{{ $createdDate }}</div>
+                            </div>
+                            <div class="bg-white px-6 py-5">
+                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Updated</div>
+                                <div class="mt-2 text-sm font-semibold text-[#1a2e3b]">{{ $updatedDate }}</div>
+                            </div>
+                            <div class="bg-white px-6 py-5">
+                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Role</div>
+                                <div class="mt-2 text-sm font-semibold text-[#1a2e3b]">{{ $displayRole }}</div>
+                            </div>
+                            <div class="bg-white px-6 py-5">
+                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Email</div>
+                                <div class="mt-2 break-all text-sm font-semibold text-[#1a2e3b]">{{ $user->email ?: 'N/A' }}
                                 </div>
                             </div>
+                        </div>
+                    </article>
 
-                            <div class="mt-6 flex justify-end">
-                                <button type="submit"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[color:var(--profile-accent)] hover:bg-[#0a6fb4] text-white text-sm font-semibold transition">
-                                    Save Changes
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    <article class="border border-[#e4eff8] bg-white">
+                        <div class="border-b border-[#e4eff8] px-6 py-6 sm:px-8">
+                            <h2 class="text-[1.5rem] font-extrabold leading-[1.15] tracking-[-.02em] text-[#1a2e3b]">
+                                Account Identity
+                            </h2>
+                        </div>
 
-                    <div class="profile-card rounded-2xl p-6 lg:p-8">
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h2 class="text-lg font-bold text-[color:var(--profile-ink)]">Security</h2>
-                                <p class="text-sm text-[color:var(--profile-muted)]">Manage your password.</p>
-                                @if (!empty($isGoogleUser))
-                                    <p class="text-xs text-slate-500 mt-1">
-                                        Your account uses Google Login. We will email you a secure link to set a password.
+                        <div class="px-6 py-6 sm:px-8">
+                            <div class="grid gap-5">
+                                <div class="space-y-2">
+                                    <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
+                                        Email Address
+                                    </label>
+                                    <input type="text" value="{{ $user->email ?: 'N/A' }}" readonly
+                                        class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
+                                        Access Role
+                                    </label>
+                                    <input type="text" value="{{ $displayRole }}" readonly
+                                        class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
+                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">
+                                        Identity and access changes are handled from user management, not from this
+                                        profile page.
                                     </p>
-                                @endif
+                                </div>
+                            </div>
+                            <div class="mt-6 rounded-sm border border-[#d4e8f5] bg-[#f6fafd] px-4 py-4 text-[.82rem] leading-[1.7] text-[#587189]">
+                                Use this page to review account identity details and manage password access. If your
+                                email or role needs to change, update it from the clinic's user management area.
                             </div>
                         </div>
+                    </article>
+                </div>
 
-                        @if (!empty($isGoogleUser))
-                            <form action="{{ route('profile.password.reset-link') }}" method="POST" class="space-y-3">
-                                @csrf
-                                @if (session('success'))
-                                    <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-                                        {{ session('success') }}
-                                    </div>
-                                @endif
-                                @if (session('failed'))
-                                    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                                        {{ session('failed') }}
-                                    </div>
-                                @endif
-                                <button type="button"
-                                    onclick="this.disabled=true; this.classList.add('opacity-60','cursor-not-allowed'); this.form.submit();"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition">
-                                    Send Reset Link
-                                </button>
-                            </form>
-                        @else
-                            <form action="{{ route('profile.password') }}" method="POST" class="space-y-4">
-                                @csrf
-                                @method('PUT')
+                <aside class="space-y-6">
+                    <article class="border border-[#e4eff8] bg-white">
+                        <div class="border-b border-[#e4eff8] px-6 py-6">
+                            <h2 class="text-[1.3rem] font-extrabold leading-[1.15] tracking-[-.02em] text-[#1a2e3b]">
+                                Password
+                            </h2>
+                        </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div class="space-y-1 md:col-span-2">
-                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <div class="px-6 py-6">
+                            @if (!empty($isGoogleUser))
+                                <p class="text-[.88rem] leading-[1.75] text-[#587189]">
+                                    Your account uses Google Login. We will email you a secure link so you can set a
+                                    password for direct sign-in.
+                                </p>
+                                <form action="{{ route('profile.password.reset-link') }}" method="POST" class="mt-5">
+                                    @csrf
+                                    <button type="button"
+                                        onclick="this.disabled=true; this.classList.add('opacity-60','cursor-not-allowed'); this.form.submit();"
+                                        class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#1a2e3b] px-6 py-[11px] text-[.7rem] font-bold uppercase tracking-[.1em] text-[#1a2e3b] transition hover:bg-[#1a2e3b] hover:text-white">
+                                        Send Reset Link
+                                    </button>
+                                </form>
+                            @else
+                                <form action="{{ route('profile.password') }}" method="POST" class="space-y-4">
+                                    @csrf
+                                    @method('PUT')
+
+                                    <div class="space-y-2">
+                                        <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
                                             Current Password
                                         </label>
-                                        <input type="password" name="current_password" placeholder="Enter current password"
-                                            class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
+                                        <input type="password" name="current_password" placeholder="Current password"
+                                            class="w-full border border-[#e4eff8] bg-white px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('current_password') border-rose-400 @enderror">
                                         @error('current_password')
-                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                            <span class="text-xs text-rose-600">{{ $message }}</span>
                                         @enderror
                                     </div>
 
-                                    <div class="space-y-1">
-                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">New
-                                            Password</label>
-                                        <input type="password" name="password" placeholder="Enter new password"
-                                            class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
+                                    <div class="space-y-2">
+                                        <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
+                                            New Password
+                                        </label>
+                                        <input type="password" name="password" placeholder="New password"
+                                            class="w-full border border-[#e4eff8] bg-white px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('password') border-rose-400 @enderror">
                                         @error('password')
-                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                            <span class="text-xs text-rose-600">{{ $message }}</span>
                                         @enderror
                                     </div>
 
-                                    <div class="space-y-1">
-                                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm
-                                            Password</label>
-                                        <input type="password" name="password_confirmation" placeholder="Confirm new password"
-                                            class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-2.5">
+                                    <div class="space-y-2">
+                                        <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
+                                            Confirm Password
+                                        </label>
+                                        <input type="password" name="password_confirmation"
+                                            placeholder="Confirm new password"
+                                            class="w-full border border-[#e4eff8] bg-white px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10">
                                     </div>
-                                </div>
 
-                                <div class="flex justify-end pt-2">
-                                    <button type="submit"
-                                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition">
-                                        Update Password
-                                    </button>
-                                </div>
-                            </form>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="lg:col-span-1">
-                    <div class="profile-card rounded-2xl p-6 lg:p-8 sticky top-20">
-                        <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider mb-4">Account Overview</h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200">
-                                <span class="text-xs text-slate-500">Role</span>
-                                <span
-                                    class="text-sm font-semibold text-slate-900">{{ ucfirst($roleName ?? 'Administrator') }}</span>
-                            </div>
-                            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200">
-                                <span class="text-xs text-slate-500">Username</span>
-                                <span class="text-sm font-semibold text-slate-900">{{ $user->username }}</span>
-                            </div>
-                            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200">
-                                <span class="text-xs text-slate-500">Contact</span>
-                                <span class="text-sm font-semibold text-slate-900">{{ data_get($user, 'contact') ?? 'N/A' }}</span>
-                            </div>
-                            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-200">
-                                <span class="text-xs text-slate-500">Position</span>
-                                <span class="text-sm font-semibold text-slate-900">{{ $user->position ?? 'N/A' }}</span>
-                            </div>
+                                    <div class="pt-1">
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#1a2e3b] px-6 py-[11px] text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#0d1e27]">
+                                            Update Password
+                                        </button>
+                                    </div>
+                                </form>
+                            @endif
                         </div>
-                    </div>
-                </div>
+                    </article>
+
+                </aside>
             </div>
         </div>
     </main>

@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -55,33 +54,11 @@ class ProfileController extends Controller
         $userId = Auth::id();
         $user = DB::table('users')->where('id', $userId)->first();
 
-        if ($user && (int) $user->role === 3) {
-            $validated = $request->validate([
-                'contact' => ['required', 'string', 'max:20'],
-            ]);
-
-            DB::table('users')->where('id', $userId)->update([
-                'contact' => $validated['contact'],
-                'updated_at' => now(),
-            ]);
-
-            return back()->with('success', 'Account updated successfully.');
+        if (! $user) {
+            return back()->with('failed', 'We could not find your account details.');
         }
 
-        // Validate strictly against your existing columns
-        $validated = $request->validate([
-            'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($userId)],
-            'contact' => ['required', 'string', 'max:20'],
-        ]);
-
-        // Update strictly your existing columns
-        DB::table('users')->where('id', $userId)->update([
-            'username' => $validated['username'],
-            'contact' => $validated['contact'],
-            'updated_at' => now(),
-        ]);
-
-        return back()->with('success', 'Profile updated successfully.');
+        return back()->with('success', 'Account details are managed by the clinic.');
     }
 
     public function updatePassword(Request $request)

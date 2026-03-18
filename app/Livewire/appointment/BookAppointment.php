@@ -15,6 +15,8 @@ use Throwable;
 
 class BookAppointment extends Component
 {
+    private const PH_CONTACT_RULE = 'regex:/^\d{11}$/';
+
     protected const SLOT_CAPACITY = 2;
 
     protected const APPROVED_SLOT_STATUSES = ['Scheduled', 'Waiting', 'Ongoing'];
@@ -31,18 +33,26 @@ class BookAppointment extends Component
 
     protected const OTP_MAX_RESENDS = 3;
 
-    protected const OTP_EXPIRES_IN_MINUTES = 10;
+    protected const OTP_EXPIRES_IN_MINUTES = 5;
 
     // Form data
     public $first_name;
 
     public $last_name;
 
-    public $birth_date;
-
     public $contact_number;
 
     public $email;
+
+    public $booking_for = 'self';
+
+    public $patient_first_name = '';
+
+    public $patient_last_name = '';
+
+    public $patient_birth_date = '';
+
+    public $relationship_to_patient = '';
 
     public $service_id;
 
@@ -69,6 +79,8 @@ class BookAppointment extends Component
     public $guestOtpStepActive = false;
 
     public $guestEmailOtpResendCount = 0;
+
+    public $otpMessage = null;
 
     protected ?bool $blockedSlotsTableExists = null;
 
@@ -138,9 +150,13 @@ class BookAppointment extends Component
         $clearableFields = [
             'first_name',
             'last_name',
-            'birth_date',
             'contact_number',
             'email',
+            'booking_for',
+            'patient_first_name',
+            'patient_last_name',
+            'patient_birth_date',
+            'relationship_to_patient',
             'service_id',
             'selectedDate',
             'selectedSlot',
@@ -155,6 +171,25 @@ class BookAppointment extends Component
 
         if ($propertyName === 'recaptchaToken') {
             $this->resetValidation('recaptcha');
+        }
+    }
+
+    public function updatedBookingFor(string $value): void
+    {
+        $this->patient_first_name = '';
+        $this->patient_last_name = '';
+        $this->patient_birth_date = '';
+        $this->relationship_to_patient = '';
+
+        $this->resetValidation([
+            'patient_first_name',
+            'patient_last_name',
+            'patient_birth_date',
+            'relationship_to_patient',
+        ]);
+
+        if ($value !== 'someone_else') {
+            $this->prefillFromPreviousBooking();
         }
     }
 
@@ -231,7 +266,7 @@ class BookAppointment extends Component
 
                 $this->guestEmailOtp = '';
                 $this->resetValidation('guestEmailOtp');
-                session()->flash('otp_success', 'Enter the 6-digit code we already sent to your email.');
+                $this->otpMessage = 'Enter the 6-digit code we already sent to your email.';
                 $this->guestOtpStepActive = true;
 
                 return;
@@ -340,12 +375,15 @@ class BookAppointment extends Component
         });
 
         $remainingResends = $this->remainingGuestOtpResends();
-        session()->flash(
-            'otp_success',
-            $isResend
-                ? "A new OTP was sent. You have {$remainingResends} resend attempt(s) left."
-                : 'OTP sent. Check your email and enter the 6-digit code below.'
-        );
+        $this->otpMessage = $isResend
+            ? "A new OTP was sent. You have {$remainingResends} resend attempt(s) left."
+            : 'OTP sent. Check your email and enter the 6-digit code below.';
+
+        $this->dispatch('otp-ready', [
+            'expiresAt' => $this->guestEmailOtpExpiresAt,
+            'cooldownUntil' => $this->guestEmailOtpCooldownUntil,
+            'resendsRemaining' => $this->guestOtpResendsRemaining,
+        ]);
     }
 
     public function verifyGuestEmailOtp()
@@ -452,7 +490,37 @@ class BookAppointment extends Component
         }
 
         if (Schema::hasColumn('appointments', 'requester_birth_date')) {
-            $appointmentPayload['requester_birth_date'] = ! empty($this->birth_date) ? $this->birth_date : null;
+            $appointmentPayload['requester_birth_date'] = $this->isBookingForSelf()
+                ? $this->resolvedPatientBirthDate()
+                : null;
+        }
+
+        if (Schema::hasColumn('appointments', 'booking_for_other')) {
+            $appointmentPayload['booking_for_other'] = ! $this->isBookingForSelf();
+        }
+
+        if (Schema::hasColumn('appointments', 'requested_patient_first_name')) {
+            $appointmentPayload['requested_patient_first_name'] = $this->isBookingForSelf()
+                ? null
+                : $this->resolvedPatientFirstName();
+        }
+
+        if (Schema::hasColumn('appointments', 'requested_patient_last_name')) {
+            $appointmentPayload['requested_patient_last_name'] = $this->isBookingForSelf()
+                ? null
+                : $this->resolvedPatientLastName();
+        }
+
+        if (Schema::hasColumn('appointments', 'requested_patient_birth_date')) {
+            $appointmentPayload['requested_patient_birth_date'] = $this->isBookingForSelf()
+                ? null
+                : $this->resolvedPatientBirthDate();
+        }
+
+        if (Schema::hasColumn('appointments', 'requester_relationship_to_patient')) {
+            $appointmentPayload['requester_relationship_to_patient'] = $this->isBookingForSelf()
+                ? null
+                : $this->normalizedRelationshipToPatient();
         }
 
         DB::table('appointments')->insert($appointmentPayload);
@@ -461,7 +529,7 @@ class BookAppointment extends Component
 
         try {
             Mail::send('appointment.emails.appointment-confirmation', [
-                'name' => trim($this->first_name.' '.$this->last_name),
+                'name' => trim($this->resolvedPatientFirstName().' '.$this->resolvedPatientLastName()),
                 'appointment_date' => Carbon::parse($appointmentDateTime)->format('F j, Y g:i A'),
                 'service_name' => $service?->service_name ?? 'Service',
             ], function ($message) {
@@ -486,15 +554,34 @@ class BookAppointment extends Component
         $this->validate([
             'first_name' => 'required',
             'last_name' => 'required',
-            'birth_date' => 'required|date|before_or_equal:today',
             'email' => 'required|email',
             'service_id' => 'required',
             'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
             'selectedSlot' => 'required',
-            'contact_number' => 'required',
+            'contact_number' => ['required', 'string', self::PH_CONTACT_RULE],
+            'booking_for' => 'required|in:self,someone_else',
             'booking_agreement' => 'accepted',
         ], [
+            'contact_number.regex' => 'Contact number must be exactly 11 digits.',
             'booking_agreement.accepted' => 'Please confirm the booking agreement before submitting your request.',
+        ]);
+
+        $patientRules = $this->isBookingForSelf()
+            ? [
+                'patient_birth_date' => 'required|date|before_or_equal:today',
+            ]
+            : [
+                'patient_first_name' => 'required',
+                'patient_last_name' => 'required',
+                'patient_birth_date' => 'required|date|before_or_equal:today',
+                'relationship_to_patient' => 'required|string|max:100',
+            ];
+
+        $this->validate($patientRules, [
+            'patient_birth_date.required' => 'Please provide the patient birth date.',
+            'patient_birth_date.date' => 'Please enter a valid patient birth date.',
+            'patient_birth_date.before_or_equal' => 'Patient birth date cannot be in the future.',
+            'relationship_to_patient.required' => 'Please tell us your relationship to the patient.',
         ]);
     }
 
@@ -508,13 +595,17 @@ class BookAppointment extends Component
         $this->first_name = $this->preferExistingValue($this->first_name, $previousBooking->first_name ?? null);
         $this->last_name = $this->preferExistingValue($this->last_name, $previousBooking->last_name ?? null);
         $this->contact_number = $this->preferExistingValue($this->contact_number, $previousBooking->contact_number ?? null);
-        $this->birth_date = $this->preferExistingValue($this->birth_date, $previousBooking->birth_date ?? null);
+
+        if ($this->isBookingForSelf()) {
+            $this->patient_birth_date = $this->preferExistingValue($this->patient_birth_date, $previousBooking->birth_date ?? null);
+        }
     }
 
     protected function findPreviousBookingProfile(): ?object
     {
         $email = $this->normalizeEmail($this->email);
         $hasRequesterBirthDate = Schema::hasColumn('appointments', 'requester_birth_date');
+        $hasRequestedPatientBirthDate = Schema::hasColumn('appointments', 'requested_patient_birth_date');
 
         $query = DB::table('appointments as appointments')
             ->leftJoin('patients', 'patients.id', '=', 'appointments.patient_id')
@@ -522,9 +613,11 @@ class BookAppointment extends Component
                 'COALESCE(appointments.requester_first_name, patients.first_name) as first_name,
                 COALESCE(appointments.requester_last_name, patients.last_name) as last_name,
                 COALESCE(appointments.requester_contact_number, patients.mobile_number) as contact_number,
-                '.($hasRequesterBirthDate
-                    ? 'COALESCE(appointments.requester_birth_date, patients.birth_date)'
-                    : 'patients.birth_date').' as birth_date'
+                '.($hasRequestedPatientBirthDate
+                    ? 'COALESCE(appointments.requested_patient_birth_date, appointments.requester_birth_date, patients.birth_date)'
+                    : ($hasRequesterBirthDate
+                        ? 'COALESCE(appointments.requester_birth_date, patients.birth_date)'
+                        : 'patients.birth_date')).' as birth_date'
             )
             ->orderByDesc('appointments.appointment_date');
 
@@ -636,27 +729,63 @@ class BookAppointment extends Component
             return false;
         }
 
-        // Block duplicate active requests using requester identity (account/email), not patient records.
         $hasActiveAppointmentQuery = DB::table('appointments')
             ->whereNotIn('status', ['Cancelled', 'Completed'])
             ->where(function ($query) {
-                if (Auth::check()) {
-                    $query->where('requester_user_id', Auth::id());
+                if ($this->isBookingForSelf()) {
+                    if (Auth::check()) {
+                        $query->where('requester_user_id', Auth::id());
 
-                    if (! empty($this->email)) {
-                        $query->orWhere('requester_email', $this->email);
+                        if (! empty($this->email)) {
+                            $query->orWhere('requester_email', $this->email);
+                        }
+
+                        return;
                     }
+
+                    $query->where('requester_email', $this->email);
 
                     return;
                 }
 
-                $query->where('requester_email', $this->email);
+                if (Schema::hasColumn('appointments', 'requested_patient_first_name')) {
+                    $query->whereRaw('LOWER(COALESCE(requested_patient_first_name, requester_first_name, \'\')) = ?', [
+                        strtolower($this->resolvedPatientFirstName()),
+                    ]);
+                } else {
+                    $query->whereRaw('LOWER(COALESCE(requester_first_name, \'\')) = ?', [
+                        strtolower($this->resolvedPatientFirstName()),
+                    ]);
+                }
+
+                if (Schema::hasColumn('appointments', 'requested_patient_last_name')) {
+                    $query->whereRaw('LOWER(COALESCE(requested_patient_last_name, requester_last_name, \'\')) = ?', [
+                        strtolower($this->resolvedPatientLastName()),
+                    ]);
+                } else {
+                    $query->whereRaw('LOWER(COALESCE(requester_last_name, \'\')) = ?', [
+                        strtolower($this->resolvedPatientLastName()),
+                    ]);
+                }
+
+                $patientBirthDate = $this->resolvedPatientBirthDate();
+                if ($patientBirthDate !== null) {
+                    if (Schema::hasColumn('appointments', 'requested_patient_birth_date')) {
+                        $query->whereRaw('DATE(COALESCE(requested_patient_birth_date, requester_birth_date)) = ?', [$patientBirthDate]);
+                    } elseif (Schema::hasColumn('appointments', 'requester_birth_date')) {
+                        $query->whereDate('requester_birth_date', $patientBirthDate);
+                    }
+                }
             });
 
         $hasActiveAppointment = $hasActiveAppointmentQuery->exists();
 
         if ($hasActiveAppointment) {
-            $this->addError('selectedSlot', 'You already have a pending or upcoming appointment request. Please wait until your current request is completed before booking a new one.');
+            $message = $this->isBookingForSelf()
+                ? 'You already have a pending or upcoming appointment request. Please wait until your current request is completed before booking a new one.'
+                : 'This patient already has a pending or upcoming appointment request. Please review the existing request first.';
+
+            $this->addError('selectedSlot', $message);
 
             return false;
         }
@@ -784,6 +913,35 @@ class BookAppointment extends Component
     protected function normalizeEmail(mixed $email): string
     {
         return strtolower(trim((string) $email));
+    }
+
+    protected function isBookingForSelf(): bool
+    {
+        return $this->booking_for !== 'someone_else';
+    }
+
+    protected function resolvedPatientFirstName(): string
+    {
+        return trim((string) ($this->isBookingForSelf() ? $this->first_name : $this->patient_first_name));
+    }
+
+    protected function resolvedPatientLastName(): string
+    {
+        return trim((string) ($this->isBookingForSelf() ? $this->last_name : $this->patient_last_name));
+    }
+
+    protected function resolvedPatientBirthDate(): ?string
+    {
+        $birthDate = trim((string) $this->patient_birth_date);
+
+        return $birthDate !== '' ? $birthDate : null;
+    }
+
+    protected function normalizedRelationshipToPatient(): ?string
+    {
+        $relationship = trim((string) $this->relationship_to_patient);
+
+        return $relationship !== '' ? $relationship : null;
     }
 
     protected function canResumeGuestOtpStep(): bool

@@ -277,7 +277,6 @@ class HealthHistory extends Component
     public function resetForm()
     {
         $this->resetExcept(['isReadOnly']);
-        $this->resetErrorBag();
     }
 
     public function render()

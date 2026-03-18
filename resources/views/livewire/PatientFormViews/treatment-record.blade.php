@@ -4,7 +4,7 @@
         $errorBag = session('errors');
         $inputClass =
             'w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100 disabled:text-slate-500';
-        $fieldClass = fn(string $field) => $errorBag && $errorBag->has($field)
+        $fieldClass = fn(string $field) => ($errorBag && $errorBag->has($field))
             ? $inputClass . ' border-red-500 focus:border-red-500 focus:ring-red-200'
             : $inputClass;
     @endphp
@@ -27,22 +27,18 @@
                 </div>
 
                 <div>
-                    <label for="treatment" class="{{ $labelClass }}">Treatment <span
-                            class="text-red-600">*</span></label>
-                    <input wire:model.defer="treatment" type="text" id="treatment"
-                        class="{{ $fieldClass('treatment') }}" placeholder="e.g., Extraction"
-                        @if ($isReadOnly) disabled @endif>
+                    <label for="treatment" class="{{ $labelClass }}">Treatment <span class="text-red-600">*</span></label>
+                    <input wire:model.defer="treatment" type="text" id="treatment" class="{{ $fieldClass('treatment') }}"
+                        placeholder="e.g., Extraction" @if ($isReadOnly) disabled @endif>
                     @error('treatment')
                         <span data-error-for="treatment" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="cost_of_treatment" class="{{ $labelClass }}">Estimated Cost <span
-                            class="text-red-600">*</span></label>
+                    <label for="cost_of_treatment" class="{{ $labelClass }}">Estimated Cost <span class="text-red-600">*</span></label>
                     <input wire:model.defer="cost_of_treatment" type="number" id="cost_of_treatment"
-                        class="{{ $fieldClass('cost_of_treatment') }}" placeholder="0.00"
-                        @if ($isReadOnly) disabled @endif>
+                        class="{{ $fieldClass('cost_of_treatment') }}" placeholder="0.00" @if ($isReadOnly) disabled @endif>
                     @error('cost_of_treatment')
                         <span data-error-for="cost_of_treatment"
                             class="mt-1 block text-xs text-red-500">{{ $message }}</span>
@@ -50,11 +46,9 @@
                 </div>
 
                 <div>
-                    <label for="amount_charged" class="{{ $labelClass }}">Payment <span
-                            class="text-red-600">*</span></label>
-                    <input wire:model.defer="amount_charged" type="number" id="amount_charged"
-                        class="{{ $fieldClass('amount_charged') }}" placeholder="0.00"
-                        @if ($isReadOnly) disabled @endif>
+                    <label for="amount_charged" class="{{ $labelClass }}">Payment <span class="text-red-600">*</span></label>
+                    <input wire:model.defer="amount_charged" type="number" id="amount_charged" class="{{ $fieldClass('amount_charged') }}"
+                        placeholder="0.00" @if ($isReadOnly) disabled @endif>
                     @error('amount_charged')
                         <span data-error-for="amount_charged"
                             class="mt-1 block text-xs text-red-500">{{ $message }}</span>
@@ -114,13 +108,11 @@
 
                     @if ($beforeList->isNotEmpty())
                         <div>
-                            <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Before
-                                Treatment
+                            <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Before Treatment
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 @foreach ($beforeList as $img)
-                                    <button type="button"
-                                        class="overflow-hidden rounded-lg border border-slate-200 bg-white p-1"
+                                    <button type="button" class="overflow-hidden rounded-lg border border-slate-200 bg-white p-1"
                                         @click="activeImage = '{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}'; activeLabel = 'before'; showImage = true">
                                         <img class="h-32 w-full rounded-md object-cover"
                                             src="{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}"
@@ -133,13 +125,11 @@
 
                     @if ($afterList->isNotEmpty())
                         <div>
-                            <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">After
-                                Treatment
+                            <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">After Treatment
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 @foreach ($afterList as $img)
-                                    <button type="button"
-                                        class="overflow-hidden rounded-lg border border-slate-200 bg-white p-1"
+                                    <button type="button" class="overflow-hidden rounded-lg border border-slate-200 bg-white p-1"
                                         @click="activeImage = '{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}'; activeLabel = 'after'; showImage = true">
                                         <img class="h-32 w-full rounded-md object-cover"
                                             src="{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}"
@@ -151,8 +141,7 @@
                     @endif
 
                     @if (empty($existingImages))
-                        <div
-                            class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+                        <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
                             No treatment images yet.
                         </div>
                     @endif
@@ -163,13 +152,11 @@
                 @click.self="showImage = false">
                 <div class="w-full max-w-4xl rounded-xl bg-white p-4 shadow-xl">
                     <div class="flex items-center justify-between">
-                        <div class="text-sm font-semibold uppercase tracking-wide text-slate-700"
-                            x-text="activeLabel"></div>
+                        <div class="text-sm font-semibold uppercase tracking-wide text-slate-700" x-text="activeLabel"></div>
                         <button type="button" class="text-sm font-medium text-slate-500 hover:text-slate-800"
                             @click="showImage = false">Close</button>
                     </div>
-                    <img class="mt-4 max-h-[75vh] w-full rounded-lg object-contain" :src="activeImage"
-                        alt="Full image">
+                    <img class="mt-4 max-h-[75vh] w-full rounded-lg object-contain" :src="activeImage" alt="Full image">
                 </div>
             </div>
         </div>

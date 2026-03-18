@@ -3,7 +3,6 @@
 @section('content')
     @php
         $displayName = $requesterDisplayName ?? ($user->username ?? (auth()->user()->username ?? 'Patient'));
-        $profilePhone = data_get($user, 'contact') ?? 'N/A';
         $hasPending = ($pendingRequests ?? collect())->count() > 0;
         $hasUpcoming = ($upcomingAppointments ?? collect())->count() > 0;
         $hasActiveRequest = $hasPending || $hasUpcoming;
@@ -227,12 +226,8 @@
                                                         class="mb-2 inline-flex rounded-sm border px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.16em] {{ $statusBadgeClass($apptStatus) }}">{{ $apptStatus }}</span>
                                                     <div class="flex flex-wrap items-center gap-2">
                                                         <p class="text-[1rem] font-semibold text-[#1a2e3b]">
-                                                            {{ $appointment->service_name ?? 'Service' }}</p>
-                                                        @if ($loop->first)
-                                                            <span
-                                                                class="inline-flex rounded-sm border border-[#b8dcf3] bg-[#e8f4fc] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#0086da]">Nearest
-                                                                Visit</span>
-                                                        @endif
+                                                            {{ $appointment->service_name ?? 'Service' }}
+                                                        </p>
                                                     </div>
                                                     <p class="mt-2 text-[.88rem] leading-[1.7] text-[#587189]">
                                                         {{ $apptDate->format('l, F d, Y') }} at
@@ -374,11 +369,6 @@
                                     <span
                                         class="max-w-[160px] truncate text-sm font-semibold text-[#1a2e3b]">{{ $user->email ?? 'N/A' }}</span>
                                 </div>
-                                <div class="flex items-center justify-between bg-[#f6fafd] px-4 py-3">
-                                    <span
-                                        class="text-[.72rem] font-semibold uppercase tracking-[.1em] text-[#7a9db5]">Contact</span>
-                                    <span class="text-sm font-semibold text-[#1a2e3b]">{{ $profilePhone }}</span>
-                                </div>
                             </div>
                         </div>
                     </article>
@@ -388,10 +378,11 @@
         </div>
 
         <div x-cloak x-show="cancelModalOpen" x-transition.opacity
-            class="fixed inset-0 z-50 flex items-center justify-center bg-[#10283b]/55 px-4 py-6"
+            class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
             @click.self="closeCancelModal()" @keydown.escape.window="closeCancelModal()">
+            <div class="absolute inset-0 bg-black opacity-60" @click="closeCancelModal()"></div>
             <div x-transition
-                class="w-full max-w-lg rounded-sm border border-[#dbeaf7] bg-white p-6 shadow-[0_32px_80px_rgba(16,40,59,.22)] sm:p-8">
+                class="relative z-10 w-full max-w-lg rounded-sm border border-[#dbeaf7] bg-white p-6 shadow-[0_32px_80px_rgba(16,40,59,.22)] sm:p-8">
                 <div class="flex items-start justify-between gap-4 border-b border-[#e4eff8] pb-5">
                     <div>
                         <p class="text-[.63rem] font-bold uppercase tracking-[.22em] text-rose-500">Cancellation</p>

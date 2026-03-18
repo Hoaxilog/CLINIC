@@ -9,15 +9,15 @@
         body {
             margin: 0;
             padding: 0;
-            background: #f4f8fb;
-            color: #163047;
-            font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+            background: #f6fafd;
+            color: #1a2e3b;
+            font-family: Arial, "Segoe UI", sans-serif;
         }
 
         .wrapper {
             width: 100%;
-            background: linear-gradient(180deg, #eaf4fb 0%, #f9fcfe 100%);
-            padding: 32px 16px;
+            background: #f6fafd;
+            padding: 40px 16px;
         }
 
         .container {
@@ -25,74 +25,59 @@
             max-width: 640px;
             margin: 0 auto;
             background: #ffffff;
-            border: 1px solid #d7e7f3;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 18px 48px rgba(15, 57, 92, 0.12);
+            border: 1px solid #e4eff8;
+            border-top: 4px solid #0086da;
         }
 
         .hero {
-            padding: 36px 40px 28px;
-            background: linear-gradient(135deg, #0d7cc2 0%, #0f9ad6 100%);
+            padding: 32px 40px;
+            background: #0086da;
             color: #ffffff;
-        }
-
-        .eyebrow {
-            display: inline-block;
-            margin-bottom: 14px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.16);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
         }
 
         .brand {
             margin: 0;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.06em;
         }
 
         .hero-copy {
-            margin: 12px 0 0;
-            max-width: 450px;
-            font-size: 15px;
-            line-height: 1.7;
-            color: #dff4ff;
+            margin: 10px 0 0;
+            font-size: 14px;
+            line-height: 1.75;
+            color: rgba(255, 255, 255, 0.85);
         }
 
         .content {
-            padding: 36px 40px 18px;
+            padding: 36px 40px 20px;
         }
 
         .title {
-            margin: 0 0 14px;
-            font-size: 28px;
+            margin: 0 0 12px;
+            font-size: 22px;
             line-height: 1.25;
-            color: #10283b;
+            font-weight: 800;
+            color: #1a2e3b;
+            letter-spacing: -0.02em;
         }
 
         .text {
             margin: 0 0 16px;
-            font-size: 15px;
+            font-size: 14px;
             line-height: 1.8;
-            color: #486175;
+            color: #587189;
         }
 
         .details {
-            margin: 26px 0;
-            padding: 12px 20px;
-            border: 1px solid #d7e7f3;
-            border-radius: 20px;
-            background: linear-gradient(180deg, #f7fbfe 0%, #eef8fd 100%);
+            margin: 22px 0;
+            border: 1px solid #e4eff8;
+            background: #f6fafd;
         }
 
         .row {
-            padding: 14px 0;
-            border-bottom: 1px solid #deedf7;
+            padding: 14px 20px;
+            border-bottom: 1px solid #e4eff8;
         }
 
         .row.last {
@@ -101,40 +86,48 @@
 
         .label {
             display: block;
-            margin-bottom: 6px;
-            font-size: 12px;
+            margin-bottom: 5px;
+            font-size: 10px;
             font-weight: 700;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: #7e97aa;
+            color: #7a9db5;
         }
 
         .value {
             display: block;
-            font-size: 16px;
+            font-size: 14px;
             line-height: 1.6;
             font-weight: 700;
-            color: #10283b;
+            color: #1a2e3b;
         }
 
-        .status-pill {
+        .status-badge {
             display: inline-block;
-            padding: 8px 14px;
-            border-radius: 999px;
-            background: #e8f4fd;
-            color: #0d7cc2;
-            font-size: 13px;
+            padding: 4px 12px;
+            border: 1px solid #bae6fd;
+            background: #f0f9ff;
+            color: #0369a1;
+            font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.14em;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e4eff8;
+            margin: 4px 0 20px;
         }
 
         .footer {
-            padding: 0 40px 36px;
-            font-size: 12px;
+            padding: 20px 40px;
+            border-top: 1px solid #e4eff8;
+            font-size: 11px;
             line-height: 1.7;
-            color: #89a0b2;
+            color: #7a9db5;
             text-align: center;
+            background: #f6fafd;
         }
 
         @media only screen and (max-width: 600px) {
@@ -147,7 +140,7 @@
             }
 
             .title {
-                font-size: 24px !important;
+                font-size: 20px !important;
             }
         }
     </style>
@@ -157,10 +150,9 @@
     <div class="wrapper">
         <div class="container">
             <div class="hero">
-                <div class="eyebrow">Tejadent Clinic</div>
-                <h1 class="brand">TEJADENT</h1>
-                <p class="hero-copy">There is a new update for your appointment. Please review the latest schedule status
-                    below.</p>
+                <h1 class="brand">TEJADA CLINIC</h1>
+                <p class="hero-copy">There is a new update for your appointment. Please review the latest schedule
+                    status below.</p>
             </div>
 
             <div class="content">
@@ -178,14 +170,16 @@
                     </div>
                     <div class="row last">
                         <span class="label">Status</span>
-                        <span class="status-pill">{{ $status }}</span>
+                        <span class="status-badge">{{ $status }}</span>
                     </div>
                 </div>
 
                 <p class="text">If you have questions about this update, please contact the clinic directly.</p>
                 <p class="text" style="margin-bottom: 0;">This is an automated message. Please do not reply.</p>
 
-                <div class="details" style="margin-top: 20px;">
+                <div class="divider"></div>
+
+                <div class="details" style="margin-top: 0;">
                     <div class="row">
                         <span class="label">Clinic Address</span>
                         <span class="value">251 Commonwealth Ave, Diliman, Quezon City</span>
@@ -202,7 +196,7 @@
             </div>
 
             <div class="footer">
-                &copy; {{ date('Y') }} Tejadent Clinic. All rights reserved.
+                &copy; {{ date('Y') }} Tejadent Clinic &mdash; All rights reserved.
             </div>
         </div>
     </div>

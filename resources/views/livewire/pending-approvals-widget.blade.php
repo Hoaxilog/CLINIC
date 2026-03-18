@@ -26,8 +26,23 @@
                     <tr wire:key="pending-approval-{{ $pending->id }}" class="hover:bg-gray-50 transition-colors">
                         <td class="px-5 py-3">
                             <button type="button" wire:click="viewApproval({{ $pending->id }})"
-                                class="font-semibold text-gray-900 hover:text-[#0086DA] transition-colors">
-                                {{ $pending->last_name }}, {{ $pending->first_name }}
+                                class="text-left transition-colors hover:text-[#0086DA]">
+                                <span class="block font-semibold text-gray-900">
+                                    {{ $pending->last_name }}, {{ $pending->first_name }}
+                                </span>
+                                @if ($this->appointmentPatientBirthDateDisplay($pending))
+                                    <span class="block text-xs text-gray-500">
+                                        Birth date: {{ $this->appointmentPatientBirthDateDisplay($pending) }}
+                                    </span>
+                                @endif
+                                @if ($this->appointmentHasSeparateRequester($pending))
+                                    <span class="mt-1 block text-xs text-blue-700">
+                                        Booked by {{ $this->appointmentRequesterDisplayName($pending) ?: 'Requester' }}
+                                        @if ($this->appointmentRequesterRelationshipLabel($pending))
+                                            ({{ $this->appointmentRequesterRelationshipLabel($pending) }})
+                                        @endif
+                                    </span>
+                                @endif
                             </button>
                         </td>
                         <td class="px-5 py-3 text-gray-700">
@@ -42,7 +57,12 @@
                         </td> -->
                         <td class="px-5 py-3">
                             <div class="flex items-center justify-start gap-2">
-                                <a href="{{ route('appointment.requests') }}"
+                                <button type="button" wire:click="approveAppointment({{ $pending->id }})"
+                                    wire:confirm="Approve this appointment request?"
+                                    class="rounded-none border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">
+                                    Approve
+                                </button>
+                                <a href="{{ route('appointment.requests', ['appointment' => $pending->id]) }}"
                                     class="rounded-none border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition">
                                     Review Request
                                 </a>
@@ -104,43 +124,62 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                            <input type="text" value="{{ $selectedApproval->first_name }}"
-                                class="w-full border rounded-none px-4 py-2.5 bg-gray-50 text-gray-800 font-medium"
-                                readonly />
+                            <div class="rounded-none border border-gray-200 bg-white p-4">
+                                <label class="block text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Patient</label>
+                                <div class="mt-2 text-lg font-semibold text-gray-900">
+                                    {{ $selectedApproval->first_name }} {{ $selectedApproval->last_name }}
+                                </div>
+                                <div class="mt-1 text-sm text-gray-600">
+                                    Birth date:
+                                    {{ $this->appointmentPatientBirthDateDisplay($selectedApproval) ?: 'Not provided' }}
+                                </div>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                            <input type="text" value="{{ $selectedApproval->last_name }}"
-                                class="w-full border rounded-none px-4 py-2.5 bg-gray-50 text-gray-800 font-medium"
-                                readonly />
+                            <div class="rounded-none border border-gray-200 bg-gray-50 p-4">
+                                <label class="block text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Booked By / Contact</label>
+                                <div class="mt-2 text-lg font-semibold text-gray-900">
+                                    {{ $this->appointmentRequesterDisplayName($selectedApproval) ?: 'Same as patient' }}
+                                </div>
+                                <div class="mt-1 text-sm text-gray-600">
+                                    {{ $selectedApproval->requester_contact_number ?? $selectedApproval->mobile_number ?? 'N/A' }}
+                                </div>
+                                <div class="mt-1 text-sm text-gray-500">
+                                    {{ $selectedApproval->requester_email ?? $selectedApproval->email_address ?? 'N/A' }}
+                                </div>
+                                @if ($this->appointmentRequesterRelationshipLabel($selectedApproval))
+                                    <div class="mt-2 text-xs font-semibold uppercase tracking-wide text-blue-700">
+                                        Relationship: {{ $this->appointmentRequesterRelationshipLabel($selectedApproval) }}
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-                            <input type="text" value="{{ $selectedApproval->mobile_number ?? 'N/A' }}"
-                                class="w-full border rounded-none px-4 py-2.5 bg-gray-50 text-gray-800 font-medium"
-                                readonly />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="text" value="{{ $selectedApproval->email_address ?? 'N/A' }}"
-                                class="w-full border rounded-none px-4 py-2.5 bg-gray-50 text-gray-800 font-medium"
-                                readonly />
-                        </div>
+                    <div class="mb-8 rounded-none border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                        <div class="font-semibold text-blue-900">Approve first, link on arrival</div>
+                        <p class="mt-1 text-xs">
+                            Approval reserves the slot. If identity is still uncertain, staff can link or create the
+                            patient record later when the patient arrives.
+                        </p>
                     </div>
 
                     <div class="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
                         <button type="button" wire:click="closeDetails"
                             class="px-5 py-3 rounded-none bg-gray-200 hover:bg-gray-300 font-medium">Close</button>
+                        @if ($selectedApproval->status === 'Pending')
+                            <button type="button" wire:click="approveAppointment({{ $selectedApproval->id }})"
+                                wire:confirm="Approve this appointment request?"
+                                class="px-6 py-3 rounded-none bg-emerald-600 text-white text-lg font-bold shadow-md hover:bg-emerald-700 transition">
+                                Approve Appointment
+                            </button>
+                        @endif
                         <button type="button" wire:click="rejectAppointment({{ $selectedApproval->id }})"
                             wire:confirm="Reject this appointment request?"
                             class="px-6 py-3 rounded-none bg-red-600 text-white text-lg font-bold shadow-md hover:bg-red-700 transition">
                             Reject Appointment
                         </button>
-                        <a href="{{ route('appointment.requests') }}"
+                        <a href="{{ route('appointment.requests', ['appointment' => $selectedApproval->id]) }}"
                             class="px-6 py-3 rounded-none bg-[#0086da] text-white text-lg font-bold shadow-md hover:bg-blue-600 transition text-center">
                             Review Request
                         </a>

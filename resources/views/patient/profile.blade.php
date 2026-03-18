@@ -47,19 +47,12 @@
                     {{-- Account info tiles --}}
                     <article class="border border-[#e4eff8] bg-white">
                         <div class="border-b border-[#e4eff8] px-6 py-6 sm:px-8">
-                            <div class="mb-3 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
-                                <span class="block h-[2px] w-[22px] bg-[#0086da]"></span>Overview
-                            </div>
                             <h2 class="text-[1.5rem] leading-[1.15] font-extrabold tracking-[-.02em] text-[#1a2e3b]">Account Information</h2>
                         </div>
                         <div class="grid grid-cols-2 gap-[2px] bg-[#e4eff8] sm:grid-cols-4 px-0 py-0">
                             <div class="bg-white px-6 py-5">
                                 <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Name</div>
                                 <div class="mt-2 text-sm font-semibold text-[#1a2e3b]">{{ $accountName }}</div>
-                            </div>
-                            <div class="bg-white px-6 py-5">
-                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Contact</div>
-                                <div class="mt-2 text-sm font-semibold text-[#1a2e3b]">{{ data_get($user, 'contact') ?? 'N/A' }}</div>
                             </div>
                             <div class="bg-white px-6 py-5 col-span-2">
                                 <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Email</div>
@@ -74,16 +67,10 @@
                     {{-- Edit account settings --}}
                     <article class="border border-[#e4eff8] bg-white">
                         <div class="border-b border-[#e4eff8] px-6 py-6 sm:px-8">
-                            <div class="mb-3 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
-                                <span class="block h-[2px] w-[22px] bg-[#0086da]"></span>Account Settings
-                            </div>
-                            <h2 class="text-[1.5rem] leading-[1.15] font-extrabold tracking-[-.02em] text-[#1a2e3b]">Update Details</h2>
+                            <h2 class="text-[1.5rem] leading-[1.15] font-extrabold tracking-[-.02em] text-[#1a2e3b]">Account Identity</h2>
                         </div>
 
-                        <form action="{{ route('profile.update') }}" method="POST" class="px-6 py-6 sm:px-8">
-                            @csrf
-                            @method('PATCH')
-
+                        <div class="px-6 py-6 sm:px-8">
                             <div class="grid gap-5 sm:grid-cols-2">
                                 <div class="space-y-2">
                                     <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">Name</label>
@@ -96,25 +83,15 @@
                                     <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">Email Address</label>
                                     <input type="text" value="{{ $user->email ?? 'N/A' }}" readonly
                                         class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none">
-                                </div>
-
-                                <div class="space-y-2 sm:col-span-2">
-                                    <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">Contact Number</label>
-                                    <input type="text" name="contact" value="{{ old('contact', data_get($user, 'contact')) }}"
-                                        class="w-full border border-[#e4eff8] bg-white px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('contact') border-rose-400 @enderror">
-                                    @error('contact')
-                                        <span class="text-xs text-rose-600">{{ $message }}</span>
-                                    @enderror
+                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">Your appointment contact details come from your booking records and are managed separately from this login account.</p>
                                 </div>
                             </div>
 
-                            <div class="mt-6">
-                                <button type="submit"
-                                    class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
-                                    Save Contact Number
-                                </button>
+                            <div class="mt-6 rounded-sm border border-[#d4e8f5] bg-[#f6fafd] px-4 py-4 text-[.82rem] leading-[1.7] text-[#587189]">
+                                This page now works as an account summary for your login and password. Booking contact
+                                details stay with your appointment records.
                             </div>
-                        </form>
+                        </div>
                     </article>
                 </div>
 
@@ -122,9 +99,6 @@
                 <aside>
                     <article class="border border-[#e4eff8] bg-white">
                         <div class="border-b border-[#e4eff8] px-6 py-6">
-                            <div class="mb-3 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
-                                <span class="block h-[2px] w-[22px] bg-[#0086da]"></span>Security
-                            </div>
                             <h2 class="text-[1.3rem] leading-[1.15] font-extrabold tracking-[-.02em] text-[#1a2e3b]">Password</h2>
                         </div>
 

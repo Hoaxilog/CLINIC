@@ -96,7 +96,7 @@
                 <form id="bookingForm">
 
                     {{-- ── Two-column form ── --}}
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 {{ $guestOtpStepActive ? 'hidden' : '' }}">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start {{ $guestOtpStepActive ? 'hidden' : '' }}">
 
                         {{-- ── CARD 1: Patient Details ── --}}
                         <div
@@ -114,18 +114,73 @@
                                 <div>
                                     <div class="text-[.6rem] font-bold uppercase tracking-[.2em] text-[#0086da]">Step 1
                                     </div>
-                                    <div class="text-[.95rem] font-extrabold text-[#1a2e3b] tracking-[-0.01em]">Patient
-                                        Details</div>
+                                    <div class="text-[.95rem] font-extrabold text-[#1a2e3b] tracking-[-0.01em]">Contact
+                                        & Patient Details</div>
                                 </div>
+                            </div>
+
+                            <div class="mb-7 border border-[#dcecf8] bg-[#f8fbfe] p-5">
+                                <p class="text-[.62rem] font-bold uppercase tracking-[.18em] text-[#0086da]">Who is this
+                                    appointment for?</p>
+                                <div class="mt-4 grid gap-3 md:grid-cols-2">
+                                    <label
+                                        class="cursor-pointer border p-4 transition {{ $booking_for === 'self' ? 'border-[#0086da] bg-[#eef7ff] shadow-[inset_0_0_0_1px_rgba(0,134,218,.12)]' : 'border-[#d4e8f5] bg-white hover:border-[#0086da]' }}">
+                                        <input type="radio" wire:model.live="booking_for" value="self" class="sr-only peer">
+                                        <div class="flex items-start gap-3">
+                                            <span
+                                                class="mt-1 flex h-4 w-4 items-center justify-center rounded-full border {{ $booking_for === 'self' ? 'border-[#0086da]' : 'border-[#9fc8e3]' }}">
+                                                <span
+                                                    class="h-2 w-2 rounded-full {{ $booking_for === 'self' ? 'bg-[#0086da]' : 'bg-transparent' }}"></span>
+                                            </span>
+                                            <div>
+                                                <p class="text-[.8rem] font-bold uppercase tracking-[.14em] text-[#1a2e3b]">For
+                                                    Myself</p>
+                                                <p class="mt-1 text-[.76rem] leading-relaxed text-[#5d7b8f]">Use my details as
+                                                    the patient information for this request.</p>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label
+                                        class="cursor-pointer border p-4 transition {{ $booking_for === 'someone_else' ? 'border-[#0086da] bg-[#eef7ff] shadow-[inset_0_0_0_1px_rgba(0,134,218,.12)]' : 'border-[#d4e8f5] bg-white hover:border-[#0086da]' }}">
+                                        <input type="radio" wire:model.live="booking_for" value="someone_else"
+                                            class="sr-only peer">
+                                        <div class="flex items-start gap-3">
+                                            <span
+                                                class="mt-1 flex h-4 w-4 items-center justify-center rounded-full border {{ $booking_for === 'someone_else' ? 'border-[#0086da]' : 'border-[#9fc8e3]' }}">
+                                                <span
+                                                    class="h-2 w-2 rounded-full {{ $booking_for === 'someone_else' ? 'bg-[#0086da]' : 'bg-transparent' }}"></span>
+                                            </span>
+                                            <div>
+                                                <p class="text-[.8rem] font-bold uppercase tracking-[.14em] text-[#1a2e3b]">For
+                                                    Someone Else</p>
+                                                <p class="mt-1 text-[.76rem] leading-relaxed text-[#5d7b8f]">I am the contact
+                                                    person, but the appointment is for another patient.</p>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                @error('booking_for')
+                                    <p class="text-[.75rem] text-red-500 mt-2 validation-error" data-error-for="booking_for">
+                                        {{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="mb-5">
+                                <p class="text-[.62rem] font-bold uppercase tracking-[.18em] text-[#0086da]">
+                                    {{ $booking_for === 'someone_else' ? 'Contact Person' : 'Your Details' }}
+                                </p>
+                                <p class="mt-1 text-[.77rem] leading-relaxed text-[#6d899b]">
+                                    {{ $booking_for === 'someone_else' ? 'We will contact this person about the request and verification.' : 'We will use these details to confirm and update the appointment.' }}
+                                </p>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                                {{-- First Name --}}
                                 <div>
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                        First Name <span class="text-red-500">*</span>
+                                        {{ $booking_for === 'someone_else' ? 'Contact First Name' : 'First Name' }} <span
+                                            class="text-red-500">*</span>
                                     </label>
                                     <input type="text" wire:model.defer="first_name" data-validate-field="first_name"
                                         placeholder="Renz" class="{{ $fieldClass('first_name') }}">
@@ -135,11 +190,11 @@
                                     @enderror
                                 </div>
 
-                                {{-- Last Name --}}
                                 <div>
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                        Last Name <span class="text-red-500">*</span>
+                                        {{ $booking_for === 'someone_else' ? 'Contact Last Name' : 'Last Name' }} <span
+                                            class="text-red-500">*</span>
                                     </label>
                                     <input type="text" wire:model.defer="last_name" data-validate-field="last_name"
                                         placeholder="Rosales" class="{{ $fieldClass('last_name') }}">
@@ -149,21 +204,22 @@
                                     @enderror
                                 </div>
 
-                                {{-- Birth Date --}}
-                                <div>
-                                    <label
-                                        class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                        Birth Date <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="date" wire:model.defer="birth_date" data-validate-field="birth_date"
-                                        max="{{ now()->toDateString() }}" class="{{ $fieldClass('birth_date') }}">
-                                    @error('birth_date')
-                                        <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
-                                            data-error-for="birth_date">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                                @if ($booking_for !== 'someone_else')
+                                    <div>
+                                        <label
+                                            class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                            Birth Date <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="date" wire:model.defer="patient_birth_date"
+                                            data-validate-field="patient_birth_date" max="{{ now()->toDateString() }}"
+                                            class="{{ $fieldClass('patient_birth_date') }}">
+                                        @error('patient_birth_date')
+                                            <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                                data-error-for="patient_birth_date">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                @endif
 
-                                {{-- Contact --}}
                                 <div>
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
@@ -178,7 +234,6 @@
                                     @enderror
                                 </div>
 
-                                {{-- Email --}}
                                 <div class="md:col-span-2">
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
@@ -194,6 +249,78 @@
 
                             </div>
 
+                            @if ($booking_for === 'someone_else')
+                                <div class="mt-8 border-t border-[#e4eff8] pt-6">
+                                <div class="mb-5">
+                                    <p class="text-[.62rem] font-bold uppercase tracking-[.18em] text-[#0086da]">
+                                        Patient Details
+                                    </p>
+                                    <p class="mt-1 text-[.77rem] leading-relaxed text-[#6d899b]">
+                                        Tell us who the appointment is actually for so staff can match or create the
+                                        correct patient record.
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label
+                                                class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                                Patient First Name <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" wire:model.defer="patient_first_name"
+                                                data-validate-field="patient_first_name" placeholder="Jamie"
+                                                class="{{ $fieldClass('patient_first_name') }}">
+                                            @error('patient_first_name')
+                                                <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                                    data-error-for="patient_first_name">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                                Patient Last Name <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" wire:model.defer="patient_last_name"
+                                                data-validate-field="patient_last_name" placeholder="Cruz"
+                                                class="{{ $fieldClass('patient_last_name') }}">
+                                            @error('patient_last_name')
+                                                <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                                    data-error-for="patient_last_name">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                                Patient Birth Date <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="date" wire:model.defer="patient_birth_date"
+                                                data-validate-field="patient_birth_date" max="{{ now()->toDateString() }}"
+                                                class="{{ $fieldClass('patient_birth_date') }}">
+                                            @error('patient_birth_date')
+                                                <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                                    data-error-for="patient_birth_date">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                                Your Relationship to the Patient <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" wire:model.defer="relationship_to_patient"
+                                                data-validate-field="relationship_to_patient" placeholder="Mother, spouse, sibling"
+                                                class="{{ $fieldClass('relationship_to_patient') }}">
+                                            @error('relationship_to_patient')
+                                                <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                                    data-error-for="relationship_to_patient">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                </div>
+                                </div>
+                            @endif
+
                             {{-- Footer note --}}
                             <div
                                 class="mt-8 pt-6 border-t border-[#e4eff8] flex items-start gap-3 text-[.78rem] text-[#7a9db5] leading-relaxed">
@@ -202,7 +329,8 @@
                                     <circle cx="12" cy="12" r="10" />
                                     <path stroke-linecap="square" d="M12 8v4M12 16h.01" />
                                 </svg>
-                                We only collect the details needed to reserve your slot and send you updates.
+                                We only collect the details needed to reserve your slot, identify the patient correctly,
+                                and send appointment updates.
                             </div>
                         </div>
 
@@ -386,11 +514,11 @@
                                 @enderror
                             @endguest
 
-                            <div class="mt-7 border border-[#e4eff8] bg-[#f8fbfe] p-5">
+                            <div class="mt-7 border border-[#e4eff8] bg-[#f8fbfe] p-5" data-validate-group="booking_agreement">
                                 <label class="flex items-start gap-3 cursor-pointer">
                                     <input type="checkbox" wire:model.defer="booking_agreement"
                                         data-validate-field="booking_agreement"
-                                        class="mt-1 h-4 w-4 rounded-none border-[#9fc8e3] text-[#0086da] focus:ring-[#9fc8e3]">
+                                        class="mt-1 h-4 w-4 flex-shrink-0 rounded-none border-[#9fc8e3] text-[#0086da] focus:ring-[#9fc8e3]">
                                     <span class="text-[.8rem] leading-relaxed text-[#3d5a6e]">
                                         I confirm that the details I entered are accurate, and I agree that Tejada
                                         Clinic
@@ -398,14 +526,14 @@
                                     </span>
                                 </label>
                                 @error('booking_agreement')
-                                    <p class="text-[.75rem] text-red-500 mt-2 validation-error"
+                                    <p class="text-[.75rem] text-red-500 mt-3 validation-error"
                                         data-error-for="booking_agreement">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             {{-- Submit --}}
                             <button type="submit"
-                                class="mt-8 w-full inline-flex items-center justify-center gap-[9px] bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:-translate-y-px hover:bg-[#006ab0] disabled:opacity-70 disabled:cursor-not-allowed"
+                                class="mt-8 inline-flex w-full items-center justify-center gap-2 bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:-translate-y-px hover:bg-[#006ab0] disabled:cursor-not-allowed disabled:opacity-70"
                                 wire:loading.attr="disabled" wire:target="bookAppointment">
                                 <span wire:loading.remove wire:target="bookAppointment"
                                     class="inline-flex items-center gap-2">
@@ -417,13 +545,7 @@
                                     Confirm Appointment
                                 </span>
                                 <span wire:loading wire:target="bookAppointment"
-                                    class="inline-flex w-full items-center justify-center gap-2">
-                                    <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-opacity="0.2" stroke-width="4" />
-                                        <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4"
-                                            stroke-linecap="round" />
-                                    </svg>
+                                    class="inline-flex items-center justify-center">
                                     Processing...
                                 </span>
                             </button>
@@ -455,6 +577,17 @@
                                     </div>
                                 </div>
 
+                                {{-- Back to form (top) --}}
+                                <div class="mt-5 mb-6">
+                                    <button type="button" wire:click="cancelGuestOtpStep" data-single-tap
+                                        class="inline-flex items-center gap-[7px] text-[.68rem] font-bold uppercase tracking-[.12em] text-[#7a9db5] transition hover:text-[#0086da]">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
+                                            <path d="M19 12H5M12 5l-7 7 7 7" />
+                                        </svg>
+                                        Back to form
+                                    </button>
+                                </div>
+
                                 <p class="text-[.88rem] leading-relaxed text-[#3d5a6e] mb-2">
                                     We sent a 6-digit code to <strong class="text-[#1a2e3b]">{{ $email }}</strong>.
                                     Enter it below to complete your booking.
@@ -465,18 +598,15 @@
                                         {{ session('otp_success') }}</p>
                                 @endif
 
-                                {{-- Countdown --}}
-                                <div id="otpStatusPanel" class="mt-5 space-y-1 text-[.78rem] text-[#7a9db5]"
+                                {{-- Hidden data panel for JS countdown --}}
+                                <div id="otpStatusPanel" class="hidden"
                                     data-expires-at="{{ $guestEmailOtpExpiresAt }}"
                                     data-cooldown-until="{{ $guestEmailOtpCooldownUntil }}"
                                     data-resends-remaining="{{ $this->guestOtpResendsRemaining }}">
-                                    <p id="otpExpiryCountdown">Code expires in --:--</p>
-                                    <p id="otpResendCountdown">Resend attempts left:
-                                        {{ $this->guestOtpResendsRemaining }}/3</p>
                                 </div>
 
                                 {{-- OTP input + verify --}}
-                                <div class="mt-8 flex flex-col sm:flex-row gap-4 sm:items-end">
+                                <div class="mt-6 flex flex-col sm:flex-row gap-4 sm:items-end">
                                     <div class="flex-1">
                                         <label
                                             class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">One-Time
@@ -488,10 +618,10 @@
                                     </div>
                                     <button type="button" wire:click="verifyGuestEmailOtp" wire:loading.attr="disabled"
                                         data-single-tap wire:target="verifyGuestEmailOtp"
-                                        class="inline-flex h-[50px] items-center justify-center gap-2 bg-[#0086da] px-7 text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0] disabled:opacity-60 disabled:cursor-not-allowed">
+                                        class="relative inline-flex h-[50px] items-center justify-center bg-[#0086da] px-7 text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0] disabled:opacity-60 disabled:cursor-not-allowed">
                                         <span wire:loading.remove wire:target="verifyGuestEmailOtp">Verify & Book</span>
                                         <span wire:loading wire:target="verifyGuestEmailOtp"
-                                            class="inline-flex items-center gap-2">
+                                            class="absolute inset-0 flex items-center justify-center gap-2 bg-[#0086da] px-7">
                                             <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                                                 <circle cx="12" cy="12" r="10" stroke="currentColor"
                                                     stroke-opacity="0.2" stroke-width="4" />
@@ -508,17 +638,14 @@
                                         data-error-for="guestEmailOtp">{{ $message }}</p>
                                 @enderror
 
-                                {{-- Resend + back --}}
-                                <div class="mt-7 flex flex-wrap gap-3">
+                                {{-- Expiry line + Resend button (countdown embedded in label) --}}
+                                <div class="mt-6">
+                                    <p id="otpExpiryText" class="mb-3 text-[.75rem] text-[#7a9db5]">Code expires in --:--</p>
                                     <button type="button" id="otpResendButton" wire:click="resendGuestEmailOtp"
                                         wire:loading.attr="disabled" data-single-tap wire:target="resendGuestEmailOtp"
                                         class="inline-flex h-11 items-center justify-center border border-[#0086da] bg-white px-5 text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#0086da] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed">
-                                        <span wire:loading.remove wire:target="resendGuestEmailOtp">Resend OTP</span>
+                                        <span wire:loading.remove wire:target="resendGuestEmailOtp" id="otpResendLabel">Resend OTP</span>
                                         <span wire:loading wire:target="resendGuestEmailOtp">Sending…</span>
-                                    </button>
-                                    <button type="button" wire:click="cancelGuestOtpStep" data-single-tap
-                                        class="inline-flex h-11 items-center justify-center border border-[#d4e8f5] bg-white px-5 text-[.72rem] font-bold uppercase tracking-[.1em] text-[#1a2e3b] transition hover:bg-[#f0f8fe]">
-                                        ← Back to form
                                     </button>
                                 </div>
 
@@ -634,11 +761,24 @@
             if (token) dismissValidationFor('recaptcha');
         }
 
+        function getRecaptchaApi() {
+            if (typeof grecaptcha === 'undefined' || grecaptcha === null) return null;
+            if (typeof grecaptcha.render === 'function' && typeof grecaptcha.getResponse === 'function') {
+                return grecaptcha;
+            }
+            if (grecaptcha.enterprise && typeof grecaptcha.enterprise.render === 'function' && typeof grecaptcha
+                .enterprise.getResponse === 'function') {
+                return grecaptcha.enterprise;
+            }
+            return null;
+        }
+
         function ensureRecaptcha() {
-            if (typeof grecaptcha === 'undefined') return;
+            const recaptchaApi = getRecaptchaApi();
+            if (!recaptchaApi) return;
             const container = document.getElementById('recaptcha-container');
             if (!container || container.querySelector('iframe') || container.dataset.rendered) return;
-            recaptchaWidgetId = grecaptcha.render(container, {
+            recaptchaWidgetId = recaptchaApi.render(container, {
                 sitekey: container.getAttribute('data-sitekey'),
                 callback: (t) => {
                     void syncRecaptchaToken(t);
@@ -654,10 +794,45 @@
         }
 
         async function setRecaptchaToken() {
-            if (typeof grecaptcha === 'undefined') return;
-            const token = recaptchaWidgetId !== null ? grecaptcha.getResponse(recaptchaWidgetId) : grecaptcha
+            const recaptchaApi = getRecaptchaApi();
+            if (!recaptchaApi) return;
+            const token = recaptchaWidgetId !== null ? recaptchaApi.getResponse(recaptchaWidgetId) : recaptchaApi
                 .getResponse();
             await syncRecaptchaToken(token);
+        }
+
+        async function syncBookingFormStateToLivewire() {
+            const syncFieldValue = async (key, selector, transform = (value) => value) => {
+                const element = document.querySelector(selector);
+                if (!element) return;
+                await @this.set(key, transform(element.value));
+            };
+
+            await syncFieldValue('first_name', '[data-validate-field="first_name"]', value => value.trim());
+            await syncFieldValue('last_name', '[data-validate-field="last_name"]', value => value.trim());
+            await syncFieldValue('patient_birth_date', '[data-validate-field="patient_birth_date"]', value => value.trim());
+            await syncFieldValue('contact_number', '[data-validate-field="contact_number"]', value => value.trim());
+            await syncFieldValue('email', '[data-validate-field="email"]', value => value.trim());
+            await syncFieldValue('patient_first_name', '[data-validate-field="patient_first_name"]', value => value.trim());
+            await syncFieldValue('patient_last_name', '[data-validate-field="patient_last_name"]', value => value.trim());
+            await syncFieldValue('relationship_to_patient', '[data-validate-field="relationship_to_patient"]', value => value
+                .trim());
+            await syncFieldValue('service_id', '[data-validate-field="service_id"]');
+
+            const bookingForInput = document.querySelector('input[name="booking_for"]:checked');
+            if (bookingForInput) {
+                await @this.set('booking_for', bookingForInput.value);
+            }
+
+            const selectedSlotInput = document.querySelector('input[name="selectedSlot"]:checked');
+            if (selectedSlotInput) {
+                await @this.set('selectedSlot', selectedSlotInput.value);
+            }
+
+            const agreementInput = document.querySelector('input[data-validate-field="booking_agreement"]');
+            if (agreementInput) {
+                await @this.set('booking_agreement', !!agreementInput.checked);
+            }
         }
 
         async function submitBookingForm() {
@@ -665,6 +840,7 @@
             bookingSubmitInFlight = true;
             try {
                 if (document.getElementById('recaptcha-container')) await setRecaptchaToken();
+                await syncBookingFormStateToLivewire();
                 await @this.bookAppointment();
             } finally {
                 bookingSubmitInFlight = false;
@@ -685,21 +861,26 @@
         function updateOtpCountdownUi() {
             const panel = document.getElementById('otpStatusPanel');
             if (!panel) return;
-            const expiry = document.getElementById('otpExpiryCountdown');
-            const resend = document.getElementById('otpResendCountdown');
+            const expiryText = document.getElementById('otpExpiryText');
+            const resendLabel = document.getElementById('otpResendLabel');
             const resendBtn = document.getElementById('otpResendButton');
             const expSecs = secondsUntil(panel.dataset.expiresAt || '');
             const coolSecs = secondsUntil(panel.dataset.cooldownUntil || '');
             const remaining = Number(panel.dataset.resendsRemaining || 0);
 
-            if (expiry) expiry.textContent = expSecs > 0 ? `Code expires in ${formatCountdown(expSecs)}` :
-                'Code expired. Request a new OTP.';
-            if (resend) {
-                resend.textContent = remaining < 1 ?
-                    'No resend attempts left.' :
-                    coolSecs > 0 ?
-                    `Resend available in ${coolSecs}s. Attempts left: ${remaining}/3` :
-                    `You can resend now. Attempts left: ${remaining}/3`;
+            if (expiryText) {
+                expiryText.textContent = expSecs > 0
+                    ? `Code expires in ${formatCountdown(expSecs)}`
+                    : 'Code expired. Request a new OTP.';
+            }
+            if (resendLabel) {
+                if (remaining < 1) {
+                    resendLabel.textContent = 'Resend OTP (0/3)';
+                } else if (coolSecs > 0) {
+                    resendLabel.textContent = `Resend OTP (${formatCountdown(coolSecs)})`;
+                } else {
+                    resendLabel.textContent = `Resend OTP (${remaining}/3)`;
+                }
             }
             if (resendBtn) resendBtn.disabled = coolSecs > 0 || remaining < 1 || resendBtn.dataset.tapLocked === '1';
         }
@@ -742,6 +923,159 @@
                     'focus:ring-red-200');
                 el.classList.add('border-[#d4e8f5]', 'focus:border-[#0086da]', 'focus:ring-[#cde8fb]');
             });
+            document.querySelectorAll(`[data-validate-group="${key}"]`).forEach(el => {
+                el.classList.remove('border-red-400');
+                el.classList.add('border-[#e4eff8]');
+            });
+        }
+
+        function showValidationFor(key, message) {
+            document.querySelectorAll(`[data-validate-field="${key}"]`).forEach(el => {
+                el.classList.remove('border-[#d4e8f5]', 'focus:border-[#0086da]', 'focus:ring-[#cde8fb]');
+                el.classList.add('border-red-400', 'focus:border-red-500', 'focus:ring-red-200');
+            });
+            document.querySelectorAll(`[data-validate-group="${key}"]`).forEach(el => {
+                el.classList.remove('border-[#e4eff8]');
+                el.classList.add('border-red-400');
+            });
+
+            let err = document.querySelector(`.validation-error[data-error-for="${key}"]`);
+            if (!err) {
+                const target = document.querySelector(`[data-validate-group="${key}"]`) || document.querySelector(
+                    `[data-validate-field="${key}"]`);
+                if (!target) return;
+                err = document.createElement('p');
+                err.className = 'text-[.75rem] text-red-500 mt-1.5 validation-error';
+                err.dataset.errorFor = key;
+                // If target is a container div, append inside so error renders below children
+                if (target.tagName === 'DIV') {
+                    target.appendChild(err);
+                } else {
+                    target.insertAdjacentElement('afterend', err);
+                }
+            }
+
+            err.textContent = message;
+            err.classList.remove('hidden');
+        }
+
+        function isElementVisible(element) {
+            if (!element) return false;
+            return !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
+        }
+
+        function getFieldElements(key) {
+            return Array.from(document.querySelectorAll(`[data-validate-field="${key}"]`))
+                .filter(isElementVisible);
+        }
+
+        function validateBookingFormBeforeSubmit() {
+            const validators = [{
+                    key: 'first_name',
+                    message: 'Please enter the first name.',
+                    validate: () => (document.querySelector('[data-validate-field="first_name"]')?.value || '').trim() !== '',
+                },
+                {
+                    key: 'last_name',
+                    message: 'Please enter the last name.',
+                    validate: () => (document.querySelector('[data-validate-field="last_name"]')?.value || '').trim() !== '',
+                },
+                {
+                    key: 'patient_birth_date',
+                    message: 'Please provide the patient birth date.',
+                    validate: () => {
+                        const value = (document.querySelector('[data-validate-field="patient_birth_date"]')?.value || '').trim();
+                        if (value === '') return false;
+                        return value <= new Date().toISOString().slice(0, 10);
+                    },
+                },
+                {
+                    key: 'contact_number',
+                    message: 'Contact number must be exactly 11 digits.',
+                    validate: () => /^\d{11}$/.test((document.querySelector('[data-validate-field="contact_number"]')?.value || '').trim()),
+                },
+                {
+                    key: 'email',
+                    message: 'Please enter a valid email address.',
+                    validate: () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((document.querySelector('[data-validate-field="email"]')?.value || '').trim()),
+                },
+                {
+                    key: 'patient_first_name',
+                    message: 'Please enter the patient first name.',
+                    validate: () => (document.querySelector('[data-validate-field="patient_first_name"]')?.value || '').trim() !== '',
+                },
+                {
+                    key: 'patient_last_name',
+                    message: 'Please enter the patient last name.',
+                    validate: () => (document.querySelector('[data-validate-field="patient_last_name"]')?.value || '').trim() !== '',
+                },
+                {
+                    key: 'relationship_to_patient',
+                    message: 'Please tell us your relationship to the patient.',
+                    validate: () => (document.querySelector('[data-validate-field="relationship_to_patient"]')?.value || '').trim() !== '',
+                },
+                {
+                    key: 'service_id',
+                    message: 'Please select a service.',
+                    validate: () => (document.querySelector('[data-validate-field="service_id"]')?.value || '').trim() !== '',
+                },
+                {
+                    key: 'selectedDate',
+                    message: 'Please pick a date.',
+                    validate: () => (selectedDate || document.querySelector('[data-validate-field="selectedDate"]')?.value || '').trim() !== '',
+                },
+                {
+                    key: 'selectedSlot',
+                    message: 'Please select a time slot.',
+                    validate: () => document.querySelector('input[name="selectedSlot"]:checked') !== null,
+                },
+                {
+                    key: 'booking_agreement',
+                    message: 'Please confirm the booking agreement before submitting your request.',
+                    validate: () => !!document.querySelector('[data-validate-field="booking_agreement"]')?.checked,
+                },
+                {
+                    key: 'recaptcha',
+                    message: 'Please complete the CAPTCHA verification.',
+                    validate: () => {
+                        if (!document.getElementById('recaptcha-container')) return true;
+                        const recaptchaApi = getRecaptchaApi();
+                        const widgetResponse = recaptchaApi ? (recaptchaWidgetId !== null ? recaptchaApi.getResponse(
+                            recaptchaWidgetId) : recaptchaApi.getResponse()) : '';
+                        return ((document.getElementById('recaptchaToken')?.value || '').trim() !== '') || (
+                            (widgetResponse || '').trim() !== '');
+                    },
+                }
+            ];
+
+            let firstInvalidKey = null;
+
+            validators.forEach((validator) => {
+                const fieldElements = getFieldElements(validator.key);
+                if (fieldElements.length === 0 && validator.key !== 'selectedSlot' && validator.key !== 'recaptcha') {
+                    return;
+                }
+
+                if (validator.validate()) {
+                    dismissValidationFor(validator.key);
+                    return;
+                }
+
+                showValidationFor(validator.key, validator.message);
+                if (!firstInvalidKey) {
+                    firstInvalidKey = validator.key;
+                }
+            });
+
+            if (firstInvalidKey) {
+                const target = document.querySelector(`[data-validate-field="${firstInvalidKey}"]`);
+                target?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+
+            return firstInvalidKey === null;
         }
 
         function bindValidationDismissal() {
@@ -758,11 +1092,13 @@
                     dismissValidationFor('selectedSlot');
                     return;
                 }
-                const k = e.target?.getAttribute?.('data-validate-field');
+                const k = e.target?.getAttribute?.('data-validate-field')
+                    || e.target?.closest?.('[data-validate-field]')?.getAttribute?.('data-validate-field');
                 if (k) dismissValidationFor(k);
             });
             form.addEventListener('submit', e => {
                 e.preventDefault();
+                if (!validateBookingFormBeforeSubmit()) return;
                 void submitBookingForm();
             });
         }
@@ -779,9 +1115,10 @@
         });
 
         document.addEventListener('reset-recaptcha', () => {
-            if (typeof grecaptcha?.reset === 'function') {
+            const recaptchaApi = getRecaptchaApi();
+            if (typeof recaptchaApi?.reset === 'function') {
                 try {
-                    recaptchaWidgetId !== null ? grecaptcha.reset(recaptchaWidgetId) : grecaptcha.reset();
+                    recaptchaWidgetId !== null ? recaptchaApi.reset(recaptchaWidgetId) : recaptchaApi.reset();
                 } catch {}
             }
             void syncRecaptchaToken('');
