@@ -23,8 +23,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Canonical aliases under the new namespaced appointment components.
         Livewire::component('appointment.appointment-calendar', AppointmentCalendar::class);
         Livewire::component('appointment.appointment-requests', AppointmentRequests::class);
+        // Backward-compatible aliases for stale snapshots/browser state.
+        Livewire::component('appointment-calendar', AppointmentCalendar::class);
+        Livewire::component('appointment-requests', AppointmentRequests::class);
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
