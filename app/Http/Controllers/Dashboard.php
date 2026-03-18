@@ -251,17 +251,18 @@ class Dashboard extends Controller
         }
 
         $todayScheduleAppointments = DB::table('appointments')
-            ->join('patients', 'appointments.patient_id', '=', 'patients.id')
-            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('services', 'appointments.service_id', '=', 'services.id')
             ->whereDate('appointments.appointment_date', $today)
             ->where('appointments.status', '!=', 'Pending')
             ->orderBy('appointments.appointment_date', 'asc')
             ->select(
+                'appointments.id',
                 'appointments.appointment_date',
                 'appointments.status',
-                'patients.first_name',
-                'patients.last_name',
-                'services.service_name'
+                DB::raw("COALESCE(patients.first_name, appointments.requested_patient_first_name, appointments.requester_first_name, 'Unknown') as first_name"),
+                DB::raw("COALESCE(patients.last_name, appointments.requested_patient_last_name, appointments.requester_last_name, 'Patient') as last_name"),
+                DB::raw("COALESCE(services.service_name, 'General Consultation') as service_name")
             )
             ->get();
 

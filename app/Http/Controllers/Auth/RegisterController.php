@@ -25,7 +25,7 @@ class RegisterController extends Controller
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'email' => 'required|string|email|max:255|unique:users',
-            'mobile_number' => 'nullable|string|max:20',
+            'mobile_number' => 'required|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'g-recaptcha-response' => 'required',
         ], [
@@ -69,7 +69,7 @@ class RegisterController extends Controller
             'first_name' => $firstName,
             'last_name' => $lastName,
             'email' => $request->email,
-            'mobile_number' => $mobileNumber !== '' ? $mobileNumber : null,
+            'mobile_number' => $mobileNumber,
             'password' => Hash::make($request->password),
             'role' => (int) $patientRoleId,
             'verification_token' => $token,

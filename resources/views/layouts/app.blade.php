@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tejadent Clinic</title>
-    <x-brand.meta />
+    <meta name="theme-color" content="#0086DA">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.svg') }}">
     @vite('resources/css/app.css')
     @vite('resources/js/app.js')
     @livewireStyles
@@ -28,4 +30,3 @@
 </body>
 
 </html>
-

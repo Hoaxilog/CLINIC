@@ -64,6 +64,12 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "verify": [
+            "@php artisan config:clear --ansi",
+            "@php artisan view:clear --ansi",
+            "@php artisan view:cache --ansi",
+            "@php artisan test --stop-on-failure"
         ]
     },
     "extra": {

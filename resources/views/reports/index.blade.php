@@ -166,6 +166,16 @@
                         <h3 class="heading">Appointment Report</h3>
                         <a class="btn-outline" target="_blank" href="{{ route('reports.print', ['reportType' => 'appointments', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo, 'appointment_status' => $appointmentStatus, 'appointment_service' => $appointmentService]) }}">Print Appointment Report</a>
                     </div>
+                    @php
+                        $appointmentCount = ($appointmentRows ?? collect())->count();
+                        $totalPaymentMade = (float) (($appointmentRows ?? collect())->sum('payment_made') ?? 0);
+                        $totalTreatmentCost = (float) (($appointmentRows ?? collect())->sum('treatment_cost') ?? 0);
+                        $netFromTreatment = $totalPaymentMade - $totalTreatmentCost;
+                    @endphp
+                    <p class="desc" style="margin-top:.55rem;">
+                        Findings: {{ number_format($appointmentCount) }} records, payment made PHP {{ number_format($totalPaymentMade, 2) }},
+                        treatment cost PHP {{ number_format($totalTreatmentCost, 2) }}, net PHP {{ number_format($netFromTreatment, 2) }}.
+                    </p>
                     <form method="GET" action="{{ route('reports.index') }}" class="toolbar" style="margin:.8rem 0;">
                         <input type="hidden" name="section" value="appointments">
                         <input type="hidden" name="range" value="{{ $range }}">
@@ -179,39 +189,26 @@
                     </form>
                     <div class="table-wrap">
                         <table class="r-table">
-                            <thead><tr><th>Appointment ID</th><th>Patient Name</th><th>Service</th><th>Appointment Date</th><th>Status</th></tr></thead>
+                            <thead><tr><th>Appointment ID</th><th>Patient Name</th><th>Service</th><th>Treatment Performed</th><th>Appointment Date</th><th>Status</th><th>Payment Made</th></tr></thead>
                             <tbody>
                                 @forelse ($appointmentRows as $row)
                                     <tr>
                                         <td>{{ $row->id }}</td>
                                         <td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
                                         <td>{{ $row->service_name ?? 'N/A' }}</td>
+                                        <td>{{ $row->treatment_performed ?: 'N/A' }}</td>
                                         <td>{{ $row->appointment_date ? \Carbon\Carbon::parse($row->appointment_date)->format('M d, Y h:i A') : '-' }}</td>
                                         <td>{{ $row->status }}</td>
+                                        <td>PHP {{ number_format((float) ($row->payment_made ?? 0), 2) }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="5">No records found.</td></tr>
+                                    <tr><td colspan="7">No records found.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
                 </section>
 
-                <div class="grid-2">
-                    <section class="report-card">
-                        <div class="heading-row"><h3 class="heading">Completed Appointment Report</h3><a class="btn-outline" target="_blank" href="{{ route('reports.print', ['reportType' => 'completed', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo]) }}">Print Completed Treatments</a></div>
-                        <div class="table-wrap" style="margin-top:.8rem;">
-                            <table class="r-table"><thead><tr><th>Appointment ID</th><th>Patient Name</th><th>Service</th><th>Appointment Date</th><th>Status</th></tr></thead><tbody>@forelse ($completedRows as $row)<tr><td>{{ $row->id }}</td><td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td><td>{{ $row->service_name ?? 'N/A' }}</td><td>{{ $row->appointment_date ? \Carbon\Carbon::parse($row->appointment_date)->format('M d, Y h:i A') : '-' }}</td><td>{{ $row->status }}</td></tr>@empty<tr><td colspan="5">No records found.</td></tr>@endforelse</tbody></table>
-                        </div>
-                    </section>
-
-                    <section class="report-card">
-                        <div class="heading-row"><h3 class="heading">Cancelled Appointment Report</h3><a class="btn-outline" target="_blank" href="{{ route('reports.print', ['reportType' => 'cancelled', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo]) }}">Print Cancellation Report</a></div>
-                        <div class="table-wrap" style="margin-top:.8rem;">
-                            <table class="r-table"><thead><tr><th>Appointment ID</th><th>Patient Name</th><th>Service</th><th>Appointment Date</th><th>Status</th></tr></thead><tbody>@forelse ($cancelledRows as $row)<tr><td>{{ $row->id }}</td><td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td><td>{{ $row->service_name ?? 'N/A' }}</td><td>{{ $row->appointment_date ? \Carbon\Carbon::parse($row->appointment_date)->format('M d, Y h:i A') : '-' }}</td><td>{{ $row->status }}</td></tr>@empty<tr><td colspan="5">No records found.</td></tr>@endforelse</tbody></table>
-                        </div>
-                    </section>
-                </div>
             @endif
 
             @if ($section === 'printable')
@@ -221,9 +218,6 @@
                     <div class="print-grid" style="margin-top:.9rem;">
                         <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'patients', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'patient_from' => $patientRegFrom, 'patient_to' => $patientRegTo, 'patient_gender' => $patientGender]) }}">Print Patient Report</a>
                         <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'appointments', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo, 'appointment_status' => $appointmentStatus, 'appointment_service' => $appointmentService]) }}">Print Appointment Report</a>
-                        <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'completed', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo]) }}">Print Completed Treatments</a>
-                        <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'cancelled', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo]) }}">Print Cancellation Report</a>
-                        <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'services', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate]) }}">Print Service Summary</a>
                         <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'monthly-summary', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate]) }}">Print Monthly Clinic Summary</a>
                     </div>
                 </section>

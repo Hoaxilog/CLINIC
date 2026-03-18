@@ -199,7 +199,7 @@ class AppointmentCalendar extends Component
         }
 
         $requestedAppointmentId = (int) request()->query('appointment', 0);
-        if ($requestedAppointmentId > 0 && $this->activeTab === 'pending' && Auth::user()?->role !== 3) {
+        if ($requestedAppointmentId > 0 && Auth::user()?->role !== 3) {
             $requestedAppointment = DB::table('appointments')
                 ->select('id', 'appointment_date')
                 ->where('id', $requestedAppointmentId)

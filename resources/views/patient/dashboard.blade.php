@@ -331,57 +331,6 @@
                 {{-- ── Right sidebar ── --}}
                 <aside class="space-y-6">
 
-                    {{-- Account --}}
-                    <article class="dash-reveal rounded-sm border border-[#e4eff8] bg-white p-6">
-                        <div
-                            class="mb-4 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
-                            My Account
-                        </div>
-                        <h2 class="text-[1.3rem] leading-[1.15] font-extrabold tracking-[-.02em] text-[#1a2e3b]">Account
-                            Details</h2>
-
-                        <div class="mt-4 space-y-3">
-                            {{-- Readiness --}}
-                            <div class="rounded-sm border border-[#e4eff8] bg-[#f6fafd] p-4">
-                                <div class="flex items-center justify-between gap-2">
-                                    <p class="text-sm font-semibold text-[#1a2e3b]">Profile {{ $profileReadyPercent }}%
-                                        ready</p>
-                                    <span
-                                        class="inline-flex shrink-0 rounded-sm border px-2.5 py-1 text-[11px] font-semibold {{ $profileReadyPercent === 100 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700' }}">{{ $profileReadyLabel }}</span>
-                                </div>
-                                <div class="mt-3 h-1.5 w-full bg-[#e4eff8]">
-                                    <div class="h-full transition-all duration-700 {{ $profileReadyPercent === 100 ? 'bg-emerald-400' : 'bg-[#0086da]' }}"
-                                        style="width: {{ $profileReadyPercent }}%"></div>
-                                </div>
-                                <a href="{{ route('profile.index') }}"
-                                    class="mt-4 inline-flex items-center gap-[9px] whitespace-nowrap rounded-sm bg-[#0086da] px-6 py-[11px] text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
-                                    Update Account
-                                </a>
-                            </div>
-
-                            {{-- Details grid --}}
-                            <div class="grid grid-cols-1 gap-[2px] bg-[#e4eff8]">
-                                <div class="flex items-center justify-between bg-[#f6fafd] px-4 py-3">
-                                    <span
-                                        class="text-[.72rem] font-semibold uppercase tracking-[.1em] text-[#7a9db5]">Name</span>
-                                    <span class="text-sm font-semibold text-[#1a2e3b]">{{ $displayName }}</span>
-                                </div>
-                                <div class="flex items-center justify-between bg-[#f6fafd] px-4 py-3">
-                                    <span
-                                        class="text-[.72rem] font-semibold uppercase tracking-[.1em] text-[#7a9db5]">Email</span>
-                                    <span
-                                        class="max-w-[160px] truncate text-sm font-semibold text-[#1a2e3b]">{{ $user->email ?? 'N/A' }}</span>
-                                </div>
-                                <div class="flex items-center justify-between bg-[#f6fafd] px-4 py-3">
-                                    <span
-                                        class="text-[.72rem] font-semibold uppercase tracking-[.1em] text-[#7a9db5]">Mobile</span>
-                                    <span
-                                        class="max-w-[160px] truncate text-sm font-semibold text-[#1a2e3b]">{{ $user->mobile_number ?? 'N/A' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
-
                 </aside>
             </section>
         </div>

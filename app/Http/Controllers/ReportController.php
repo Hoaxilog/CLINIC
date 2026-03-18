@@ -10,6 +10,16 @@ use Carbon\CarbonPeriod;
 
 class ReportController extends Controller
 {
+    private function treatmentAggregateExpression(): string
+    {
+        return match (DB::getDriverName()) {
+            'pgsql' => "STRING_AGG(DISTINCT NULLIF(TRIM(treatment), ''), ', ')",
+            'sqlite' => "GROUP_CONCAT(DISTINCT NULLIF(TRIM(treatment), ''))",
+            'sqlsrv' => "STRING_AGG(NULLIF(LTRIM(RTRIM(treatment)), ''), ', ')",
+            default => "GROUP_CONCAT(DISTINCT NULLIF(TRIM(treatment), '') ORDER BY treatment SEPARATOR ', ')",
+        };
+    }
+
     private function resolveRange(Request $request): array
     {
         $range = $request->query('range', 'month');
@@ -276,9 +286,25 @@ class ReportController extends Controller
         $appointmentStatus = $request->query('appointment_status');
         $appointmentService = $request->query('appointment_service');
 
+        $treatmentAggregateExpr = $this->treatmentAggregateExpression();
+
+        $indexPaymentByPatientDate = DB::table('treatment_records')
+            ->select(
+                'patient_id',
+                DB::raw('DATE(created_at) as payment_date'),
+                DB::raw('SUM(COALESCE(amount_charged, 0)) as payment_made'),
+                DB::raw('SUM(COALESCE(cost_of_treatment, 0)) as treatment_cost'),
+                DB::raw("COALESCE({$treatmentAggregateExpr}, '') as treatment_performed")
+            )
+            ->groupBy('patient_id', DB::raw('DATE(created_at)'));
+
         $appointmentBase = DB::table('appointments')
             ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
             ->leftJoin('services', 'appointments.service_id', '=', 'services.id')
+            ->leftJoinSub($indexPaymentByPatientDate, 'payments', function ($join) {
+                $join->on('payments.patient_id', '=', 'appointments.patient_id')
+                    ->whereRaw('DATE(appointments.appointment_date) = payments.payment_date');
+            })
             ->select(
                 'appointments.id',
                 'appointments.appointment_date',
@@ -286,7 +312,10 @@ class ReportController extends Controller
                 'services.service_name',
                 'patients.first_name',
                 'patients.middle_name',
-                'patients.last_name'
+                'patients.last_name',
+                DB::raw('COALESCE(payments.payment_made, 0) as payment_made'),
+                DB::raw('COALESCE(payments.treatment_cost, 0) as treatment_cost'),
+                DB::raw("COALESCE(payments.treatment_performed, 'N/A') as treatment_performed")
             )
             ->whereBetween('appointments.appointment_date', [
                 Carbon::parse($appointmentFrom)->startOfDay(),
@@ -376,7 +405,7 @@ class ReportController extends Controller
     {
         [$range, $startDate, $endDate, $rangeLabel, $fromDate, $toDate] = $this->resolveRange($request);
 
-        $allowedTypes = ['patients', 'appointments', 'completed', 'cancelled', 'services', 'monthly-summary'];
+        $allowedTypes = ['patients', 'appointments', 'monthly-summary'];
         abort_unless(in_array($reportType, $allowedTypes, true), 404);
 
         $statusData = DB::table('appointments')
@@ -425,15 +454,31 @@ class ReportController extends Controller
 
             $reportTitle = 'Patient Registration Report';
             $columns = ['Patient ID', 'Full Name', 'Gender', 'Birth Date', 'Mobile Number', 'Date Registered'];
-        } elseif ($reportType === 'appointments' || $reportType === 'completed' || $reportType === 'cancelled') {
+        } elseif ($reportType === 'appointments') {
             $appointmentFrom = $request->query('appointment_from') ?: $startDate->toDateString();
             $appointmentTo = $request->query('appointment_to') ?: $endDate->toDateString();
             $appointmentStatus = $request->query('appointment_status');
             $appointmentService = $request->query('appointment_service');
 
+            $treatmentAggregateExpr = $this->treatmentAggregateExpression();
+
+            $paymentByPatientDate = DB::table('treatment_records')
+                ->select(
+                    'patient_id',
+                    DB::raw('DATE(created_at) as payment_date'),
+                    DB::raw('SUM(COALESCE(amount_charged, 0)) as payment_made'),
+                    DB::raw('SUM(COALESCE(cost_of_treatment, 0)) as treatment_cost'),
+                    DB::raw("COALESCE({$treatmentAggregateExpr}, '') as treatment_performed")
+                )
+                ->groupBy('patient_id', DB::raw('DATE(created_at)'));
+
             $appointmentBase = DB::table('appointments')
                 ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
                 ->leftJoin('services', 'appointments.service_id', '=', 'services.id')
+                ->leftJoinSub($paymentByPatientDate, 'payments', function ($join) {
+                    $join->on('payments.patient_id', '=', 'appointments.patient_id')
+                        ->whereRaw('DATE(appointments.appointment_date) = payments.payment_date');
+                })
                 ->select(
                     'appointments.id',
                     'appointments.appointment_date',
@@ -441,46 +486,24 @@ class ReportController extends Controller
                     'services.service_name',
                     'patients.first_name',
                     'patients.middle_name',
-                    'patients.last_name'
+                    'patients.last_name',
+                    DB::raw('COALESCE(payments.payment_made, 0) as payment_made'),
+                    DB::raw('COALESCE(payments.treatment_cost, 0) as treatment_cost'),
+                    DB::raw("COALESCE(payments.treatment_performed, 'N/A') as treatment_performed")
                 )
                 ->whereBetween('appointments.appointment_date', [
                     Carbon::parse($appointmentFrom)->startOfDay(),
                     Carbon::parse($appointmentTo)->endOfDay(),
                 ]);
 
-            if ($reportType === 'appointments') {
-                $rows = (clone $appointmentBase)
-                    ->when($appointmentStatus, fn ($query) => $query->where('appointments.status', $appointmentStatus))
-                    ->when($appointmentService, fn ($query) => $query->where('appointments.service_id', $appointmentService))
-                    ->orderByDesc('appointments.appointment_date')
-                    ->get();
-                $reportTitle = 'Appointment Report';
-            } elseif ($reportType === 'completed') {
-                $rows = (clone $appointmentBase)
-                    ->where('appointments.status', 'Completed')
-                    ->orderByDesc('appointments.appointment_date')
-                    ->get();
-                $reportTitle = 'Completed Treatments Report';
-            } else {
-                $rows = (clone $appointmentBase)
-                    ->where('appointments.status', 'Cancelled')
-                    ->orderByDesc('appointments.appointment_date')
-                    ->get();
-                $reportTitle = 'Cancelled Appointment Report';
-            }
-
-            $columns = ['Appointment ID', 'Patient Name', 'Service', 'Appointment Date', 'Status'];
-        } elseif ($reportType === 'services') {
-            $rows = DB::table('appointments')
-                ->join('services', 'appointments.service_id', '=', 'services.id')
-                ->select('services.service_name', DB::raw('count(*) as total'))
-                ->whereBetween('appointment_date', [$startDate, $endDate])
-                ->groupBy('services.service_name')
-                ->orderByDesc('total')
+            $rows = (clone $appointmentBase)
+                ->when($appointmentStatus, fn ($query) => $query->where('appointments.status', $appointmentStatus))
+                ->when($appointmentService, fn ($query) => $query->where('appointments.service_id', $appointmentService))
+                ->orderByDesc('appointments.appointment_date')
                 ->get();
+            $reportTitle = 'Appointment Report';
 
-            $reportTitle = 'Service Utilization Summary';
-            $columns = ['Service', 'Appointment Count'];
+            $columns = ['Appointment ID', 'Patient Name', 'Service', 'Treatment Performed', 'Appointment Date', 'Status', 'Payment Made'];
         } else {
             $reportTitle = 'Monthly Clinic Summary';
             $columns = ['Metric', 'Value'];

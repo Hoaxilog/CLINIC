@@ -10,7 +10,7 @@
         </a>
     </div>
 
-    <div class="grid grid-cols-1 gap-4">
+    <div class="grid max-h-[520px] grid-cols-1 gap-4 overflow-y-auto pr-1">
         @forelse ($cancelledAppointments as $appointment)
             <article wire:key="cancelled-appointment-{{ $appointment->id }}"
                 class="border border-rose-100 bg-rose-50/50 p-4">

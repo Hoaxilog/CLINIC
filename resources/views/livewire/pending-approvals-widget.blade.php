@@ -1,4 +1,4 @@
-<section class="min-h-[476px] bg-white border border-gray-100 rounded-none shadow-sm" wire:poll.15s="loadPendingApprovals">
+<section class="h-[420px] bg-white border border-gray-100 rounded-none shadow-sm" wire:poll.15s="loadPendingApprovals">
     <div class="flex items-center justify-between p-5 border-b border-gray-100">
         <div>
             <h2 class="text-lg font-semibold text-gray-900">Pending Appointment Requests</h2>
@@ -10,9 +10,9 @@
         </a>
     </div>
 
-    <div class="min-h-[392px] overflow-x-auto">
+    <div class="h-[336px] overflow-auto">
         <table class="min-w-full text-sm">
-            <thead class="bg-gray-50/80 text-xs uppercase tracking-wide text-gray-500">
+            <thead class="sticky top-0 bg-gray-50/95 text-xs uppercase tracking-wide text-gray-500">
                 <tr>
                     <th class="px-5 py-3 text-left">Patient</th>
                     <th class="px-5 py-3 text-left">Appointment Date</th>
@@ -29,11 +29,6 @@
                                 <span class="block font-semibold text-gray-900">
                                     {{ $pending->last_name }}, {{ $pending->first_name }}
                                 </span>
-                                @if ($this->appointmentPatientBirthDateDisplay($pending))
-                                    <span class="block text-xs text-gray-500">
-                                        Birth date: {{ $this->appointmentPatientBirthDateDisplay($pending) }}
-                                    </span>
-                                @endif
                                 @if ($this->appointmentHasSeparateRequester($pending))
                                     <span class="mt-1 block text-xs text-blue-700">
                                         Booked by {{ $this->appointmentRequesterDisplayName($pending) ?: 'Requester' }}

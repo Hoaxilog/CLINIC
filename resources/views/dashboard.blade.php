@@ -184,9 +184,7 @@
                             {{ $isAdminDashboard ? 'Clinic-wide appointment visibility for scheduling and oversight.' : ($isDentistDashboard ? 'Today\'s booked patients and treatment flow.' : 'Today\'s booked patients and front-desk appointment flow.') }}
                         </p>
                     </div>
-                    <a href="{{ route('appointment.calendar') }}"
-                        class="text-xs font-semibold uppercase tracking-[0.14em] text-[#0086DA]">Open Calendar</a>
-                </div>
+                    </div>
 
                 <div class="max-h-[380px] overflow-auto border border-gray-100">
                     <table class="min-w-full text-sm">
@@ -196,6 +194,7 @@
                                 <th class="px-4 py-3 text-left">Patient Name</th>
                                 <th class="px-4 py-3 text-left">Service</th>
                                 <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-left">Quick Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 bg-white">
@@ -216,6 +215,12 @@
                                     } elseif ($status === 'cancelled') {
                                         $badgeClass = 'bg-rose-50 text-rose-700';
                                     }
+
+                                    $scheduleDate = \Carbon\Carbon::parse($appt->appointment_date)->toDateString();
+                                    $viewSlotParams = ['date' => $scheduleDate];
+                                    if (isset($appt->id)) {
+                                        $viewSlotParams['appointment'] = $appt->id;
+                                    }
                                 @endphp
                                 <tr>
                                     <td class="px-4 py-3 font-semibold text-gray-900">
@@ -227,10 +232,16 @@
                                         <span
                                             class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $badgeClass }}">{{ $appt->status }}</span>
                                     </td>
+                                    <td class="px-4 py-3">
+                                        <a href="{{ route('appointment.calendar', $viewSlotParams) }}"
+                                            class="inline-flex whitespace-nowrap border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-800 transition hover:border-[#0086DA] hover:text-[#0086DA]">
+                                            View Slot
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">No appointments scheduled today.</td>
+                                    <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">No appointments scheduled today.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -351,24 +362,8 @@
             </section>
         </div>
 
-        <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <section id="status-breakdown" class="border border-gray-200 bg-white p-6 shadow-sm">
-                <div class="mb-4">
-                    <h2 class="text-lg font-bold text-gray-900">Appointment Status Today</h2>
-                    <p class="mt-1 text-xs text-gray-500">
-                        {{ $isAdminDashboard ? 'A clinic-wide status snapshot for oversight and reporting.' : ($isDentistDashboard ? 'A quick treatment-flow snapshot for the day.' : 'A quick appointment-flow snapshot for the day.') }}
-                    </p>
-                </div>
-                <div id="statusChartWrap" class="relative min-h-[260px] w-full">
-                    <canvas id="dashboardStatusTodayChart"></canvas>
-                </div>
-                <div id="statusChartEmpty"
-                    class="hidden border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm font-medium text-gray-500">
-                    No appointments recorded today
-                </div>
-            </section>
-
-            @if ($isDentistDashboard || $isAdminDashboard)
+        @if ($isDentistDashboard || $isAdminDashboard)
+            <div class="mt-6">
                 <section id="recent-activity" class="border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="mb-4">
                         <h2 class="text-lg font-bold text-gray-900">{{ $isAdminDashboard ? 'Recent Activity & Audit Trail' : 'Recent Activity' }}</h2>
@@ -404,42 +399,13 @@
                         </table>
                     </div>
                 </section>
-            @else
-                <section class="border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4">
-                        <h2 class="text-lg font-bold text-gray-900">Appointment Overview</h2>
-                        <p class="mt-1 text-xs text-gray-500">Track today’s clinic movement while handling patient cancellations and rebooking.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <a href="{{ route('queue') }}"
-                            class="block border border-amber-100 bg-amber-50 p-4 transition hover:border-amber-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Queue Load</div>
-                            <div class="mt-2 text-3xl font-bold text-amber-800">{{ $queueLoadCount ?? 0 }}</div>
-                            <p class="mt-1 text-xs text-amber-700/80">Waiting {{ $waitingPatientsCount ?? 0 }} · Arrived {{ $arrivedPatientsCount ?? 0 }}</p>
-                        </a>
-
-                        <a href="{{ route('appointment.calendar') }}"
-                            class="block border border-sky-100 bg-sky-50 p-4 transition hover:border-sky-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">Today's Appointments</div>
-                            <div class="mt-2 text-3xl font-bold text-sky-800">{{ $todayAppointmentsCount ?? 0 }}</div>
-                            <p class="mt-1 text-xs text-sky-700/80">All active booked appointments today.</p>
-                        </a>
-                    </div>
-                </section>
-            @endif
-        </div>
-
+            </div>
+        @endif
         <livewire:patient-form-controller.patient-form-modal />
-
-        <div id="dashboard-chart-data" data-status-labels='@json($statusLabels ?? [])'
-            data-status-counts='@json($statusCounts ?? [])' class="hidden">
-        </div>
     </main>
 @endsection
 
 @push('script')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const addPatientQuickAction = document.getElementById('addPatientQuickAction');
@@ -450,58 +416,6 @@
                     }
                 });
             }
-
-            const dataEl = document.getElementById('dashboard-chart-data');
-            const statusCtx = document.getElementById('dashboardStatusTodayChart');
-            const statusChartWrap = document.getElementById('statusChartWrap');
-            const statusChartEmpty = document.getElementById('statusChartEmpty');
-
-            if (!dataEl || !statusCtx || typeof Chart === 'undefined') {
-                return;
-            }
-
-            const statusLabels = JSON.parse(dataEl.dataset.statusLabels || '[]');
-            const statusCounts = JSON.parse(dataEl.dataset.statusCounts || '[]').map((value) => Number(value || 0));
-            const totalStatusCount = statusCounts.reduce((sum, value) => sum + value, 0);
-
-            if (totalStatusCount === 0) {
-                if (statusChartWrap) {
-                    statusChartWrap.classList.add('hidden');
-                }
-                if (statusChartEmpty) {
-                    statusChartEmpty.classList.remove('hidden');
-                }
-                return;
-            }
-
-            new Chart(statusCtx.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: statusLabels,
-                    datasets: [{
-                        data: statusCounts,
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#06b6d4', '#10b981', '#16a34a', '#ef4444'],
-                        borderWidth: 0,
-                        hoverOffset: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 10,
-                                boxHeight: 10,
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                padding: 14
-                            }
-                        }
-                    }
-                }
-            });
         });
     </script>
 @endpush

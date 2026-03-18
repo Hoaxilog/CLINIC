@@ -95,11 +95,8 @@
                         <div class="flex flex-col gap-3 sm:flex-row">
                             <input type="date" name="date" value="{{ $selectedDateValue }}"
                                 min="{{ now()->toDateString() }}"
+                                onchange="this.form.submit()"
                                 class="w-full border border-[#d4e8f5] bg-white px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb]">
-                            <button type="submit"
-                                class="inline-flex shrink-0 items-center justify-center bg-[#0086da] px-6 py-3 text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
-                                Check Slots
-                            </button>
                         </div>
                     </form>
 
