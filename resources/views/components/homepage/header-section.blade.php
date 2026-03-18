@@ -85,7 +85,7 @@
 
         @if (!$isPatientUser)
             <nav class="hidden items-center gap-9 lg:flex">
-                @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
+                @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Contact' => 'contact'] as $label => $id)
                     <a href="/home#{{ $id }}"
                         class="booking-nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">{{ $label }}</a>
                 @endforeach
@@ -119,11 +119,11 @@
                 </div>
             @else
                 <a href="{{ $guestSecondaryRoute }}"
-                    class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition duration-200 hover:-translate-y-px hover:bg-[#0086da] hover:text-white">
+                    class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da]">
                     {{ $guestSecondaryLabel }}
                 </a>
                 <a href="{{ route('book') }}"
-                    class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:-translate-y-px hover:bg-[#006ab0]">
+                    class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white">
                     Book Now
                 </a>
             @endif
@@ -149,13 +149,13 @@
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
-                            class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap border border-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition duration-200 hover:bg-[#0086da] hover:text-white">
+                            class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap border border-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da]">
                             Logout
                         </button>
                     </form>
                 </div>
             @else
-                @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
+                @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Contact' => 'contact'] as $label => $id)
                     <a href="/home#{{ $id }}"
                         class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">{{ $label }}</a>
                 @endforeach
@@ -163,7 +163,7 @@
                     class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">{{ $guestSecondaryLabel }}</a>
                 <div class="px-7 pt-5 pb-6">
                     <a href="{{ route('book') }}"
-                        class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:bg-[#006ab0]">Book
+                        class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white">Book
                         Appointment</a>
                 </div>
             @endif
@@ -222,3 +222,5 @@
         });
     });
 </script>
+
+

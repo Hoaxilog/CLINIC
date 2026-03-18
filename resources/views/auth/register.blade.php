@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - TEJADENT</title>
+    <x-brand.meta />
     @vite('resources/css/app.css')
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
@@ -161,3 +162,4 @@
 </body>
 
 </html>
+

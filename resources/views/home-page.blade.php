@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tejada Clinic – Dental Care, Diliman QC</title>
+    <x-brand.meta />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -132,7 +133,7 @@
                         <span class="block font-light italic text-white/75">Trusted Dental Care in Diliman.</span>
                     </h1>
                     <p class="fu d3 mb-11 max-w-[440px] text-[.92rem] leading-[1.9] text-white/68">
-                        Led by Dr. Shiela and Dr, Alan, Tejada Clinic has been delivering trusted, patient-first dental
+                        Led by Dr. Sheila and Dr. Allan, Tejada Clinic has been delivering trusted, patient-first dental
                         care to
                         families
                         in Diliman for over 10 years.
@@ -178,17 +179,51 @@
                 </div>
             </div>
 
-            <div id="hero-photo"
-                class="relative hidden min-h-[500px] overflow-hidden bg-[#005a96] min-[1120px]:block">
-                <img src="{{ asset('images/dentist.png') }}" alt="Dr. Shiela"
-                    class="block h-full w-full object-cover object-top">
-                <div
-                    class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-[rgba(0,74,124,.95)] to-transparent px-8 pt-14 pb-10 lg:px-10">
-                    <div class="mb-[7px] text-[.58rem] font-bold uppercase tracking-[.22em] text-white/50">Lead Dentist
+            <div id="hero-photo" class="relative hidden min-h-[500px] overflow-hidden bg-[#005a96] min-[1120px]:block">
+                <div class="absolute top-8 right-8 z-[3] flex items-center gap-3">
+                    <button type="button" id="doctor-prev"
+                        class="inline-flex h-12 w-12 items-center justify-center border border-white/25 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
+                        aria-label="Show previous doctor">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
+                            <path d="M15 5l-7 7 7 7" />
+                        </svg>
+                    </button>
+                    <button type="button" id="doctor-next"
+                        class="inline-flex h-12 w-12 items-center justify-center border border-white/25 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
+                        aria-label="Show next doctor">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
+                            <path d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="doctor-slide absolute inset-0 transition-opacity duration-500 ease-out" data-doctor-slide>
+                    <img src="{{ asset('images/dentist.png') }}" alt="Dr. Sheila"
+                        class="block h-full w-full object-cover object-top">
+                    <div
+                        class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-[rgba(0,74,124,.96)] via-[rgba(0,74,124,.62)] to-transparent px-8 pt-20 pb-10 lg:px-10">
+                        <div class="mb-[7px] text-[.58rem] font-bold uppercase tracking-[.22em] text-white/55">Lead Dentist
+                        </div>
+                        <div class="mb-2.5 text-[1.95rem] font-bold tracking-[-.01em] text-white">Dr. Sheila</div>
+                        <div class="max-w-[320px] text-[.86rem] leading-[1.8] italic text-white/72">"We don't just treat
+                            teeth; we care for the people behind the smiles."</div>
                     </div>
-                    <div class="mb-2.5 text-[1.7rem] font-bold tracking-[-.01em] text-white">Dr. Shiela</div>
-                    <div class="max-w-[300px] text-[.82rem] leading-[1.7] italic text-white/60">"We don't just treat
-                        teeth; we care for the people behind the smiles."</div>
+                </div>
+
+                <div class="doctor-slide pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 ease-out"
+                    data-doctor-slide>
+                    <img src="{{ asset('images/allan.png') }}" alt="DR. Allan"
+                        class="block h-full w-full object-cover object-top">
+                    <div
+                        class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-[rgba(0,74,124,.96)] via-[rgba(0,74,124,.62)] to-transparent px-8 pt-20 pb-10 lg:px-10">
+                        <div class="mb-[7px] text-[.58rem] font-bold uppercase tracking-[.22em] text-white/55">Dental Surgeon
+                        </div>
+                        <div class="mb-2.5 text-[1.95rem] font-bold tracking-[-.01em] text-white">DR. Allan</div>
+                        <div class="max-w-[320px] text-[.86rem] leading-[1.8] italic text-white/72">"Strong dental care starts
+                            with honest guidance, steady hands, and a plan tailored to every patient."</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -208,7 +243,7 @@
                     </h2>
                 </div>
                 <a href="/book"
-                    class="reveal inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
+                    class="reveal inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2.5" stroke-linecap="square">
                         <rect x="3" y="4" width="18" height="18" />
@@ -246,7 +281,7 @@
             @if (count($services) > 4)
                 <div class="mt-8 flex justify-center">
                     <button id="view-more-services" type="button"
-                        class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] bg-transparent px-8 py-[13px] text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#0086da] hover:text-white">
+                        class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] bg-transparent px-8 py-[13px] text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da]">
                         View More Services
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="square">
@@ -328,41 +363,92 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 items-center gap-6 md:grid-cols-[1fr_auto]">
-                <div class="reveal border-l-[3px] border-[#0086da] bg-white px-7 py-[22px]">
-                    <p class="mb-[14px] text-[.9rem] leading-[1.75] italic text-[#3d5a6e]">"We don't just treat teeth;
-                        we care for the people behind the smiles."</p>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div class="reveal border-l-[3px] border-[#0086da] bg-white px-7 py-[24px]">
+                    <p class="mb-[14px] text-[.9rem] leading-[1.75] italic text-[#3d5a6e]">"Confident smiles begin with clear guidance, gentle care, and treatment plans patients can truly trust."</p>
                     <div class="flex items-center gap-3">
                         <div class="flex h-[34px] w-[34px] shrink-0 items-center justify-center bg-[#0086da]">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                class="lucide lucide-user-icon lucide-user">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user">
                                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                                 <circle cx="12" cy="7" r="4" />
                             </svg>
                         </div>
                         <div>
-                            <div class="text-[.83rem] font-bold text-[#1a2e3b]">Dr. Shiela</div>
-                            <div class="mt-0.5 text-[.63rem] font-semibold uppercase tracking-[.12em] text-[#0086da]">
-                                Lead
-                                Dentist</div>
+                            <div class="text-[.83rem] font-bold text-[#1a2e3b]">DR. Allan</div>
+                            <div class="mt-0.5 text-[.63rem] font-semibold uppercase tracking-[.12em] text-[#0086da]">Dental Surgeon</div>
                         </div>
                     </div>
                 </div>
-                <div class="reveal flex shrink-0 flex-col gap-3">
-                    <a href="/book"
-                        class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
-                        Schedule a Visit
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                <div class="reveal border-l-[3px] border-[#0086da] bg-white px-7 py-[24px]">
+                    <p class="mb-[14px] text-[.9rem] leading-[1.75] italic text-[#3d5a6e]">"We don't just treat teeth; we care for the people behind the smiles, with comfort and compassion in every visit."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-[34px] w-[34px] shrink-0 items-center justify-center bg-[#0086da]">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-[.83rem] font-bold text-[#1a2e3b]">Dr. Sheila</div>
+                            <div class="mt-0.5 text-[.63rem] font-semibold uppercase tracking-[.12em] text-[#0086da]">Lead Dentist</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="hours" class="border-t border-[#e4eff8] bg-[#f6fafd] px-6 py-[88px] md:px-12 xl:px-20">
+        <div class="mx-auto w-full max-w-[1400px]">
+            <div class="grid grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_2fr]">
+                <div>
+                    <div
+                        class="reveal mb-4 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
+                        <span class="block h-[2px] w-[22px] bg-[#0086da]"></span>Clinic Hours
+                    </div>
+                    <h2
+                        class="reveal mb-4 text-[clamp(1.8rem,2.6vw,2.6rem)] leading-[1.1] font-extrabold tracking-[-.025em] text-[#1a2e3b]">
+                        We're Open<br><span class="font-light italic text-[#0086da]">5 Days a Week.</span>
+                    </h2>
+                    <p class="reveal mb-8 max-w-[300px] text-[.86rem] leading-[1.85] text-[#3d5a6e]">Walk-ins welcome.
+                        Booking ahead is recommended for faster service and guaranteed slots.</p>
+                    <a href="#appointment"
+                        class="reveal inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="square">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
+                            <rect x="3" y="4" width="18" height="18" />
+                            <path d="M16 2v4M8 2v4M3 10h18" />
                         </svg>
+                        Book Now
                     </a>
-                    <a href="#services"
-                        class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] bg-transparent px-8 py-[13px] text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#0086da] hover:text-white">
-                        View Services
-                    </a>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+                    @php
+                        $hrs = [
+                            ['d' => 'Monday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
+                            ['d' => 'Tuesday', 'h' => 'Closed', 'o' => false],
+                            ['d' => 'Wednesday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
+                            ['d' => 'Thursday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
+                            ['d' => 'Friday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
+                            ['d' => 'Saturday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
+                            ['d' => 'Sunday', 'h' => 'Closed', 'o' => false],
+                        ];
+                    @endphp
+                    @foreach ($hrs as $h)
+                        <div
+                            class="reveal flex min-w-[150px] flex-1 flex-col gap-1.5 border border-t-[3px] px-6 py-5 {{ $h['o'] ? 'border-[#e4eff8] border-t-[#0086da] bg-white' : 'border-[#d4e8f5] border-t-[#cbd5e1] bg-transparent' }}">
+                            <span
+                                class="text-[.62rem] font-bold uppercase tracking-[.15em] text-[#7a9db5]">{{ $h['d'] }}</span>
+                            <span
+                                class="text-[.86rem] {{ $h['o'] ? 'font-semibold text-[#1a2e3b]' : 'font-medium text-[#94a3b8]' }}">{{ $h['h'] }}</span>
+                            <span class="mt-0.5 inline-flex items-center gap-[5px]">
+                                <span
+                                    class="inline-block h-1.5 w-1.5 rounded-full {{ $h['o'] ? 'bg-[#0086da]' : 'bg-[#cbd5e1]' }}"></span>
+                                <span
+                                    class="text-[.6rem] font-semibold {{ $h['o'] ? 'text-[#0086da]' : 'text-[#94a3b8]' }}">{{ $h['o'] ? 'Open' : 'Closed' }}</span>
+                            </span>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -420,7 +506,7 @@
                 @endphp
                 @foreach ($feats as $f)
                     <div
-                        class="reveal border-r border-b border-[#e4eff8] bg-white px-10 py-11 transition duration-300 hover:bg-[#f0f8fe] hover:shadow-[inset_0_0_0_1.5px_#0086da]">
+                        class="reveal border-r border-b border-[#e4eff8] bg-white px-10 py-11">
                         <div class="mb-[26px] flex h-[50px] w-[50px] items-center justify-center bg-[#e8f4fc]">
                             <svg width="22" height="22" viewBox="{{ $f['vb'] }}"
                                 fill="none">{!! $f['icon'] !!}</svg>
@@ -430,63 +516,6 @@
                         <p class="text-[.81rem] leading-[1.8] text-[#3d5a6e]">{{ $f['desc'] }}</p>
                     </div>
                 @endforeach
-            </div>
-        </div>
-    </section>
-
-    <section id="hours" class="border-t border-[#e4eff8] bg-[#f6fafd] px-6 py-[88px] md:px-12 xl:px-20">
-        <div class="mx-auto w-full max-w-[1400px]">
-            <div class="grid grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_2fr]">
-                <div>
-                    <div
-                        class="reveal mb-4 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
-                        <span class="block h-[2px] w-[22px] bg-[#0086da]"></span>Clinic Hours
-                    </div>
-                    <h2
-                        class="reveal mb-4 text-[clamp(1.8rem,2.6vw,2.6rem)] leading-[1.1] font-extrabold tracking-[-.025em] text-[#1a2e3b]">
-                        We're Open<br><span class="font-light italic text-[#0086da]">5 Days a Week.</span>
-                    </h2>
-                    <p class="reveal mb-8 max-w-[300px] text-[.86rem] leading-[1.85] text-[#3d5a6e]">Walk-ins welcome.
-                        Booking ahead is recommended for faster service and guaranteed slots.</p>
-                    <a href="#appointment"
-                        class="reveal inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="square">
-                            <rect x="3" y="4" width="18" height="18" />
-                            <path d="M16 2v4M8 2v4M3 10h18" />
-                        </svg>
-                        Book Online
-                    </a>
-                </div>
-
-                <div class="flex flex-wrap gap-3">
-                    @php
-                        $hrs = [
-                            ['d' => 'Monday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
-                            ['d' => 'Tuesday', 'h' => 'Closed', 'o' => false],
-                            ['d' => 'Wednesday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
-                            ['d' => 'Thursday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
-                            ['d' => 'Friday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
-                            ['d' => 'Saturday', 'h' => '9:00 AM – 6:00 PM', 'o' => true],
-                            ['d' => 'Sunday', 'h' => 'Closed', 'o' => false],
-                        ];
-                    @endphp
-                    @foreach ($hrs as $h)
-                        <div
-                            class="reveal flex min-w-[150px] flex-1 flex-col gap-1.5 border border-t-[3px] px-6 py-5 {{ $h['o'] ? 'border-[#e4eff8] border-t-[#0086da] bg-white' : 'border-[#d4e8f5] border-t-[#cbd5e1] bg-transparent' }}">
-                            <span
-                                class="text-[.62rem] font-bold uppercase tracking-[.15em] text-[#7a9db5]">{{ $h['d'] }}</span>
-                            <span
-                                class="text-[.86rem] {{ $h['o'] ? 'font-semibold text-[#1a2e3b]' : 'font-medium text-[#94a3b8]' }}">{{ $h['h'] }}</span>
-                            <span class="mt-0.5 inline-flex items-center gap-[5px]">
-                                <span
-                                    class="inline-block h-1.5 w-1.5 rounded-full {{ $h['o'] ? 'bg-[#0086da]' : 'bg-[#cbd5e1]' }}"></span>
-                                <span
-                                    class="text-[.6rem] font-semibold {{ $h['o'] ? 'text-[#0086da]' : 'text-[#94a3b8]' }}">{{ $h['o'] ? 'Open' : 'Closed' }}</span>
-                            </span>
-                        </div>
-                    @endforeach
-                </div>
             </div>
         </div>
     </section>
@@ -538,30 +567,12 @@
                                     class="text-[.9rem] font-semibold text-[#1a2e3b] no-underline transition hover:text-[#0086da]">+63
                                     912 345 6789</a>
                             </div>
-                        </div>
-
-                        <div class="reveal flex items-start gap-4 py-[22px]">
-                            <div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center bg-[#e8f4fc]">
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                                    stroke="#0086da" stroke-width="2" stroke-linecap="square">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <polyline points="12 6 12 12 16 14" />
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="mb-[5px] text-[.6rem] font-bold uppercase tracking-[.16em] text-[#0086da]">
-                                    Hours</div>
-                                <div class="text-[.9rem] leading-[1.6] font-medium text-[#1a2e3b]">
-                                    Mon, Wed – Sat: 9:00 AM – 6:00 PM<br>
-                                    <span class="text-[.82rem] text-[#94a3b8]">Tue &amp; Sun: Closed</span>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
                     </div>
 
                     <div class="reveal mt-8">
                         <a href="/book"
-                            class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
+                            class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
                                 <rect x="3" y="4" width="18" height="18" />
@@ -638,8 +649,34 @@
 
             syncButton();
         }
+
+        const doctorSlides = Array.from(document.querySelectorAll('[data-doctor-slide]'));
+        const prevDoctorBtn = document.getElementById('doctor-prev');
+        const nextDoctorBtn = document.getElementById('doctor-next');
+        if (doctorSlides.length > 1 && prevDoctorBtn && nextDoctorBtn) {
+            let activeDoctorIndex = 0;
+
+            const showDoctor = index => {
+                activeDoctorIndex = (index + doctorSlides.length) % doctorSlides.length;
+
+                doctorSlides.forEach((slide, slideIndex) => {
+                    const isActive = slideIndex === activeDoctorIndex;
+                    slide.classList.toggle('opacity-0', !isActive);
+                    slide.classList.toggle('pointer-events-none', !isActive);
+                    slide.classList.toggle('opacity-100', isActive);
+                });
+            };
+
+            prevDoctorBtn.addEventListener('click', () => showDoctor(activeDoctorIndex - 1));
+            nextDoctorBtn.addEventListener('click', () => showDoctor(activeDoctorIndex + 1));
+
+            showDoctor(0);
+        }
     </script>
 </body>
 
 </html>
+
+
+
 

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tejadent - login or sign up</title>
+    <x-brand.meta />
     @vite('resources/css/app.css')
 
     @if (!empty($showCaptcha))
@@ -191,3 +192,4 @@
 </body>
 
 </html>
+
