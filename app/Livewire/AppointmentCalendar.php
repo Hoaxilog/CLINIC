@@ -1549,6 +1549,8 @@ class AppointmentCalendar extends Component
             ])
             ->log('Linked Appointment Request to Existing Patient');
 
+        $this->syncRequesterAccountPatientLink($appointment, (int) $patient->id);
+
         session()->flash('success', $appointment->status === 'Waiting'
             ? 'Patient record linked. You can now admit the patient.'
             : 'Request linked to existing patient.');
@@ -1631,6 +1633,8 @@ class AppointmentCalendar extends Component
             ])
             ->log('Linked Appointment Request to New Patient');
 
+        $this->syncRequesterAccountPatientLink($appointment, (int) $patientId);
+
         $this->viewingPatientId = (int) $patientId;
         $this->selectedPendingPatientId = (int) $patientId;
         $this->loadAppointments();
@@ -1638,6 +1642,171 @@ class AppointmentCalendar extends Component
         session()->flash('success', $appointment->status === 'Waiting'
             ? 'New patient created and linked. You can now admit the patient.'
             : 'New patient created and linked successfully.');
+    }
+
+    public function unlinkAppointmentPatient(): void
+    {
+        if (! $this->viewingAppointmentId) {
+            return;
+        }
+
+        $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
+        if (! $appointment || ! in_array((string) $appointment->status, ['Waiting', 'Scheduled'], true)) {
+            session()->flash('error', 'Only waiting or scheduled appointments can be unlinked.');
+
+            return;
+        }
+
+        $currentPatientId = (int) ($appointment->patient_id ?? 0);
+        if ($currentPatientId <= 0) {
+            session()->flash('error', 'This appointment is not linked to a patient record.');
+
+            return;
+        }
+
+        DB::table('appointments')
+            ->where('id', $this->viewingAppointmentId)
+            ->update([
+                'patient_id' => null,
+                'updated_at' => now(),
+            ]);
+
+        $this->clearRequesterAccountPatientLinkIfMatched($appointment, $currentPatientId);
+
+        $subject = new Appointment;
+        $subject->id = $this->viewingAppointmentId;
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($subject)
+            ->event('appointment_patient_unlinked')
+            ->withProperties([
+                'attributes' => [
+                    'appointment_id' => (int) $this->viewingAppointmentId,
+                    'previous_patient_id' => $currentPatientId,
+                ],
+            ])
+            ->log('Unlinked Appointment from Patient Record');
+
+        $this->viewingPatientId = null;
+        $this->selectedPendingPatientId = null;
+        $this->loadAppointments();
+        $this->hydratePendingReviewContext((object) array_merge((array) $appointment, ['patient_id' => null]));
+        session()->flash('success', 'Appointment unlinked. Staff can now relink to the correct patient record.');
+    }
+
+    protected function syncRequesterAccountPatientLink(object $appointment, int $patientId): void
+    {
+        if ($patientId <= 0 || ! Schema::hasColumn('users', 'patient_id')) {
+            return;
+        }
+
+        $requesterUserId = (int) ($appointment->requester_user_id ?? 0);
+        if ($requesterUserId <= 0) {
+            return;
+        }
+
+        if (! $this->canPersistRequesterPatientLink($appointment)) {
+            return;
+        }
+
+        $currentPatientId = DB::table('users')
+            ->where('id', $requesterUserId)
+            ->value('patient_id');
+
+        if ((int) ($currentPatientId ?? 0) === $patientId) {
+            return;
+        }
+
+        DB::table('users')
+            ->where('id', $requesterUserId)
+            ->update([
+                'patient_id' => $patientId,
+                'updated_at' => now(),
+            ]);
+
+        $subject = new Appointment;
+        $subject->id = (int) ($appointment->id ?? $this->viewingAppointmentId);
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($subject)
+            ->event('user_patient_linked')
+            ->withProperties([
+                'attributes' => [
+                    'user_id' => $requesterUserId,
+                    'patient_id' => $patientId,
+                    'appointment_id' => (int) ($appointment->id ?? $this->viewingAppointmentId),
+                ],
+            ])
+            ->log('Linked Patient Account to Patient Record');
+    }
+
+    protected function clearRequesterAccountPatientLinkIfMatched(object $appointment, int $currentPatientId): void
+    {
+        if ($currentPatientId <= 0 || ! Schema::hasColumn('users', 'patient_id')) {
+            return;
+        }
+
+        $requesterUserId = (int) ($appointment->requester_user_id ?? 0);
+        if ($requesterUserId <= 0) {
+            return;
+        }
+
+        if (! $this->canPersistRequesterPatientLink($appointment)) {
+            return;
+        }
+
+        $user = DB::table('users')
+            ->select('id', 'patient_id')
+            ->where('id', $requesterUserId)
+            ->first();
+
+        if (! $user || (int) ($user->patient_id ?? 0) !== $currentPatientId) {
+            return;
+        }
+
+        DB::table('users')
+            ->where('id', $requesterUserId)
+            ->update([
+                'patient_id' => null,
+                'updated_at' => now(),
+            ]);
+
+        $subject = new Appointment;
+        $subject->id = (int) ($appointment->id ?? $this->viewingAppointmentId);
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($subject)
+            ->event('user_patient_unlinked')
+            ->withProperties([
+                'attributes' => [
+                    'user_id' => $requesterUserId,
+                    'patient_id' => $currentPatientId,
+                    'appointment_id' => (int) ($appointment->id ?? $this->viewingAppointmentId),
+                ],
+            ])
+            ->log('Unlinked Patient Account from Patient Record');
+    }
+
+    protected function canPersistRequesterPatientLink(object $appointment): bool
+    {
+        if (! empty($appointment->booking_for_other)) {
+            return false;
+        }
+
+        $requesterUserId = (int) ($appointment->requester_user_id ?? 0);
+        if ($requesterUserId <= 0) {
+            return false;
+        }
+
+        $query = DB::table('users')->where('id', $requesterUserId);
+        if (Schema::hasColumn('users', 'role')) {
+            $query->where('role', 3);
+        }
+
+        return $query->exists();
     }
 
     /**

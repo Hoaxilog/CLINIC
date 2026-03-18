@@ -96,7 +96,7 @@ Route::middleware(['auth', 'staffOrDentist'])->group(function () {
         return view('appointment', ['initialTab' => request()->query('tab')]);
     })->name('appointment');
     Route::get('/appointment/requests', function () {
-        return view('appointment', ['initialTab' => 'pending']);
+        return view('appointment-requests');
     })->name('appointment.requests');
     Route::get('/appointment/calendar', function () {
         return view('appointment', ['initialTab' => 'calendar']);

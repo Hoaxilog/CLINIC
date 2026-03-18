@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class PatientMatchService
 {
+    private const MAX_MATCH_SCORE = 180;
+
     /**
      * Return ranked match suggestions for staff review.
      *
@@ -67,6 +69,28 @@ class PatientMatchService
                 $score = 0;
                 $reasons = [];
 
+                $normalizedFirst = strtolower($firstName);
+                $normalizedLast = strtolower($lastName);
+                $patientFirst = strtolower((string) ($patient->first_name ?? ''));
+                $patientLast = strtolower((string) ($patient->last_name ?? ''));
+                $hasRequestedFullName = $firstName !== '' && $lastName !== '';
+                $exactFullNameMatch = $hasRequestedFullName
+                    && $patientFirst === $normalizedFirst
+                    && $patientLast === $normalizedLast;
+
+                $similarFullNameMatch = false;
+                if ($hasRequestedFullName && ! $exactFullNameMatch) {
+                    $combinedName = strtolower(trim($firstName.' '.$lastName));
+                    $patientCombined = strtolower(trim(($patient->first_name ?? '').' '.($patient->last_name ?? '')));
+                    $similarFullNameMatch = $combinedName !== '' && str_contains($patientCombined, $combinedName);
+                }
+
+                // Security gate: if full name is provided, reject candidates that only match
+                // mobile/email but not the requested patient name.
+                if ($hasRequestedFullName && ! $exactFullNameMatch && ! $similarFullNameMatch) {
+                    return null;
+                }
+
                 if ($mobile !== '' && (string) $patient->mobile_number === $mobile) {
                     $score += 60;
                     $reasons[] = 'Exact mobile match';
@@ -77,23 +101,16 @@ class PatientMatchService
                     $reasons[] = 'Exact email match';
                 }
 
-                $patientFirst = strtolower((string) ($patient->first_name ?? ''));
-                $patientLast = strtolower((string) ($patient->last_name ?? ''));
-
-                if ($firstName !== '' && $lastName !== '' && $patientFirst === strtolower($firstName) && $patientLast === strtolower($lastName)) {
+                if ($exactFullNameMatch) {
                     $score += 30;
                     $reasons[] = 'Exact full name match';
-                } elseif ($firstName !== '' && $lastName !== '') {
-                    $combinedName = strtolower(trim($firstName.' '.$lastName));
-                    $patientCombined = strtolower(trim(($patient->first_name ?? '').' '.($patient->last_name ?? '')));
-                    if ($combinedName !== '' && str_contains($patientCombined, $combinedName)) {
-                        $score += 15;
-                        $reasons[] = 'Similar full name';
-                    }
+                } elseif ($similarFullNameMatch) {
+                    $score += 15;
+                    $reasons[] = 'Similar full name';
                 }
 
                 if ($birthDate !== '' && ! empty($patient->birth_date) && (string) $patient->birth_date === $birthDate) {
-                    if ($firstName !== '' && $lastName !== '' && $patientFirst === strtolower($firstName) && $patientLast === strtolower($lastName)) {
+                    if ($exactFullNameMatch) {
                         $score += 40;
                         $reasons[] = 'Full name + birth date match';
                     } else {
@@ -102,15 +119,49 @@ class PatientMatchService
                     }
                 }
 
+                $matchPercent = (int) round((max(0, min($score, self::MAX_MATCH_SCORE)) / self::MAX_MATCH_SCORE) * 100);
+                $matchBand = $this->resolveMatchBand($matchPercent);
+
                 $patient->match_score = $score;
+                $patient->match_percent = $matchPercent;
+                $patient->match_band = $matchBand;
+                $patient->match_band_label = $this->resolveMatchBandLabel($matchBand);
                 $patient->match_reasons = $reasons;
 
                 return $patient;
             })
+            ->filter()
             ->filter(fn ($patient) => (int) $patient->match_score > 0)
             ->sortByDesc('match_score')
             ->take($limit)
             ->values();
+    }
+
+    protected function resolveMatchBand(int $matchPercent): string
+    {
+        if ($matchPercent >= 75) {
+            return 'strong';
+        }
+
+        if ($matchPercent >= 50) {
+            return 'partial';
+        }
+
+        if ($matchPercent >= 25) {
+            return 'weak';
+        }
+
+        return 'poor';
+    }
+
+    protected function resolveMatchBandLabel(string $matchBand): string
+    {
+        return match ($matchBand) {
+            'strong' => 'Strong match',
+            'partial' => 'Partial match',
+            'weak' => 'Weak match',
+            default => 'Poor match',
+        };
     }
 
     /**

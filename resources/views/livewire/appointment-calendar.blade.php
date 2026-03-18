@@ -194,11 +194,6 @@
                                     class="{{ $btnSm }} {{ $btnOutlinePrimary }}">
                                     Reschedule
                                 </button>
-                                <button type="button" wire:click="rejectAppointment({{ $pending->id }})"
-                                    wire:loading.attr="disabled" wire:target="rejectAppointment({{ $pending->id }})"
-                                    class="{{ $btnSm }} {{ $btnDanger }}">
-                                    Reject
-                                </button>
                             </div>
                         </div>
                     @empty
@@ -513,7 +508,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4" wire:ignore.self>
 
         <div class="absolute inset-0 bg-black opacity-60"></div>
-        <div class="relative bg-white border border-[#e4eff8] w-full max-w-4xl mx-4 z-10 overflow-hidden" style="font-family:'Montserrat',sans-serif;">
+        <div class="relative bg-white border border-[#e4eff8] w-full max-w-6xl mx-4 z-10 overflow-hidden" style="font-family:'Montserrat',sans-serif;">
 
             <div x-cloak x-show="openingPatientForm" x-transition.opacity.duration.120ms
                 class="absolute inset-0 z-20 flex items-center justify-center bg-white/85 backdrop-blur-[1px]">
@@ -591,16 +586,12 @@
                                 </div>
                                 <button type="button" @click="showSafetyDetails = !showSafetyDetails"
                                     class="inline-flex border border-[#e4eff8] bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1a2e3b] transition hover:bg-[#f6fafd]">
-                                    <span x-show="!showSafetyDetails">Details</span>
+                                    <span x-show="!showSafetyDetails">Show Other Appointment</span>
                                     <span x-show="showSafetyDetails" x-cloak>Hide</span>
                                 </button>
                             </div>
 
                             <div x-cloak x-show="showSafetyDetails" x-transition.opacity.duration.150ms class="mt-3 space-y-3 border-t border-current/10 pt-3">
-                                <span class="inline-flex border border-[#e4eff8] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1a2e3b]">
-                                    {{ $pendingApprovalSafety['same_day_active_count'] ?? 0 }} Day load
-                                </span>
-
                                 @if (!empty($pendingApprovalSafety['overlapping_appointments']))
                                     <div class="grid gap-2">
                                         @foreach ($pendingApprovalSafety['overlapping_appointments'] as $overlap)
@@ -672,38 +663,22 @@
                     </div>
 
                     @if ($isViewing)
-                        <div class="mb-6 grid gap-[2px] md:grid-cols-2 bg-[#e4eff8]">
-                            <div class="border border-[#e4eff8] bg-white px-5 py-5">
-                                <div class="mb-2 text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Patient</div>
-                                <div class="text-[1rem] font-extrabold leading-[1.2] text-[#1a2e3b]">
-                                    {{ $this->appointmentPatientDisplayName((object) ['first_name' => $firstName, 'last_name' => $lastName]) }}
-                                </div>
-                                <div class="mt-2 text-[.82rem] leading-[1.75] text-[#587189]">
-                                    Birth date: {{ $birthDate ? \Carbon\Carbon::parse($birthDate)->format('F j, Y') : 'Not provided' }}
-                                </div>
-                                @if ($viewingPatientId)
-                                    <span class="mt-3 inline-flex border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                                        Linked — Record #{{ $viewingPatientId }}
-                                    </span>
-                                @endif
+                        <div class="mb-6 border border-[#e4eff8] bg-[#f6fafd] px-5 py-5">
+                            <div class="mb-2 text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Booked By:</div>
+                            <div class="text-[1rem] font-extrabold leading-[1.2] text-[#1a2e3b]">
+                                {{ trim($viewingRequesterFirstName . ' ' . $viewingRequesterLastName) ?: 'Same as patient' }}
                             </div>
-                            <div class="border border-[#e4eff8] bg-[#f6fafd] px-5 py-5">
-                                <div class="mb-2 text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Booked By: </div>
-                                <div class="text-[1rem] font-extrabold leading-[1.2] text-[#1a2e3b]">
-                                    {{ trim($viewingRequesterFirstName . ' ' . $viewingRequesterLastName) ?: 'Same as patient' }}
-                                </div>
-                                <div class="mt-2 text-[.82rem] leading-[1.75] text-[#587189]">
-                                    {{ $viewingRequesterContactNumber ?: 'No contact number provided' }}
-                                </div>
-                                <div class="text-[.82rem] leading-[1.75] text-[#7a9db5]">
-                                    {{ $viewingRequesterEmail ?: 'No email provided' }}
-                                </div>
-                                @if ($viewingBookingForOther && $viewingRequesterRelationship)
-                                    <div class="mt-2 text-[.72rem] font-bold uppercase tracking-[.12em] text-[#0086da]">
-                                        Relationship: {{ $viewingRequesterRelationship }}
-                                    </div>
-                                @endif
+                            <div class="mt-2 text-[.82rem] leading-[1.75] text-[#587189]">
+                                {{ $viewingRequesterContactNumber ?: 'No contact number provided' }}
                             </div>
+                            <div class="text-[.82rem] leading-[1.75] text-[#7a9db5]">
+                                {{ $viewingRequesterEmail ?: 'No email provided' }}
+                            </div>
+                            @if ($viewingBookingForOther && $viewingRequesterRelationship)
+                                <div class="mt-2 text-[.72rem] font-bold uppercase tracking-[.12em] text-[#0086da]">
+                                    Relationship: {{ $viewingRequesterRelationship }}
+                                </div>
+                            @endif
                         </div>
                     @endif
 
@@ -847,17 +822,27 @@
                         </div>
 
                         <div class="mb-6 border border-[#e4eff8] bg-[#f6fafd] p-5">
-                            <div class="mb-1 text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Patient Record Review</div>
-                            @if (!empty($pendingDuplicateWarnings))
-                                <div class="mt-3 border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                                    <p class="font-semibold">Duplicate warnings before creating a new patient:</p>
-                                    <ul class="list-disc pl-5 mt-1 space-y-1">
-                                        @foreach ($pendingDuplicateWarnings as $warning)
-                                            <li>{{ $warning }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
+                            <div class="mb-1 flex items-center justify-between gap-3">
+                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Patient Record Review</div>
+                                @if (!empty($pendingDuplicateWarnings))
+                                    <div class="relative group">
+                                        <button type="button"
+                                            class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-amber-300 bg-amber-100 text-[13px] font-extrabold text-amber-700 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                                            aria-label="Duplicate warnings available">
+                                            !
+                                        </button>
+                                        <div
+                                            class="pointer-events-none absolute right-0 top-8 z-20 hidden w-[320px] rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 shadow-[0_14px_36px_rgba(120,53,15,.18)] group-hover:block group-focus-within:block">
+                                            <p class="font-semibold">Duplicate warnings before creating a new patient:</p>
+                                            <ul class="mt-2 list-disc space-y-1 pl-4">
+                                                @foreach ($pendingDuplicateWarnings as $warning)
+                                                    <li>{{ $warning }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
 
                             <div class="mt-4">
                                 <div class="mb-3 flex items-center justify-between gap-3">
@@ -876,122 +861,159 @@
 
                                 <div class="grid gap-3">
                                 @if (!empty($pendingMatchCandidates))
-                                    @foreach ($pendingMatchCandidates as $candidate)
-                                        <label class="block cursor-pointer rounded-2xl border px-4 py-4 transition {{ (string) $selectedPendingPatientId === (string) $candidate->id ? 'border-[#0086da] bg-white shadow-[0_10px_30px_rgba(0,134,218,0.12)] ring-2 ring-[#0086da]/10' : 'border-[#d7e8f4] bg-white hover:border-[#9fcae6] hover:bg-[#fbfdff]' }}">
-                                            <div class="flex flex-col gap-4">
-                                                <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                                                    <div class="flex items-start gap-3">
-                                                        <input type="radio" wire:model="selectedPendingPatientId"
-                                                            value="{{ $candidate->id }}"
-                                                            class="mt-1 h-4 w-4 accent-[#0086da]">
-                                                        <div>
-                                                            <div class="flex flex-wrap items-center gap-2">
-                                                                <p class="text-sm font-extrabold text-[#1a2e3b]">
-                                                                    Patient Record #{{ $candidate->id }}
-                                                                </p>
-                                                                <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-700">
-                                                                    Match Score: {{ $candidate->match_score }}
+                                    @php
+                                        $initialMatchId = (int) ($selectedPendingPatientId ?: (collect($pendingMatchCandidates)->first()->id ?? 0));
+                                    @endphp
+                                    <div x-data="{ selectedMatch: {{ $initialMatchId }} }"
+                                        class="overflow-hidden rounded-2xl border border-[#cfe2f1] bg-white/90">
+                                        <div class="grid gap-0 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
+                                            <div class="border-b border-[#dbeaf7] bg-[#f5f9fd] p-4 lg:border-b-0 lg:border-r">
+                                                <div class="mb-4 rounded-xl border border-[#d7e8f5] bg-white px-4 py-3">
+                                                    <p class="text-sm font-bold text-[#1a2e3b]">Search Results</p>
+                                                    <p class="mt-1 text-xs text-[#6e8ea5]">Select one candidate to compare in detail.</p>
+                                                </div>
+
+                                                <div class="space-y-2">
+                                                    @foreach ($pendingMatchCandidates as $candidate)
+                                                        @php
+                                                            $candidateId = (int) $candidate->id;
+                                                            $candidateName = trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')) ?: 'Unnamed patient';
+                                                            $candidateBirth = !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->format('M d, Y') : 'No birth date';
+                                                            $candidateBand = (string) ($candidate->match_band ?? 'poor');
+                                                            $candidatePercent = (int) ($candidate->match_percent ?? 0);
+                                                            $candidateColor = match ($candidateBand) {
+                                                                'strong' => 'bg-emerald-500',
+                                                                'partial' => 'bg-amber-500',
+                                                                'weak' => 'bg-slate-500',
+                                                                default => 'bg-slate-400',
+                                                            };
+                                                        @endphp
+                                                        <button type="button"
+                                                            @click="selectedMatch = {{ $candidateId }}; $wire.set('selectedPendingPatientId', {{ $candidateId }})"
+                                                            class="w-full rounded-xl border px-4 py-3 text-left transition"
+                                                            :class="selectedMatch === {{ $candidateId }}
+                                                                ? 'border-[#2e8dd0] bg-[#eaf5ff] shadow-[inset_0_0_0_1px_rgba(0,134,218,.18)]'
+                                                                : 'border-[#d7e8f5] bg-white hover:border-[#8fc0e1]'">
+                                                            <div class="flex items-start justify-between gap-3">
+                                                                <span class="mt-2 h-2.5 w-2.5 rounded-full {{ $candidateColor }}"></span>
+                                                                <div>
+                                                                    <p class="text-base font-bold text-[#1a2e3b]">{{ $candidateName }}</p>
+                                                                    <p class="mt-0.5 text-sm text-[#6e8ea5]">{{ $candidateBirth }} · #{{ $candidateId }} · {{ $candidatePercent }}%</p>
+                                                                </div>
+                                                                <span aria-hidden="true"
+                                                                    class="ml-auto mt-1 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border transition"
+                                                                    :class="selectedMatch === {{ $candidateId }}
+                                                                        ? 'border-[#0086da] bg-[#0086da]'
+                                                                        : 'border-[#9fc8e3] bg-white'">
+                                                                    <span class="h-2.5 w-2.5 rounded-full bg-white"
+                                                                        :class="selectedMatch === {{ $candidateId }} ? 'opacity-100' : 'opacity-0'"></span>
                                                                 </span>
                                                             </div>
-                                                            <p class="mt-1 text-base font-bold text-[#1a2e3b]">
-                                                                {{ trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')) ?: 'Unnamed patient' }}
-                                                            </p>
-                                                            @if (!empty($candidate->match_reasons))
-                                                                <div class="mt-2 flex flex-wrap gap-2">
-                                                                    @foreach ($candidate->match_reasons as $reason)
-                                                                        <span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                                                                            {{ $reason }}
-                                                                        </span>
-                                                                    @endforeach
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-
-                                                    @if ((string) $selectedPendingPatientId === (string) $candidate->id)
-                                                        <span class="inline-flex items-center rounded-full border border-[#0086da]/20 bg-[#0086da]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0086da]">
-                                                            Selected for linking
-                                                        </span>
-                                                    @endif
-                                                </div>
-
-                                                <div class="grid gap-3 lg:grid-cols-2">
-                                                    <div class="rounded-xl border border-[#e4eff8] bg-[#f8fbfe] px-4 py-3">
-                                                        <div class="text-[.62rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Appointment Request</div>
-                                                        <div class="mt-3 space-y-2 text-sm text-[#1a2e3b]">
-                                                            <div>
-                                                                <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7a9db5]">Patient Name</div>
-                                                                <div class="mt-1 font-semibold">
-                                                                    {{ $this->appointmentPatientDisplayName((object) ['first_name' => $firstName, 'last_name' => $lastName]) }}
-                                                                </div>
-                                                            </div>
-                                                            <div class="grid gap-2 sm:grid-cols-2">
-                                                                <div>
-                                                                    <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7a9db5]">Birth Date</div>
-                                                                    <div class="mt-1 font-semibold">
-                                                                        {{ $birthDate ? \Carbon\Carbon::parse($birthDate)->format('M d, Y') : 'Not provided' }}
-                                                                    </div>
-                                                                </div>
-                                                                <div>
-                                                                    <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7a9db5]">Contact Number</div>
-                                                                    <div class="mt-1 font-semibold">
-                                                                        {{ $viewingRequesterContactNumber ?: ($contactNumber ?: 'Not provided') }}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7a9db5]">Email Address</div>
-                                                                <div class="mt-1 font-semibold break-all">
-                                                                    {{ $viewingRequesterEmail ?: 'Not provided' }}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="rounded-xl border border-[#d6ebdf] bg-[#f7fcf8] px-4 py-3">
-                                                        <div class="text-[.62rem] font-bold uppercase tracking-[.18em] text-emerald-700">Existing Patient Record</div>
-                                                        <div class="mt-3 space-y-2 text-sm text-[#1a2e3b]">
-                                                            <div>
-                                                                <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700/80">Patient Name</div>
-                                                                <div class="mt-1 font-semibold">
-                                                                    {{ trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')) ?: 'Not provided' }}
-                                                                </div>
-                                                            </div>
-                                                            <div class="grid gap-2 sm:grid-cols-2">
-                                                                <div>
-                                                                    <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700/80">Birth Date</div>
-                                                                    <div class="mt-1 font-semibold">
-                                                                        {{ !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->format('M d, Y') : 'Not provided' }}
-                                                                    </div>
-                                                                </div>
-                                                                <div>
-                                                                    <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700/80">Contact Number</div>
-                                                                    <div class="mt-1 font-semibold">
-                                                                        {{ $candidate->mobile_number ?: 'Not provided' }}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700/80">Email Address</div>
-                                                                <div class="mt-1 font-semibold break-all">
-                                                                    {{ $candidate->email_address ?: 'Not provided' }}
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="pt-2">
-                                                                <button type="button"
-                                                                    @click.stop="openingPatientForm = true; resumeAppointmentModalOnPatientFormClose = true"
-                                                                    wire:click="previewPendingPatientRecord({{ $candidate->id }})"
-                                                                    class="{{ $btnSm }} {{ $btnSecondary }} w-full sm:w-auto">
-                                                                    View Full Record
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                        </button>
+                                                    @endforeach
                                                 </div>
                                             </div>
-                                        </label>
-                                    @endforeach
+
+                                            <div class="bg-white p-4 md:p-5">
+                                                @foreach ($pendingMatchCandidates as $candidate)
+                                                    @php
+                                                        $candidateId = (int) $candidate->id;
+                                                        $candidateName = trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')) ?: 'Unnamed patient';
+                                                    @endphp
+                                                    <div x-cloak x-show="selectedMatch === {{ $candidateId }}" class="space-y-4">
+                                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                                            <p class="text-[.7rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Match Signals</p>
+                                                            @php
+                                                                $matchBand = (string) ($candidate->match_band ?? 'poor');
+                                                                $matchPercent = (int) ($candidate->match_percent ?? 0);
+                                                                $matchLabel = (string) ($candidate->match_band_label ?? 'Poor match');
+                                                                $matchBadge = match ($matchBand) {
+                                                                    'strong' => 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                                                                    'partial' => 'border-amber-200 bg-amber-50 text-amber-700',
+                                                                    'weak' => 'border-slate-300 bg-slate-100 text-slate-700',
+                                                                    default => 'border-slate-300 bg-slate-50 text-slate-600',
+                                                                };
+                                                            @endphp
+                                                            <span class="inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] {{ $matchBadge }}">
+                                                                {{ $matchPercent }}% · {{ $matchLabel }}
+                                                            </span>
+                                                        </div>
+
+                                                        @if (!empty($candidate->match_reasons))
+                                                            <div class="flex flex-wrap gap-2">
+                                                                @foreach ($candidate->match_reasons as $reason)
+                                                                    <span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[12px] font-semibold text-emerald-700">
+                                                                        {{ $reason }}
+                                                                    </span>
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
+
+                                                        <div class="rounded-2xl border border-[#dbeaf7] bg-[#f8fbfe] p-4">
+                                                            <div class="text-[.65rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Comparison</div>
+                                                            @php
+                                                                $requestName = strtolower(trim(($firstName ?? '') . ' ' . ($lastName ?? '')));
+                                                                $candidateNameCompare = strtolower(trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')));
+                                                                $nameExactMatch = $requestName !== '' && $candidateNameCompare === $requestName;
+
+                                                                $requestBirthDate = !empty($birthDate) ? \Carbon\Carbon::parse($birthDate)->toDateString() : null;
+                                                                $candidateBirthDate = !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->toDateString() : null;
+                                                                $birthDateMatch = !empty($requestBirthDate) && !empty($candidateBirthDate) && $requestBirthDate === $candidateBirthDate;
+
+                                                                $requestMobile = trim((string) ($viewingRequesterContactNumber ?: ($contactNumber ?? '')));
+                                                                $candidateMobile = trim((string) ($candidate->mobile_number ?? ''));
+                                                                $mobileMatch = $requestMobile !== '' && $candidateMobile !== '' && $requestMobile === $candidateMobile;
+
+                                                                $requestEmail = strtolower(trim((string) ($viewingRequesterEmail ?? '')));
+                                                                $candidateEmail = strtolower(trim((string) ($candidate->email_address ?? '')));
+                                                                $emailMatch = $requestEmail !== '' && $candidateEmail !== '' && $requestEmail === $candidateEmail;
+                                                            @endphp
+                                                            <div class="mt-3 grid gap-2 text-sm text-[#1a2e3b]">
+                                                                <div class="grid grid-cols-[120px_minmax(0,1fr)] items-start gap-2 border-b border-[#e5eff8] pb-2">
+                                                                    <span class="font-semibold text-[#5f7d93]">Name</span>
+                                                                    <span class="{{ $nameExactMatch ? 'font-bold text-emerald-700' : 'font-bold text-[#1768a6]' }}">
+                                                                        {{ $nameExactMatch ? '✓ ' : '' }}{{ $candidateName }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="grid grid-cols-[120px_minmax(0,1fr)] items-start gap-2 border-b border-[#e5eff8] pb-2">
+                                                                    <span class="font-semibold text-[#5f7d93]">Birth date</span>
+                                                                    <span class="{{ $birthDateMatch ? 'font-semibold text-emerald-700' : '' }}">
+                                                                        {{ $birthDateMatch ? '✓ ' : '' }}{{ !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->format('M d, Y') : 'Not provided' }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="grid grid-cols-[120px_minmax(0,1fr)] items-start gap-2 border-b border-[#e5eff8] pb-2">
+                                                                    <span class="font-semibold text-[#5f7d93]">Mobile</span>
+                                                                    <span class="{{ $mobileMatch ? 'font-semibold text-emerald-700' : '' }}">
+                                                                        {{ $mobileMatch ? '✓ ' : '' }}{{ $candidate->mobile_number ?: 'Not provided' }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="grid grid-cols-[120px_minmax(0,1fr)] items-start gap-2">
+                                                                    <span class="font-semibold text-[#5f7d93]">Email</span>
+                                                                    <span class="break-all {{ $emailMatch ? 'font-semibold text-emerald-700' : '' }}">
+                                                                        {{ $emailMatch ? '✓ ' : '' }}{{ $candidate->email_address ?: 'Not provided' }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                                                            <button type="button"
+                                                                @click.stop="openingPatientForm = true; resumeAppointmentModalOnPatientFormClose = true"
+                                                                wire:click="previewPendingPatientRecord({{ $candidateId }})"
+                                                                class="{{ $btnSm }} {{ $btnSecondary }} w-full">
+                                                                View Full Record
+                                                            </button>
+                                                            <button type="button"
+                                                                @click="selectedMatch = {{ $candidateId }}; $wire.set('selectedPendingPatientId', {{ $candidateId }})"
+                                                                class="{{ $btnSm }} {{ $btnPrimary }} whitespace-nowrap">
+                                                                Select Match
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
                                 @else
                                     <div class="border border-dashed border-[#d4e8f5] bg-white px-4 py-3 text-[.78rem] text-[#587189]">
                                         No strong match suggestions found. You can create a new patient record after
@@ -1020,6 +1042,16 @@
                             <p class="mt-1 text-[.78rem] leading-[1.7] text-emerald-800">
                                 This appointment is already linked to patient record #{{ $viewingPatientId }}.
                             </p>
+                            @if (auth()->user()->role !== 3)
+                                <div class="mt-3">
+                                    <button type="button" wire:click="unlinkAppointmentPatient"
+                                        wire:loading.attr="disabled" wire:target="unlinkAppointmentPatient"
+                                        wire:confirm="Unlink this appointment from the current patient record? You can relink it right after."
+                                        class="{{ $btnSm }} {{ $btnOutlinePrimary }}">
+                                        Unlink / Relink Patient
+                                    </button>
+                                </div>
+                            @endif
                         </div>
                     @endif
 
@@ -1030,7 +1062,7 @@
 
                         @if ($isViewing)
                             {{-- === VIEWING MODE (Flow Logic) === --}}
-                            @if (!in_array($appointmentStatus, ['Cancelled', 'Completed']))
+                            @if (!in_array($appointmentStatus, ['Cancelled', 'Completed']) && !$isRescheduling)
                                 <button type="button" wire:click="updateStatus('Cancelled')"
                                     wire:loading.attr="disabled" wire:target="updateStatus"
                                     wire:confirm="Are you sure you want to cancel this appointment?"
@@ -1044,7 +1076,7 @@
                                     @if ($isRescheduling)
                                         <button type="button" wire:click="cancelPendingReschedule"
                                             wire:loading.attr="disabled" wire:target="cancelPendingReschedule"
-                                            class="{{ $btnLg }} {{ $btnSecondary }}">
+                                            class="{{ $btnLg }} {{ $btnSecondary }} mr-auto">
                                             Cancel Reschedule
                                         </button>
                                         <button type="button" wire:click="savePendingReschedule"
@@ -1059,20 +1091,14 @@
                                             class="{{ $btnLg }} {{ $btnSecondary }}">
                                             Reschedule
                                         </button>
+                                        <button type="button" wire:click="updateStatus('Scheduled')"
+                                            wire:loading.attr="disabled" wire:target="updateStatus"
+                                            wire:confirm="Approve this appointment request?"
+                                            @disabled(!($pendingApprovalSafety['can_approve'] ?? true))
+                                            class="{{ $btnLg }} {{ ($pendingApprovalSafety['can_approve'] ?? true) ? $btnPrimary : $btnSecondary }}">
+                                            {{ ($pendingApprovalSafety['can_approve'] ?? true) ? 'Approve' : 'Reschedule Required' }}
+                                        </button>
                                     @endif
-                                    <button type="button" wire:click="updateStatus('Cancelled')"
-                                        wire:loading.attr="disabled" wire:target="updateStatus"
-                                        wire:confirm="Reject this appointment request?"
-                                        class="{{ $btnLg }} {{ $btnOutlinePrimary }}">
-                                        Reject
-                                    </button>
-                                    <button type="button" wire:click="updateStatus('Scheduled')"
-                                        wire:loading.attr="disabled" wire:target="updateStatus"
-                                        wire:confirm="Approve this appointment request?"
-                                        @disabled(!($pendingApprovalSafety['can_approve'] ?? true))
-                                        class="{{ $btnLg }} {{ ($pendingApprovalSafety['can_approve'] ?? true) ? $btnPrimary : $btnSecondary }}">
-                                        {{ ($pendingApprovalSafety['can_approve'] ?? true) ? 'Approve' : 'Reschedule Required' }}
-                                    </button>
                                 @endif
                             @elseif($appointmentStatus === 'Scheduled')
                                 <button type="button" @click="openingPatientForm = true"
@@ -1165,3 +1191,4 @@
 
     @include('components.flash-toast')
 </div>
+

@@ -123,8 +123,8 @@
                     {{ $guestSecondaryLabel }}
                 </a>
                 <a href="{{ route('book') }}"
-                    class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white">
-                    Book Now
+                    class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:-translate-y-px hover:bg-[#006ab0]">
+                    Book Appointment
                 </a>
             @endif
         </div>
@@ -222,5 +222,4 @@
         });
     });
 </script>
-
 

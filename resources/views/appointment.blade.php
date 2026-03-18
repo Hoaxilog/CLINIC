@@ -8,7 +8,7 @@
         </div>
 
         <section>
-            @livewire('appointment-calendar', ['initialTab' => $initialTab ?? null])
+            @livewire('appointment.appointment-calendar', ['initialTab' => $initialTab ?? null])
         </section>
     </main>
 @endsection

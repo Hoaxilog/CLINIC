@@ -289,14 +289,16 @@
                                 </span>
                             </button>
                             <div data-appointment-submenu
-                                class="ml-12 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out group-[.collapsed]:hidden {{ $isAppointmentMenuOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }}">
-                                <a href="{{ route('appointment.requests') }}"
-                                    class="{{ request()->routeIs('appointment.requests') ? 'bg-slate-200/80 text-slate-950' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }} block rounded-none px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em]">
-                                    Appointment Request
-                                </a>
+                                class="relative ml-0 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out group-[.collapsed]:hidden {{ $isAppointmentMenuOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }}">
+                                <span
+                                    class="pointer-events-none absolute bottom-2 left-[1.875rem] top-2 w-px bg-slate-400/70"></span>
                                 <a href="{{ route('appointment.calendar') }}"
-                                    class="{{ request()->routeIs('appointment.calendar') || request()->routeIs('appointment') ? 'bg-slate-200/80 text-slate-950' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }} block rounded-none px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em]">
+                                    class="{{ request()->routeIs('appointment.calendar') || request()->routeIs('appointment') ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-800' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2 before:bg-slate-400/70">
                                     Appointment Calendar
+                                </a>
+                                <a href="{{ route('appointment.requests') }}"
+                                    class="{{ request()->routeIs('appointment.requests') ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-800' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2 before:bg-slate-400/70">
+                                    Appointment Request
                                 </a>
                             </div>
                         </li>

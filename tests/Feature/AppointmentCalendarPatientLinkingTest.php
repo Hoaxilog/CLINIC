@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\AppointmentCalendar;
+use App\Livewire\appointment\AppointmentCalendar;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -16,10 +16,18 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
     {
         parent::setUp();
 
+        $compiledPath = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
+            .DIRECTORY_SEPARATOR.'clinic-testing-views-'.uniqid('ac-linking-', true);
+        if (! is_dir($compiledPath)) {
+            mkdir($compiledPath, 0777, true);
+        }
+        config(['view.compiled' => $compiledPath]);
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('username')->nullable();
             $table->string('email')->unique();
+            $table->unsignedBigInteger('patient_id')->nullable();
             $table->string('password')->nullable();
             $table->unsignedBigInteger('role')->nullable();
             $table->timestamp('email_verified_at')->nullable();
@@ -485,6 +493,256 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
             'id' => $appointmentId,
             'status' => 'Waiting',
             'patient_id' => null,
+        ]);
+    }
+
+    public function test_for_myself_linking_persists_user_patient_mapping(): void
+    {
+        $patientUserId = DB::table('users')->insertGetId([
+            'username' => 'patient.self',
+            'email' => 'self@example.com',
+            'patient_id' => null,
+            'password' => bcrypt('secret123'),
+            'role' => 3,
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $patientId = DB::table('patients')->insertGetId([
+            'first_name' => 'Self',
+            'last_name' => 'Patient',
+            'mobile_number' => '09981234567',
+            'email_address' => 'self@example.com',
+            'birth_date' => '2001-01-01',
+            'modified_by' => 'STAFF',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $appointmentId = DB::table('appointments')->insertGetId([
+            'patient_id' => null,
+            'service_id' => 1,
+            'appointment_date' => now()->addDay()->setTime(10, 0)->toDateTimeString(),
+            'status' => 'Scheduled',
+            'requester_user_id' => $patientUserId,
+            'requester_first_name' => 'Self',
+            'requester_last_name' => 'Patient',
+            'requester_contact_number' => '09981234567',
+            'requester_email' => 'self@example.com',
+            'requester_birth_date' => '2001-01-01',
+            'booking_for_other' => false,
+            'modified_by' => 'PATIENT',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Livewire::test(AppointmentCalendar::class)
+            ->call('viewAppointment', $appointmentId)
+            ->set('selectedPendingPatientId', $patientId)
+            ->call('linkPendingRequestToExistingPatient');
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointmentId,
+            'patient_id' => $patientId,
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $patientUserId,
+            'patient_id' => $patientId,
+        ]);
+    }
+
+    public function test_for_someone_else_linking_does_not_persist_requester_user_mapping(): void
+    {
+        $requesterUserId = DB::table('users')->insertGetId([
+            'username' => 'requester.mom',
+            'email' => 'mom@example.com',
+            'patient_id' => null,
+            'password' => bcrypt('secret123'),
+            'role' => 3,
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $patientId = DB::table('patients')->insertGetId([
+            'first_name' => 'Child',
+            'last_name' => 'Patient',
+            'mobile_number' => '09980002222',
+            'email_address' => null,
+            'birth_date' => '2012-06-01',
+            'modified_by' => 'STAFF',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $appointmentId = DB::table('appointments')->insertGetId([
+            'patient_id' => null,
+            'service_id' => 1,
+            'appointment_date' => now()->addDay()->setTime(11, 0)->toDateTimeString(),
+            'status' => 'Scheduled',
+            'requester_user_id' => $requesterUserId,
+            'requester_first_name' => 'Mom',
+            'requester_last_name' => 'Patient',
+            'requester_contact_number' => '09981112222',
+            'requester_email' => 'mom@example.com',
+            'booking_for_other' => true,
+            'requested_patient_first_name' => 'Child',
+            'requested_patient_last_name' => 'Patient',
+            'requested_patient_birth_date' => '2012-06-01',
+            'requester_relationship_to_patient' => 'Mother',
+            'modified_by' => 'PATIENT',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Livewire::test(AppointmentCalendar::class)
+            ->call('viewAppointment', $appointmentId)
+            ->set('selectedPendingPatientId', $patientId)
+            ->call('linkPendingRequestToExistingPatient');
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointmentId,
+            'patient_id' => $patientId,
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $requesterUserId,
+            'patient_id' => null,
+        ]);
+    }
+
+    public function test_unlink_clears_appointment_and_user_patient_mapping_for_self_booking(): void
+    {
+        $patientUserId = DB::table('users')->insertGetId([
+            'username' => 'unlink.self',
+            'email' => 'unlink-self@example.com',
+            'patient_id' => null,
+            'password' => bcrypt('secret123'),
+            'role' => 3,
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $patientId = DB::table('patients')->insertGetId([
+            'first_name' => 'Unlink',
+            'last_name' => 'Self',
+            'mobile_number' => '09983334444',
+            'email_address' => 'unlink-self@example.com',
+            'birth_date' => '1995-08-08',
+            'modified_by' => 'STAFF',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->where('id', $patientUserId)->update([
+            'patient_id' => $patientId,
+            'updated_at' => now(),
+        ]);
+
+        $appointmentId = DB::table('appointments')->insertGetId([
+            'patient_id' => $patientId,
+            'service_id' => 1,
+            'appointment_date' => now()->addDay()->setTime(12, 0)->toDateTimeString(),
+            'status' => 'Scheduled',
+            'requester_user_id' => $patientUserId,
+            'requester_first_name' => 'Unlink',
+            'requester_last_name' => 'Self',
+            'requester_contact_number' => '09983334444',
+            'requester_email' => 'unlink-self@example.com',
+            'booking_for_other' => false,
+            'modified_by' => 'PATIENT',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Livewire::test(AppointmentCalendar::class)
+            ->call('viewAppointment', $appointmentId)
+            ->call('unlinkAppointmentPatient');
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointmentId,
+            'patient_id' => null,
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $patientUserId,
+            'patient_id' => null,
+        ]);
+    }
+
+    public function test_unlink_then_relink_updates_user_patient_mapping(): void
+    {
+        $patientUserId = DB::table('users')->insertGetId([
+            'username' => 'relink.self',
+            'email' => 'relink-self@example.com',
+            'patient_id' => null,
+            'password' => bcrypt('secret123'),
+            'role' => 3,
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $oldPatientId = DB::table('patients')->insertGetId([
+            'first_name' => 'Old',
+            'last_name' => 'Record',
+            'mobile_number' => '09984445555',
+            'email_address' => 'old@example.com',
+            'birth_date' => '1990-10-10',
+            'modified_by' => 'STAFF',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $newPatientId = DB::table('patients')->insertGetId([
+            'first_name' => 'New',
+            'last_name' => 'Record',
+            'mobile_number' => '09985556666',
+            'email_address' => 'relink-self@example.com',
+            'birth_date' => '1991-11-11',
+            'modified_by' => 'STAFF',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->where('id', $patientUserId)->update([
+            'patient_id' => $oldPatientId,
+            'updated_at' => now(),
+        ]);
+
+        $appointmentId = DB::table('appointments')->insertGetId([
+            'patient_id' => $oldPatientId,
+            'service_id' => 1,
+            'appointment_date' => now()->addDay()->setTime(13, 0)->toDateTimeString(),
+            'status' => 'Scheduled',
+            'requester_user_id' => $patientUserId,
+            'requester_first_name' => 'Relink',
+            'requester_last_name' => 'Self',
+            'requester_contact_number' => '09985556666',
+            'requester_email' => 'relink-self@example.com',
+            'booking_for_other' => false,
+            'modified_by' => 'PATIENT',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Livewire::test(AppointmentCalendar::class)
+            ->call('viewAppointment', $appointmentId)
+            ->call('unlinkAppointmentPatient')
+            ->set('selectedPendingPatientId', $newPatientId)
+            ->call('linkPendingRequestToExistingPatient');
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointmentId,
+            'patient_id' => $newPatientId,
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $patientUserId,
+            'patient_id' => $newPatientId,
         ]);
     }
 }
