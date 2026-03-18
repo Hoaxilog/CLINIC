@@ -258,7 +258,7 @@ class AppointmentCalendar extends Component
             'appointments.status',
             DB::raw($this->appointmentPatientFirstNameExpression().' as first_name'),
             DB::raw($this->appointmentPatientLastNameExpression().' as last_name'),
-            'patients.middle_name',
+            DB::raw($this->appointmentPatientMiddleNameExpression().' as middle_name'),
             DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
             DB::raw($this->appointmentPatientBirthDateExpression().' as birth_date'),
             'services.service_name',
@@ -1024,7 +1024,7 @@ class AppointmentCalendar extends Component
                     'appointments.*',
                     DB::raw($this->appointmentPatientFirstNameExpression().' as first_name'),
                     DB::raw($this->appointmentPatientLastNameExpression().' as last_name'),
-                    'patients.middle_name',
+                    DB::raw($this->appointmentPatientMiddleNameExpression().' as middle_name'),
                     DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as mobile_number'),
                     DB::raw($this->appointmentPatientBirthDateExpression().' as birth_date'),
                     'services.service_name',
@@ -1571,6 +1571,7 @@ class AppointmentCalendar extends Component
         $requestData = $this->resolveCurrentPendingRequestData($appointment);
         $firstName = trim((string) ($requestData['first_name'] ?? ''));
         $lastName = trim((string) ($requestData['last_name'] ?? ''));
+        $middleName = trim((string) ($requestData['middle_name'] ?? ''));
 
         if ($firstName === '' || $lastName === '') {
             session()->flash('error', 'Request must have both first and last name before creating a patient record.');
@@ -1581,6 +1582,7 @@ class AppointmentCalendar extends Component
         $patientId = DB::table('patients')->insertGetId([
             'first_name' => $firstName,
             'last_name' => $lastName,
+            'middle_name' => $middleName !== '' ? $middleName : null,
             'mobile_number' => trim((string) ($requestData['mobile_number'] ?? '')),
             'birth_date' => ! empty($requestData['birth_date']) ? $requestData['birth_date'] : null,
             'email_address' => ! empty($requestData['email_address']) ? $requestData['email_address'] : null,
@@ -1609,6 +1611,7 @@ class AppointmentCalendar extends Component
                     'source_appointment_id' => (int) $this->viewingAppointmentId,
                     'first_name' => $firstName,
                     'last_name' => $lastName,
+                    'middle_name' => $middleName !== '' ? $middleName : null,
                 ],
             ])
             ->log('Created Patient from Appointment Request');
@@ -1663,6 +1666,12 @@ class AppointmentCalendar extends Component
                 'requested_patient_last_name',
                 'requester_last_name',
                 'last_name'
+            ),
+            'middle_name' => $this->appointmentRequestedPatientValue(
+                $appointment,
+                'requested_patient_middle_name',
+                'requester_middle_name',
+                'middle_name'
             ),
             'mobile_number' => $this->appointmentUsesRequestedPatientIdentity($appointment)
                 ? ''
@@ -1954,6 +1963,23 @@ class AppointmentCalendar extends Component
         }
 
         return 'COALESCE(patients.last_name, appointments.requester_last_name)';
+    }
+
+    protected function appointmentPatientMiddleNameExpression(): string
+    {
+        if (Schema::hasColumn('appointments', 'requested_patient_middle_name') && Schema::hasColumn('appointments', 'requester_middle_name')) {
+            return 'COALESCE(patients.middle_name, appointments.requested_patient_middle_name, appointments.requester_middle_name)';
+        }
+
+        if (Schema::hasColumn('appointments', 'requested_patient_middle_name')) {
+            return 'COALESCE(patients.middle_name, appointments.requested_patient_middle_name)';
+        }
+
+        if (Schema::hasColumn('appointments', 'requester_middle_name')) {
+            return 'COALESCE(patients.middle_name, appointments.requester_middle_name)';
+        }
+
+        return 'patients.middle_name';
     }
 
     protected function appointmentPatientBirthDateExpression(): string

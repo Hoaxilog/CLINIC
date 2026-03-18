@@ -2,69 +2,173 @@
 
 @section('content')
     @php
-        $isAdmin = auth()->user()?->role === 1;
-        $appointmentsQuickLink = route('appointment.calendar');
-        $profitQuickLink = $isAdmin ? route('reports.index', ['section' => 'overview']) : '#needs-attention';
-        $marginQuickLink = $isAdmin ? route('reports.index', ['section' => 'overview']) : '#needs-attention';
-        $cancellationQuickLink = $isAdmin ? route('reports.index', ['section' => 'appointments']) : '#status-breakdown';
-        $monthlyProfitQuickLink = $isAdmin ? route('reports.index', ['section' => 'overview']) : '#today-schedule';
+        $isAdminDashboard = $isAdminDashboard ?? auth()->user()?->isAdmin();
+        $isDentistDashboard = $isDentistDashboard ?? auth()->user()?->isDentist();
+        $isStaffDashboard = $isStaffDashboard ?? auth()->user()?->isStaff();
+
+        $roleTitle = $isAdminDashboard ? 'Admin Dashboard' : ($isDentistDashboard ? 'Dentist Dashboard' : 'Staff Dashboard');
+        $roleSummary = $isAdminDashboard
+            ? 'Use this as a management hub for user oversight, reports, activity visibility, and clinic-wide operational snapshots.'
+            : ($isDentistDashboard
+                ? 'Use this as a chairside control center for queue flow, active patients, and fast clinical navigation.'
+                : 'Use this as a front-desk quick-link hub for appointment flow, pending approvals, and patient coordination.');
+
+        $topCards = $isAdminDashboard
+            ? [
+                [
+                    'label' => 'Pending Requests',
+                    'value' => $pendingApprovalsCount ?? 0,
+                    'meta' => 'Awaiting clinic review',
+                    'href' => route('appointment.requests'),
+                    'accent' => 'text-rose-700',
+                ],
+                [
+                    'label' => 'Registered Patients',
+                    'value' => $totalPatients ?? 0,
+                    'meta' => 'Current patient records',
+                    'href' => route('patient-records'),
+                    'accent' => 'text-emerald-700',
+                ],
+                [
+                    'label' => 'Today\'s Appointments',
+                    'value' => $todayAppointmentsCount ?? 0,
+                    'meta' => ($todayCompletedCount ?? 0).' completed today',
+                    'href' => route('appointment.calendar'),
+                    'accent' => 'text-sky-700',
+                ],
+                [
+                    'label' => ($cancellationLabel ?? 'This Month').' Cancellation',
+                    'value' => number_format($cancellationRate ?? 0, 1).'%',
+                    'meta' => ($cancelledLast30 ?? 0).' of '.($bookedLast30 ?? 0).' booked',
+                    'href' => route('reports.index'),
+                    'accent' => 'text-amber-700',
+                ],
+            ]
+            : ($isDentistDashboard
+            ? [
+                [
+                    'label' => 'Today\'s Appointments',
+                    'value' => $todayAppointmentsCount ?? 0,
+                    'meta' => ($todayCompletedCount ?? 0).' completed',
+                    'href' => route('appointment.calendar'),
+                    'accent' => 'text-sky-700',
+                ],
+                [
+                    'label' => 'Ongoing Patients',
+                    'value' => $ongoingPatientsCount ?? 0,
+                    'meta' => 'Currently under treatment',
+                    'href' => route('queue'),
+                    'accent' => 'text-emerald-700',
+                ],
+                [
+                    'label' => 'Completed Today',
+                    'value' => $todayCompletedCount ?? 0,
+                    'meta' => ($todayCancelledCount ?? 0).' cancelled',
+                    'href' => route('appointment.calendar'),
+                    'accent' => 'text-indigo-700',
+                ],
+                [
+                    'label' => 'Queue Load',
+                    'value' => $queueLoadCount ?? 0,
+                    'meta' => 'Waiting '.($waitingPatientsCount ?? 0).' · Arrived '.($arrivedPatientsCount ?? 0),
+                    'href' => route('queue'),
+                    'accent' => 'text-amber-700',
+                ],
+            ]
+            : [
+                [
+                    'label' => 'Appointment Requests',
+                    'value' => $pendingApprovalsCount ?? 0,
+                    'meta' => 'Pending appointment requests',
+                    'href' => route('appointment.requests'),
+                    'accent' => 'text-rose-700',
+                ],
+                [
+                    'label' => 'Waiting Patients',
+                    'value' => $waitingPatientsCount ?? 0,
+                    'meta' => 'Ready for queue handling',
+                    'href' => route('queue'),
+                    'accent' => 'text-amber-700',
+                ],
+                [
+                    'label' => 'Arrived Patients',
+                    'value' => $arrivedPatientsCount ?? 0,
+                    'meta' => 'Checked in and on site',
+                    'href' => route('queue'),
+                    'accent' => 'text-cyan-700',
+                ],
+                [
+                    'label' => 'Today\'s Appointments',
+                    'value' => $todayAppointmentsCount ?? 0,
+                    'meta' => ($todayCompletedCount ?? 0).' completed today',
+                    'href' => route('appointment.calendar'),
+                    'accent' => 'text-sky-700',
+                ],
+            ]);
+
+        $quickLinks = $isAdminDashboard
+            ? [
+                ['label' => 'User Accounts', 'description' => 'Manage admin, dentist, and staff accounts.', 'href' => route('users.index')],
+                ['label' => 'Reports', 'description' => 'Review clinic performance and printable reports.', 'href' => route('reports.index')],
+                ['label' => 'Activity Logs', 'description' => 'Audit recent actions across the system.', 'href' => route('activity-logs')],
+                ['label' => 'Appointment Requests', 'description' => 'Review incoming requests without leaving the dashboard.', 'href' => route('appointment.requests')],
+            ]
+            : ($isDentistDashboard
+            ? [
+                ['label' => 'Open Queue', 'description' => 'Manage waiting and ongoing chairside flow.', 'href' => route('queue')],
+                ['label' => 'Patient Records', 'description' => 'Jump straight into patient charts and records.', 'href' => route('patient-records')],
+                ['label' => 'Appointment Calendar', 'description' => 'See the day schedule and status changes.', 'href' => route('appointment.calendar')],
+                ['label' => 'Appointment Requests', 'description' => 'Review pending requests needing clinic attention.', 'href' => route('appointment.requests')],
+            ]
+            : [
+                ['label' => 'Open Appointment Requests', 'description' => 'Approve or reject incoming appointment requests.', 'href' => route('appointment.requests')],
+                ['label' => 'Manage Queue', 'description' => 'Monitor waiting and arrived patients in one place.', 'href' => route('queue')],
+                ['label' => 'Open Patient Records', 'description' => 'Search patient details quickly when assisting the clinic flow.', 'href' => route('patient-records')],
+                ['label' => 'Book Appointment', 'description' => 'Create a booking or reschedule directly.', 'href' => route('appointment')],
+            ]);
     @endphp
 
     <main id="mainContent"
         class="min-h-screen bg-[#f3f4f6] p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
 
-        <div class="grid items-start grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-            <a href="{{ route('patient-records') }}"
-                class="block self-start h-fit group rounded-none border border-gray-100 bg-white p-6 shadow-sm transition hover:border-[#0086DA] hover:shadow-md">
-                <p class="text-sm font-semibold text-gray-600">Total Patients</p>
-                <div class="mt-3 text-4xl font-bold text-gray-900">{{ $totalPatients ?? 0 }}</div>
-                <div class="mt-2 flex items-center justify-between gap-3">
-                    <p class="text-xs font-medium text-gray-500">All Patients</p>
-                    <p class="text-xs font-semibold text-[#0086DA]">View</p>
+        <section class="border border-gray-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 border border-[#0086DA]/15 bg-[#0086DA]/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0086DA]">
+                        {{ $isAdminDashboard ? 'Management View' : ($isDentistDashboard ? 'Clinical View' : 'Operations View') }}
+                    </div>
+                    <h1 class="mt-3 text-3xl font-bold tracking-tight text-gray-900">{{ $roleTitle }}</h1>
+                    <p class="mt-2 max-w-3xl text-sm leading-6 text-gray-600">{{ $roleSummary }}</p>
                 </div>
-            </a>
 
-            <a href="{{ $appointmentsQuickLink }}"
-                class="block self-start h-fit group rounded-none border border-gray-100 bg-white p-6 shadow-sm transition hover:border-[#0086DA] hover:shadow-md">
-                <p class="text-sm font-semibold text-gray-600">Today's Appointments</p>
-                <div class="mt-3 text-4xl font-bold text-gray-900">{{ $todayAppointmentsCount ?? 0 }}</div>
-                <div class="mt-2 flex items-center justify-between gap-3">
-                    <p class="text-xs font-medium text-gray-500">
-                        <span class="text-emerald-600">{{ $todayCompletedCount ?? 0 }} completed</span>
-                        <span class="mx-1 text-gray-300">|</span>
-                        <span class="text-rose-600">{{ $todayCancelledCount ?? 0 }} cancelled</span>
-                    </p>
-                    <p class="text-xs font-semibold text-[#0086DA]">View</p>
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <a href="{{ $isAdminDashboard ? route('reports.index') : route('appointment.calendar') }}"
+                        class="border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition hover:border-[#0086DA] hover:text-[#0086DA]">
+                        {{ $isAdminDashboard ? 'Open Reports' : 'Open Schedule' }}
+                    </a>
+                    <a href="{{ $isAdminDashboard ? route('users.index') : ($isDentistDashboard ? route('queue') : route('appointment.requests')) }}"
+                        class="border border-[#0086DA] bg-[#0086DA] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#006ab0]">
+                        {{ $isAdminDashboard ? 'Open User Accounts' : ($isDentistDashboard ? 'Open Queue' : 'Open Appointment Requests') }}
+                    </a>
                 </div>
-            </a>
+            </div>
+        </section>
 
-            <a href="{{ $profitQuickLink }}"
-                class="block self-start h-fit group rounded-none border border-gray-100 bg-white p-6 shadow-sm transition hover:border-[#0086DA] hover:shadow-md">
-                <p class="text-sm font-semibold text-gray-600">Today's Profit</p>
-                <div class="mt-3 text-4xl font-bold {{ ($todayProfit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">
-                    PHP {{ number_format($todayProfit ?? 0, 2) }}
-                </div>
-                <div class="mt-2 flex items-center justify-between gap-3">
-                    <p class="text-xs font-medium text-gray-500">
-                        Revenue: PHP {{ number_format($todayRevenue ?? 0, 2) }}
-                        <span class="mx-1 text-gray-300">|</span>
-                        Cost: PHP {{ number_format($todayCost ?? 0, 2) }}
-                    </p>
-                    <p class="text-xs font-semibold text-[#0086DA]">View</p>
-                </div>
-            </a>
-
-            <a href="{{ $marginQuickLink }}"
-                class="block self-start h-fit group rounded-none border border-gray-100 bg-white p-6 shadow-sm transition hover:border-[#0086DA] hover:shadow-md">
-                <p class="text-sm font-semibold text-gray-600">Today Margin</p>
-                <div class="mt-3 text-4xl font-bold text-gray-900">
-                    {{ $todayProfitMargin === null ? '--' : number_format($todayProfitMargin, 1) . '%' }}
-                </div>
-                <div class="mt-2 flex items-center justify-between gap-3">
-                    <p class="text-xs font-medium text-gray-500">Profit as percentage of today's collected payment</p>
-                    <p class="text-xs font-semibold text-[#0086DA]">View</p>
-                </div>
-            </a>
+        <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            @foreach ($topCards as $card)
+                <a href="{{ $card['href'] }}"
+                    class="group border border-gray-200 bg-white p-5 shadow-sm transition hover:border-[#0086DA] hover:shadow-md">
+                    <div>
+                        <p class="text-sm font-semibold text-gray-600">{{ $card['label'] }}</p>
+                        <div class="mt-3 text-4xl font-bold text-gray-900">{{ $card['value'] }}</div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between gap-4">
+                        <p class="text-xs font-medium text-gray-500">{{ $card['meta'] }}</p>
+                        <span class="shrink-0 text-sm font-semibold {{ $card['accent'] }}">View</span>
+                    </div>
+                </a>
+            @endforeach
         </div>
 
         <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -72,15 +176,19 @@
                 @livewire('pending-approvals-widget')
             </div>
 
-            <section id="today-schedule" class="rounded-none border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="mb-4 flex items-center justify-between">
+            <section id="today-schedule" class="border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="mb-4 flex items-center justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-bold text-gray-900">Today's Appointment Schedule</h2>
-                        <p class="mt-0.5 text-xs text-gray-500">Today's booked appointments and status.</p>
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ $isAdminDashboard ? 'Clinic-wide appointment visibility for scheduling and oversight.' : ($isDentistDashboard ? 'Today\'s booked patients and treatment flow.' : 'Today\'s booked patients and front-desk appointment flow.') }}
+                        </p>
                     </div>
+                    <a href="{{ route('appointment.calendar') }}"
+                        class="text-xs font-semibold uppercase tracking-[0.14em] text-[#0086DA]">Open Calendar</a>
                 </div>
 
-                <div class="max-h-[380px] overflow-auto rounded-none border border-gray-100">
+                <div class="max-h-[380px] overflow-auto border border-gray-100">
                     <table class="min-w-full text-sm">
                         <thead class="sticky top-0 bg-gray-50/95 text-xs uppercase tracking-wide text-gray-500">
                             <tr>
@@ -111,9 +219,9 @@
                                 @endphp
                                 <tr>
                                     <td class="px-4 py-3 font-semibold text-gray-900">
-                                        {{ \Carbon\Carbon::parse($appt->appointment_date)->format('h:i A') }}</td>
-                                    <td class="px-4 py-3 text-gray-800">{{ $appt->last_name }}, {{ $appt->first_name }}
+                                        {{ \Carbon\Carbon::parse($appt->appointment_date)->format('h:i A') }}
                                     </td>
+                                    <td class="px-4 py-3 text-gray-800">{{ $appt->last_name }}, {{ $appt->first_name }}</td>
                                     <td class="px-4 py-3 text-gray-700">{{ $appt->service_name }}</td>
                                     <td class="px-4 py-3">
                                         <span
@@ -122,8 +230,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">No appointments
-                                        scheduled today.</td>
+                                    <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">No appointments scheduled today.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -133,152 +240,194 @@
         </div>
 
         <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <section id="needs-attention" class="rounded-none border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="mb-4 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-900">Needs Attention</h2>
-                        <p class="mt-0.5 text-xs text-gray-500">Priority checks for operations and revenue.</p>
+            @if ($isDentistDashboard)
+                <section id="needs-attention" class="border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-bold text-gray-900">Clinical Priorities</h2>
+                        <p class="mt-1 text-xs text-gray-500">Quick links to the patients and queues that need immediate attention.</p>
                     </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <a href="{{ route('queue') }}"
+                            class="block border border-amber-100 bg-amber-50 p-4 transition hover:border-amber-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Waiting + Arrived</div>
+                            <div class="mt-2 text-3xl font-bold text-amber-800">{{ $queueLoadCount ?? 0 }}</div>
+                            <p class="mt-1 text-xs text-amber-700/80">Waiting {{ $waitingPatientsCount ?? 0 }} · Arrived {{ $arrivedPatientsCount ?? 0 }}</p>
+                        </a>
+
+                        <a href="{{ route('appointment.calendar') }}"
+                            class="block border border-sky-100 bg-sky-50 p-4 transition hover:border-sky-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">Completed Today</div>
+                            <div class="mt-2 text-3xl font-bold text-sky-800">{{ $todayCompletedCount ?? 0 }}</div>
+                            <p class="mt-1 text-xs text-sky-700/80">Finished appointments for today.</p>
+                        </a>
+
+                        <a href="{{ route('patient-records') }}"
+                            class="block border border-rose-100 bg-rose-50 p-4 transition hover:border-rose-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-rose-700">Patient Records</div>
+                            <div class="mt-2 text-3xl font-bold text-rose-800">{{ $totalPatients ?? 0 }}</div>
+                            <p class="mt-1 text-xs text-rose-700/80">Open charts and patient details quickly.</p>
+                        </a>
+
+                        <a href="{{ route('appointment.calendar') }}"
+                            class="block border border-emerald-100 bg-emerald-50 p-4 transition hover:border-emerald-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">{{ $cancellationLabel ?? 'This Month' }} Cancellation</div>
+                            <div class="mt-2 text-3xl font-bold text-emerald-800">{{ number_format($cancellationRate ?? 0, 1) }}%</div>
+                            <p class="mt-1 text-xs text-emerald-700/80">{{ $cancelledLast30 ?? 0 }} of {{ $bookedLast30 ?? 0 }} booked appointments.</p>
+                        </a>
+                    </div>
+                </section>
+            @elseif ($isAdminDashboard)
+                <section id="needs-attention" class="border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-bold text-gray-900">Management Snapshot</h2>
+                        <p class="mt-1 text-xs text-gray-500">Track workload, pending requests, and clinic flow at a glance.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <a href="{{ route('users.index') }}"
+                            class="block border border-indigo-100 bg-indigo-50 p-4 transition hover:border-indigo-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-indigo-700">User Accounts</div>
+                            <div class="mt-2 text-3xl font-bold text-indigo-800">Manage</div>
+                            <p class="mt-1 text-xs text-indigo-700/80">Review access across admin, dentist, and staff accounts.</p>
+                        </a>
+
+                        <a href="{{ route('reports.index') }}"
+                            class="block border border-emerald-100 bg-emerald-50 p-4 transition hover:border-emerald-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Reports</div>
+                            <div class="mt-2 text-3xl font-bold text-emerald-800">{{ number_format($monthProfit ?? 0, 0) }}</div>
+                            <p class="mt-1 text-xs text-emerald-700/80">Current month profit overview.</p>
+                        </a>
+
+                        <a href="{{ route('activity-logs') }}"
+                            class="block border border-sky-100 bg-sky-50 p-4 transition hover:border-sky-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">Recent Activity</div>
+                            <div class="mt-2 text-3xl font-bold text-sky-800">{{ count($recentActivities ?? []) }}</div>
+                            <p class="mt-1 text-xs text-sky-700/80">Latest actions available for audit review.</p>
+                        </a>
+
+                        <a href="{{ route('appointment.requests') }}"
+                            class="block border border-amber-100 bg-amber-50 p-4 transition hover:border-amber-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Pending Requests</div>
+                            <div class="mt-2 text-3xl font-bold text-amber-800">{{ $pendingApprovalsCount ?? 0 }}</div>
+                            <p class="mt-1 text-xs text-amber-700/80">Requests waiting for staff or admin review.</p>
+                        </a>
+                    </div>
+                </section>
+            @else
+                @livewire('cancelled-appointments-widget')
+            @endif
+
+            <section class="border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="mb-4">
+                    <h2 class="text-lg font-bold text-gray-900">{{ $isAdminDashboard ? 'Management Tools' : ($isDentistDashboard ? 'Quick Access' : 'Front Desk Support') }}</h2>
+                    <p class="mt-1 text-xs text-gray-500">
+                        {{ $isAdminDashboard ? 'Fast links for management, oversight, and approval work.' : ($isDentistDashboard ? 'Fast links for chairside and patient-care actions.' : 'Use these tools after reviewing cancelled appointments and follow-up needs.') }}
+                    </p>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <a href="#pending-approvals"
-                        class="block rounded-none bg-rose-50 p-4 transition hover:ring-1 hover:ring-rose-300">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-rose-700">Pending Requests</div>
-                        <div class="mt-2 text-3xl font-bold text-rose-800">{{ $pendingApprovalsCount ?? 0 }}</div>
-                        <p class="mt-1 text-xs text-rose-700/80">Unapproved appointment requests.<span
-                                class="float-right font-semibold text-rose-700">View</span></p>
-                    </a>
-                    <a href="{{ route('queue') }}"
-                        class="block rounded-none bg-amber-50 p-4 transition hover:ring-1 hover:ring-amber-300">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Queue Load</div>
-                        <div class="mt-2 text-3xl font-bold text-amber-800">
-                            {{ ($waitingPatientsCount ?? 0) + ($arrivedPatientsCount ?? 0) }}</div>
-                        <p class="mt-1 text-xs text-amber-700/80">
-                            Waiting {{ $waitingPatientsCount ?? 0 }} · Arrived {{ $arrivedPatientsCount ?? 0 }}
-                            <span class="float-right font-semibold text-amber-700">View</span>
-                        </p>
-                    </a>
-                    <a href="{{ $cancellationQuickLink }}"
-                        class="block rounded-none bg-sky-50 p-4 transition hover:ring-1 hover:ring-sky-300">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">
-                            {{ $cancellationLabel ?? 'This Month' }} Cancellation</div>
-                        <div class="mt-2 text-3xl font-bold text-sky-800">{{ number_format($cancellationRate ?? 0, 1) }}%
-                        </div>
-                        <p class="mt-1 text-xs text-sky-700/80">{{ $cancelledLast30 ?? 0 }} of {{ $bookedLast30 ?? 0 }}
-                            booked appointments.<span class="float-right font-semibold text-sky-700">View</span></p>
-                    </a>
-                    <a href="{{ $monthlyProfitQuickLink }}"
-                        class="block rounded-none bg-emerald-50 p-4 transition hover:ring-1 hover:ring-emerald-300">
-                        <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Monthly Profit</div>
-                        <div class="mt-2 text-3xl font-bold text-emerald-800">PHP {{ number_format($monthProfit ?? 0, 2) }}
-                        </div>
-                        <p class="mt-1 text-xs text-emerald-700/80">
-                            {{ $monthProfitPct === null ? 'No previous month baseline' : ($monthProfitPct >= 0 ? '+' : '') . $monthProfitPct . '% vs last month' }}
-                            <span class="float-right font-semibold text-emerald-700">View</span>
-                        </p>
-                        <p class="mt-1 text-xs text-emerald-700/80">
-                            Revenue PHP {{ number_format($monthRevenue ?? 0, 2) }} · Cost PHP
-                            {{ number_format($monthCost ?? 0, 2) }}
-                        </p>
-                    </a>
+                <div class="grid grid-cols-1 gap-3">
+                    @foreach ($quickLinks as $link)
+                        <a href="{{ $link['href'] }}"
+                            class="border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-[#0086DA] hover:bg-white">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">{{ $link['label'] }}</p>
+                                    <p class="mt-1 text-xs leading-5 text-gray-500">{{ $link['description'] }}</p>
+                                </div>
+                                <span class="text-sm font-semibold text-[#0086DA]">Open</span>
+                            </div>
+                        </a>
+                    @endforeach
+
+                    @unless ($isAdminDashboard)
+                        <button type="button" id="addPatientQuickAction"
+                            class="border border-dashed border-gray-300 bg-white px-4 py-4 text-left transition hover:border-[#0086DA]">
+                            <p class="text-sm font-semibold text-gray-900">Add Patient</p>
+                            <p class="mt-1 text-xs leading-5 text-gray-500">Launch the patient form modal without leaving the dashboard.</p>
+                        </button>
+                    @endunless
                 </div>
             </section>
+        </div>
 
-            <section id="status-breakdown" class="rounded-none border border-gray-100 bg-white p-6 shadow-sm">
+        <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <section id="status-breakdown" class="border border-gray-200 bg-white p-6 shadow-sm">
                 <div class="mb-4">
                     <h2 class="text-lg font-bold text-gray-900">Appointment Status Today</h2>
-                    <p class="mt-0.5 text-xs text-gray-500">Pie or doughnut breakdown for today's statuses.</p>
+                    <p class="mt-1 text-xs text-gray-500">
+                        {{ $isAdminDashboard ? 'A clinic-wide status snapshot for oversight and reporting.' : ($isDentistDashboard ? 'A quick treatment-flow snapshot for the day.' : 'A quick appointment-flow snapshot for the day.') }}
+                    </p>
                 </div>
                 <div id="statusChartWrap" class="relative min-h-[260px] w-full">
                     <canvas id="dashboardStatusTodayChart"></canvas>
                 </div>
                 <div id="statusChartEmpty"
-                    class="hidden rounded-none border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm font-medium text-gray-500">
+                    class="hidden border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm font-medium text-gray-500">
                     No appointments recorded today
                 </div>
             </section>
-        </div>
 
-        <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <section id="recent-activity" class="rounded-none border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="mb-4">
-                    <h2 class="text-lg font-bold text-gray-900">Recent Activity</h2>
-                    <p class="mt-0.5 text-xs text-gray-500">Latest system actions (up to 5).</p>
-                </div>
+            @if ($isDentistDashboard || $isAdminDashboard)
+                <section id="recent-activity" class="border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-bold text-gray-900">{{ $isAdminDashboard ? 'Recent Activity & Audit Trail' : 'Recent Activity' }}</h2>
+                        <p class="mt-1 text-xs text-gray-500">{{ $isAdminDashboard ? 'Latest activity across the clinic for management review.' : 'Latest actions across the clinic system.' }}</p>
+                    </div>
 
-                <div class="max-h-[320px] overflow-auto rounded-none border border-gray-100">
-                    <table class="min-w-full text-sm">
-                        <thead class="sticky top-0 bg-gray-50/95 text-xs uppercase tracking-wide text-gray-500">
-                            <tr>
-                                <th class="px-4 py-3 text-left">User</th>
-                                <th class="px-4 py-3 text-left">Activity</th>
-                                <th class="px-4 py-3 text-left">Date/Time</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white">
-                            @forelse($recentActivities as $activity)
+                    <div class="max-h-[320px] overflow-auto border border-gray-100">
+                        <table class="min-w-full text-sm">
+                            <thead class="sticky top-0 bg-gray-50/95 text-xs uppercase tracking-wide text-gray-500">
                                 <tr>
-                                    <td class="px-4 py-3 font-semibold text-gray-900">
-                                        {{ $activity->causer_name ?? 'System' }}</td>
-                                    <td class="px-4 py-3 text-gray-700">
-                                        {{ $activity->description ?: $activity->event ?? 'Activity updated' }}</td>
-                                    <td class="px-4 py-3 text-gray-600">
-                                        {{ \Carbon\Carbon::parse($activity->created_at)->format('M d, Y h:i A') }}</td>
+                                    <th class="px-4 py-3 text-left">User</th>
+                                    <th class="px-4 py-3 text-left">Activity</th>
+                                    <th class="px-4 py-3 text-left">Date/Time</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">No recent
-                                        activity found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 bg-white">
+                                @forelse($recentActivities as $activity)
+                                    <tr>
+                                        <td class="px-4 py-3 font-semibold text-gray-900">{{ $activity->causer_name ?? 'System' }}</td>
+                                        <td class="px-4 py-3 text-gray-700">
+                                            {{ $activity->description ?: $activity->event ?? 'Activity updated' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-gray-600">
+                                            {{ \Carbon\Carbon::parse($activity->created_at)->format('M d, Y h:i A') }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">No recent activity found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            @else
+                <section class="border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-bold text-gray-900">Appointment Overview</h2>
+                        <p class="mt-1 text-xs text-gray-500">Track today’s clinic movement while handling patient cancellations and rebooking.</p>
+                    </div>
 
-            <section class="rounded-none border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="mb-4">
-                    <h2 class="text-lg font-bold text-gray-900">Quick Actions</h2>
-                    <p class="mt-0.5 text-xs text-gray-500">Run common tasks instantly.</p>
-                </div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <a href="{{ route('queue') }}"
+                            class="block border border-amber-100 bg-amber-50 p-4 transition hover:border-amber-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Queue Load</div>
+                            <div class="mt-2 text-3xl font-bold text-amber-800">{{ $queueLoadCount ?? 0 }}</div>
+                            <p class="mt-1 text-xs text-amber-700/80">Waiting {{ $waitingPatientsCount ?? 0 }} · Arrived {{ $arrivedPatientsCount ?? 0 }}</p>
+                        </a>
 
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <button type="button" id="addPatientQuickAction"
-                        class="flex items-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-3 text-left text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
-                        <span>+</span>
-                        <span>Add Patient</span>
-                    </button>
-                    <a href="{{ route('appointment') }}"
-                        class="flex items-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
-                        <span>??</span>
-                        <span>Book Appointment</span>
-                    </a>
-                    <a href="{{ route('queue') }}"
-                        class="flex items-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
-                        <span>??</span>
-                        <span>Register Walk-In Patient</span>
-                    </a>
-                    <a href="#today-schedule"
-                        class="flex items-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition">
-                        <span>??</span>
-                        <span>View Today's Schedule</span>
-                    </a>
-                    @if (auth()->user()?->role === 1)
-                        <a href="{{ route('reports.index') }}"
-                            class="flex items-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition sm:col-span-2">
-                            <span>??</span>
-                            <span>Generate Reports</span>
+                        <a href="{{ route('appointment.calendar') }}"
+                            class="block border border-sky-100 bg-sky-50 p-4 transition hover:border-sky-300">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">Today's Appointments</div>
+                            <div class="mt-2 text-3xl font-bold text-sky-800">{{ $todayAppointmentsCount ?? 0 }}</div>
+                            <p class="mt-1 text-xs text-sky-700/80">All active booked appointments today.</p>
                         </a>
-                    @else
-                        <a href="{{ route('appointment') }}"
-                            class="flex items-center gap-2 rounded-none border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:border-[#0086DA] hover:text-[#0086DA] transition sm:col-span-2">
-                            <span>??</span>
-                            <span>Open Appointments</span>
-                        </a>
-                    @endif
-                </div>
-            </section>
+                    </div>
+                </section>
+            @endif
         </div>
 
         <livewire:patient-form-controller.patient-form-modal />
@@ -331,9 +480,7 @@
                     labels: statusLabels,
                     datasets: [{
                         data: statusCounts,
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#06b6d4', '#10b981', '#16a34a',
-                            '#ef4444'
-                        ],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#06b6d4', '#10b981', '#16a34a', '#ef4444'],
                         borderWidth: 0,
                         hoverOffset: 8
                     }]

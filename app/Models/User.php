@@ -3,26 +3,23 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Filament\Models\Contracts\HasName;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements HasName
+class User extends Authenticatable
 {
-    public function getRoleLabelAttribute()
-    {
-        // These match the IDs in your database (1=admin/dentist, 2=staff, 3=patient)
-        return match($this->role) {
-            1 => 'Admin/Dentist',
-            2 => 'Staff',
-            3 => 'Patient',
-            default => 'Unknown',
-        };
-    }
-
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public const ROLE_DENTIST = 1;
+
+    public const ROLE_STAFF = 2;
+
+    public const ROLE_PATIENT = 3;
+
+    public const ROLE_ADMIN = 4;
 
     /**
      * The attributes that are mass assignable.
@@ -36,7 +33,6 @@ class User extends Authenticatable implements HasName
         'email',
         'password',
     ];
-    
 
     /**
      * The attributes that should be hidden for serialization.
@@ -61,13 +57,68 @@ class User extends Authenticatable implements HasName
         ];
     }
 
-    public function getFilamentName(): string
+    public static function roleLabelFromId(?int $role): string
     {
-        return (string) (
-            $this->name
-            ?? $this->username
-            ?? $this->email
-            ?? 'User'
-        );
+        return match ($role) {
+            self::ROLE_ADMIN => 'Admin',
+            self::ROLE_DENTIST => 'Dentist',
+            self::ROLE_STAFF => 'Staff',
+            self::ROLE_PATIENT => 'Patient',
+            default => 'Unknown',
+        };
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function internalRoleOptions(): array
+    {
+        return [
+            self::ROLE_ADMIN => 'Admin',
+            self::ROLE_DENTIST => 'Dentist',
+            self::ROLE_STAFF => 'Staff',
+        ];
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return self::roleLabelFromId($this->role !== null ? (int) $this->role : null);
+    }
+
+    public function isDentist(): bool
+    {
+        return (int) $this->role === self::ROLE_DENTIST;
+    }
+
+    public function isStaff(): bool
+    {
+        return (int) $this->role === self::ROLE_STAFF;
+    }
+
+    public function isPatient(): bool
+    {
+        return (int) $this->role === self::ROLE_PATIENT;
+    }
+
+    public function isAdmin(): bool
+    {
+        return (int) $this->role === self::ROLE_ADMIN;
+    }
+
+    public function canAccessOperationalPages(): bool
+    {
+        return in_array((int) $this->role, [
+            self::ROLE_ADMIN,
+            self::ROLE_DENTIST,
+            self::ROLE_STAFF,
+        ], true);
+    }
+
+    public function canHandleChairsideFlow(): bool
+    {
+        return in_array((int) $this->role, [
+            self::ROLE_ADMIN,
+            self::ROLE_DENTIST,
+        ], true);
     }
 }

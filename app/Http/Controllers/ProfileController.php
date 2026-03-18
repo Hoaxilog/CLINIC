@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,7 @@ class ProfileController extends Controller
     {
         $user = DB::table('users')->where('id', Auth::id())->first();
         $isGoogleUser = $user && ! empty($user->google_id);
-        if ($user && (int) $user->role === 3) {
+        if ($user && (int) $user->role === User::ROLE_PATIENT) {
             $latestRequestIdentity = DB::table('appointments')
                 ->where(function ($query) use ($user) {
                     $query->where('requester_user_id', $user->id);
@@ -44,7 +45,7 @@ class ProfileController extends Controller
         }
 
         // Fetch role name for display
-        $roleName = DB::table('roles')->where('id', $user->role)->value('role_name');
+        $roleName = User::roleLabelFromId($user?->role !== null ? (int) $user->role : null);
 
         return view('profile', compact('user', 'roleName', 'isGoogleUser'));
     }

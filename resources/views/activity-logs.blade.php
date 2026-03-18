@@ -101,7 +101,7 @@
                             @if($activity->causer)
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm
-                                        {{ optional($activity->causer)->role === 1 ? 'bg-emerald-500' : 'bg-[#0086da]' }}">
+                                        {{ optional($activity->causer)->isAdmin() ? 'bg-emerald-500' : 'bg-[#0086da]' }}">
                                         {{ strtoupper(substr($activity->causer->username, 0, 1)) }}
                                     </div>
                                     <div>
@@ -109,10 +109,7 @@
                                             {{ $activity->causer->username }}
                                         </div>
                                         <div class="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                                            @if($activity->causer->role === 1) Admin
-                                            @elseif($activity->causer->role === 2) Staff
-                                            @else User
-                                            @endif
+                                            {{ \App\Models\User::roleLabelFromId((int) $activity->causer->role) }}
                                         </div>
                                     </div>
                                 </div>
@@ -186,7 +183,7 @@
                         <td class="px-6 py-4 text-sm text-gray-700">
                             @php
                                 $role = optional($activity->causer)->role;
-                                $actor = $role === 1 ? 'Dentist' : ($role === 2 ? 'Staff' : 'User');
+                                $actor = \App\Models\User::roleLabelFromId($role !== null ? (int) $role : null);
 
                                 $event = strtolower($activity->event ?? '');
                                 $desc = strtolower($activity->description ?? '');

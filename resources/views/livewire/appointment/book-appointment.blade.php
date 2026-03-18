@@ -174,7 +174,7 @@
                                 </p>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
 
                                 <div>
                                     <label
@@ -187,6 +187,19 @@
                                     @error('first_name')
                                         <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
                                             data-error-for="first_name">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                        {{ $booking_for === 'someone_else' ? 'Contact Middle Name (Optional)' : 'Middle Name (Optional)' }}
+                                    </label>
+                                    <input type="text" wire:model.defer="middle_name" data-validate-field="middle_name"
+                                        placeholder="Santos" class="{{ $fieldClass('middle_name') }}">
+                                    @error('middle_name')
+                                        <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                            data-error-for="middle_name">{{ $message }}</p>
                                     @enderror
                                 </div>
 
@@ -234,7 +247,7 @@
                                     @enderror
                                 </div>
 
-                                <div class="md:col-span-2">
+                                <div class="md:col-span-2 xl:col-span-3">
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
                                         Email Address <span class="text-red-500">*</span>
@@ -261,7 +274,7 @@
                                     </p>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                                         <div>
                                             <label
                                                 class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
@@ -273,6 +286,20 @@
                                             @error('patient_first_name')
                                                 <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
                                                     data-error-for="patient_first_name">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                                Patient Middle Name (Optional)
+                                            </label>
+                                            <input type="text" wire:model.defer="patient_middle_name"
+                                                data-validate-field="patient_middle_name" placeholder="Mae"
+                                                class="{{ $fieldClass('patient_middle_name') }}">
+                                            @error('patient_middle_name')
+                                                <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                                    data-error-for="patient_middle_name">{{ $message }}</p>
                                             @enderror
                                         </div>
 

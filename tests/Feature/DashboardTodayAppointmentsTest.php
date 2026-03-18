@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\Dashboard;
+use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -106,5 +107,70 @@ class DashboardTodayAppointmentsTest extends TestCase
         $this->assertSame(2, $data['todayAppointmentsCount']);
         $this->assertSame(1, $data['todayCompletedCount']);
         $this->assertSame(1, $data['todayUpcomingCount']);
+    }
+
+    public function test_dashboard_marks_role_mode_for_dentist_users(): void
+    {
+        $userId = DB::table('users')->insertGetId([
+            'username' => 'dentist.user',
+            'email' => 'dentist@example.com',
+            'password' => bcrypt('secret123'),
+            'role' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs(User::query()->findOrFail($userId));
+
+        $view = app(Dashboard::class)->index();
+        $data = $view->getData();
+
+        $this->assertFalse($data['isAdminDashboard']);
+        $this->assertTrue($data['isDentistDashboard']);
+        $this->assertFalse($data['isStaffDashboard']);
+        $this->assertArrayHasKey('queueLoadCount', $data);
+    }
+
+    public function test_dashboard_marks_role_mode_for_staff_users(): void
+    {
+        $userId = DB::table('users')->insertGetId([
+            'username' => 'staff.user',
+            'email' => 'staff@example.com',
+            'password' => bcrypt('secret123'),
+            'role' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs(User::query()->findOrFail($userId));
+
+        $view = app(Dashboard::class)->index();
+        $data = $view->getData();
+
+        $this->assertFalse($data['isAdminDashboard']);
+        $this->assertFalse($data['isDentistDashboard']);
+        $this->assertTrue($data['isStaffDashboard']);
+        $this->assertArrayHasKey('queueLoadCount', $data);
+    }
+
+    public function test_dashboard_marks_role_mode_for_admin_users(): void
+    {
+        $userId = DB::table('users')->insertGetId([
+            'username' => 'admin.user',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('secret123'),
+            'role' => 4,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs(User::query()->findOrFail($userId));
+
+        $view = app(Dashboard::class)->index();
+        $data = $view->getData();
+
+        $this->assertTrue($data['isAdminDashboard']);
+        $this->assertFalse($data['isDentistDashboard']);
+        $this->assertFalse($data['isStaffDashboard']);
     }
 }

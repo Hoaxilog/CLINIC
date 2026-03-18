@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -18,40 +20,38 @@ class UserController extends Controller
 
         // Admins
         $admins = DB::table('users')
-            ->join('roles', 'users.role', '=', 'roles.id')
-            ->where('roles.role_name', 'admin')
+            ->where('users.role', User::ROLE_ADMIN)
             ->orderBy('users.created_at', 'desc')
-            ->select('users.*', 'roles.role_name')
+            ->select('users.*')
             ->paginate($perPage, ['*'], 'admins_page');
+
+        // Dentists
+        $dentists = DB::table('users')
+            ->where('users.role', User::ROLE_DENTIST)
+            ->orderBy('users.created_at', 'desc')
+            ->select('users.*')
+            ->paginate($perPage, ['*'], 'dentists_page');
 
         // Staff
         $staffs = DB::table('users')
-            ->join('roles', 'users.role', '=', 'roles.id')
-            ->where('roles.role_name', 'staff')
+            ->where('users.role', User::ROLE_STAFF)
             ->orderBy('users.created_at', 'desc')
-            ->select('users.*', 'roles.role_name')
+            ->select('users.*')
             ->paginate($perPage, ['*'], 'staffs_page');
 
-        // Normal users
+        // Patient and other non-internal users
         $normalUsers = DB::table('users')
-            ->leftJoin('roles', 'users.role', '=', 'roles.id')
-            ->where(function ($query) {
-                $query->whereNotIn('roles.role_name', ['admin', 'staff'])
-                    ->orWhereNull('roles.role_name');
-            })
+            ->whereNotIn('users.role', array_keys(User::internalRoleOptions()))
             ->orderBy('users.created_at', 'desc')
-            ->select('users.*', 'roles.role_name')
+            ->select('users.*')
             ->paginate($perPage, ['*'], 'users_page');
 
-        return view('users.index', compact('admins', 'staffs', 'normalUsers'));
+        return view('users.index', compact('admins', 'dentists', 'staffs', 'normalUsers'));
     }
 
     public function create()
     {
-        $roles = DB::table('roles')
-            ->whereIn('role_name', ['admin', 'staff'])
-            ->orderBy('id')
-            ->get();
+        $roles = $this->manageableRoles();
 
         return view('users.create', compact('roles'));
     }
@@ -61,21 +61,21 @@ class UserController extends Controller
         $allowedRoleIds = $this->allowedStaffRoleIds();
 
         if (empty($allowedRoleIds)) {
-            return redirect()->route('users.index')->with('error', 'Admin/Staff roles are not configured.');
+            return redirect()->route('users.index')->with('error', 'Internal roles are not configured.');
         }
 
         $request->validate([
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email'), Rule::unique('users', 'username')],
             'password' => ['required', 'confirmed', 'min:8'],
-            'role'     => ['required', 'integer', Rule::in($allowedRoleIds)],
+            'role' => ['required', 'integer', Rule::in($allowedRoleIds)],
         ]);
 
         $token = Str::random(64);
         $insertData = [
-            'username'   => $request->email,
-            'email'      => $request->email,
-            'password'   => Hash::make($request->password),
-            'role'       => $request->role,
+            'username' => $request->email,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
             'verification_token' => $token,
             'email_verified_at' => null,
             'created_at' => now(),
@@ -85,14 +85,14 @@ class UserController extends Controller
         $newUserId = DB::table('users')->insertGetId($insertData);
         $newUser = DB::table('users')->where('id', $newUserId)->first();
 
-        Mail::send('auth.emails.verify-email', ['token' => $token, 'id' => $newUserId, 'name' => 'Team Member'], function($message) use($request) {
+        Mail::send('auth.emails.verify-email', ['token' => $token, 'id' => $newUserId, 'name' => 'Team Member'], function ($message) use ($request) {
             $message->to($request->email);
             $message->subject('Verify Your Email Address - Tejadent');
         });
 
         // 4. === LOGGING (Create) ===
         // No "Diff Check" needed because everything is new.
-        $subject = new \App\Models\User();
+        $subject = new User;
         $subject->id = $newUser->id;
 
         activity()
@@ -100,7 +100,7 @@ class UserController extends Controller
             ->performedOn($subject)
             ->event('user_created') // Specific Event
             ->withProperties([
-                'attributes' => $this->sanitizeAuditAttributes($insertData)
+                'attributes' => $this->sanitizeAuditAttributes($insertData),
             ])
             ->log('Created User Account'); // Specific Description
         // ===========================
@@ -108,6 +108,7 @@ class UserController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'User created successfully.');
     }
+
     public function edit($id)
     {
         $user = DB::table('users')->where('id', $id)->first();
@@ -116,10 +117,7 @@ class UserController extends Controller
             abort(404);
         }
 
-        $roles = DB::table('roles')
-            ->whereIn('role_name', ['admin', 'staff'])
-            ->orderBy('id')
-            ->get();
+        $roles = $this->manageableRoles();
 
         return view('users.edit', compact('user', 'roles'));
     }
@@ -130,7 +128,7 @@ class UserController extends Controller
         $user = DB::table('users')->where('id', $id)->first();
         $oldDataArray = (array) $user; // Convert object to array for easy checking
 
-        if (!$user) {
+        if (! $user) {
             abort(404);
         }
 
@@ -143,15 +141,15 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->ignore($id),
                 Rule::unique('users', 'username')->ignore($id),
             ],
-            'role'     => ['required', 'integer', Rule::in($this->allowedStaffRoleIds())],
+            'role' => ['required', 'integer', Rule::in($this->allowedStaffRoleIds())],
             'password' => ['nullable', 'confirmed', 'min:8'],
         ]);
 
         // 3. Prepare the New Data
         $updateData = [
-            'username'   => $request->email,
-            'email'      => $request->email,
-            'role'       => $request->role,
+            'username' => $request->email,
+            'email' => $request->email,
+            'role' => $request->role,
             'updated_at' => now(),
         ];
 
@@ -167,16 +165,18 @@ class UserController extends Controller
 
         foreach ($updateData as $key => $newValue) {
             // Skip technical fields
-            if ($key === 'updated_at') continue;
+            if ($key === 'updated_at') {
+                continue;
+            }
 
             // Check if value changed
             // Note: Passwords will always look "different" because of hashing, which is correct.
             if (array_key_exists($key, $oldDataArray) && $oldDataArray[$key] != $newValue) {
-                $changedAttributes[$key] = $newValue;       
-                $oldAttributes[$key] = $oldDataArray[$key]; 
+                $changedAttributes[$key] = $newValue;
+                $oldAttributes[$key] = $oldDataArray[$key];
             }
             // Special case: If we added a new field (like setting a security question for the first time)
-            elseif (!array_key_exists($key, $oldDataArray)) {
+            elseif (! array_key_exists($key, $oldDataArray)) {
                 $changedAttributes[$key] = $newValue;
             }
         }
@@ -185,8 +185,8 @@ class UserController extends Controller
         DB::table('users')->where('id', $id)->update($updateData);
 
         // 6. Log ONLY if something changed
-        if (!empty($changedAttributes)) {
-            $subject = new \App\Models\User();
+        if (! empty($changedAttributes)) {
+            $subject = new User;
             $subject->id = $id;
 
             activity()
@@ -195,7 +195,7 @@ class UserController extends Controller
                 ->event('user_updated')
                 ->withProperties([
                     'old' => $this->sanitizeAuditAttributes($oldAttributes),
-                    'attributes' => $this->sanitizeAuditAttributes($changedAttributes)
+                    'attributes' => $this->sanitizeAuditAttributes($changedAttributes),
                 ])
                 ->log('Updated User Account');
         }
@@ -209,7 +209,7 @@ class UserController extends Controller
         // 1. Fetch the user BEFORE deleting (So we have a backup)
         $user = DB::table('users')->where('id', $id)->first();
 
-        if (!$user) {
+        if (! $user) {
             abort(404);
         }
 
@@ -221,7 +221,7 @@ class UserController extends Controller
 
         // 2. === LOGGING (Delete) ===
         // We log the snapshot of the user before they are removed.
-        $subject = new \App\Models\User();
+        $subject = new User;
         $subject->id = $id;
 
         activity()
@@ -229,7 +229,7 @@ class UserController extends Controller
             ->performedOn($subject)
             ->event('user_deleted') // Specific Event
             ->withProperties([
-                'attributes' => $this->sanitizeAuditAttributes((array) $user)
+                'attributes' => $this->sanitizeAuditAttributes((array) $user),
             ])
             ->log('Deleted User Account'); // Specific Description
         // ===========================
@@ -243,11 +243,20 @@ class UserController extends Controller
 
     private function allowedStaffRoleIds(): array
     {
-        return DB::table('roles')
-            ->whereIn('role_name', ['admin', 'staff'])
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
+        return array_keys(User::internalRoleOptions());
+    }
+
+    /**
+     * @return Collection<int, object>
+     */
+    private function manageableRoles()
+    {
+        return collect(User::internalRoleOptions())
+            ->map(fn (string $label, int $id) => (object) [
+                'id' => $id,
+                'label' => $label,
+            ])
+            ->values();
     }
 
     private function sanitizeAuditAttributes(array $attributes): array
@@ -261,5 +270,3 @@ class UserController extends Controller
         return $attributes;
     }
 }
-
-

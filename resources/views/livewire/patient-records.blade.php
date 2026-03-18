@@ -134,7 +134,7 @@
                 : null;
         @endphp
 
-        <div class="flex flex-col flex-1 overflow-hidden">
+        <div class="flex flex-1 flex-col overflow-hidden">
             <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-900">Patient Details</h2>
@@ -449,7 +449,7 @@
             </div>
         </div>
     @else
-        <div class="flex flex-col flex-1 overflow-hidden">
+        <div class="flex min-h-[100vh] flex-1 flex-col overflow-hidden">
             <!-- Patient List (Full Width) -->
             <div class="flex flex-col overflow-hidden">
                 <!-- List Container -->
@@ -683,6 +683,4 @@
         });
     </script>
 @endpush
-
-
 

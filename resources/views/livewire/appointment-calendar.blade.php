@@ -42,26 +42,7 @@
     @endphp
 
     <div class="w-full max-w-9xl mx-auto px-2 py-6 lg:px-8 bg-white">
-        <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div class="flex flex-wrap items-center gap-2 md:flex-nowrap">
-                @if ($isTabLocked)
-                    <span class="{{ $btnMd }} {{ $btnPrimary . ' border border-[#0f766e]' }}">
-                        {{ $activeTab === 'pending' ? 'Appointment Request' : 'Appointment Calendar' }}
-                    </span>
-                @else
-                    @if (auth()->user()->role !== 3)
-                        <button type="button" wire:click="setActiveTab('pending')"
-                            class="{{ $btnMd }} {{ $activeTab === 'pending' ? $btnPrimary . ' border border-[#0f766e]' : $btnSecondary }}">
-                            Appointment Request
-                        </button>
-                    @endif
-                    <button type="button" wire:click="setActiveTab('calendar')"
-                        class="{{ $btnMd }} {{ $activeTab === 'calendar' ? $btnPrimary . ' border border-[#0f766e]' : $btnSecondary }}">
-                        Appointment Calendar
-                    </button>
-                @endif
-            </div>
-
+        <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
             @if ($activeTab === 'calendar')
                 <div class="flex flex-wrap items-center justify-end gap-2 md:flex-nowrap">
                     <button type="button" wire:click="previousWeek" class="{{ $btnMd }} {{ $btnSecondary }}"
@@ -136,7 +117,7 @@
         @endif
 
         @if ($activeTab === 'pending' && auth()->user()->role !== 3)
-            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div class="min-h-[100vh] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <div class="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-[#f7fbff] to-white">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                         <div>
@@ -1112,7 +1093,7 @@
                                     Patient Info
                                 </button>
 
-                                @if (auth()->user()->role === 1)
+                                @if (auth()->user()->canHandleChairsideFlow())
                                     <button type="button" wire:click="admitPatient" wire:loading.attr="disabled"
                                         wire:target="admitPatient" wire:confirm="Admit this patient to the chair now?"
                                         @if (!$viewingPatientId) disabled @endif
@@ -1121,7 +1102,7 @@
                                     </button>
                                 @endif
                             @elseif($appointmentStatus === 'Ongoing')
-                                @if (auth()->user()->role === 1)
+                                @if (auth()->user()->canHandleChairsideFlow())
                                     <button type="button" @click="openingPatientForm = true"
                                         wire:click="dispatchPatientForm(3)"
                                         class="{{ $btnLg }} {{ $btnOutlinePrimary }}">

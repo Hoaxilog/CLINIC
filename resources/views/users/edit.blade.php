@@ -26,7 +26,7 @@
                 <h1 class="text-3xl font-extrabold text-gray-800 tracking-wide mb-2">
                     EDIT <span class="text-[#4F46E5]">USER</span>
                 </h1>
-                <p class="text-sm text-gray-500 font-semibold">Update account details and permissions.</p>
+                <p class="text-sm text-gray-500 font-semibold">Update internal account details and permissions.</p>
             </div>
             
             @if(session('error'))
@@ -69,7 +69,7 @@
                                 <option value="">Select Role</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->id }}" {{ old('role', $user->role) == $role->id ? 'selected' : '' }}>
-                                        {{ ucfirst($role->role_name) }}
+                                        {{ $role->label }}
                                     </option>
                                 @endforeach
                             </select>

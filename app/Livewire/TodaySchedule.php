@@ -2,36 +2,51 @@
 
 namespace App\Livewire;
 
-use Carbon\Carbon;
-use Livewire\Component;
 use App\Models\Appointment;
-use Livewire\Attributes\On;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class TodaySchedule extends Component
 {
-    public $todayAppointments = [];   
-    public $waitingQueue = [];        
-    public $ongoingAppointments = []; 
+    public $todayAppointments = [];
+
+    public $waitingQueue = [];
+
+    public $ongoingAppointments = [];
 
     public $showAppointmentModal = false;
+
     public $viewingAppointmentId = null;
+
     public $firstName = '';
+
     public $lastName = '';
+
     public $middleName = '';
+
     public $contactNumber = '';
+
     public $birthDate = null;
+
     public $selectedService = '';
+
     public $selectedDate = null;
+
     public $selectedTime = null;
+
     public $endTime = null;
+
     public $appointmentStatus = '';
+
     public $servicesList = [];
+
     public $isPatientFormOpen = false;
-    
-// [ADDED] Property to store the dentist's name
-    public $dentistName = ''; 
+
+    // [ADDED] Property to store the dentist's name
+    public $dentistName = '';
 
     public function mount()
     {
@@ -113,7 +128,7 @@ class TodaySchedule extends Component
                 'patients.birth_date',
                 'services.duration',
                 'services.service_name',
-                DB::raw("appointments.updated_at as waited_at")
+                DB::raw('appointments.updated_at as waited_at')
             )
             ->get();
     }
@@ -147,7 +162,7 @@ class TodaySchedule extends Component
                 'users.username as dentist_name'
             );
 
-        if ($user->role === 1) {
+        if ($user?->isDentist()) {
             $ongoingQuery->where('dentist_id', $user->id);
         }
 
@@ -158,14 +173,17 @@ class TodaySchedule extends Component
     {
         $appointment = DB::table('appointments')->find($this->viewingAppointmentId);
         $service = DB::table('services')->where('id', $this->selectedService)->first();
-        
-        if (!$appointment || !$service) return;
+
+        if (! $appointment || ! $service) {
+            return;
+        }
         if ($appointment->status !== 'Waiting') {
             session()->flash('error', 'Only Ready patients can be admitted.');
+
             return;
         }
 
-        $startTime = Carbon::parse($appointment->appointment_date); 
+        $startTime = Carbon::parse($appointment->appointment_date);
         sscanf($service->duration, '%d:%d:%d', $h, $m, $s);
         $durationMinutes = ($h * 60) + $m;
         $endTime = $startTime->copy()->addMinutes($durationMinutes);
@@ -179,7 +197,7 @@ class TodaySchedule extends Component
             ->whereDate('appointment_date', $startTime->toDateString())
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where('appointment_date', '<', $endTime)
-                      ->whereRaw("DATE_ADD(appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND) > ?", [$startTime]);
+                    ->whereRaw('DATE_ADD(appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND) > ?', [$startTime]);
             })
             ->exists();
 
@@ -192,16 +210,17 @@ class TodaySchedule extends Component
                 ->update([
                     'status' => 'Ongoing',
                     'service_id' => $this->selectedService,
-                    'dentist_id' => $dentistId, 
-                    'updated_at' => now()
+                    'dentist_id' => $dentistId,
+                    'updated_at' => now(),
                 ]);
 
-            if (!$updated) {
+            if (! $updated) {
                 session()->flash('error', 'This appointment was already admitted or updated. Please refresh.');
+
                 return;
             }
-            
-            $subject = new Appointment();
+
+            $subject = new Appointment;
             $subject->id = $this->viewingAppointmentId;
 
             activity()
@@ -211,7 +230,7 @@ class TodaySchedule extends Component
                 ->log('Admitted Patient to Chair');
 
             session()->flash('success', 'Patient admitted to chair successfully!');
-            
+
             $this->refreshWaitingQueue();
             $this->refreshOngoingAppointments();
             $this->closeAppointmentModal();
@@ -223,6 +242,7 @@ class TodaySchedule extends Component
     {
         if (Auth::user()?->role !== 1) {
             session()->flash('error', 'Only dentists can call the next patient.');
+
             return;
         }
 
@@ -235,14 +255,16 @@ class TodaySchedule extends Component
             ->orderBy('created_at', 'asc')
             ->first();
 
-        if (!$next) {
+        if (! $next) {
             session()->flash('info', 'No Ready patients in queue.');
+
             return;
         }
 
         $service = DB::table('services')->where('id', $next->service_id)->first();
-        if (!$service) {
+        if (! $service) {
             session()->flash('error', 'Missing service for selected appointment.');
+
             return;
         }
 
@@ -258,22 +280,23 @@ class TodaySchedule extends Component
             ->whereDate('appointment_date', $startTime->toDateString())
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where('appointment_date', '<', $endTime)
-                      ->whereRaw("DATE_ADD(appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND) > ?", [$startTime]);
+                    ->whereRaw('DATE_ADD(appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND) > ?', [$startTime]);
             })
             ->exists();
 
         if ($hasConflict) {
             session()->flash('error', 'Cannot call next: This slot is double-booked.');
+
             return;
         }
 
         DB::table('appointments')->where('id', $next->id)->update([
             'status' => 'Ongoing',
             'dentist_id' => Auth::id(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
-        $subject = new Appointment();
+        $subject = new Appointment;
         $subject->id = $next->id;
 
         activity()
@@ -314,13 +337,13 @@ class TodaySchedule extends Component
             'endTime',
             'appointmentStatus',
             'viewingAppointmentId',
-            'dentistName'
+            'dentistName',
         ]);
 
         // Fast path: use already loaded board datasets before hitting the database.
         $appointment = $this->findLoadedAppointment((int) $appointmentId);
 
-        if (!$appointment) {
+        if (! $appointment) {
             $appointment = DB::table('appointments')
                 ->join('patients', 'appointments.patient_id', '=', 'patients.id')
                 ->join('services', 'appointments.service_id', '=', 'services.id')
@@ -363,6 +386,7 @@ class TodaySchedule extends Component
 
             $this->showAppointmentModal = true;
             $this->dispatch('appointment-details-loaded');
+
             return;
         }
 
@@ -381,11 +405,12 @@ class TodaySchedule extends Component
 
     protected function durationToMinutes(?string $duration): int
     {
-        if (!$duration) {
+        if (! $duration) {
             return 0;
         }
 
         sscanf($duration, '%d:%d:%d', $hours, $minutes, $seconds);
+
         return ((int) $hours * 60) + (int) $minutes;
     }
 
@@ -400,8 +425,9 @@ class TodaySchedule extends Component
         }
     }
 
-    public function processPatient() {
-         if ($this->viewingAppointmentId) {
+    public function processPatient()
+    {
+        if ($this->viewingAppointmentId) {
             $appt = DB::table('appointments')->find($this->viewingAppointmentId);
             if ($appt) {
                 $this->dispatch('editPatient', id: $appt->patient_id, startStep: 1);
@@ -417,11 +443,11 @@ class TodaySchedule extends Component
             $oldStatus = $oldAppt ? $oldAppt->status : 'Unknown';
 
             DB::table('appointments')->where('id', $this->viewingAppointmentId)->update([
-                'status' => $newStatus, 'updated_at' => now()
+                'status' => $newStatus, 'updated_at' => now(),
             ]);
 
             if ($oldStatus !== $newStatus) {
-                $subject = new Appointment();
+                $subject = new Appointment;
                 $subject->id = $this->viewingAppointmentId;
 
                 $eventName = $newStatus === 'Cancelled' ? 'appointment_cancelled' : 'appointment_updated';
@@ -436,7 +462,7 @@ class TodaySchedule extends Component
                         'attributes' => [
                             'status' => $newStatus,
                             'patient_name' => trim("{$this->lastName}, {$this->firstName} {$this->middleName}"),
-                        ]
+                        ],
                     ])
                     ->log($logMessage);
             }
@@ -462,12 +488,12 @@ class TodaySchedule extends Component
             'endTime',
             'appointmentStatus',
             'viewingAppointmentId',
-            'dentistName'
+            'dentistName',
         ]);
     }
 
-    public function render() 
-    { 
-        return view('livewire.today-schedule'); 
+    public function render()
+    {
+        return view('livewire.today-schedule');
     }
 }

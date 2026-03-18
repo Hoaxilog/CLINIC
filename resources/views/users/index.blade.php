@@ -6,7 +6,7 @@
         <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
             <div>
                 <h1 class="text-3xl lg:text-4xl font-bold text-gray-900">User Accounts</h1>
-                <p class="mt-1 text-sm text-gray-500">Manage admin and staff profiles, permissions, and lifecycle actions.</p>
+                <p class="mt-1 text-sm text-gray-500">Manage admin, dentist, and staff profiles, permissions, and lifecycle actions.</p>
             </div>
             <a href="{{ route('users.create') }}"
                 class="inline-flex items-center gap-2 rounded-none bg-[#4F46E5] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4338CA]">
@@ -46,9 +46,9 @@
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($admins as $user)
                     <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
-                        @if ($user->role_name)
+                        @if ($user->role)
                             <span class="absolute right-4 top-4 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                                {{ $user->role_name }}
+                                {{ \App\Models\User::roleLabelFromId((int) $user->role) }}
                             </span>
                         @endif
 
@@ -97,6 +97,66 @@
         <section class="mt-6 rounded-none border border-gray-100 bg-white p-6 shadow-sm">
             <div class="mb-5 flex items-center justify-between">
                 <div>
+                    <h2 class="text-lg font-bold text-gray-900">Dentists</h2>
+                    <p class="mt-0.5 text-xs text-gray-500">Clinical users focused on appointments, queue flow, and patient care.</p>
+                </div>
+                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                    {{ $dentists->total() ?? $dentists->count() }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                @forelse($dentists as $user)
+                    <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
+                        <span class="absolute right-4 top-4 rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
+                            {{ \App\Models\User::roleLabelFromId((int) $user->role) }}
+                        </span>
+
+                        <div class="mb-5 flex items-center gap-3">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-violet-500 text-base font-bold text-white">
+                                {{ strtoupper(substr($user->username, 0, 1)) }}
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="truncate text-base font-bold text-gray-900">{{ $user->username }}</h3>
+                                <p class="truncate text-xs text-gray-500">ID: #{{ $user->id }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-5 text-sm text-gray-600">
+                            Joined {{ \Carbon\Carbon::parse($user->created_at)->format('M d, Y') }}
+                        </div>
+
+                        <div class="flex items-center gap-2 border-t border-gray-100 pt-4">
+                            <a href="{{ route('users.edit', $user->id) }}"
+                                class="flex-1 rounded-none border border-amber-100 bg-amber-50 px-3 py-2 text-center text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
+                                Edit
+                            </a>
+                            @if ($user->id !== auth()->id())
+                                <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="flex-1"
+                                    onsubmit="return confirm('Are you sure you want to delete this dentist account?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="w-full rounded-none border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                                        Delete
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </article>
+                @empty
+                    <div class="col-span-full rounded-none border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                        No dentists found.
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="mt-5">{{ $dentists->links() }}</div>
+        </section>
+
+        <section class="mt-6 rounded-none border border-gray-100 bg-white p-6 shadow-sm">
+            <div class="mb-5 flex items-center justify-between">
+                <div>
                     <h2 class="text-lg font-bold text-gray-900">Staff</h2>
                     <p class="mt-0.5 text-xs text-gray-500">Operational users supporting daily clinic workflow.</p>
                 </div>
@@ -108,9 +168,9 @@
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($staffs as $user)
                     <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
-                        @if ($user->role_name)
+                        @if ($user->role)
                             <span class="absolute right-4 top-4 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                                {{ $user->role_name }}
+                                {{ \App\Models\User::roleLabelFromId((int) $user->role) }}
                             </span>
                         @endif
 
@@ -169,7 +229,7 @@
                 @forelse($normalUsers as $user)
                     <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
                         <span class="absolute right-4 top-4 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700">
-                            {{ $user->role_name ?? 'patient' }}
+                            {{ \App\Models\User::roleLabelFromId((int) $user->role) }}
                         </span>
 
                         <div class="mb-5 flex items-center gap-3">

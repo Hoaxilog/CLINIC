@@ -1,4 +1,4 @@
-<section class="bg-white border border-gray-100 rounded-none shadow-sm" wire:poll.15s="loadPendingApprovals">
+<section class="min-h-[476px] bg-white border border-gray-100 rounded-none shadow-sm" wire:poll.15s="loadPendingApprovals">
     <div class="flex items-center justify-between p-5 border-b border-gray-100">
         <div>
             <h2 class="text-lg font-semibold text-gray-900">Pending Appointment Requests</h2>
@@ -10,7 +10,7 @@
         </a>
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="min-h-[392px] overflow-x-auto">
         <table class="min-w-full text-sm">
             <thead class="bg-gray-50/80 text-xs uppercase tracking-wide text-gray-500">
                 <tr>
@@ -63,7 +63,7 @@
                                     Approve
                                 </button>
                                 <a href="{{ route('appointment.requests', ['appointment' => $pending->id]) }}"
-                                    class="rounded-none border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition">
+                                    class="whitespace-nowrap rounded-none border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition">
                                     Review Request
                                 </a>
                                 <button type="button" wire:click="rejectAppointment({{ $pending->id }})"
@@ -76,7 +76,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-5 py-8 text-center text-sm text-gray-500">
+                        <td colspan="5" class="px-5 py-20 text-center text-sm text-gray-500">
                             No pending appointment requests.
                         </td>
                     </tr>

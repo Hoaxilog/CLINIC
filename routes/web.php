@@ -129,8 +129,6 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs');
 
-    Route::redirect('/admin/reports', '/reports');
-
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/print/{reportType}', [ReportController::class, 'print'])->name('reports.print');
 });

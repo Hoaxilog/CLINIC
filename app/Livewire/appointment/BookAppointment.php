@@ -40,6 +40,8 @@ class BookAppointment extends Component
 
     public $last_name;
 
+    public $middle_name = '';
+
     public $contact_number;
 
     public $email;
@@ -47,6 +49,8 @@ class BookAppointment extends Component
     public $booking_for = 'self';
 
     public $patient_first_name = '';
+
+    public $patient_middle_name = '';
 
     public $patient_last_name = '';
 
@@ -150,10 +154,12 @@ class BookAppointment extends Component
         $clearableFields = [
             'first_name',
             'last_name',
+            'middle_name',
             'contact_number',
             'email',
             'booking_for',
             'patient_first_name',
+            'patient_middle_name',
             'patient_last_name',
             'patient_birth_date',
             'relationship_to_patient',
@@ -177,12 +183,14 @@ class BookAppointment extends Component
     public function updatedBookingFor(string $value): void
     {
         $this->patient_first_name = '';
+        $this->patient_middle_name = '';
         $this->patient_last_name = '';
         $this->patient_birth_date = '';
         $this->relationship_to_patient = '';
 
         $this->resetValidation([
             'patient_first_name',
+            'patient_middle_name',
             'patient_last_name',
             'patient_birth_date',
             'relationship_to_patient',
@@ -485,6 +493,10 @@ class BookAppointment extends Component
             'updated_at' => now(),
         ];
 
+        if (Schema::hasColumn('appointments', 'requester_middle_name')) {
+            $appointmentPayload['requester_middle_name'] = $this->normalizedRequesterMiddleName();
+        }
+
         if (Schema::hasColumn('appointments', 'booking_type')) {
             $appointmentPayload['booking_type'] = 'online_appointment';
         }
@@ -509,6 +521,12 @@ class BookAppointment extends Component
             $appointmentPayload['requested_patient_last_name'] = $this->isBookingForSelf()
                 ? null
                 : $this->resolvedPatientLastName();
+        }
+
+        if (Schema::hasColumn('appointments', 'requested_patient_middle_name')) {
+            $appointmentPayload['requested_patient_middle_name'] = $this->isBookingForSelf()
+                ? null
+                : $this->normalizedRequestedPatientMiddleName();
         }
 
         if (Schema::hasColumn('appointments', 'requested_patient_birth_date')) {
@@ -554,6 +572,7 @@ class BookAppointment extends Component
         $this->validate([
             'first_name' => 'required',
             'last_name' => 'required',
+            'middle_name' => 'nullable|string|max:100',
             'email' => 'required|email',
             'service_id' => 'required',
             'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
@@ -572,6 +591,7 @@ class BookAppointment extends Component
             ]
             : [
                 'patient_first_name' => 'required',
+                'patient_middle_name' => 'nullable|string|max:100',
                 'patient_last_name' => 'required',
                 'patient_birth_date' => 'required|date|before_or_equal:today',
                 'relationship_to_patient' => 'required|string|max:100',
@@ -594,6 +614,7 @@ class BookAppointment extends Component
 
         $this->first_name = $this->preferExistingValue($this->first_name, $previousBooking->first_name ?? null);
         $this->last_name = $this->preferExistingValue($this->last_name, $previousBooking->last_name ?? null);
+        $this->middle_name = $this->preferExistingValue($this->middle_name, $previousBooking->middle_name ?? null);
         $this->contact_number = $this->preferExistingValue($this->contact_number, $previousBooking->contact_number ?? null);
 
         if ($this->isBookingForSelf()) {
@@ -606,14 +627,23 @@ class BookAppointment extends Component
         $email = $this->normalizeEmail($this->email);
         $hasRequesterBirthDate = Schema::hasColumn('appointments', 'requester_birth_date');
         $hasRequestedPatientBirthDate = Schema::hasColumn('appointments', 'requested_patient_birth_date');
+        $hasRequesterMiddleName = Schema::hasColumn('appointments', 'requester_middle_name');
+        $hasPatientMiddleName = Schema::hasColumn('patients', 'middle_name');
+        $requesterMiddleNameExpression = match (true) {
+            $hasRequesterMiddleName && $hasPatientMiddleName => 'COALESCE(appointments.requester_middle_name, patients.middle_name)',
+            $hasRequesterMiddleName => 'appointments.requester_middle_name',
+            $hasPatientMiddleName => 'patients.middle_name',
+            default => 'NULL',
+        };
 
         $query = DB::table('appointments as appointments')
             ->leftJoin('patients', 'patients.id', '=', 'appointments.patient_id')
             ->selectRaw(
                 'COALESCE(appointments.requester_first_name, patients.first_name) as first_name,
-                COALESCE(appointments.requester_last_name, patients.last_name) as last_name,
-                COALESCE(appointments.requester_contact_number, patients.mobile_number) as contact_number,
-                '.($hasRequestedPatientBirthDate
+                 COALESCE(appointments.requester_last_name, patients.last_name) as last_name,
+                 '.$requesterMiddleNameExpression.' as middle_name,
+                 COALESCE(appointments.requester_contact_number, patients.mobile_number) as contact_number,
+                 '.($hasRequestedPatientBirthDate
                     ? 'COALESCE(appointments.requested_patient_birth_date, appointments.requester_birth_date, patients.birth_date)'
                     : ($hasRequesterBirthDate
                         ? 'COALESCE(appointments.requester_birth_date, patients.birth_date)'
@@ -942,6 +972,20 @@ class BookAppointment extends Component
         $relationship = trim((string) $this->relationship_to_patient);
 
         return $relationship !== '' ? $relationship : null;
+    }
+
+    protected function normalizedRequesterMiddleName(): ?string
+    {
+        $middleName = trim((string) $this->middle_name);
+
+        return $middleName !== '' ? $middleName : null;
+    }
+
+    protected function normalizedRequestedPatientMiddleName(): ?string
+    {
+        $middleName = trim((string) $this->patient_middle_name);
+
+        return $middleName !== '' ? $middleName : null;
     }
 
     protected function canResumeGuestOtpStep(): bool

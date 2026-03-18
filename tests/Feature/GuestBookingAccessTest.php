@@ -19,6 +19,7 @@ class GuestBookingAccessTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutVite();
 
         Schema::create('services', function (Blueprint $table) {
             $table->id();
@@ -34,12 +35,14 @@ class GuestBookingAccessTest extends TestCase
             $table->string('status')->default('Pending');
             $table->unsignedBigInteger('requester_user_id')->nullable();
             $table->string('requester_first_name')->nullable();
+            $table->string('requester_middle_name')->nullable();
             $table->string('requester_last_name')->nullable();
             $table->date('requester_birth_date')->nullable();
             $table->string('requester_contact_number')->nullable();
             $table->string('requester_email')->nullable();
             $table->boolean('booking_for_other')->default(false);
             $table->string('requested_patient_first_name')->nullable();
+            $table->string('requested_patient_middle_name')->nullable();
             $table->string('requested_patient_last_name')->nullable();
             $table->date('requested_patient_birth_date')->nullable();
             $table->string('requester_relationship_to_patient')->nullable();
@@ -80,7 +83,15 @@ class GuestBookingAccessTest extends TestCase
         $this->get(route('book'))
             ->assertOk()
             ->assertSee('validateBookingFormBeforeSubmit', false)
+            ->assertSee('Middle Name (Optional)', false)
             ->assertSee('data-validate-field="patient_birth_date"', false);
+    }
+
+    public function test_booking_for_someone_else_renders_optional_patient_middle_name_field(): void
+    {
+        Livewire::test(BookAppointment::class)
+            ->set('booking_for', 'someone_else')
+            ->assertSee('Patient Middle Name (Optional)');
     }
 
     public function test_guest_booking_requires_captcha_token(): void
@@ -129,6 +140,7 @@ class GuestBookingAccessTest extends TestCase
 
         $component = Livewire::test(BookAppointment::class)
             ->set('first_name', 'Guest')
+            ->set('middle_name', 'Anne')
             ->set('last_name', 'Patient')
             ->set('patient_birth_date', now()->subYears(25)->toDateString())
             ->set('email', 'guest@example.com')
@@ -156,6 +168,7 @@ class GuestBookingAccessTest extends TestCase
             'status' => 'Pending',
             'requester_user_id' => null,
             'requester_first_name' => 'Guest',
+            'requester_middle_name' => 'Anne',
             'requester_last_name' => 'Patient',
             'requester_birth_date' => now()->subYears(25)->toDateString(),
             'requester_email' => 'guest@example.com',
@@ -176,10 +189,12 @@ class GuestBookingAccessTest extends TestCase
         $component = Livewire::test(BookAppointment::class)
             ->set('booking_for', 'someone_else')
             ->set('first_name', 'Parent')
+            ->set('middle_name', 'Rose')
             ->set('last_name', 'Booker')
             ->set('email', 'parent@example.com')
             ->set('contact_number', '09123456789')
             ->set('patient_first_name', 'Jamie')
+            ->set('patient_middle_name', 'Mae')
             ->set('patient_last_name', 'Booker')
             ->set('patient_birth_date', '2015-05-01')
             ->set('relationship_to_patient', 'Mother')
@@ -203,11 +218,13 @@ class GuestBookingAccessTest extends TestCase
 
         $this->assertDatabaseHas('appointments', [
             'requester_first_name' => 'Parent',
+            'requester_middle_name' => 'Rose',
             'requester_last_name' => 'Booker',
             'requester_email' => 'parent@example.com',
             'requester_contact_number' => '09123456789',
             'booking_for_other' => true,
             'requested_patient_first_name' => 'Jamie',
+            'requested_patient_middle_name' => 'Mae',
             'requested_patient_last_name' => 'Booker',
             'requested_patient_birth_date' => '2015-05-01',
             'requester_relationship_to_patient' => 'Mother',

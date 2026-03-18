@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -29,8 +30,7 @@ class LoginController extends Controller
     public function index()
     {
         if (Auth::check()) {
-            $role = Auth::user()?->role;
-            if ($role === 3) {
+            if (Auth::user()?->isPatient()) {
                 return redirect()->route('patient.dashboard');
             }
 
@@ -344,15 +344,13 @@ class LoginController extends Controller
 
     private function redirectByRole($role, bool $isUnverified = false)
     {
-        if (in_array($role, [1, 2], true)) {
-            if ($role === 1) {
-                return redirect()->intended('/dashboard');
-            }
-
-            return $isUnverified ? redirect('/dashboard') : redirect()->intended('/appointment');
+        if (in_array((int) $role, [User::ROLE_ADMIN, User::ROLE_DENTIST], true)) {
+            return redirect()->intended('/dashboard');
         }
 
-        if ($role === 3) {
+        if ((int) $role === User::ROLE_STAFF) {
+            return $isUnverified ? redirect('/dashboard') : redirect()->intended('/appointment');
+        } elseif ((int) $role === User::ROLE_PATIENT) {
             return redirect()->intended('/patient/dashboard');
         }
 
@@ -366,7 +364,11 @@ class LoginController extends Controller
 
     private function requiresOtpChallenge($role): bool
     {
-        return in_array((int) $role, [1, 2], true);
+        return in_array((int) $role, [
+            User::ROLE_ADMIN,
+            User::ROLE_DENTIST,
+            User::ROLE_STAFF,
+        ], true);
     }
 
     private function startOtpChallenge(Request $request, $user)

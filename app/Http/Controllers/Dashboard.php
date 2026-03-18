@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class Dashboard extends Controller
@@ -73,6 +74,10 @@ class Dashboard extends Controller
 
     public function index()
     {
+        $user = Auth::user();
+        $isAdminDashboard = $user?->isAdmin() ?? false;
+        $isDentistDashboard = $user?->isDentist() ?? false;
+        $isStaffDashboard = $user?->isStaff() ?? false;
         $today = Carbon::today();
         $range = request('range', '15d');
         $patientStatsRange = request('patient_stats_range', 'monthly');
@@ -264,6 +269,7 @@ class Dashboard extends Controller
         $arrivedPatientsCount = (int) ($statusCountsMap['Arrived'] ?? 0);
         $ongoingPatientsCount = (int) ($statusCountsMap['Ongoing'] ?? 0);
         $completedPatientsCount = (int) ($statusCountsMap['Completed'] ?? 0);
+        $queueLoadCount = $waitingPatientsCount + $arrivedPatientsCount;
 
         $recentActivities = DB::table('activity_log')
             ->leftJoin('users', function ($join) {
@@ -299,9 +305,63 @@ class Dashboard extends Controller
             ->all();
         $topRevenueTotal = array_sum($topRevenueTreatmentAmounts);
 
+        // Last 7 days finance chart data
+        $last7Dates = [];
+        $last7Revenue = [];
+        $last7Cost = [];
+        $last7Profit = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $d = $today->copy()->subDays($i);
+            $last7Dates[] = $d->format('M d');
+            $last7Revenue[] = (float) (DB::table('treatment_records')
+                ->whereDate('created_at', $d)
+                ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0)), 0) as revenue')
+                ->value('revenue') ?? 0);
+            $last7Cost[] = (float) (DB::table('treatment_records')
+                ->whereDate('created_at', $d)
+                ->selectRaw('COALESCE(SUM(COALESCE(cost_of_treatment,0)), 0) as total_cost')
+                ->value('total_cost') ?? 0);
+            $last7Profit[] = (float) (DB::table('treatment_records')
+                ->whereDate('created_at', $d)
+                ->selectRaw('COALESCE(SUM(COALESCE(amount_charged,0) - COALESCE(cost_of_treatment,0)), 0) as profit')
+                ->value('profit') ?? 0);
+        }
+
+        // Weekly comparison chart data
+        $thisWeekDates = [];
+        $thisWeekAppointments = [];
+        $lastWeekAppointments = [];
+        for ($cursor = $weekStart->copy(); $cursor->lte($weekEnd); $cursor->addDay()) {
+            $thisWeekDates[] = $cursor->format('D');
+            $thisWeekAppointments[] = DB::table('appointments')
+                ->whereDate('appointment_date', $cursor)
+                ->where('status', '!=', 'Pending')
+                ->count();
+            $prevCursor = $cursor->copy()->subWeek();
+            $lastWeekAppointments[] = DB::table('appointments')
+                ->whereDate('appointment_date', $prevCursor)
+                ->where('status', '!=', 'Pending')
+                ->count();
+        }
+
+        // Hourly appointments today (8 AM – 6 PM)
+        $hourlyLabels = [];
+        $hourlyAppointments = [];
+        for ($hour = 8; $hour <= 18; $hour++) {
+            $hourlyLabels[] = Carbon::createFromTime($hour, 0)->format('g A');
+            $hourlyAppointments[] = DB::table('appointments')
+                ->whereDate('appointment_date', $today)
+                ->whereRaw('HOUR(appointment_date) = ?', [$hour])
+                ->where('status', '!=', 'Pending')
+                ->count();
+        }
+
         $patientStats = $this->buildPatientStats($patientStatsRange);
 
         return view('dashboard', [
+            'isAdminDashboard' => $isAdminDashboard,
+            'isDentistDashboard' => $isDentistDashboard,
+            'isStaffDashboard' => $isStaffDashboard,
             'todayAppointmentsCount' => $todayAppointmentsCount,
             'todayCompletedCount' => $todayCompletedCount,
             'todayCancelledCount' => $todayCancelledCount,
@@ -333,6 +393,7 @@ class Dashboard extends Controller
             'arrivedPatientsCount' => $arrivedPatientsCount,
             'ongoingPatientsCount' => $ongoingPatientsCount,
             'completedPatientsCount' => $completedPatientsCount,
+            'queueLoadCount' => $queueLoadCount,
             'recentActivities' => $recentActivities,
             'patientStatsTotal' => $patientStats['patientStatsTotal'],
             'patientStatsDates' => $patientStats['patientStatsDates'],
@@ -347,6 +408,15 @@ class Dashboard extends Controller
             'cancellationLabel' => $cancellationLabel,
             'range' => $range,
             'rangeLabel' => $rangeLabel,
+            'last7Dates' => $last7Dates,
+            'last7Revenue' => $last7Revenue,
+            'last7Cost' => $last7Cost,
+            'last7Profit' => $last7Profit,
+            'thisWeekDates' => $thisWeekDates,
+            'thisWeekAppointments' => $thisWeekAppointments,
+            'lastWeekAppointments' => $lastWeekAppointments,
+            'hourlyLabels' => $hourlyLabels,
+            'hourlyAppointments' => $hourlyAppointments,
         ]);
     }
 }

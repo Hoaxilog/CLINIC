@@ -26,7 +26,7 @@
                 <h1 class="text-3xl font-extrabold text-gray-800 tracking-wide mb-2">
                     CREATE <span class="text-[#4F46E5]">USER</span>
                 </h1>
-                <p class="text-sm text-gray-500 font-semibold">Add a new administrator or staff member.</p>
+                <p class="text-sm text-gray-500 font-semibold">Add a new admin, dentist, or staff member.</p>
             </div>
             
             @if(session('error'))
@@ -69,7 +69,7 @@
                             <select name="role" required class="w-full pl-10 pr-10 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] appearance-none bg-white transition duration-200 text-gray-800 font-medium">
                                 <option value="" selected disabled>Select Role</option>
                                 @foreach($roles as $role)
-                                    <option value="{{ $role->id }}" {{ old('role') == $role->id ? 'selected' : '' }}>{{ ucfirst($role->role_name) }}</option>
+                                    <option value="{{ $role->id }}" {{ old('role') == $role->id ? 'selected' : '' }}>{{ $role->label }}</option>
                                 @endforeach
                             </select>
                             {{-- Dropdown Arrow --}}
@@ -150,4 +150,3 @@
     </div>
 </main>
 @endsection
-

@@ -54,11 +54,13 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
             $table->string('status')->default('Pending');
             $table->unsignedBigInteger('requester_user_id')->nullable();
             $table->string('requester_first_name')->nullable();
+            $table->string('requester_middle_name')->nullable();
             $table->string('requester_last_name')->nullable();
             $table->string('requester_contact_number')->nullable();
             $table->string('requester_email')->nullable();
             $table->boolean('booking_for_other')->default(false);
             $table->string('requested_patient_first_name')->nullable();
+            $table->string('requested_patient_middle_name')->nullable();
             $table->string('requested_patient_last_name')->nullable();
             $table->date('requested_patient_birth_date')->nullable();
             $table->string('requester_relationship_to_patient')->nullable();
@@ -357,6 +359,13 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
             ->assertDispatched('editPatient');
     }
 
+    public function test_pending_request_tab_button_is_not_rendered_on_calendar(): void
+    {
+        Livewire::test(AppointmentCalendar::class)
+            ->assertDontSeeHtml('wire:click="setActiveTab(\'pending\')"')
+            ->assertDontSeeHtml('wire:click="setActiveTab(\'calendar\')"');
+    }
+
     public function test_pending_request_route_query_opens_the_selected_request_immediately(): void
     {
         $appointmentId = DB::table('appointments')->insertGetId([
@@ -383,6 +392,34 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
             ->assertSee('Flores');
     }
 
+    public function test_waiting_request_middle_name_prefills_appointment_modal_before_patient_linking(): void
+    {
+        $appointmentId = DB::table('appointments')->insertGetId([
+            'patient_id' => null,
+            'service_id' => 1,
+            'appointment_date' => now()->addDay()->setTime(10, 0)->toDateTimeString(),
+            'status' => 'Waiting',
+            'requester_first_name' => 'Maria',
+            'requester_middle_name' => 'Lopez',
+            'requester_last_name' => 'Cruz',
+            'requester_contact_number' => '09123456789',
+            'requester_email' => 'maria@example.com',
+            'booking_for_other' => true,
+            'requested_patient_first_name' => 'Jamie',
+            'requested_patient_middle_name' => 'Mae',
+            'requested_patient_last_name' => 'Cruz',
+            'requested_patient_birth_date' => '2010-05-01',
+            'requester_relationship_to_patient' => 'Mother',
+            'modified_by' => 'GUEST',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Livewire::test(AppointmentCalendar::class)
+            ->call('viewAppointment', $appointmentId)
+            ->assertSet('middleName', 'Mae');
+    }
+
     public function test_staff_can_create_patient_from_waiting_appointment(): void
     {
         $appointmentId = DB::table('appointments')->insertGetId([
@@ -396,6 +433,7 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
             'requester_email' => 'maria@example.com',
             'booking_for_other' => true,
             'requested_patient_first_name' => 'Jamie',
+            'requested_patient_middle_name' => 'Mae',
             'requested_patient_last_name' => 'Cruz',
             'requested_patient_birth_date' => '2010-05-01',
             'requester_relationship_to_patient' => 'Mother',
@@ -414,6 +452,7 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
         $this->assertDatabaseHas('patients', [
             'id' => $patientId,
             'first_name' => 'Jamie',
+            'middle_name' => 'Mae',
             'last_name' => 'Cruz',
             'mobile_number' => '',
             'email_address' => null,

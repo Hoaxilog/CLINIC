@@ -65,7 +65,7 @@
 
             <div>
                 <label for="birth_date" class="{{ $labelClass }}">Date of Birth <span class="text-red-600">*</span></label>
-                <input wire:model.defer="birth_date" type="date" id="birth_date" class="{{ $fieldClass('birth_date') }}">
+                <input wire:model.live="birth_date" type="date" id="birth_date" class="{{ $fieldClass('birth_date') }}">
                 @error('birth_date')
                     <span data-error-for="birth_date" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                 @enderror
@@ -199,7 +199,7 @@
         </div>
     </div>
 
-    @if ($this->age < 18 && $this->age !== null)
+    @if ($this->age !== null && $this->age < 18)
         <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 md:p-6">
             <div class="mb-5 border-b border-amber-200 pb-4">
                 <h2 class="text-lg font-semibold text-amber-900">For Patients Below 18</h2>

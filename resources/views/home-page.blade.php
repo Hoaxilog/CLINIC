@@ -144,7 +144,7 @@
             </a>
 
             <nav class="hidden items-center gap-9 lg:flex">
-                @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
+                @foreach (['Services' => 'services', 'About Us' => 'about', 'Why Us' => 'why-us', 'Contact' => 'hours'] as $label => $id)
                     <a href="#{{ $id }}"
                         class="nav-link relative text-[.72rem] font-semibold uppercase tracking-[.07em] text-[#1a2e3b] transition-colors duration-200 hover:text-[#0086da]">{{ $label }}</a>
                 @endforeach
@@ -175,7 +175,7 @@
 
             <div id="mob-menu"
                 class="absolute top-full right-0 left-0 z-[200] hidden border-t border-[#e4eff8] bg-white shadow-[0_8px_32px_rgba(0,0,0,.08)]">
-                @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
+                @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Contact' => 'hours'] as $label => $id)
                     <a href="#{{ $id }}"
                         class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">{{ $label }}</a>
                 @endforeach
@@ -795,7 +795,7 @@
                     <div class="mb-[18px] text-[.6rem] font-bold uppercase tracking-[.2em] text-white">Quick Links
                     </div>
                     <div class="flex flex-col gap-[11px]">
-                        @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Hours' => 'hours', 'Contact' => 'contact'] as $label => $id)
+                        @foreach (['Services' => 'services', 'About Us' => 'about', 'Why Us' => 'why-us', 'Contact' => 'hours'] as $label => $id)
                             <a href="#{{ $id }}"
                                 class="text-[.8rem] font-medium text-white/60 no-underline transition hover:text-white">{{ $label }}</a>
                         @endforeach
