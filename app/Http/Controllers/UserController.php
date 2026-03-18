@@ -117,7 +117,7 @@ class UserController extends Controller
             abort(404);
         }
 
-        $roles = $this->manageableRoles();
+        $roles = $this->editableRoles();
 
         return view('users.edit', compact('user', 'roles'));
     }
@@ -141,7 +141,10 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->ignore($id),
                 Rule::unique('users', 'username')->ignore($id),
             ],
-            'role' => ['required', 'integer', Rule::in($this->allowedStaffRoleIds())],
+            'first_name' => ['nullable', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'mobile_number' => ['nullable', 'string', 'max:255'],
+            'role' => ['required', 'integer', Rule::in($this->editableRoleIds())],
             'password' => ['nullable', 'confirmed', 'min:8'],
         ]);
 
@@ -149,6 +152,13 @@ class UserController extends Controller
         $updateData = [
             'username' => $request->email,
             'email' => $request->email,
+            'first_name' => $request->filled('first_name') ? $request->first_name : null,
+            'last_name' => $request->filled('last_name') ? $request->last_name : null,
+            'mobile_number' => $request->filled('mobile_number') ? $request->mobile_number : null,
+            'name' => trim(implode(' ', array_filter([
+                $request->input('first_name'),
+                $request->input('last_name'),
+            ]))) ?: null,
             'role' => $request->role,
             'updated_at' => now(),
         ];
@@ -257,6 +267,32 @@ class UserController extends Controller
                 'label' => $label,
             ])
             ->values();
+    }
+
+    /**
+     * @return Collection<int, object>
+     */
+    private function editableRoles()
+    {
+        return collect([
+            User::ROLE_ADMIN => 'Admin',
+            User::ROLE_DENTIST => 'Dentist',
+            User::ROLE_STAFF => 'Staff',
+            User::ROLE_PATIENT => 'Patient',
+        ])->map(fn (string $label, int $id) => (object) [
+            'id' => $id,
+            'label' => $label,
+        ])->values();
+    }
+
+    private function editableRoleIds(): array
+    {
+        return [
+            User::ROLE_ADMIN,
+            User::ROLE_DENTIST,
+            User::ROLE_STAFF,
+            User::ROLE_PATIENT,
+        ];
     }
 
     private function sanitizeAuditAttributes(array $attributes): array

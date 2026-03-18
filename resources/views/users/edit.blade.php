@@ -45,6 +45,30 @@
 
                 {{-- SECTION 1: ACCOUNT DETAILS --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">First Name</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.364 4.56M15 19H9"></path></svg>
+                            </span>
+                            <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}" placeholder="Enter first name"
+                                class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('first_name') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Last Name</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.364 4.56M15 19H9"></path></svg>
+                            </span>
+                            <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}" placeholder="Enter last name"
+                                class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('last_name') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
                     {{-- Email --}}
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Email</label>
@@ -56,6 +80,18 @@
                                 class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                         </div>
                         @error('email') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Mobile Number</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a2 2 0 011.948 1.553l.516 2.323a2 2 0 01-.503 1.86l-1.27 1.27a16 16 0 006.364 6.364l1.27-1.27a2 2 0 011.86-.503l2.323.516A2 2 0 0121 15.72V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            </span>
+                            <input type="text" name="mobile_number" value="{{ old('mobile_number', $user->mobile_number) }}" placeholder="Enter mobile number"
+                                class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('mobile_number') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Role --}}

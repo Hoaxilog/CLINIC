@@ -46,12 +46,6 @@
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($admins as $user)
                     <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
-                        @if ($user->role)
-                            <span class="absolute right-4 top-4 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                                {{ \App\Models\User::roleLabelFromId((int) $user->role) }}
-                            </span>
-                        @endif
-
                         <div class="mb-5 flex items-center gap-3">
                             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-base font-bold text-white">
                                 {{ strtoupper(substr($user->username, 0, 1)) }}
@@ -108,10 +102,6 @@
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($dentists as $user)
                     <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
-                        <span class="absolute right-4 top-4 rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
-                            {{ \App\Models\User::roleLabelFromId((int) $user->role) }}
-                        </span>
-
                         <div class="mb-5 flex items-center gap-3">
                             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-violet-500 text-base font-bold text-white">
                                 {{ strtoupper(substr($user->username, 0, 1)) }}
@@ -168,12 +158,6 @@
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($staffs as $user)
                     <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
-                        @if ($user->role)
-                            <span class="absolute right-4 top-4 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-                                {{ \App\Models\User::roleLabelFromId((int) $user->role) }}
-                            </span>
-                        @endif
-
                         <div class="mb-5 flex items-center gap-3">
                             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-base font-bold text-white">
                                 {{ strtoupper(substr($user->username, 0, 1)) }}
@@ -228,10 +212,6 @@
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 @forelse($normalUsers as $user)
                     <article class="relative rounded-none border border-gray-100 bg-white p-5 shadow-sm">
-                        <span class="absolute right-4 top-4 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700">
-                            {{ \App\Models\User::roleLabelFromId((int) $user->role) }}
-                        </span>
-
                         <div class="mb-5 flex items-center gap-3">
                             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-sky-500 text-base font-bold text-white">
                                 {{ strtoupper(substr($user->username, 0, 1)) }}
@@ -247,8 +227,12 @@
                         </div>
 
                         <div class="flex items-center gap-2 border-t border-gray-100 pt-4">
+                            <a href="{{ route('users.edit', $user->id) }}"
+                                class="flex-1 rounded-none border border-amber-100 bg-amber-50 px-3 py-2 text-center text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
+                                Edit
+                            </a>
                             @if ($user->id !== auth()->id())
-                                <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="w-full"
+                                <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="flex-1"
                                     onsubmit="return confirm('Are you sure you want to delete this patient account?');">
                                     @csrf
                                     @method('DELETE')
@@ -258,7 +242,7 @@
                                     </button>
                                 </form>
                             @else
-                                <p class="w-full rounded-none border border-gray-200 bg-gray-50 px-3 py-2 text-center text-sm font-medium text-gray-500">
+                                <p class="flex-1 rounded-none border border-gray-200 bg-gray-50 px-3 py-2 text-center text-sm font-medium text-gray-500">
                                     Current account
                                 </p>
                             @endif
