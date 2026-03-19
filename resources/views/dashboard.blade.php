@@ -23,11 +23,20 @@
                     'accent' => 'text-rose-700',
                 ],
                 [
-                    'label' => 'Registered Patients',
-                    'value' => $totalPatients ?? 0,
-                    'meta' => 'Current patient records',
-                    'href' => route('patient-records'),
-                    'accent' => 'text-emerald-700',
+                    'label' => 'Monthly Profit',
+                    'value' => 'PHP '.number_format($monthProfit ?? 0, 2),
+                    'meta' => 'Revenue: '.number_format($monthRevenue ?? 0, 0)
+                        .' | Cost: '.number_format($monthCost ?? 0, 0),
+                    'href' => route('reports.index'),
+                    'accent' => ($monthProfitPct ?? null) === null
+                        ? 'text-slate-600'
+                        : (($monthProfitPct ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'),
+                    'meta_class' => ($monthProfit ?? 0) > 0
+                        ? 'text-emerald-700'
+                        : (($monthProfit ?? 0) < 0 ? 'text-rose-700' : 'text-slate-500'),
+                    'action_label' => (($monthProfitPct ?? null) === null
+                        ? 'View'
+                        : (($monthProfitPct ?? 0) >= 0 ? '↑ '.number_format(abs($monthProfitPct ?? 0), 0).'%' : '↓ '.number_format(abs($monthProfitPct ?? 0), 0).'%')),
                 ],
                 [
                     'label' => 'Today\'s Appointments',
@@ -132,7 +141,7 @@
         class="min-h-screen bg-[#f3f4f6] p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
 
         <section class="border border-gray-200 bg-white p-6 shadow-sm">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
                 <div>
                     <div
                         class="inline-flex items-center gap-2 border border-[#0086DA]/15 bg-[#0086DA]/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0086DA]">
@@ -140,17 +149,6 @@
                     </div>
                     <h1 class="mt-3 text-3xl font-bold tracking-tight text-gray-900">{{ $roleTitle }}</h1>
                     <p class="mt-2 max-w-3xl text-sm leading-6 text-gray-600">{{ $roleSummary }}</p>
-                </div>
-
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <a href="{{ $isAdminDashboard ? route('reports.index') : route('appointment.calendar') }}"
-                        class="border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition hover:border-[#0086DA] hover:text-[#0086DA]">
-                        {{ $isAdminDashboard ? 'Open Reports' : 'Open Schedule' }}
-                    </a>
-                    <a href="{{ $isAdminDashboard ? route('users.index') : ($isDentistDashboard ? route('queue') : route('appointment.requests')) }}"
-                        class="border border-[#0086DA] bg-[#0086DA] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#006ab0]">
-                        {{ $isAdminDashboard ? 'Open User Accounts' : ($isDentistDashboard ? 'Open Queue' : 'Open Appointment Requests') }}
-                    </a>
                 </div>
             </div>
         </section>
@@ -164,8 +162,8 @@
                         <div class="mt-3 text-4xl font-bold text-gray-900">{{ $card['value'] }}</div>
                     </div>
                     <div class="mt-4 flex items-center justify-between gap-4">
-                        <p class="text-xs font-medium text-gray-500">{{ $card['meta'] }}</p>
-                        <span class="shrink-0 text-sm font-semibold {{ $card['accent'] }}">View</span>
+                        <p class="text-xs font-medium {{ $card['meta_class'] ?? 'text-gray-500' }}">{{ $card['meta'] }}</p>
+                        <span class="shrink-0 text-sm font-semibold {{ $card['accent'] }}">{{ $card['action_label'] ?? 'View' }}</span>
                     </div>
                 </a>
             @endforeach
@@ -176,22 +174,27 @@
                 @livewire('pending-approvals-widget')
             </div>
 
-            <section id="today-schedule" class="border border-gray-200 bg-white p-6 shadow-sm">
-                <div class="mb-4 flex items-center justify-between gap-4">
+            <section id="today-schedule" class="h-[420px] overflow-hidden border border-blue-200 bg-white shadow-sm shadow-blue-100/40">
+                <div class="h-1 w-full bg-linear-to-r from-blue-600 via-sky-500 to-cyan-300"></div>
+
+                <div class="mb-4 flex items-center justify-between gap-4 border-b border-blue-100 bg-blue-50/40 p-6">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900">Today's Appointment Schedule</h2>
-                        <p class="mt-1 text-xs text-gray-500">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-lg font-bold text-gray-900">Today's Appointment Schedule</h2>
+                      
+                        </div>
+                        <p class="mt-1 text-xs text-gray-600">
                             {{ $isAdminDashboard ? 'Clinic-wide appointment visibility for scheduling and oversight.' : ($isDentistDashboard ? 'Today\'s booked patients and treatment flow.' : 'Today\'s booked patients and front-desk appointment flow.') }}
                         </p>
                     </div>
-                    </div>
+                </div>
 
-                <div class="max-h-[380px] overflow-auto border border-gray-100">
+                <div class="h-[336px] overflow-auto px-6 pb-6">
                     <table class="min-w-full text-sm">
-                        <thead class="sticky top-0 bg-gray-50/95 text-xs uppercase tracking-wide text-gray-500">
+                        <thead class="sticky top-0 bg-blue-50/80 text-xs uppercase tracking-wide text-gray-500">
                             <tr>
-                                <th class="px-4 py-3 text-left">Time</th>
                                 <th class="px-4 py-3 text-left">Patient Name</th>
+                                <th class="px-4 py-3 text-left">Time</th>
                                 <th class="px-4 py-3 text-left">Service</th>
                                 <th class="px-4 py-3 text-left">Status</th>
                                 <th class="px-4 py-3 text-left">Quick Action</th>
@@ -222,11 +225,20 @@
                                         $viewSlotParams['appointment'] = $appt->id;
                                     }
                                 @endphp
-                                <tr>
+                                <tr class="border-l-2 border-transparent hover:border-blue-300 hover:bg-blue-50/40">
+                                    <td class="px-4 py-3 text-gray-800">
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                                                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M10 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-7 15a7 7 0 1 1 14 0H3Z" clip-rule="evenodd" />
+                                                </svg>
+                                            </span>
+                                            <span>{{ $appt->first_name }} {{ $appt->last_name }}</span>
+                                        </div>
+                                    </td>
                                     <td class="px-4 py-3 font-semibold text-gray-900">
                                         {{ \Carbon\Carbon::parse($appt->appointment_date)->format('h:i A') }}
                                     </td>
-                                    <td class="px-4 py-3 text-gray-800">{{ $appt->last_name }}, {{ $appt->first_name }}</td>
                                     <td class="px-4 py-3 text-gray-700">{{ $appt->service_name }}</td>
                                     <td class="px-4 py-3">
                                         <span
@@ -234,7 +246,7 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <a href="{{ route('appointment.calendar', $viewSlotParams) }}"
-                                            class="inline-flex whitespace-nowrap border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-800 transition hover:border-[#0086DA] hover:text-[#0086DA]">
+                                            class="inline-flex whitespace-nowrap border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-800 transition hover:bg-blue-100">
                                             View Slot
                                         </a>
                                     </td>
@@ -289,41 +301,107 @@
                     </div>
                 </section>
             @elseif ($isAdminDashboard)
-                <section id="needs-attention" class="border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4">
-                        <h2 class="text-lg font-bold text-gray-900">Management Snapshot</h2>
-                        <p class="mt-1 text-xs text-gray-500">Track workload, pending requests, and clinic flow at a glance.</p>
+                @php
+                    $appointmentTrendLabels = $appointmentTrendLabels ?? [];
+                    $appointmentTrendComparisonDates = $appointmentTrendComparisonDates ?? [];
+                    $appointmentTrendCurrentWeek = $appointmentTrendCurrentWeek ?? [];
+                    $appointmentTrendPreviousWeek = $appointmentTrendPreviousWeek ?? [];
+                    $trendChartMax = max(
+                        ! empty($appointmentTrendCurrentWeek) ? max($appointmentTrendCurrentWeek) : 0,
+                        ! empty($appointmentTrendPreviousWeek) ? max($appointmentTrendPreviousWeek) : 0,
+                        1,
+                    );
+                    $trendCurrentTotal = array_sum($appointmentTrendCurrentWeek);
+                    $trendPreviousTotal = array_sum($appointmentTrendPreviousWeek);
+                    $trendWeekDelta = $trendCurrentTotal - $trendPreviousTotal;
+                @endphp
+                <section id="needs-attention" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">Appointment Trend</h2>
+                            <p class="mt-1 text-xs text-gray-500">Current week vs previous week, compared day by day.</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400">Week Comparison</div>
+                            <div class="mt-1 text-sm font-semibold {{ $trendWeekDelta >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">
+                                {{ $trendWeekDelta >= 0 ? '+' : '' }}{{ $trendWeekDelta }} appointments
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <a href="{{ route('users.index') }}"
-                            class="block border border-indigo-100 bg-indigo-50 p-4 transition hover:border-indigo-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-indigo-700">User Accounts</div>
-                            <div class="mt-2 text-3xl font-bold text-indigo-800">Manage</div>
-                            <p class="mt-1 text-xs text-indigo-700/80">Review access across admin, dentist, and staff accounts.</p>
-                        </a>
-
-                        <a href="{{ route('reports.index') }}"
-                            class="block border border-emerald-100 bg-emerald-50 p-4 transition hover:border-emerald-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Reports</div>
-                            <div class="mt-2 text-3xl font-bold text-emerald-800">{{ number_format($monthProfit ?? 0, 0) }}</div>
-                            <p class="mt-1 text-xs text-emerald-700/80">Current month profit overview.</p>
-                        </a>
-
-                        <a href="{{ route('activity-logs') }}"
-                            class="block border border-sky-100 bg-sky-50 p-4 transition hover:border-sky-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">Recent Activity</div>
-                            <div class="mt-2 text-3xl font-bold text-sky-800">{{ count($recentActivities ?? []) }}</div>
-                            <p class="mt-1 text-xs text-sky-700/80">Latest actions available for audit review.</p>
-                        </a>
-
-                        <a href="{{ route('appointment.requests') }}"
-                            class="block border border-amber-100 bg-amber-50 p-4 transition hover:border-amber-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Pending Requests</div>
-                            <div class="mt-2 text-3xl font-bold text-amber-800">{{ $pendingApprovalsCount ?? 0 }}</div>
-                            <p class="mt-1 text-xs text-amber-700/80">Requests waiting for staff or admin review.</p>
-                        </a>
+                    <div class="mt-5 flex items-center gap-5 text-xs text-gray-500">
+                        <div class="flex items-center gap-2">
+                            <span class="h-3 w-3 rounded-sm bg-cyan-600"></span>
+                            <span>This Week</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="h-3 w-3 rounded-sm bg-cyan-200"></span>
+                            <span>Previous Week</span>
+                        </div>
                     </div>
+
+                    @if (! empty($appointmentTrendCurrentWeek))
+                        <div class="mt-6">
+                            <div class="grid h-72 grid-cols-[48px_repeat(7,minmax(0,1fr))] grid-rows-[repeat(6,minmax(0,1fr))_auto] gap-x-3 gap-y-2">
+                                @for ($tick = 0; $tick <= 5; $tick++)
+                                    @php
+                                        $gridRow = $tick + 1;
+                                        $tickValue = (int) round(($trendChartMax / 5) * (6 - $gridRow));
+                                    @endphp
+                                    <div class="flex items-start justify-end pr-2 text-xs text-gray-400" style="grid-column: 1; grid-row: {{ $gridRow }};">
+                                        {{ $tickValue }}
+                                    </div>
+                                    <div class="col-start-2 col-end-9 border-t border-gray-100" style="grid-row: {{ $gridRow }};"></div>
+                                @endfor
+
+                                @foreach ($appointmentTrendCurrentWeek as $index => $count)
+                                    @php
+                                        $previousCount = $appointmentTrendPreviousWeek[$index] ?? 0;
+                                        $currentHeight = max(6, (int) round(($count / $trendChartMax) * 100));
+                                        $previousHeight = max(6, (int) round(($previousCount / $trendChartMax) * 100));
+                                        $trendDifference = $count - $previousCount;
+                                    @endphp
+                                    <div class="group relative flex min-w-0 flex-col items-center justify-end gap-3" style="grid-column: {{ $index + 2 }}; grid-row: 1 / 7;">
+                                        <div class="pointer-events-none absolute -top-24 left-1/2 z-10 w-36 -translate-x-1/2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-left opacity-0 shadow-lg transition group-hover:opacity-100">
+                                            <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                                {{ $appointmentTrendLabels[$index] ?? 'N/A' }} {{ $appointmentTrendComparisonDates[$index] ?? '' }}
+                                            </div>
+                                            <div class="mt-2 flex items-center justify-between gap-3 text-xs">
+                                                <span class="text-gray-500">This Week</span>
+                                                <span class="font-semibold text-cyan-700">{{ $count }}</span>
+                                            </div>
+                                            <div class="mt-1 flex items-center justify-between gap-3 text-xs">
+                                                <span class="text-gray-500">Previous</span>
+                                                <span class="font-semibold text-cyan-300">{{ $previousCount }}</span>
+                                            </div>
+                                            <div class="mt-1 flex items-center justify-between gap-3 text-xs">
+                                                <span class="text-gray-500">Difference</span>
+                                                <span class="font-semibold {{ $trendDifference >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">
+                                                    {{ $trendDifference >= 0 ? '+' : '' }}{{ $trendDifference }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="flex h-full w-full items-end justify-center gap-2">
+                                            <div class="w-4 rounded-t-sm bg-cyan-200" style="height: {{ $previousHeight }}%"></div>
+                                            <div class="w-4 rounded-t-sm bg-cyan-600" style="height: {{ $currentHeight }}%"></div>
+                                        </div>
+                                        <div class="pb-1 text-center">
+                                            <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                                {{ $appointmentTrendLabels[$index] ?? 'N/A' }}
+                                            </div>
+                                            <div class="mt-1 text-[11px] text-gray-400">
+                                                {{ $appointmentTrendComparisonDates[$index] ?? '' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                            No appointment trend data available for this week yet.
+                        </div>
+                    @endif
                 </section>
             @else
                 @livewire('cancelled-appointments-widget')

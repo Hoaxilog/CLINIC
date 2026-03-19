@@ -237,6 +237,26 @@ class Dashboard extends Controller
             $trendProfit[] = $dailyProfit;
         }
 
+        $appointmentTrendLabels = [];
+        $appointmentTrendCurrentWeek = [];
+        $appointmentTrendPreviousWeek = [];
+        $appointmentTrendComparisonDates = [];
+        $comparisonDayCount = $weekStart->diffInDays($today) + 1;
+
+        for ($i = 0; $i < $comparisonDayCount; $i++) {
+            $currentDate = $weekStart->copy()->addDays($i);
+            $previousDate = $currentDate->copy()->subWeek();
+
+            $appointmentTrendLabels[] = $currentDate->format('D');
+            $appointmentTrendComparisonDates[] = $currentDate->format('M d');
+            $appointmentTrendCurrentWeek[] = DB::table('appointments')
+                ->whereDate('appointment_date', $currentDate)
+                ->count();
+            $appointmentTrendPreviousWeek[] = DB::table('appointments')
+                ->whereDate('appointment_date', $previousDate)
+                ->count();
+        }
+
         $statusCountsMap = DB::table('appointments')
             ->whereDate('appointment_date', $today)
             ->selectRaw('status, COUNT(*) as total')
@@ -382,6 +402,10 @@ class Dashboard extends Controller
             'trendDates' => $trendDates,
             'trendAppointments' => $trendAppointments,
             'trendProfit' => $trendProfit,
+            'appointmentTrendLabels' => $appointmentTrendLabels,
+            'appointmentTrendComparisonDates' => $appointmentTrendComparisonDates,
+            'appointmentTrendCurrentWeek' => $appointmentTrendCurrentWeek,
+            'appointmentTrendPreviousWeek' => $appointmentTrendPreviousWeek,
             'statusLabels' => $statusLabels,
             'statusCounts' => $statusCounts,
             'bookedLast30' => $bookedLast30,

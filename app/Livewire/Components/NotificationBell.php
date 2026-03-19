@@ -49,7 +49,7 @@ class NotificationBell extends Component
                     'kind' => 'pending',
                     'meta' => 'Action required',
                     'is_read' => false,
-                    'link' => url('/appointment'),
+                    'link' => route('appointment.requests'),
                 ]);
             }
 
@@ -67,7 +67,7 @@ class NotificationBell extends Component
                 'kind' => 'info',
                 'meta' => 'Today',
                 'is_read' => false,
-                'link' => url('/appointment'),
+                'link' => route('appointment.calendar'),
             ]);
 
             $next = DB::table('appointments')
@@ -97,7 +97,7 @@ class NotificationBell extends Component
                     'meta' => "Today at {$nextTime}",
                     'appointment_at' => $next->appointment_date,
                     'is_read' => false,
-                    'link' => url('/appointment'),
+                    'link' => route('appointment.calendar'),
                 ]);
             }
 
@@ -127,7 +127,7 @@ class NotificationBell extends Component
                     'kind' => 'pending',
                     'meta' => 'Requested recently',
                     'is_read' => false,
-                    'link' => url('/appointment'),
+                    'link' => route('appointment.requests', ['appointment' => $booking->id]),
                 ]);
             }
 
@@ -416,7 +416,7 @@ class NotificationBell extends Component
                     'kind' => $this->databaseNotificationKind($notification->type),
                     'meta' => $this->databaseNotificationMeta($notification->type),
                     'is_read' => ! empty($notification->read_at),
-                    'link' => $notification->link ?: url('/appointment'),
+                    'link' => $notification->link ?: route('appointment.calendar'),
                 ];
             });
     }

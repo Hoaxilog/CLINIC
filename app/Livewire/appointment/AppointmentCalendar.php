@@ -123,6 +123,8 @@ class AppointmentCalendar extends Component
 
     public $prefillPatientLabel = null;
 
+    public $prefillAppointmentPayload = [];
+
     public $pendingFilterDate = null;
 
     public $pendingMatchCandidates = [];
@@ -187,16 +189,7 @@ class AppointmentCalendar extends Component
         $this->loadAppointments();
         $this->servicesList = DB::table('services')->get();
 
-        $prefillId = request()->query('patient_id');
-        if (! empty($prefillId)) {
-            $patient = DB::table('patients')->find($prefillId);
-            if ($patient) {
-                $this->prefillPatientId = (int) $prefillId;
-                $this->prefillPatientLabel = trim(
-                    ($patient->first_name ?? '').' '.($patient->last_name ?? '')
-                );
-            }
-        }
+        $this->hydratePrefillFromRequest();
 
         $requestedAppointmentId = (int) request()->query('appointment', 0);
         if ($requestedAppointmentId > 0 && Auth::user()?->role !== 3) {
@@ -443,6 +436,8 @@ class AppointmentCalendar extends Component
 
         if ($this->prefillPatientId) {
             $this->selectPatient($this->prefillPatientId);
+        } elseif (! empty($this->prefillAppointmentPayload)) {
+            $this->applyPrefillAppointmentPayload();
         }
     }
 
@@ -1959,6 +1954,69 @@ class AppointmentCalendar extends Component
     {
         $this->prefillPatientId = null;
         $this->prefillPatientLabel = null;
+        $this->prefillAppointmentPayload = [];
+    }
+
+    protected function hydratePrefillFromRequest(): void
+    {
+        $prefillId = request()->query('patient_id');
+        if (! empty($prefillId)) {
+            $patient = DB::table('patients')->find($prefillId);
+            if ($patient) {
+                $this->prefillPatientId = (int) $prefillId;
+                $this->prefillPatientLabel = trim(
+                    ($patient->first_name ?? '').' '.($patient->last_name ?? '')
+                );
+            }
+        }
+
+        $firstName = trim((string) request()->query('prefill_first_name', ''));
+        $lastName = trim((string) request()->query('prefill_last_name', ''));
+        $middleName = trim((string) request()->query('prefill_middle_name', ''));
+        $contactNumber = trim((string) request()->query('prefill_contact_number', ''));
+        $birthDate = trim((string) request()->query('prefill_birth_date', ''));
+        $serviceId = (string) request()->query('prefill_service_id', '');
+
+        $this->prefillAppointmentPayload = array_filter([
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'middle_name' => $middleName,
+            'contact_number' => $contactNumber,
+            'birth_date' => $birthDate,
+            'service_id' => $serviceId,
+        ], fn ($value) => $value !== null && $value !== '');
+
+        if ($this->prefillPatientLabel === null && ($firstName !== '' || $lastName !== '')) {
+            $this->prefillPatientLabel = trim($firstName.' '.$lastName);
+        }
+    }
+
+    protected function applyPrefillAppointmentPayload(): void
+    {
+        if (! empty($this->prefillAppointmentPayload['first_name'])) {
+            $this->firstName = (string) $this->prefillAppointmentPayload['first_name'];
+        }
+
+        if (! empty($this->prefillAppointmentPayload['last_name'])) {
+            $this->lastName = (string) $this->prefillAppointmentPayload['last_name'];
+        }
+
+        if (! empty($this->prefillAppointmentPayload['middle_name'])) {
+            $this->middleName = (string) $this->prefillAppointmentPayload['middle_name'];
+        }
+
+        if (! empty($this->prefillAppointmentPayload['contact_number'])) {
+            $this->contactNumber = (string) $this->prefillAppointmentPayload['contact_number'];
+        }
+
+        if (! empty($this->prefillAppointmentPayload['birth_date'])) {
+            $this->birthDate = (string) $this->prefillAppointmentPayload['birth_date'];
+        }
+
+        if (! empty($this->prefillAppointmentPayload['service_id'])) {
+            $this->selectedService = (string) $this->prefillAppointmentPayload['service_id'];
+            $this->updatedSelectedService($this->selectedService);
+        }
     }
 
     public function processPatient()

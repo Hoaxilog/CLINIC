@@ -1,13 +1,9 @@
 <section class="min-h-[392px] border border-gray-200 bg-white p-6 shadow-sm" wire:poll.20s="loadCancelledAppointments">
-    <div class="mb-4 flex items-center justify-between gap-4 border-b border-gray-100 pb-4">
+    <div class="mb-4 border-b border-gray-100 pb-4">
         <div>
             <h2 class="text-lg font-bold text-gray-900">Cancelled Appointments</h2>
             <p class="mt-1 text-xs text-gray-500">Review cancellation reasons and contact the patient if follow-up is needed.</p>
         </div>
-        <a href="{{ route('appointment.calendar') }}"
-            class="text-xs font-semibold uppercase tracking-[0.14em] text-[#0086DA]">
-            Open Calendar
-        </a>
     </div>
 
     <div class="grid max-h-[520px] grid-cols-1 gap-4 overflow-y-auto pr-1">
@@ -50,25 +46,20 @@
                 </div>
 
                 <div class="mt-4 flex flex-wrap items-center gap-2">
-                    @if ($appointment->phone_href)
-                        <a href="{{ $appointment->phone_href }}"
-                            class="whitespace-nowrap border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-800 transition hover:border-[#0086DA] hover:text-[#0086DA]">
-                            Call Patient
-                        </a>
-                    @endif
-
-                    @if ($appointment->mail_href)
-                        <a href="{{ $appointment->mail_href }}"
-                            class="whitespace-nowrap border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-800 transition hover:border-[#0086DA] hover:text-[#0086DA]">
-                            Email Patient
-                        </a>
-                    @endif
-
-                    <a href="{{ route('appointment.calendar') }}"
-                        class="whitespace-nowrap border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-800 transition hover:border-[#0086DA] hover:text-[#0086DA]">
-                        Review Schedule
+                    <a href="{{ route('appointment', array_filter([
+                        'patient_id' => $appointment->patient_id,
+                        'prefill_first_name' => $appointment->first_name,
+                        'prefill_last_name' => $appointment->last_name,
+                        'prefill_middle_name' => $appointment->middle_name,
+                        'prefill_contact_number' => $appointment->contact_number,
+                        'prefill_birth_date' => $appointment->birth_date,
+                        'prefill_service_id' => $appointment->service_id,
+                    ], fn ($value) => $value !== null && $value !== '')) }}"
+                        class="whitespace-nowrap border border-[#0086DA] bg-[#0086DA] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#006ab0]">
+                        Book New Schedule
                     </a>
                 </div>
+
             </article>
         @empty
             <div class="flex min-h-[260px] items-center justify-center border border-dashed border-gray-200 bg-gray-50 px-6 text-center text-sm text-gray-500">

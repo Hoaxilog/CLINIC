@@ -33,11 +33,15 @@ class CancelledAppointmentsWidget extends Component
             ->limit(5)
             ->select(
                 'appointments.id',
+                'appointments.patient_id',
+                'appointments.service_id',
                 'appointments.appointment_date',
                 'appointments.updated_at',
                 'appointments.cancellation_reason',
                 DB::raw('COALESCE(patients.first_name, appointments.requested_patient_first_name, appointments.requester_first_name) as first_name'),
                 DB::raw('COALESCE(patients.last_name, appointments.requested_patient_last_name, appointments.requester_last_name) as last_name'),
+                DB::raw('COALESCE(patients.middle_name, appointments.requested_patient_middle_name, appointments.requester_middle_name) as middle_name'),
+                DB::raw('COALESCE(patients.birth_date, appointments.requested_patient_birth_date, appointments.requester_birth_date) as birth_date'),
                 DB::raw('COALESCE(patients.mobile_number, appointments.requester_contact_number) as contact_number'),
                 DB::raw('COALESCE(patients.email_address, appointments.requester_email) as email_address'),
                 'services.service_name'

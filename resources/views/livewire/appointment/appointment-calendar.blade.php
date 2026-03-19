@@ -117,22 +117,12 @@
         @endif
 
         @if ($activeTab === 'pending' && auth()->user()->role !== 3)
-            <div class="min-h-[100vh] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <div class="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-[#f7fbff] to-white">
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900">Pending Approvals</h2>
                             <p class="text-xs text-gray-500">Review and approve appointment requests.</p>
-                        </div>
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                            <input type="date" wire:model.live="pendingFilterDate"
-                                class="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700">
-                            @if ($pendingFilterDate)
-                                <button type="button" wire:click="clearPendingFilterDate"
-                                    class="{{ $btnMd }} {{ $btnSecondary }}">
-                                    Clear
-                                </button>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -146,7 +136,7 @@
                     <div class="text-right">Actions</div>
                 </div>
 
-                <div class="divide-y divide-gray-100">
+                <div class="max-h-[calc(100vh-16rem)] overflow-y-auto divide-y divide-gray-100">
                     @forelse($this->getPendingApprovals() as $pending)
                         <div wire:key="pending-appointment-{{ $pending->id }}"
                             class="grid grid-cols-1 md:grid-cols-5 gap-3 px-5 py-4 text-sm items-center hover:bg-gray-50 transition">
@@ -1191,4 +1181,3 @@
 
     @include('components.flash-toast')
 </div>
-
