@@ -46,9 +46,9 @@
                     'accent' => 'text-sky-700',
                 ],
                 [
-                    'label' => ($cancellationLabel ?? 'This Month').' Cancellation',
+                    'label' => ($cancellationLabel ?? 'This Month')."'s Cancellation Rate",
                     'value' => number_format($cancellationRate ?? 0, 1).'%',
-                    'meta' => ($cancelledLast30 ?? 0).' of '.($bookedLast30 ?? 0).' booked',
+                    'meta' => ($cancelledLast30 ?? 0).' cancelled appointments out of '.($bookedLast30 ?? 0).' bookings',
                     'href' => route('reports.index'),
                     'accent' => 'text-amber-700',
                 ],
@@ -294,9 +294,9 @@
 
                         <a href="{{ route('appointment.calendar') }}"
                             class="block border border-emerald-100 bg-emerald-50 p-4 transition hover:border-emerald-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">{{ $cancellationLabel ?? 'This Month' }} Cancellation</div>
+                            <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">{{ ($cancellationLabel ?? 'This Month')."'s Cancellation Rate" }}</div>
                             <div class="mt-2 text-3xl font-bold text-emerald-800">{{ number_format($cancellationRate ?? 0, 1) }}%</div>
-                            <p class="mt-1 text-xs text-emerald-700/80">{{ $cancelledLast30 ?? 0 }} of {{ $bookedLast30 ?? 0 }} booked appointments.</p>
+                            <p class="mt-1 text-xs text-emerald-700/80">{{ $cancelledLast30 ?? 0 }} cancelled appointments out of {{ $bookedLast30 ?? 0 }} bookings.</p>
                         </a>
                     </div>
                 </section>

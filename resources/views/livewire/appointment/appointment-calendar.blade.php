@@ -1026,13 +1026,13 @@
                                 </button>
                             </div>
                         </div>
-                    @elseif ($isViewing && $viewingPatientId && in_array($appointmentStatus, ['Scheduled', 'Waiting'], true))
+                    @elseif ($isViewing && $viewingPatientId && in_array($appointmentStatus, ['Scheduled', 'Waiting', 'Completed'], true))
                         <div class="mb-6 border border-emerald-200 bg-emerald-50 px-4 py-3">
                             <div class="text-[.82rem] font-bold text-emerald-900">Patient record ready</div>
                             <p class="mt-1 text-[.78rem] leading-[1.7] text-emerald-800">
                                 This appointment is already linked to patient record #{{ $viewingPatientId }}.
                             </p>
-                            @if (auth()->user()->role !== 3)
+                            @if (auth()->user()->role !== 3 && in_array($appointmentStatus, ['Scheduled', 'Waiting'], true))
                                 <div class="mt-3">
                                     <button type="button" wire:click="unlinkAppointmentPatient"
                                         wire:loading.attr="disabled" wire:target="unlinkAppointmentPatient"
@@ -1109,7 +1109,7 @@
                                     Patient Info
                                 </button>
 
-                                @if (auth()->user()->canHandleChairsideFlow())
+                                @if (auth()->user()->isDentist())
                                     <button type="button" wire:click="admitPatient" wire:loading.attr="disabled"
                                         wire:target="admitPatient" wire:confirm="Admit this patient to the chair now?"
                                         @if (!$viewingPatientId) disabled @endif
@@ -1132,6 +1132,13 @@
                                     Finish & Complete
                                 </button>
                             @elseif($appointmentStatus === 'Completed')
+                                @if ($viewingPatientId)
+                                    <button type="button" @click="openingPatientForm = true"
+                                        wire:click="dispatchPatientForm(1)"
+                                        class="{{ $btnLg }} {{ $btnOutlinePrimary }}">
+                                        Patient Info
+                                    </button>
+                                @endif
                                 <span class="inline-flex border border-emerald-200 bg-emerald-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
                                     ✓ Completed
                                 </span>

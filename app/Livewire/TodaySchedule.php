@@ -171,6 +171,12 @@ class TodaySchedule extends Component
 
     public function admitPatient()
     {
+        if (! Auth::user()?->isDentist()) {
+            session()->flash('error', 'Only dentists can admit patients from the lobby.');
+
+            return;
+        }
+
         $appointment = DB::table('appointments')->find($this->viewingAppointmentId);
         $service = DB::table('services')->where('id', $this->selectedService)->first();
 

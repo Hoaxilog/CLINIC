@@ -404,15 +404,17 @@
                             class="rounded-none border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">
                             View Patient Info
                         </button>
-                        <button type="button" wire:click="admitPatient" wire:loading.attr="disabled"
-                            wire:target="admitPatient"
-                            class="flex items-center gap-2 rounded-none bg-emerald-600 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                            Call to Chair
-                        </button>
+                        @if (auth()->user()?->isDentist())
+                            <button type="button" wire:click="admitPatient" wire:loading.attr="disabled"
+                                wire:target="admitPatient"
+                                class="flex items-center gap-2 rounded-none bg-emerald-600 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                Call to Chair
+                            </button>
+                        @endif
                     @elseif($appointmentStatus === 'Ongoing')
                         <button type="button" wire:click="openPatientChart" wire:loading.attr="disabled"
                             wire:target="openPatientChart"
