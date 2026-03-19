@@ -2,7 +2,7 @@
     <div class="mb-4 border-b border-gray-100 pb-4">
         <div>
             <h2 class="text-lg font-bold text-gray-900">Cancelled Appointments</h2>
-            <p class="mt-1 text-xs text-gray-500">Review cancellation reasons and contact the patient if follow-up is needed.</p>
+            <p class="mt-1 text-xs text-gray-500">Today and upcoming cancelled appointments that may need a replacement schedule.</p>
         </div>
     </div>
 

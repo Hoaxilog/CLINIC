@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,8 @@ class CancelledAppointmentsWidget extends Component
             ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.status', 'Cancelled')
+            ->whereDate('appointments.appointment_date', '>=', Carbon::today()->toDateString())
+            ->orderBy('appointments.appointment_date')
             ->orderByDesc('appointments.updated_at')
             ->limit(5)
             ->select(

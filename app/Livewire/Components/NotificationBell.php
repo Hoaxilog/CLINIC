@@ -78,6 +78,7 @@ class NotificationBell extends Component
                 ->whereNotIn('appointments.status', ['Cancelled', 'Completed'])
                 ->orderBy('appointments.appointment_date', 'asc')
                 ->select(
+                    'appointments.id',
                     'appointments.appointment_date',
                     'patients.first_name',
                     'patients.last_name',
@@ -97,7 +98,7 @@ class NotificationBell extends Component
                     'meta' => "Today at {$nextTime}",
                     'appointment_at' => $next->appointment_date,
                     'is_read' => false,
-                    'link' => route('appointment.calendar'),
+                    'link' => route('appointment.calendar', ['appointment' => $next->id]),
                 ]);
             }
 

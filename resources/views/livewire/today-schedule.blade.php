@@ -14,10 +14,6 @@
                     <h1 class="text-sm font-bold uppercase tracking-wide text-slate-800">Scheduled Today</h1>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('appointment.calendar') }}"
-                        class="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 transition hover:border-sky-300 hover:text-sky-700">
-                        Open
-                    </a>
                     <span
                         class="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700">{{ count($scheduledAppointments) }}</span>
                 </div>
@@ -394,16 +390,13 @@
                         <button type="button" wire:click="processPatient" wire:loading.attr="disabled"
                             wire:target="processPatient"
                             class="rounded-none border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">
-                            Update Info
+                            View Info
                         </button>
                         <button type="button" wire:click="updateStatus('Waiting')" wire:loading.attr="disabled"
                             wire:target="updateStatus"
                             class="flex items-center gap-2 rounded-none bg-amber-500 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Mark as Arrived (Lobby)
+                            
+                            Mark as Arrived
                         </button>
                     @elseif($appointmentStatus === 'Waiting')
                         <button type="button" wire:click="processPatient" wire:loading.attr="disabled"
