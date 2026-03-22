@@ -34,17 +34,16 @@
     }
 @endsection
 
+@section('page_shell_class', 'queue-shell')
+
 @section('content')
-    <main id="mainContent"
-        class="min-h-screen queue-shell p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
-        <div class="mb-4">
-            <h1 class="text-xl font-bold tracking-tight text-slate-900">Lobby Flow</h1>
-        </div>
+    <div class="mb-4">
+        <h1 class="text-xl font-bold tracking-tight text-slate-900">Lobby Flow</h1>
+    </div>
 
-        <section class="queue-panel rounded-none p-4 lg:p-6">
-            @livewire('today-schedule')
-        </section>
+    <section class="queue-panel rounded-none p-4 lg:p-6">
+        @livewire('dashboard.today-schedule')
+    </section>
 
-        <livewire:patient-form-controller.patient-form-modal />
-    </main>
+    <livewire:patient.form.patient-form-modal />
 @endsection

@@ -36,7 +36,7 @@
                         : (($monthProfit ?? 0) < 0 ? 'text-rose-700' : 'text-slate-500'),
                     'action_label' => (($monthProfitPct ?? null) === null
                         ? 'View'
-                        : (($monthProfitPct ?? 0) >= 0 ? '↑ '.number_format(abs($monthProfitPct ?? 0), 0).'%' : '↓ '.number_format(abs($monthProfitPct ?? 0), 0).'%')),
+                        : (($monthProfitPct ?? 0) >= 0 ? 'Γåæ '.number_format(abs($monthProfitPct ?? 0), 0).'%' : 'Γåô '.number_format(abs($monthProfitPct ?? 0), 0).'%')),
                 ],
                 [
                     'label' => 'Today\'s Appointments',
@@ -79,7 +79,7 @@
                 [
                     'label' => 'Queue Load',
                     'value' => $queueLoadCount ?? 0,
-                    'meta' => 'Waiting '.($waitingPatientsCount ?? 0).' · Arrived '.($arrivedPatientsCount ?? 0),
+                    'meta' => 'Waiting '.($waitingPatientsCount ?? 0).' ┬╖ Arrived '.($arrivedPatientsCount ?? 0),
                     'href' => route('queue'),
                     'accent' => 'text-amber-700',
                 ],
@@ -137,9 +137,6 @@
             ]);
     @endphp
 
-    <main id="mainContent"
-        class="min-h-screen bg-[#f3f4f6] p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
-
         <section class="border border-gray-200 bg-white p-6 shadow-sm">
             <div>
                 <div>
@@ -171,7 +168,7 @@
 
         <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
             <div id="pending-approvals">
-                @livewire('pending-approvals-widget')
+                @livewire('dashboard.pending-approvals-widget')
             </div>
 
             <section id="today-schedule" class="h-[420px] overflow-hidden border border-blue-200 bg-white shadow-sm shadow-blue-100/40">
@@ -275,7 +272,7 @@
                             class="block border border-amber-100 bg-amber-50 p-4 transition hover:border-amber-300">
                             <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Waiting + Arrived</div>
                             <div class="mt-2 text-3xl font-bold text-amber-800">{{ $queueLoadCount ?? 0 }}</div>
-                            <p class="mt-1 text-xs text-amber-700/80">Waiting {{ $waitingPatientsCount ?? 0 }} · Arrived {{ $arrivedPatientsCount ?? 0 }}</p>
+                            <p class="mt-1 text-xs text-amber-700/80">Waiting {{ $waitingPatientsCount ?? 0 }} ┬╖ Arrived {{ $arrivedPatientsCount ?? 0 }}</p>
                         </a>
 
                         <a href="{{ route('appointment.calendar') }}"
@@ -404,7 +401,7 @@
                     @endif
                 </section>
             @else
-                @livewire('cancelled-appointments-widget')
+                @livewire('dashboard.cancelled-appointments-widget')
             @endif
 
             <section class="border border-gray-200 bg-white p-6 shadow-sm">
@@ -479,8 +476,7 @@
                 </section>
             </div>
         @endif
-        <livewire:patient-form-controller.patient-form-modal />
-    </main>
+        <livewire:patient.form.patient-form-modal />
 @endsection
 
 @push('script')

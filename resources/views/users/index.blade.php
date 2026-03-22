@@ -1,9 +1,7 @@
 @extends('index')
 
 @section('content')
-    <main id="mainContent"
-        class="min-h-screen bg-[#f3f4f6] p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
-        <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
             <div>
                 <h1 class="text-3xl lg:text-4xl font-bold text-gray-900">User Accounts</h1>
                 <p class="mt-1 text-sm text-gray-500">Manage admin, dentist, and staff profiles, permissions, and lifecycle actions.</p>
@@ -257,5 +255,4 @@
 
             <div class="mt-5">{{ $normalUsers->links() }}</div>
         </section>
-    </main>
 @endsection

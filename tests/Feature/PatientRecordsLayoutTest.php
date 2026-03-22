@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Tests\Feature;
 
-use App\Livewire\PatientRecords;
+use App\Livewire\Patient\PatientRecords;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

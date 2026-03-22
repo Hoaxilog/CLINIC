@@ -1,4 +1,4 @@
-﻿<footer class="border-t-[3px] border-t-[#006ab0] bg-[#0086da] px-6 md:px-12 xl:px-20">
+<footer class="border-t-[3px] border-t-[#006ab0] bg-[#0086da] px-6 md:px-12 xl:px-20">
     <div class="mx-auto w-full max-w-[1400px]">
         <div class="flex flex-wrap justify-between gap-12 border-b border-white/10 py-[68px] pb-12">
             <div class="max-w-[260px]">

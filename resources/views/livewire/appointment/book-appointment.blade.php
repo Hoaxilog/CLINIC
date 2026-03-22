@@ -47,13 +47,25 @@
              HERO BANNER
         ══════════════════════════════════ --}}
         @if (!$guestOtpStepActive)
-            <div class="border-b border-[#e4eff8] bg-white px-6 md:px-12 xl:px-20">
-                <div class="mx-auto flex w-full max-w-[1400px] items-center gap-4 py-6">
-                    <div>
-                        <h1 class="text-[1.35rem] font-extrabold leading-[1.1] tracking-[-.02em] text-[#1a2e3b]">Book an
-                            Appointment</h1>
-                        <p class="mt-1 text-[.8rem] text-[#7a9db5]">Fill in your details, pick a service and time, then
-                            confirm.</p>
+            <div class="px-6 pt-6 md:px-12 md:pt-8 xl:px-20">
+                <div class="mx-auto w-full max-w-[1400px] border border-[#e4eff8] bg-white">
+                    <div class="flex items-center gap-4 px-6 py-6 md:px-8">
+                        <div>
+                            @if ($isPatientUser)
+                                <a href="{{ route('patient.dashboard') }}"
+                                    class="mb-4 inline-flex items-center gap-[7px] text-[.68rem] font-bold uppercase tracking-[.12em] text-[#7a9db5] no-underline transition hover:text-[#0086da]">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="square">
+                                        <path d="M19 12H5M12 5l-7 7 7 7" />
+                                    </svg>
+                                    Back to Dashboard
+                                </a>
+                            @endif
+                            <h1 class="text-[1.35rem] font-extrabold leading-[1.1] tracking-[-.02em] text-[#1a2e3b]">Book
+                                an Appointment</h1>
+                            <p class="mt-1 text-[.8rem] text-[#7a9db5]">Fill in your details, pick a service and time,
+                                then confirm.</p>
+                        </div>
                     </div>
                 </div>
             </div>

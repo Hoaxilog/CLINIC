@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Tests\Feature;
 
-use App\Livewire\PatientFormController\BasicInfo;
+use App\Livewire\Patient\Form\BasicInfo;
 use Livewire\Livewire;
 use Tests\TestCase;
 

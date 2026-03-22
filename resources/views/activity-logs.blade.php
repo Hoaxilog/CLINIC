@@ -1,8 +1,7 @@
 @extends('index')
 
 @section('content')
-<main id="mainContent" class="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
-    <div class="flex w-full flex-col gap-6">
+<div class="flex w-full flex-col gap-6">
         <div class="flex flex-col gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">System Activity Logs</h1>
@@ -310,7 +309,6 @@
             @endif
         </section>
     </div>
-</main>
 
 <script>
     (function () {

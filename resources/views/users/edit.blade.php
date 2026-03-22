@@ -1,5 +1,7 @@
 @extends('index') 
 
+@section('page_shell_class', 'bg-gray-50')
+ 
 @section('content')
 <script>
     function toggleAdminEditPassword(fieldId, eyeOpenId, eyeClosedId) {
@@ -14,8 +16,6 @@
         eyeOpen.classList.toggle('hidden', !isHidden);
     }
 </script>
-<main id="mainContent" class="min-h-screen bg-gray-50 p-6 lg:p-8 ml-64 mt-14 transition-all duration-300 peer-[.collapsed]:ml-16">
-    
     <div class="max-w-3xl mx-auto">
         
         {{-- Form Card --}}
@@ -184,5 +184,4 @@
             </form>
         </div>
     </div>
-</main>
 @endsection

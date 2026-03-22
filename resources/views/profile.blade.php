@@ -9,6 +9,8 @@
     }
 @endsection
 
+@section('page_shell_class', 'bg-[#f6fafd] px-6 py-8 md:px-10 xl:px-14')
+
 @section('content')
     @php
         $displayRole = ucfirst($roleName ?? 'Administrator');
@@ -20,9 +22,7 @@
         $resolvedAccountName = $resolvedAccountName !== '' ? $resolvedAccountName : 'N/A';
     @endphp
 
-    <main id="staff-profile-wrap"
-        class="min-h-screen bg-[#f6fafd] ml-64 mt-14 px-6 py-8 transition-all duration-300 peer-[.collapsed]:ml-16 md:px-10 xl:px-14">
-        <div class="mx-auto flex w-full max-w-[1400px] flex-col gap-7">
+    <div id="staff-profile-wrap" class="mx-auto flex w-full max-w-[1400px] flex-col gap-7">
 
             @if (session('success'))
                 <div class="border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
@@ -211,5 +211,4 @@
                 </aside>
             </div>
         </div>
-    </main>
 @endsection

@@ -20,88 +20,124 @@
         $authUser = auth()->user();
         $isPatient = $authUser?->isPatient() ?? false;
         $isAdmin = $authUser?->isAdmin() ?? false;
+        $isPatientBookingPage = request()->routeIs('book');
+        $isPatientDashboardPage = request()->routeIs('patient.dashboard');
     @endphp
 
     @if ($isPatient)
-        <header class="border-b border-slate-200 bg-white">
-            <div class="px-4 sm:px-6 py-3">
-                <div class="flex items-center gap-2">
-                    <h2 class="text-base sm:text-lg font-bold text-slate-900 whitespace-nowrap shrink-0">Tejada Dent
-                    </h2>
-
-                    <div class="flex-1 min-w-0 px-1">
-                        <nav
-                            class="flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 overflow-x-auto whitespace-nowrap">
-                            <a href="{{ route('patient.dashboard') }}"
-                                class="whitespace-nowrap rounded-md px-3 sm:px-4 py-1.5 text-sm font-semibold transition-colors {{ request()->routeIs('patient.dashboard') ? 'bg-[#0086DA] text-white' : 'text-slate-600 hover:bg-white' }}">
-                                Dashboard
-                            </a>
-                            <a href="{{ route('book') }}"
-                                class="whitespace-nowrap rounded-md px-3 sm:px-4 py-1.5 text-sm font-semibold transition-colors {{ request()->routeIs('book') ? 'bg-[#0086DA] text-white' : 'text-slate-600 hover:bg-white' }}">
-                                Appointment
-                            </a>
-                        </nav>
+        <header class="sticky top-0 z-[100] border-b border-[#e4eff8] bg-white px-4 sm:px-6 md:px-12 xl:px-20">
+            <div class="relative mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between gap-4">
+                <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-3 no-underline">
+                    <div class="flex h-[38px] w-[38px] shrink-0 items-center justify-center">
+                        <svg width="56" height="45" viewBox="0 0 56 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <mask id="patient-brand-logo-mask-header" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="56" height="45">
+                                <path
+                                    d="M11.783 0.465134C6.04622 2.04593 1.64903 6.81758 0.396845 12.7602C-0.127324 15.307 -0.127324 16.9171 0.367724 19.3468C1.70727 25.6993 7.88082 33.5154 18.5972 42.444L21.0724 44.5225L21.3927 43.1173C22.1499 39.8972 23.402 37.9944 25.6152 36.7941C27.2751 35.8574 28.3525 35.9159 30.158 36.9698C31.5849 37.8187 33.2739 40.5412 33.7398 42.7367C33.9437 43.7321 34.1766 44.5225 34.264 44.5225C34.5261 44.5225 40.8161 39.0775 43.5243 36.5307C51.7363 28.7438 56.0461 20.9862 55.4637 15.0436C55.0269 10.711 53.2797 7.05178 50.2511 4.24147C44.2814 -1.37913 35.4579 -1.4084 29.5756 4.12438L27.7701 5.82227L25.9646 4.15365C22.9361 1.34335 19.4708 -0.00325012 15.3939 0.0552979C14.2 0.0552979 12.5692 0.260216 11.783 0.465134ZM32.7206 9.36442C38.7486 12.3504 41.1947 19.4932 38.1953 25.4066C37.2634 27.2801 34.7008 29.8269 32.808 30.7344C27.0712 33.4862 20.0532 31.0857 17.2867 25.4066C16.0054 22.7134 15.6851 20.6934 16.151 17.9417C16.7626 14.341 19.1796 11.0916 22.5284 9.42297C24.596 8.39838 25.4405 8.22274 28.2943 8.33983C30.4492 8.42765 31.119 8.57402 32.7206 9.36442Z"
+                                    fill="black" />
+                                <path
+                                    d="M24.0136 9.97903C21.0142 11.15 18.9757 13.2577 17.7235 16.4193C16.7917 18.7612 16.9664 22.3619 18.1021 24.616C19.2378 26.8116 21.2471 28.8022 23.3729 29.7975C24.9163 30.5001 25.4987 30.6172 27.7701 30.6172C29.9833 30.6172 30.653 30.5001 32.0217 29.8561C39.1271 26.4896 40.5831 17.5024 34.8755 12.2039C32.6624 10.1547 30.7113 9.39355 27.6828 9.39355C26.1976 9.42283 24.9745 9.59847 24.0136 9.97903ZM31.0316 13.4334C30.9151 14.0188 30.9151 15.0142 31.0025 15.5996L31.1772 16.6828L33.2739 16.7706L35.3414 16.8584V20.0493V23.2694L33.3613 23.2987C32.2838 23.328 31.3228 23.4451 31.2063 23.5329C31.119 23.65 31.0025 24.616 31.0025 25.6992L30.9734 27.6898L27.6828 27.7776L24.4213 27.8654V25.6699V23.5036L23.0526 23.328C22.2663 23.2401 21.3345 23.2109 20.9268 23.2401L20.1988 23.2987L20.1114 19.9907L20.0241 16.712H22.2372H24.4213V14.5165V12.321H27.7992H31.2063L31.0316 13.4334Z"
+                                    fill="black" />
+                            </mask>
+                            <g mask="url(#patient-brand-logo-mask-header)">
+                                <rect x="-25.5311" y="-23.4609" width="106.265" height="91.7739" fill="#0086DA" />
+                            </g>
+                        </svg>
                     </div>
-
-                    <div class="flex items-center justify-end gap-2 shrink-0">
-                        @livewire('components.notification-bell')
-                        <details class="relative">
-                            <summary
-                                class="list-none cursor-pointer inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-100">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <circle cx="12" cy="10" r="3" />
-                                    <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
-                                </svg>
-                            </summary>
-                            <div
-                                class="absolute right-0 mt-2 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-md z-50">
-                                <a href="{{ route('profile.index') }}"
-                                    class="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
-                                    Profile
-                                </a>
-                                <form action="{{ route('logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit"
-                                        class="w-full text-left rounded-md px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50">
-                                        Logout
-                                    </button>
-                                </form>
-                            </div>
-                        </details>
+                    <div class="leading-[1.25]">
+                        <div class="text-[.92rem] font-extrabold tracking-[.04em] text-[#1a2e3b]">TEJADA CLINIC</div>
+                        <div class="text-[.57rem] font-semibold uppercase tracking-[.2em] text-[#0086da]">Dental Care</div>
                     </div>
+                </a>
+
+                <nav class="hidden items-center gap-9 lg:flex">
+                    <a href="{{ route('home') }}"
+                        class="group relative text-[.72rem] font-semibold uppercase tracking-[.07em] transition-colors duration-200 {{ $isPatientDashboardPage ? 'text-[#0086DA]' : 'text-[#1a2e3b] hover:text-[#0086da]' }}">
+                        Home
+                        <span class="absolute -bottom-1 left-0 h-0.5 bg-[#0086da] transition-all duration-200 {{ $isPatientDashboardPage ? 'w-full' : 'w-0 group-hover:w-full' }}"></span>
+                    </a>
+                </nav>
+
+                <div class="flex items-center gap-2 sm:gap-3">
+                    @if (!$isPatientBookingPage)
+                        <a href="{{ route('book') }}"
+                            class="hidden items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-5 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:-translate-y-px hover:bg-[#006ab0] md:inline-flex">
+                            Book Appointment
+                        </a>
+                    @endif
+
+                    @livewire('shared.notification-bell')
+
+                    <details class="relative">
+                        <summary
+                            class="list-none cursor-pointer inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#cde8f9] bg-[#eff8fe] text-[#0086da] transition duration-200 hover:border-[#7ec4ef] hover:bg-[#dff0fc]">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <circle cx="12" cy="10" r="3" />
+                                <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                            </svg>
+                        </summary>
+                        <div
+                            class="absolute right-0 z-[220] mt-3 min-w-[220px] rounded-xl border border-[#d7ebf8] bg-white p-2 shadow-[0_18px_45px_rgba(13,60,91,.16)]">
+                            <a href="{{ route('profile.index') }}"
+                                class="flex w-full items-center gap-2 rounded-[10px] border border-transparent px-[.65rem] py-[.55rem] text-[.76rem] font-semibold uppercase tracking-[.06em] text-[#1a2e3b] transition hover:border-[#99d5f8] hover:bg-[#eff8fe] hover:text-[#0086da]">
+                                Profile
+                            </a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="flex w-full items-center gap-2 rounded-[10px] border border-transparent px-[.65rem] py-[.55rem] text-left text-[.76rem] font-semibold uppercase tracking-[.06em] text-[#1a2e3b] transition hover:border-[#99d5f8] hover:bg-[#eff8fe] hover:text-[#0086da]">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div class="border-t border-[#e4eff8] py-3 lg:hidden">
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="{{ route('home') }}"
+                        class="inline-flex items-center rounded-full border px-4 py-2 text-[.72rem] font-semibold uppercase tracking-[.08em] transition {{ $isPatientDashboardPage ? 'border-[#0086da] bg-[#eff8fe] text-[#0086da]' : 'border-[#d7ebf8] text-[#1a2e3b] hover:border-[#99d5f8] hover:bg-[#eff8fe] hover:text-[#0086da]' }}">
+                        Home
+                    </a>
+                    @if (!$isPatientBookingPage)
+                        <a href="{{ route('book') }}"
+                            class="inline-flex items-center rounded-full bg-[#0086da] px-4 py-2 text-[.72rem] font-bold uppercase tracking-[.08em] text-white transition hover:bg-[#006ab0]">
+                            Book Appointment
+                        </a>
+                    @endif
+                    <a href="{{ route('profile.index') }}"
+                        class="inline-flex items-center rounded-full border border-[#d7ebf8] px-4 py-2 text-[.72rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] transition hover:border-[#99d5f8] hover:bg-[#eff8fe] hover:text-[#0086da]">
+                        Profile
+                    </a>
+                    <form action="{{ route('logout') }}" method="POST" class="inline-flex">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex items-center rounded-full border border-[#d7ebf8] px-4 py-2 text-[.72rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] transition hover:border-[#99d5f8] hover:bg-[#eff8fe] hover:text-[#0086da]">
+                            Logout
+                        </button>
+                    </form>
                 </div>
             </div>
         </header>
     @else
-        <header
-            class="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-slate-200/90 bg-white/95 px-3 sm:px-4 backdrop-blur">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 sm:gap-3 no-underline">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center sm:h-12 sm:w-12">
-                    <svg width="56" height="45" viewBox="0 0 56 45" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <mask id="dashboard-mask-logo" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="56"
-                            height="45">
-                            <path
-                                d="M11.783 0.465134C6.04622 2.04593 1.64903 6.81758 0.396845 12.7602C-0.127324 15.307 -0.127324 16.9171 0.367724 19.3468C1.70727 25.6993 7.88082 33.5154 18.5972 42.444L21.0724 44.5225L21.3927 43.1173C22.1499 39.8972 23.402 37.9944 25.6152 36.7941C27.2751 35.8574 28.3525 35.9159 30.158 36.9698C31.5849 37.8187 33.2739 40.5412 33.7398 42.7367C33.9437 43.7321 34.1766 44.5225 34.264 44.5225C34.5261 44.5225 40.8161 39.0775 43.5243 36.5307C51.7363 28.7438 56.0461 20.9862 55.4637 15.0436C55.0269 10.711 53.2797 7.05178 50.2511 4.24147C44.2814 -1.37913 35.4579 -1.4084 29.5756 4.12438L27.7701 5.82227L25.9646 4.15365C22.9361 1.34335 19.4708 -0.00325012 15.3939 0.0552979C14.2 0.0552979 12.5692 0.260216 11.783 0.465134ZM32.7206 9.36442C38.7486 12.3504 41.1947 19.4932 38.1953 25.4066C37.2634 27.2801 34.7008 29.8269 32.808 30.7344C27.0712 33.4862 20.0532 31.0857 17.2867 25.4066C16.0054 22.7134 15.6851 20.6934 16.151 17.9417C16.7626 14.341 19.1796 11.0916 22.5284 9.42297C24.596 8.39838 25.4405 8.22274 28.2943 8.33983C30.4492 8.42765 31.119 8.57402 32.7206 9.36442Z"
-                                fill="black" />
-                            <path
-                                d="M24.0136 9.97903C21.0142 11.15 18.9757 13.2577 17.7235 16.4193C16.7917 18.7612 16.9664 22.3619 18.1021 24.616C19.2378 26.8116 21.2471 28.8022 23.3729 29.7975C24.9163 30.5001 25.4987 30.6172 27.7701 30.6172C29.9833 30.6172 30.653 30.5001 32.0217 29.8561C39.1271 26.4896 40.5831 17.5024 34.8755 12.2039C32.6624 10.1547 30.7113 9.39355 27.6828 9.39355C26.1976 9.42283 24.9745 9.59847 24.0136 9.97903ZM31.0316 13.4334C30.9151 14.0188 30.9151 15.0142 31.0025 15.5996L31.1772 16.6828L33.2739 16.7706L35.3414 16.8584V20.0493V23.2694L33.3613 23.2987C32.2838 23.328 31.3228 23.4451 31.2063 23.5329C31.119 23.65 31.0025 24.616 31.0025 25.6992L30.9734 27.6898L27.6828 27.7776L24.4213 27.8654V25.6699V23.5036L23.0526 23.328C22.2663 23.2401 21.3345 23.2109 20.9268 23.2401L20.1988 23.2987L20.1114 19.9907L20.0241 16.712H22.2372H24.4213V14.5165V12.321H27.7992H31.2063L31.0316 13.4334Z"
-                                fill="black" />
-                        </mask>
-                        <g mask="url(#dashboard-mask-logo)">
-                            <rect x="-25.5311" y="-23.4609" width="106.265" height="91.7739" fill="#0086DA" />
-                        </g>
-                    </svg>
-                </div>
-                <div class="leading-[1.05]">
-                    <div class="text-[.88rem] font-extrabold tracking-[.05em] text-[#1a2e3b] sm:text-[1rem]">TEJADA CLINIC</div>
-                    <div class="text-[.54rem] font-semibold uppercase tracking-[.22em] text-[#0086da] sm:text-[.6rem]">Dental Care</div>
-                </div>
-            </a>
-            <div class="flex items-center gap-1.5 sm:gap-2">
-                @livewire('components.notification-bell')
+        {{-- Admin Header: starts to the right of the sidebar --}}
+        <header id="adminHeader"
+            class="fixed top-0 right-0 z-40 flex h-16 items-center justify-between border-b border-slate-200/90 bg-white px-4 shadow-sm transition-all duration-300" style="left:16rem;">
+            {{-- Left: Hamburger Toggle --}}
+            <button id="toggleBtn" type="button" aria-label="Toggle sidebar"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+            {{-- Right: Actions --}}
+            <div class="flex items-center gap-2">
+                @livewire('shared.notification-bell')
                 <a href="{{ route('profile.index') }}"
                     class="group relative inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
                     aria-label="Open profile" title="Profile">
@@ -119,25 +155,29 @@
 
     @if (!$isPatient)
         <aside id="sidebar"
-            class="peer sidebar fixed left-0 top-12 bottom-0 w-64 flex flex-col overflow-hidden border-r border-slate-200 bg-gradient-to-b from-white via-slate-50 to-slate-100/70 shadow-[8px_0_30px_-24px_rgba(15,23,42,0.45)] transition-all duration-300 [&.collapsed]:w-16 [&.collapsed]:border-transparent group">
-            <button id="toggleBtn" type="button" aria-label="Toggle sidebar"
-                class="mt-4 mb-2 ml-auto mr-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-200 hover:bg-slate-200/90 hover:text-slate-800 group-[.collapsed]:mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-[.collapsed]:hidden" width="24"
-                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="18" height="18" x="3" y="3" rx="2" />
-                    <path d="M9 3v18" />
-                    <path d="m16 15-3-3 3-3" />
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-4 w-4 group-[.collapsed]:block" width="24"
-                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="18" height="18" x="3" y="3" rx="2" />
-                    <path d="M9 3v18" />
-                    <path d="m14 9 3 3-3 3" />
-                </svg>
-            </button>
-            <nav class="flex h-full w-full flex-col pb-6 pt-1">
+            class="sidebar fixed left-0 top-0 bottom-0 w-64 flex flex-col overflow-hidden bg-[#0f172a] shadow-[4px_0_20px_rgba(0,0,0,0.25)] transition-all duration-300 [&.collapsed]:w-20 group z-50">
+            {{-- Sidebar Logo --}}
+            <div class="flex h-16 shrink-0 items-center justify-center border-b border-white/10 px-4 group-[.collapsed]:px-2">
+                <a href="{{ route('dashboard') }}"
+                    class="flex w-full items-center gap-3 no-underline group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center group-[.collapsed]:h-10 group-[.collapsed]:w-10">
+                        <svg width="40" height="32" viewBox="0 0 56 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <mask id="sidebar-logo-mask" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="56" height="45">
+                                <path d="M11.783 0.465134C6.04622 2.04593 1.64903 6.81758 0.396845 12.7602C-0.127324 15.307 -0.127324 16.9171 0.367724 19.3468C1.70727 25.6993 7.88082 33.5154 18.5972 42.444L21.0724 44.5225L21.3927 43.1173C22.1499 39.8972 23.402 37.9944 25.6152 36.7941C27.2751 35.8574 28.3525 35.9159 30.158 36.9698C31.5849 37.8187 33.2739 40.5412 33.7398 42.7367C33.9437 43.7321 34.1766 44.5225 34.264 44.5225C34.5261 44.5225 40.8161 39.0775 43.5243 36.5307C51.7363 28.7438 56.0461 20.9862 55.4637 15.0436C55.0269 10.711 53.2797 7.05178 50.2511 4.24147C44.2814 -1.37913 35.4579 -1.4084 29.5756 4.12438L27.7701 5.82227L25.9646 4.15365C22.9361 1.34335 19.4708 -0.00325012 15.3939 0.0552979C14.2 0.0552979 12.5692 0.260216 11.783 0.465134ZM32.7206 9.36442C38.7486 12.3504 41.1947 19.4932 38.1953 25.4066C37.2634 27.2801 34.7008 29.8269 32.808 30.7344C27.0712 33.4862 20.0532 31.0857 17.2867 25.4066C16.0054 22.7134 15.6851 20.6934 16.151 17.9417C16.7626 14.341 19.1796 11.0916 22.5284 9.42297C24.596 8.39838 25.4405 8.22274 28.2943 8.33983C30.4492 8.42765 31.119 8.57402 32.7206 9.36442Z" fill="white" />
+                                <path d="M24.0136 9.97903C21.0142 11.15 18.9757 13.2577 17.7235 16.4193C16.7917 18.7612 16.9664 22.3619 18.1021 24.616C19.2378 26.8116 21.2471 28.8022 23.3729 29.7975C24.9163 30.5001 25.4987 30.6172 27.7701 30.6172C29.9833 30.6172 30.653 30.5001 32.0217 29.8561C39.1271 26.4896 40.5831 17.5024 34.8755 12.2039C32.6624 10.1547 30.7113 9.39355 27.6828 9.39355C26.1976 9.42283 24.9745 9.59847 24.0136 9.97903ZM31.0316 13.4334C30.9151 14.0188 30.9151 15.0142 31.0025 15.5996L31.1772 16.6828L33.2739 16.7706L35.3414 16.8584V20.0493V23.2694L33.3613 23.2987C32.2838 23.328 31.3228 23.4451 31.2063 23.5329C31.119 23.65 31.0025 24.616 31.0025 25.6992L30.9734 27.6898L27.6828 27.7776L24.4213 27.8654V25.6699V23.5036L23.0526 23.328C22.2663 23.2401 21.3345 23.2109 20.9268 23.2401L20.1988 23.2987L20.1114 19.9907L20.0241 16.712H22.2372H24.4213V14.5165V12.321H27.7992H31.2063L31.0316 13.4334Z" fill="white" />
+                            </mask>
+                            <g mask="url(#sidebar-logo-mask)">
+                                <rect x="-25.5311" y="-23.4609" width="106.265" height="91.7739" fill="#38bdf8" />
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="overflow-hidden whitespace-nowrap leading-tight transition-all duration-300 group-[.collapsed]:w-0 group-[.collapsed]:opacity-0">
+                        <div class="text-[.8rem] font-extrabold tracking-[.06em] text-white">TEJADA CLINIC</div>
+                        <div class="text-[.5rem] font-semibold uppercase tracking-[.2em] text-sky-400">Dental Care</div>
+                    </div>
+                </a>
+            </div>
+            <nav class="flex h-full w-full flex-col py-3 overflow-y-auto">
                 <ul class="h-full w-full space-y-1 px-2">
                     @if (auth()->user()->role === 3)
                         <li
@@ -147,14 +187,14 @@
                         <li>
                             <a href="{{ route('patient.dashboard') }}"
                                 class="{{ request()->routeIs('patient.dashboard') ? 'active' : '' }}
-                                nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                                transition-all duration-300
-                                text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm
+                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                                transition-all duration-200
+                                text-slate-300 hover:bg-white/10 hover:text-white
                                 [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                                group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
+                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0
                                 group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
                                 <span
-                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                         height="24" color="currentColor" fill="none" stroke="currentColor"
                                         stroke-width="1.5" stroke-linejoin="round">
@@ -172,14 +212,13 @@
                         <li>
                             <a href="{{ route('book') }}"
                                 class="{{ request()->routeIs('book') ? 'active' : '' }}
-                                nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                                transition-all duration-300
-                                text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm
+                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                                transition-all duration-200
+                                text-slate-300 hover:bg-white/10 hover:text-white
                                 [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                                group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
-                                group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
                                 <span
-                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                         height="24" color="currentColor" fill="none" stroke="currentColor"
                                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -197,16 +236,15 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('profile.index') }}"
+                            <a href="{{ route('profile.index') }}" title="My Profile"
                                 class="{{ request()->routeIs('profile.index') ? 'active' : '' }}
-                                nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                                transition-all duration-300
-                                text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm
+                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                                transition-all duration-200
+                                text-slate-300 hover:bg-white/10 hover:text-white
                                 [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                                group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
-                                group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
                                 <span
-                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                         viewBox="0 0 24 24" color="currentColor" fill="none"
                                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -223,17 +261,16 @@
                         </li>
                     @else
                         <li>
-                            <a href="{{ route('dashboard') }}"
+                            <a href="{{ route('dashboard') }}" title="Dashboard"
                                 class="{{ request()->is('dashboard') ? 'active' : '' }}
-                            nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                            transition-all duration-300
-                            text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm
+                            nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                            transition-all duration-200
+                            text-slate-300 hover:bg-white/10 hover:text-white
                             [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                            group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
-                                group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                            group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
 
                                 <span
-                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                         height="24" color="currentColor" fill="none" stroke="currentColor"
                                         stroke-width="1.5" stroke-linejoin="round">
@@ -262,10 +299,11 @@
                                 $isAppointmentMenuOpen = $isAppointmentGroupActive;
                             @endphp
                             <button type="button" data-appointment-toggle
+                                title="Appointments"
                                 aria-expanded="{{ $isAppointmentMenuOpen ? 'true' : 'false' }}"
-                                class="{{ $isAppointmentGroupActive ? 'active' : '' }} nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5 text-slate-700 transition-all duration-300 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0 [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                class="{{ $isAppointmentGroupActive ? 'active' : '' }} nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 transition-all duration-200 hover:bg-white/10 hover:text-white group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0 [&.active]:bg-transparent [&.active]:text-[#0086DA] [&.active]:shadow-none group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
                                 <span
-                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-[#0086DA] group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                         height="24" color="currentColor" fill="none" stroke="currentColor"
                                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -289,31 +327,27 @@
                                 </span>
                             </button>
                             <div data-appointment-submenu
-                                class="relative ml-0 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out group-[.collapsed]:hidden {{ $isAppointmentMenuOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }}">
-                                <span
-                                    class="pointer-events-none absolute bottom-2 left-[1.875rem] top-2 w-px bg-slate-400/70"></span>
-                                <a href="{{ route('appointment.calendar') }}"
-                                    class="{{ request()->routeIs('appointment.calendar') || request()->routeIs('appointment') ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-800' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2 before:bg-slate-400/70">
-                                    Appointment Calendar
+                                class="relative ml-2 mt-0.5 space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out group-[.collapsed]:hidden {{ $isAppointmentMenuOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }}">
+                                <a href="{{ route('appointment.calendar') }}" title="Appointment Calendar"
+                                    class="{{ request()->routeIs('appointment.calendar') || request()->routeIs('appointment') ? 'bg-[#0086DA] text-white shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] before:bg-white/70' : 'text-slate-300 hover:bg-white/10 hover:text-white before:bg-slate-400/70' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2">                                    Appointment Calendar
                                 </a>
-                                <a href="{{ route('appointment.requests') }}"
-                                    class="{{ request()->routeIs('appointment.requests') ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-800' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2 before:bg-slate-400/70">
+                                <a href="{{ route('appointment.requests') }}" title="Appointment Request"
+                                    class="{{ request()->routeIs('appointment.requests') ? 'bg-[#0086DA] text-white shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] before:bg-white/70' : 'text-slate-300 hover:bg-white/10 hover:text-white before:bg-slate-400/70' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2">
                                     Appointment Request
                                 </a>
                             </div>
                         </li>
                         @if (auth()->user()->role !== 3)
                             <li>
-                                <a href="{{ route('queue') }}"
+                                <a href="{{ route('queue') }}" title="Queue"
                                     class="{{ request()->is('queue') ? 'active' : '' }}
-                                nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                                transition-all duration-300
-                                text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm
+                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                                transition-all duration-200
+                                text-slate-300 hover:bg-white/10 hover:text-white
                                 [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                                group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
-                                group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
                                     <span
-                                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -329,16 +363,16 @@
                             </li>
                         @endif
                         <li>
-                            <a href="{{ route('patient-records') }}"
+                            <a href="{{ route('patient-records') }}" title="Patient Records"
                                 class="{{ request()->is('patient-records') ? 'active' : '' }} 
-                            nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                            transition-all duration-300
-                            text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm 
+                            nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                            transition-all duration-200
+                            text-slate-300 hover:bg-white/10 hover:text-white 
                             [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                            group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
+                            group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0
                                 group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
                                 <span
-                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                         height="24" color="currentColor" fill="none" stroke="currentColor"
                                         stroke-width="1.5">
@@ -356,16 +390,15 @@
                         </li>
                         @if ($isAdmin)
                             <li>
-                                <a href="{{ route('reports.index') }}"
+                                <a href="{{ route('reports.index') }}" title="Reports"
                                     class="{{ request()->routeIs('reports.*') ? 'active' : '' }}
-                                nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                                transition-all duration-300
-                                text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm
+                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                                transition-all duration-200
+                                text-slate-300 hover:bg-white/10 hover:text-white
                                 [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                                group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
-                                group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
                                     <span
-                                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                             height="24" color="currentColor" fill="none" stroke="currentColor"
                                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -382,16 +415,15 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('users.index') }}"
+                                <a href="{{ route('users.index') }}" title="User Accounts"
                                     class="{{ request()->routeIs('users.*') ? 'active' : '' }}
-                                nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                                transition-all duration-300
-                                text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm
+                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                                transition-all duration-200
+                                text-slate-300 hover:bg-white/10 hover:text-white
                                 [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                                group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
-                                group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
                                     <span
-                                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                             height="24" color="currentColor" fill="none" stroke="currentColor"
                                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -410,16 +442,16 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('activity-logs') }}"
+                                <a href="{{ route('activity-logs') }}" title="Activity Logs"
                                     class="{{ request()->is('activity-logs') ? 'active' : '' }} 
-                                nav-item group relative flex w-full items-center gap-3 rounded-none px-3 py-2.5
-                            transition-all duration-300
-                                text-slate-700 hover:bg-slate-200/80 hover:text-slate-950 hover:shadow-sm 
+                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                            transition-all duration-200
+                                text-slate-300 hover:bg-white/10 hover:text-white 
                                 [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] 
-                                group-[.collapsed]:mx-auto group-[.collapsed]:w-11 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0
+                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0
                                 group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
                                     <span
-                                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-none bg-slate-100/90 text-slate-600 transition-colors duration-300 group-[.active]:bg-white/15 group-[.active]:text-white group-[.collapsed]:h-10 group-[.collapsed]:w-10 group-[.collapsed]:group-[.active]:bg-sky-100 group-[.collapsed]:group-[.active]:text-[#0086DA]">
+                                        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                             height="24" color="currentColor" fill="none" stroke="currentColor"
                                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -442,8 +474,8 @@
                 <form action="{{ route('logout') }}" method="POST" class="px-3">
                     @csrf
 
-                    <button type="submit"
-                        class="nav-item group flex w-full items-center justify-center gap-3 rounded-none px-3 py-2.5 transition-all duration-300 text-rose-600 hover:bg-rose-50 hover:text-rose-700 group-[.collapsed]:justify-center group-[.collapsed]:px-0 group-[.collapsed]:gap-0">
+                    <button type="submit" title="Logout"
+                        class="nav-item group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
                         <span class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                                 height="24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -470,33 +502,52 @@
         </aside>
     @endif
 
-    @yield('content')
+    @php
+        $pageShellClasses = trim($__env->yieldContent('page_shell_class'));
+        $adminShellBaseClasses = 'min-h-screen bg-[#f3f4f6] p-4 sm:p-6 lg:p-8 transition-all duration-300';
+        $patientShellBaseClasses = 'min-h-[calc(100vh-73px)] bg-white';
+    @endphp
+
+    <main id="{{ $isPatient ? 'patientMain' : 'adminMain' }}"
+        class="{{ $isPatient ? $patientShellBaseClasses : $adminShellBaseClasses }} {{ $pageShellClasses }}"
+        @if (!$isPatient) style="margin-left:16rem; padding-top:5.5rem;" @endif>
+        @yield('content')
+    </main>
 
 
     @stack('script')
     <script>
         (function() {
             const sidebar = document.getElementById('sidebar');
+            const adminHeader = document.getElementById('adminHeader');
             const toggleBtn = document.getElementById('toggleBtn');
+            const adminMain = document.getElementById('adminMain');
             const appointmentToggle = document.querySelector('[data-appointment-toggle]');
             const appointmentSubmenu = document.querySelector('[data-appointment-submenu]');
             const appointmentChevron = document.querySelector('[data-appointment-chevron]');
 
-            if (sidebar && toggleBtn) {
-                const syncToggleState = () => {
-                    const collapsed = sidebar.classList.contains('collapsed');
-                    toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-                };
+            const EXPANDED_W = '16rem';
+            const COLLAPSED_W = '5rem';
 
+            const syncLayout = () => {
+                if (!sidebar || !adminHeader) return;
+                const sidebarWidth = sidebar.classList.contains('collapsed') ? COLLAPSED_W : EXPANDED_W;
+                adminHeader.style.left = sidebarWidth;
+                if (adminMain) {
+                    adminMain.style.marginLeft = sidebarWidth;
+                }
+            };
+
+            if (sidebar && toggleBtn) {
                 if (localStorage.getItem('sidebar-collapsed') === 'true') {
                     sidebar.classList.add('collapsed');
                 }
-                syncToggleState();
+                syncLayout();
 
                 toggleBtn.addEventListener('click', function() {
                     sidebar.classList.toggle('collapsed');
                     localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
-                    syncToggleState();
+                    syncLayout();
                 });
             }
 
@@ -523,6 +574,12 @@
 
                 appointmentToggle.addEventListener('click', function() {
                     if (sidebar && sidebar.classList.contains('collapsed')) {
+                        sidebar.classList.remove('collapsed');
+                        localStorage.setItem('sidebar-collapsed', 'false');
+                        syncLayout();
+                        isOpen = true;
+                        localStorage.setItem(storageKey, 'true');
+                        renderAppointmentState();
                         return;
                     }
 

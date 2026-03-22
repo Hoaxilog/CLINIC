@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\appointment;
+namespace App\Livewire\Appointment;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -818,10 +818,8 @@ class BookAppointment extends Component
     public function render()
     {
         $services = DB::table('services')->get();
-        $layout = 'layouts.app';
 
-        return view('livewire.appointment.book-appointment', compact('services'))
-            ->layout($layout);
+        return view('livewire.appointment.book-appointment', compact('services'));
     }
 
     protected function resolveNewAppointmentStatus(): string

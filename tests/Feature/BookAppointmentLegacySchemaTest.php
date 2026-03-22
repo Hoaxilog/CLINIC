@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 namespace Tests\Feature;
 
-use App\Livewire\appointment\BookAppointment;
+use App\Livewire\Appointment\BookAppointment;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

@@ -1,8 +1,6 @@
 @extends('index')
 
 @section('content')
-    <main id="mainContent"
-        class="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8 ml-0 md:ml-64 mt-14 transition-all duration-300 md:peer-[.collapsed]:ml-16">
         <style>
             .reports-wrap { display: grid; gap: 1rem; }
             .report-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1rem; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); }

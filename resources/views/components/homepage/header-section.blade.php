@@ -1,5 +1,8 @@
-﻿@php
+@php
     $isPatientUser = auth()->check() && auth()->user()->role === 3;
+    $patientMinimalHeader = $patientMinimalHeader ?? false;
+    $isPatientBookPage = request()->routeIs('book');
+    $isPublicHomePage = request()->routeIs('home');
     $guestActionMode = $guestActionMode ?? 'login';
     $guestSecondaryLabel = $guestActionMode === 'register' ? 'Sign Up' : 'Login';
     $guestSecondaryRoute = $guestActionMode === 'register' ? route('register') : route('login');
@@ -103,7 +106,7 @@
             </div>
         </a>
 
-        @if (!$isPatientUser)
+        @if (! $patientMinimalHeader)
             <nav class="hidden items-center gap-9 lg:flex">
                 @foreach (['Services' => 'services', 'About' => 'about', 'Why Us' => 'why-us', 'Contact' => 'contact'] as $label => $id)
                     <a href="/home#{{ $id }}"
@@ -112,9 +115,9 @@
             </nav>
         @endif
 
-        <div class="{{ $isPatientUser ? 'flex items-center gap-2' : 'hidden items-center gap-2 lg:flex' }}">
-            @if ($isPatientUser)
-                @livewire('components.notification-bell')
+        <div class="{{ $patientMinimalHeader ? 'flex items-center gap-2' : 'hidden items-center gap-2 lg:flex' }}">
+            @if ($patientMinimalHeader)
+                @livewire('shared.notification-bell')
 
                 <div class="relative" id="patient-profile-wrap">
                     <button id="patient-profile-btn" type="button" aria-haspopup="true" aria-expanded="false"
@@ -150,7 +153,7 @@
         </div>
 
         <button id="booking-ham-btn" aria-label="Toggle menu"
-            class="{{ $isPatientUser ? 'hidden' : 'flex flex-col items-end gap-[5px] border-none bg-transparent p-2 lg:hidden' }}">
+            class="{{ $patientMinimalHeader ? 'hidden' : 'flex flex-col items-end gap-[5px] border-none bg-transparent p-2 lg:hidden' }}">
             <span id="book-bar1"></span>
             <span id="book-bar2"></span>
             <span id="book-bar3"></span>
@@ -158,11 +161,7 @@
 
         <div id="booking-mob-menu"
             class="absolute top-full right-0 left-0 z-[200] hidden border-t border-[#e4eff8] bg-white shadow-[0_8px_32px_rgba(0,0,0,.08)]">
-            @if ($isPatientUser)
-                <a href="{{ route('patient.dashboard') }}"
-                    class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Dashboard</a>
-                <a href="{{ route('book') }}"
-                    class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Book Appointment</a>
+            @if ($patientMinimalHeader)
                 <a href="{{ route('profile.index') }}"
                     class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">Profile</a>
                 <div class="px-7 pt-5 pb-6">
@@ -242,6 +241,3 @@
         });
     });
 </script>
-
-
-

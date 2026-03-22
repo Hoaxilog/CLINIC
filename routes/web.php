@@ -12,7 +12,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
-use App\Livewire\appointment\BookAppointment;
+use App\Livewire\Appointment\BookAppointment;
 use App\Support\Services\ServiceCatalog;
 use Illuminate\Support\Facades\Route;
 
@@ -71,7 +71,7 @@ Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showRes
 Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
 
 // Public booking route (supports both guests and authenticated users)
-Route::get('/book', BookAppointment::class)->name('book');
+Route::view('/book', 'book')->name('book');
 
 // Authenticated user routes (all logged-in users)
 Route::middleware(['auth'])->group(function () {

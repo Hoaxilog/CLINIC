@@ -1,15 +1,12 @@
 <?php
 
-namespace App\Livewire\appointment;
+namespace App\Livewire\Appointment;
 
 class AppointmentRequests extends AppointmentCalendar
 {
-    public function mount(?string $initialTab = null): void
+    public function mount(?string $initialTab = 'pending')
     {
-        parent::mount('pending');
-        $this->activeTab = 'pending';
-        $this->isTabLocked = true;
-        $this->lockedTab = 'pending';
+        parent::mount($initialTab ?? 'pending');
     }
 
     public function render()
