@@ -287,6 +287,31 @@
                     @error('selectedService')<span class="mt-1 block text-xs text-red-500">{{ $message }}</span>@enderror
                 </div>
 
+                @if (false)
+                    <div class="mb-6 rounded-xl border border-[#cfe2f1] bg-[#f6fafd] p-5">
+                        <div class="mb-3 text-xs font-bold uppercase tracking-widest text-[#587189]">Appointment Summary</div>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div>
+                                <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Date</div>
+                                <div class="mt-1 text-sm font-semibold text-[#1a2e3b]">{{ !empty($selectedDate) ? \Carbon\Carbon::parse($selectedDate)->format('M d, Y') : '—' }}</div>
+                            </div>
+                            <div>
+                                <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Time</div>
+                                <div class="mt-1 text-sm font-semibold text-[#1a2e3b]">
+                                    {{ !empty($selectedTime) ? \Carbon\Carbon::parse($selectedTime)->format('g:i A') : '—' }}
+                                    @if (!empty($endTime))
+                                        to {{ \Carbon\Carbon::parse($endTime)->format('g:i A') }}
+                                    @endif
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Service</div>
+                                <div class="mt-1 text-sm font-semibold text-[#1a2e3b]">{{ optional(collect($servicesList)->firstWhere('id', $selectedService))->service_name ?? '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- APPROVAL SAFETY CHECK (Pending only) --}}
                 @if ($isViewing && $appointmentStatus === 'Pending' && !$isRescheduling)
                     @php

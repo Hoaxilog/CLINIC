@@ -459,24 +459,18 @@ class PatientFormModal extends Component
 
         $createdPatientId = null;
         $createdHealthId  = null;
-        $createdApptId    = null;
 
-        DB::transaction(function () use ($patientService, $hService, $modifier, &$createdPatientId, &$createdHealthId, &$createdApptId) {
+        DB::transaction(function () use ($patientService, $hService, $modifier, &$createdPatientId, &$createdHealthId) {
             $createdPatientId  = $patientService->create($this->basicInfoData, $modifier);
             $this->newPatientId = $createdPatientId;
 
             if (! empty($this->healthHistoryData)) {
                 $createdHealthId = $hService->create($createdPatientId, $this->healthHistoryData, $modifier);
             }
-
-            $createdApptId = $patientService->createWalkInAppointment($createdPatientId, $modifier);
         });
 
         if ($createdPatientId) {
             $patientService->logCreated($createdPatientId, $this->basicInfoData);
-        }
-        if ($createdApptId) {
-            $patientService->logWalkInAppointment($createdApptId, $createdPatientId, $this->basicInfoData);
         }
 
         $this->dispatch('patient-added');

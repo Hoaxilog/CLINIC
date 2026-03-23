@@ -135,8 +135,11 @@
 
             <div>
                 <label for="mobile_number" class="{{ $labelClass }}">Mobile Number <span class="text-red-600">*</span></label>
-                <input wire:model.defer="mobile_number" type="number" id="mobile_number" class="{{ $fieldClass('mobile_number') }}"
-                    placeholder="e.g., 0917 123 4567">
+                <div class="flex">
+                    <span class="inline-flex items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                    <input wire:model.defer="mobile_number" type="text" inputmode="numeric" maxlength="11" id="mobile_number" class="{{ $fieldClass('mobile_number') }} flex-1"
+                        placeholder="09171234567">
+                </div>
                 @error('mobile_number')
                     <span data-error-for="mobile_number" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                 @enderror
@@ -180,8 +183,11 @@
 
             <div>
                 <label for="emergency_contact_number" class="{{ $labelClass }}">Contact Number <span class="text-red-600">*</span></label>
-                <input wire:model.defer="emergency_contact_number" type="number" id="emergency_contact_number"
-                    class="{{ $fieldClass('emergency_contact_number') }}" placeholder="e.g., 0918 765 4321">
+                <div class="flex">
+                    <span class="inline-flex items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                    <input wire:model.defer="emergency_contact_number" type="text" inputmode="numeric" maxlength="11" id="emergency_contact_number"
+                        class="{{ $fieldClass('emergency_contact_number') }} flex-1" placeholder="09187654321">
+                </div>
                 @error('emergency_contact_number')
                     <span data-error-for="emergency_contact_number"
                         class="mt-1 block text-xs text-red-500">{{ $message }}</span>
@@ -237,8 +243,11 @@
 
                 <div>
                     <label for="father_number" class="{{ $labelClass }}">Father's Contact Number</label>
-                    <input wire:model.defer="father_number" type="number" id="father_number" class="{{ $fieldClass('father_number') }}"
-                        placeholder="e.g., 0915 111 2222">
+                    <div class="flex">
+                        <span class="inline-flex items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                        <input wire:model.defer="father_number" type="text" inputmode="numeric" maxlength="11" id="father_number" class="{{ $fieldClass('father_number') }} flex-1"
+                            placeholder="09151112222">
+                    </div>
                     @error('father_number')
                         <span data-error-for="father_number" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                     @enderror
@@ -255,8 +264,11 @@
 
                 <div>
                     <label for="mother_number" class="{{ $labelClass }}">Mother's Contact Number</label>
-                    <input wire:model.defer="mother_number" type="number" id="mother_number" class="{{ $fieldClass('mother_number') }}"
-                        placeholder="e.g., 0916 333 4444">
+                    <div class="flex">
+                        <span class="inline-flex items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                        <input wire:model.defer="mother_number" type="text" inputmode="numeric" maxlength="11" id="mother_number" class="{{ $fieldClass('mother_number') }} flex-1"
+                            placeholder="09163334444">
+                    </div>
                     @error('mother_number')
                         <span data-error-for="mother_number" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                     @enderror
@@ -273,8 +285,11 @@
 
                 <div>
                     <label for="guardian_number" class="{{ $labelClass }}">Guardian's Contact Number</label>
-                    <input wire:model.defer="guardian_number" type="number" id="guardian_number" class="{{ $fieldClass('guardian_number') }}"
-                        placeholder="e.g., 0917 555 6666">
+                    <div class="flex">
+                        <span class="inline-flex items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                        <input wire:model.defer="guardian_number" type="text" inputmode="numeric" maxlength="11" id="guardian_number" class="{{ $fieldClass('guardian_number') }} flex-1"
+                            placeholder="09175556666">
+                    </div>
                     @error('guardian_number')
                         <span data-error-for="guardian_number" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                     @enderror
