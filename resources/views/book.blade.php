@@ -19,7 +19,7 @@
     ])
 
     <main>
-        <livewire:appointment.book-appointment />
+        @livewire(\App\Livewire\Appointment\BookAppointment::class)
     </main>
 
     @include('components.homepage.footer-section')
