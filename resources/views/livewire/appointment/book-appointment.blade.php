@@ -250,11 +250,11 @@
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
                                         Contact Number <span class="text-red-500">*</span>
                                     </label>
-                                    <div class="flex">
-                                        <span class="inline-flex items-center px-3 border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none whitespace-nowrap {{ $errors->has('contact_number') ? 'border-red-400' : '' }}">+63</span>
+                                    <div class="flex min-w-0">
+                                        <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none whitespace-nowrap {{ $errors->has('contact_number') ? 'border-red-400' : '' }}">+63</span>
                                         <input type="text" inputmode="numeric" maxlength="11" wire:model.defer="contact_number"
                                             data-validate-field="contact_number" placeholder="09XX XXX XXXX"
-                                            class="{{ $fieldClass('contact_number') }} flex-1">
+                                            class="{{ $fieldClass('contact_number') }} min-w-0 flex-1">
                                     </div>
                                     @error('contact_number')
                                         <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"

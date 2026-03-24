@@ -108,6 +108,37 @@
                     $serviceSelectClass    = $errors->has('selectedService')? $inputErr : $inputBase;
                 @endphp
 
+                {{-- STATUS TIMELINE --}}
+                @if ($isViewing)
+                    @php
+                        $statusSteps = ['Pending', 'Scheduled', 'Waiting', 'Ongoing', 'Completed'];
+                        $currentIdx  = array_search($appointmentStatus, $statusSteps);
+                    @endphp
+                    <div class="mb-6">
+                        <div class="mb-2 text-xs font-bold uppercase tracking-widest text-[#587189]">Appointment Status</div>
+                        <div class="flex items-center gap-0">
+                            @foreach ($statusSteps as $i => $step)
+                                @php
+                                    $isDone    = $currentIdx !== false && $i < $currentIdx;
+                                    $isCurrent = $currentIdx !== false && $i === $currentIdx;
+                                @endphp
+                                <div class="flex flex-1 flex-col items-center">
+                                    <div class="h-2.5 w-2.5 rounded-full
+                                        {{ $isCurrent ? 'bg-[#0086da] ring-4 ring-[#0086da]/20' : ($isDone ? 'bg-[#0086da]' : 'bg-gray-200') }}">
+                                    </div>
+                                    <div class="mt-1.5 text-center text-[10px] font-semibold
+                                        {{ $isCurrent ? 'text-[#0086da]' : ($isDone ? 'text-[#0086da]' : 'text-gray-400') }}">
+                                        {{ $step }}
+                                    </div>
+                                </div>
+                                @if (!$loop->last)
+                                    <div class="mb-4 h-[2px] flex-1 {{ $isDone ? 'bg-[#0086da]' : 'bg-gray-200' }}"></div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 {{-- DATE / TIME --}}
                 <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
@@ -155,6 +186,7 @@
                 </div>
 
                 {{-- REQUESTER INFO --}}
+                @if ($isViewing && $viewingBookingForOther)
                 <div class="mb-6 overflow-hidden rounded-xl border border-[#cfe2f1] bg-[#f6fafd]">
                     <div class="border-b border-[#cfe2f1] px-5 py-3">
                         <span class="text-xs font-bold uppercase tracking-widest text-[#587189]">Requester Info</span>
@@ -176,14 +208,13 @@
                             <label class="{{ $labelClass }}">Email</label>
                             <input type="text" value="{{ $viewingRequesterEmail }}" class="{{ $readonlyInp }}" readonly />
                         </div>
-                        @if ($viewingBookingForOther)
-                            <div class="sm:col-span-2">
-                                <label class="{{ $labelClass }}">Relationship to Patient</label>
-                                <input type="text" value="{{ $viewingRequesterRelationship }}" class="{{ $readonlyInp }}" readonly />
-                            </div>
-                        @endif
+                        <div class="sm:col-span-2">
+                            <label class="{{ $labelClass }}">Relationship to Patient</label>
+                            <input type="text" value="{{ $viewingRequesterRelationship }}" class="{{ $readonlyInp }}" readonly />
+                        </div>
                     </div>
                 </div>
+                @endif
 
                 {{-- PATIENT SEARCH (booking mode only) --}}
                 @if (!$isViewing)
@@ -599,7 +630,6 @@
                     <div class="mb-6 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
                         <div>
                             <div class="text-sm font-semibold text-emerald-900">Patient record linked ✓</div>
-                            <p class="mt-0.5 text-xs text-emerald-700">Linked to patient record #{{ $viewingPatientId }}</p>
                         </div>
                         @if (auth()->user()->role !== 3 && in_array($appointmentStatus, ['Scheduled', 'Waiting'], true))
                             <button type="button" wire:click="unlinkAppointmentPatient"
@@ -609,37 +639,6 @@
                                 Change / Unlink
                             </button>
                         @endif
-                    </div>
-                @endif
-
-                {{-- STATUS TIMELINE --}}
-                @if ($isViewing)
-                    @php
-                        $statusSteps = ['Pending', 'Scheduled', 'Waiting', 'Ongoing', 'Completed'];
-                        $currentIdx  = array_search($appointmentStatus, $statusSteps);
-                    @endphp
-                    <div class="mb-6">
-                        <div class="mb-2 text-xs font-bold uppercase tracking-widest text-[#587189]">Appointment Status</div>
-                        <div class="flex items-center gap-0">
-                            @foreach ($statusSteps as $i => $step)
-                                @php
-                                    $isDone    = $currentIdx !== false && $i < $currentIdx;
-                                    $isCurrent = $currentIdx !== false && $i === $currentIdx;
-                                @endphp
-                                <div class="flex flex-1 flex-col items-center">
-                                    <div class="h-2.5 w-2.5 rounded-full
-                                        {{ $isCurrent ? 'bg-[#0086da] ring-4 ring-[#0086da]/20' : ($isDone ? 'bg-[#0086da]' : 'bg-gray-200') }}">
-                                    </div>
-                                    <div class="mt-1.5 text-center text-[10px] font-semibold
-                                        {{ $isCurrent ? 'text-[#0086da]' : ($isDone ? 'text-[#0086da]' : 'text-gray-400') }}">
-                                        {{ $step }}
-                                    </div>
-                                </div>
-                                @if (!$loop->last)
-                                    <div class="mb-4 h-[2px] flex-1 {{ $isDone ? 'bg-[#0086da]' : 'bg-gray-200' }}"></div>
-                                @endif
-                            @endforeach
-                        </div>
                     </div>
                 @endif
 

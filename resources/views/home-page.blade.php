@@ -413,7 +413,7 @@
                     </h2>
                     <p class="reveal mb-8 max-w-[300px] text-[.86rem] leading-[1.85] text-[#3d5a6e]">Walk-ins welcome.
                         Booking ahead is recommended for faster service and guaranteed slots.</p>
-                    <a href="#appointment"
+                    <a href="/book"
                         class="reveal inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="square">

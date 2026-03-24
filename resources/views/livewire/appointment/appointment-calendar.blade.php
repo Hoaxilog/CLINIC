@@ -1,10 +1,17 @@
 <div class="relative" x-data="{
-    modalOpen: @entangle('showAppointmentModal').live,
+    serverModalOpen: @entangle('showAppointmentModal').live,
+    modalOpen: false,
     openingPatientForm: false,
     resumeAppointmentModalOnPatientFormClose: false,
     blockedToast: false,
     blockedMessage: '',
     blockedTimer: null,
+    init() {
+        this.modalOpen = this.serverModalOpen;
+        this.$watch('serverModalOpen', value => {
+            this.modalOpen = value;
+        });
+    },
     showBlocked(date, time) {
         const cleanTime = (time || '').toString().slice(0, 5);
         this.blockedMessage = `The ${date} ${cleanTime} slot is blocked and cannot be booked.`;
@@ -17,6 +24,7 @@
         }, 1800);
     }
 }"
+    x-init="init()"
     x-on:patient-form-opened.window="openingPatientForm = false; modalOpen = false"
     x-on:patient-form-closed.window="openingPatientForm = false; if (resumeAppointmentModalOnPatientFormClose) { modalOpen = true; resumeAppointmentModalOnPatientFormClose = false }"
     x-on:patient-form-open-failed.window="openingPatientForm = false; resumeAppointmentModalOnPatientFormClose = false">
@@ -129,7 +137,7 @@
     </div>
 
     {{-- Loading overlay for page-wide Livewire operations --}}
-    <div wire:loading.flex wire:target="previousWeek,nextWeek,goToToday,goToDate,toggleBlockMode,blockSlot,clearPrefill"
+    <div wire:loading.flex wire:target="previousWeek,nextWeek,goToToday,goToDate,toggleBlockMode,blockSlot,unblockSlot,clearPrefill"
         class="fixed inset-0 z-[60] items-center justify-center bg-white/60 backdrop-blur-[2px]">
         <div class="flex flex-col items-center gap-3">
             <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>

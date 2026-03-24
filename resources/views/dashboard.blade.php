@@ -5,6 +5,8 @@
         $isAdminDashboard = $isAdminDashboard ?? auth()->user()?->isAdmin();
         $isDentistDashboard = $isDentistDashboard ?? auth()->user()?->isDentist();
         $isStaffDashboard = $isStaffDashboard ?? auth()->user()?->isStaff();
+        $trendingDownIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down-icon lucide-trending-down"><path d="M16 17h6v-6"/><path d="m22 17-8.5-8.5-5 5L2 7"/></svg>';
+        $trendingUpIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up-icon lucide-trending-up"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>';
 
         $roleTitle = $isAdminDashboard ? 'Admin Dashboard' : ($isDentistDashboard ? 'Dentist Dashboard' : 'Staff Dashboard');
         $roleSummary = $isAdminDashboard
@@ -36,7 +38,10 @@
                         : (($monthProfit ?? 0) < 0 ? 'text-rose-700' : 'text-slate-500'),
                     'action_label' => (($monthProfitPct ?? null) === null
                         ? 'View'
-                        : (($monthProfitPct ?? 0) >= 0 ? 'Γåæ '.number_format(abs($monthProfitPct ?? 0), 0).'%' : 'Γåô '.number_format(abs($monthProfitPct ?? 0), 0).'%')),
+                        : number_format(abs($monthProfitPct ?? 0), 0).'%'),
+                    'action_icon' => (($monthProfitPct ?? null) === null
+                        ? null
+                        : (($monthProfitPct ?? 0) >= 0 ? $trendingUpIcon : $trendingDownIcon)),
                 ],
                 [
                     'label' => 'Today\'s Appointments',
@@ -160,7 +165,12 @@
                     </div>
                     <div class="mt-4 flex items-center justify-between gap-4">
                         <p class="text-xs font-medium {{ $card['meta_class'] ?? 'text-gray-500' }}">{{ $card['meta'] }}</p>
-                        <span class="shrink-0 text-sm font-semibold {{ $card['accent'] }}">{{ $card['action_label'] ?? 'View' }}</span>
+                        <span class="shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold {{ $card['accent'] }}">
+                            @if (!empty($card['action_icon']))
+                                {!! $card['action_icon'] !!}
+                            @endif
+                            {{ $card['action_label'] ?? 'View' }}
+                        </span>
                     </div>
                 </a>
             @endforeach
@@ -244,7 +254,7 @@
                                     <td class="px-4 py-3">
                                         <a href="{{ route('appointment.calendar', $viewSlotParams) }}"
                                             class="inline-flex whitespace-nowrap border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-800 transition hover:bg-blue-100">
-                                            View Slot
+                                            View Appointment
                                         </a>
                                     </td>
                                 </tr>
