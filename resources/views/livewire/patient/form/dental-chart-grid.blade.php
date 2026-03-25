@@ -126,11 +126,12 @@
             return $position <= 3 ? 'box' : 'circle';
         };
 
-        $renderTooth = function (int $tooth, bool $isLower) use ($teeth, $toolLabels, $quickTools, $picker, $tools, $shapeForTooth) {
+        $renderTooth = function (int $tooth, bool $isLower, string $instanceKey) use ($teeth, $toolLabels, $quickTools, $picker, $tools, $shapeForTooth) {
             return view('livewire.patient.form.partial.tooth', [
                 'tooth' => $tooth,
                 'type' => $shapeForTooth($tooth),
                 'isLower' => $isLower,
+                'instanceKey' => $instanceKey,
                 'teeth' => $teeth,
                 'toolLabels' => $toolLabels,
                 'quickTools' => $quickTools,
@@ -162,7 +163,7 @@
                 @foreach ($upperRows2 as $row)
                     <div class="flex gap-1">
                         @foreach ($row as $tooth)
-                            {!! $renderTooth($tooth, false) !!}
+                            {!! $renderTooth($tooth, false, 'upper-rows2-' . $loop->parent->index . '-' . $loop->index) !!}
                         @endforeach
                     </div>
                 @endforeach
@@ -172,7 +173,7 @@
                 @foreach ($upperRows4 as $row)
                     <div class="flex gap-1">
                         @foreach ($row as $tooth)
-                            {!! $renderTooth($tooth, false) !!}
+                            {!! $renderTooth($tooth, false, 'upper-rows4-' . $loop->parent->index . '-' . $loop->index) !!}
                         @endforeach
                     </div>
                 @endforeach
@@ -181,12 +182,12 @@
             <div class="hidden max-[1199px]:flex max-[730px]:hidden flex-col items-center gap-5">
                 <div class="flex gap-1">
                     @foreach ($upperLeft as $tooth)
-                        {!! $renderTooth($tooth, false) !!}
+                        {!! $renderTooth($tooth, false, 'upper-left-stacked-' . $loop->index) !!}
                     @endforeach
                 </div>
                 <div class="flex gap-1">
                     @foreach ($upperRight as $tooth)
-                        {!! $renderTooth($tooth, false) !!}
+                        {!! $renderTooth($tooth, false, 'upper-right-stacked-' . $loop->index) !!}
                     @endforeach
                 </div>
             </div>
@@ -194,12 +195,12 @@
             <div class="hidden min-[1200px]:flex items-end gap-1 justify-center">
                 <div class="flex gap-1 border-r-2 border-gray-300 pr-3">
                     @foreach ($upperLeft as $tooth)
-                        {!! $renderTooth($tooth, false) !!}
+                        {!! $renderTooth($tooth, false, 'upper-left-desktop-' . $loop->index) !!}
                     @endforeach
                 </div>
                 <div class="flex gap-1 pl-3">
                     @foreach ($upperRight as $tooth)
-                        {!! $renderTooth($tooth, false) !!}
+                        {!! $renderTooth($tooth, false, 'upper-right-desktop-' . $loop->index) !!}
                     @endforeach
                 </div>
             </div>
@@ -213,7 +214,7 @@
                 @foreach ($lowerRows2 as $row)
                     <div class="flex gap-1">
                         @foreach ($row as $tooth)
-                            {!! $renderTooth($tooth, true) !!}
+                            {!! $renderTooth($tooth, true, 'lower-rows2-' . $loop->parent->index . '-' . $loop->index) !!}
                         @endforeach
                     </div>
                 @endforeach
@@ -223,7 +224,7 @@
                 @foreach ($lowerRows4 as $row)
                     <div class="flex gap-1">
                         @foreach ($row as $tooth)
-                            {!! $renderTooth($tooth, true) !!}
+                            {!! $renderTooth($tooth, true, 'lower-rows4-' . $loop->parent->index . '-' . $loop->index) !!}
                         @endforeach
                     </div>
                 @endforeach
@@ -232,12 +233,12 @@
             <div class="hidden max-[1199px]:flex max-[730px]:hidden flex-col items-center gap-5">
                 <div class="flex gap-1">
                     @foreach ($lowerLeft as $tooth)
-                        {!! $renderTooth($tooth, true) !!}
+                        {!! $renderTooth($tooth, true, 'lower-left-stacked-' . $loop->index) !!}
                     @endforeach
                 </div>
                 <div class="flex gap-1">
                     @foreach ($lowerRight as $tooth)
-                        {!! $renderTooth($tooth, true) !!}
+                        {!! $renderTooth($tooth, true, 'lower-right-stacked-' . $loop->index) !!}
                     @endforeach
                 </div>
             </div>
@@ -245,12 +246,12 @@
             <div class="hidden min-[1200px]:flex items-start gap-1 justify-center">
                 <div class="flex gap-1 border-r-2 border-gray-300 pr-3">
                     @foreach ($lowerLeft as $tooth)
-                        {!! $renderTooth($tooth, true) !!}
+                        {!! $renderTooth($tooth, true, 'lower-left-desktop-' . $loop->index) !!}
                     @endforeach
                 </div>
                 <div class="flex gap-1 pl-3">
                     @foreach ($lowerRight as $tooth)
-                        {!! $renderTooth($tooth, true) !!}
+                        {!! $renderTooth($tooth, true, 'lower-right-desktop-' . $loop->index) !!}
                     @endforeach
                 </div>
             </div>

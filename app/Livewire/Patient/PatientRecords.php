@@ -150,7 +150,7 @@ class PatientRecords extends Component
     public function deletePatient($id)
     {
         if (Auth::check() && Auth::user()->role === 3) {
-            session()->flash('error', 'You do not have permission to delete patient records.');
+            $this->dispatch('flash-message', type: 'error', message: 'You do not have permission to delete patient records.');
             return;
         }
 
@@ -182,7 +182,7 @@ class PatientRecords extends Component
                 $this->selectedPatient = null;
                 $this->lastVisit = null;
             }
-            session()->flash('success', 'Patient deleted successfully.');
+            $this->dispatch('flash-message', type: 'success', message: 'Patient deleted successfully.');
         }
     }
 

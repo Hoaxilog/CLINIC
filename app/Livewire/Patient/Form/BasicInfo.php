@@ -126,7 +126,7 @@ class BasicInfo extends Component
         $rules = [
             'last_name' => 'required|string',
             'first_name' => 'required|string',
-            'middle_name' => 'required|string',
+            'middle_name' => 'nullable|string',
             'nickname' => 'nullable|string',
             'occupation' => 'required|string',
             'birth_date' => 'required|date',
@@ -190,6 +190,7 @@ class BasicInfo extends Component
             if ($field) {
                 $this->dispatch('scroll-to-error', field: $field);
             }
+            $this->dispatch('patient-form-navigation-finished', currentStep: 1);
 
             return;
         }
@@ -200,6 +201,7 @@ class BasicInfo extends Component
     #[On('fillBasicInfo')]
     public function fillForm($data)
     {
+        $this->resetValidation();
         $this->fill($data);
     }
 
@@ -207,6 +209,7 @@ class BasicInfo extends Component
     public function resetForm()
     {
         $this->reset();
+        $this->resetValidation();
     }
 
     public function updated($propertyName): void

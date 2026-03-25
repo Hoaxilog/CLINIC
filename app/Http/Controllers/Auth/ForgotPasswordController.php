@@ -106,13 +106,13 @@ class ForgotPasswordController extends Controller
             ->first();
 
         if (! $resetRecord) {
-            return redirect('/forgot-password')->with('failed', 'The reset password link has expired.');
+            return redirect()->route('password.expired');
         }
 
         if (Carbon::parse($resetRecord->created_at)->addMinutes(self::RESET_LINK_EXPIRES_IN_MINUTES)->isPast()) {
             DB::table('password_reset_tokens')->where('email', $resetRecord->email)->delete();
 
-            return redirect('/forgot-password')->with('failed', 'The reset password link has expired.');
+            return redirect()->route('password.expired');
         }
 
         return view('auth.reset-password', ['token' => $token]);
@@ -130,14 +130,14 @@ class ForgotPasswordController extends Controller
             ->first();
 
         if (! $resetRecord) {
-            return back()->with('failed', 'This reset link has expired.');
+            return redirect()->route('password.expired');
         }
 
         // Check if token is older than the allowed reset window
         if (Carbon::parse($resetRecord->created_at)->addMinutes(self::RESET_LINK_EXPIRES_IN_MINUTES)->isPast()) {
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
-            return back()->with('failed', 'This reset link has expired.');
+            return redirect()->route('password.expired');
         }
 
         // Update the user's password

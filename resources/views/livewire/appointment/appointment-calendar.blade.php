@@ -144,6 +144,5 @@
             <div class="text-sm font-semibold text-gray-700">Loading...</div>
         </div>
     </div>
+    @include('components.flash-toast')
 </div>
-
-@include('components.flash-toast')

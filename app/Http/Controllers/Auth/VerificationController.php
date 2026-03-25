@@ -18,6 +18,11 @@ class VerificationController extends Controller
         return view('auth.verify-email-notice');
     }
 
+    public function showExpired()
+    {
+        return view('auth.verify-email-expired');
+    }
+
     public function verify($id, $token)
     {
         // 1. Find User
@@ -43,9 +48,8 @@ class VerificationController extends Controller
                     'updated_at' => now(),
                 ]);
 
-            return redirect()->route('verification.notice')
-                ->with('email', $user->email)
-                ->with('failed', 'Your verification link has expired. Please request a new one.');
+            return redirect()->route('verification.expired')
+                ->with('expired_email', $user->email);
         }
 
         // 3. Verify

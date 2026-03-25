@@ -395,7 +395,7 @@ class AppointmentCalendar extends Component
     public function toggleBlockMode(): void
     {
         if (! $this->blockedSlotsEnabled()) {
-            session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+            $this->dispatch('flash-message', type: 'error', message: 'Blocked slots table is not available yet. Please run migrations.');
 
             return;
         }
@@ -404,14 +404,14 @@ class AppointmentCalendar extends Component
 
         if ($this->isBlockMode) {
             $this->closeAppointmentModal(true);
-            session()->flash('info', 'Select one calendar slot to block.');
+            $this->dispatch('flash-message', type: 'info', message: 'Select one calendar slot to block.');
         }
     }
 
     public function blockSlot(string $date, string $time): void
     {
         if (! $this->blockedSlotsEnabled()) {
-            session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+            $this->dispatch('flash-message', type: 'error', message: 'Blocked slots table is not available yet. Please run migrations.');
 
             return;
         }
@@ -427,21 +427,21 @@ class AppointmentCalendar extends Component
 
         if (! $result['ok']) {
             if ($result['error'] ?? false) {
-                session()->flash('error', $result['message']);
+                $this->dispatch('flash-message', type: 'error', message: $result['message']);
             } else {
-                session()->flash('info', $result['message']);
+                $this->dispatch('flash-message', type: 'info', message: $result['message']);
             }
             return;
         }
 
         $this->refreshSlotCounts();
-        session()->flash('success', $result['message']);
+        $this->dispatch('flash-message', type: 'success', message: $result['message']);
     }
 
     public function openBlockSlotModal(?string $date = null, ?string $time = null): void
     {
         if (! $this->blockedSlotsEnabled()) {
-            session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+            $this->dispatch('flash-message', type: 'error', message: 'Blocked slots table is not available yet. Please run migrations.');
 
             return;
         }
@@ -488,7 +488,7 @@ class AppointmentCalendar extends Component
     public function saveBlockedSlot(): void
     {
         if (! $this->blockedSlotsEnabled()) {
-            session()->flash('error', 'Blocked slots table is not available yet. Please run migrations.');
+            $this->dispatch('flash-message', type: 'error', message: 'Blocked slots table is not available yet. Please run migrations.');
             return;
         }
 
@@ -522,7 +522,7 @@ class AppointmentCalendar extends Component
 
         $this->refreshSlotCounts();
         $this->closeBlockSlotModal(true);
-        session()->flash('success', $result['message']);
+        $this->dispatch('flash-message', type: 'success', message: $result['message']);
     }
 
     public function unblockSlot(int $blockedSlotId): void
@@ -534,7 +534,7 @@ class AppointmentCalendar extends Component
         app(BlockedSlotService::class)->delete($blockedSlotId);
         $this->refreshSlotCounts();
         $this->closeBlockSlotModal(true);
-        session()->flash('success', 'Blocked slot removed.');
+        $this->dispatch('flash-message', type: 'success', message: 'Slot unblocked successfully.');
     }
 
     public function updatedSelectedService($serviceId)
@@ -643,13 +643,13 @@ class AppointmentCalendar extends Component
                 'time'             => $this->selectedTime,
             ]);
 
-            session()->flash('success', 'Appointment booked successfully!');
+            $this->dispatch('flash-message', type: 'success', message: 'Appointment booked successfully!');
             $this->clearPrefill();
             $this->loadAppointments();
             $this->closeAppointmentModal(true);
 
         } catch (\Throwable $th) {
-            session()->flash('error', 'Error saving: '.$th->getMessage());
+            $this->dispatch('flash-message', type: 'error', message: 'Error saving: '.$th->getMessage());
         }
     }
 
@@ -840,7 +840,7 @@ class AppointmentCalendar extends Component
             $safety = $this->buildPendingApprovalSafetySummary($old);
             if (! ($safety['can_approve'] ?? false)) {
                 $message = (string) ($safety['summary'] ?? 'This request cannot be approved right now.');
-                session()->flash('error', $message);
+                $this->dispatch('flash-message', type: 'error', message: $message);
                 $this->addError('conflict', $message);
                 $this->pendingApprovalSafety = $safety;
                 return;
@@ -849,6 +849,13 @@ class AppointmentCalendar extends Component
 
         $didUpdate = app(AppointmentService::class)->updateStatus((int) $this->viewingAppointmentId, (string) $newStatus);
         if ($didUpdate) {
+            $label = match ($newStatus) {
+                'Scheduled' => 'Appointment approved and scheduled.',
+                'Cancelled' => 'Appointment cancelled.',
+                'Completed' => 'Appointment marked as completed.',
+                default     => "Appointment status updated to '{$newStatus}'." ,
+            };
+            $this->dispatch('flash-message', type: 'success', message: $label);
             $this->loadAppointments();
             $this->closeAppointmentModal();
         }
@@ -895,14 +902,14 @@ class AppointmentCalendar extends Component
 
         $safety = $this->buildPendingApprovalSafetySummary($old);
         if (! ($safety['can_approve'] ?? false)) {
-            session()->flash('error', (string) ($safety['summary'] ?? 'This request cannot be approved right now.'));
+            $this->dispatch('flash-message', type: 'error', message: (string) ($safety['summary'] ?? 'This request cannot be approved right now.'));
             return;
         }
 
         $didUpdate = app(AppointmentService::class)->updateStatus((int) $appointmentId, 'Scheduled');
         if ($didUpdate) {
+            $this->dispatch('flash-message', type: 'success', message: 'Appointment request approved.');
             $this->loadAppointments();
-            session()->flash('success', 'Appointment request approved.');
         }
     }
 
@@ -914,7 +921,7 @@ class AppointmentCalendar extends Component
 
         app(AppointmentService::class)->updateStatus((int) $appointmentId, 'Cancelled');
         $this->loadAppointments();
-        session()->flash('info', 'Appointment request rejected.');
+        $this->dispatch('flash-message', type: 'info', message: 'Appointment request rejected.');
     }
 
     public function beginPendingReschedule(): void
@@ -1015,7 +1022,7 @@ class AppointmentCalendar extends Component
         $this->isRescheduling = false;
         $this->loadAppointments();
         $this->viewAppointment((int) $this->viewingAppointmentId);
-        session()->flash('success', 'Appointment request rescheduled successfully.');
+        $this->dispatch('flash-message', type: 'success', message: 'Appointment request rescheduled successfully.');
     }
 
 
@@ -1137,19 +1144,19 @@ class AppointmentCalendar extends Component
     public function linkPendingRequestToExistingPatient(): void
     {
         if (! $this->viewingAppointmentId || ! $this->selectedPendingPatientId) {
-            session()->flash('error', 'Select a patient record to link.');
+            $this->dispatch('flash-message', type: 'error', message: 'Select a patient record to link.');
             return;
         }
 
         $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
         if (! $appointment || ! in_array($appointment->status, ['Waiting', 'Scheduled'], true)) {
-            session()->flash('error', 'Only waiting or scheduled appointments can be linked.');
+            $this->dispatch('flash-message', type: 'error', message: 'Only waiting or scheduled appointments can be linked.');
             return;
         }
 
         $patient = DB::table('patients')->where('id', $this->selectedPendingPatientId)->first();
         if (! $patient) {
-            session()->flash('error', 'Selected patient record was not found.');
+            $this->dispatch('flash-message', type: 'error', message: 'Selected patient record was not found.');
             return;
         }
 
@@ -1161,7 +1168,7 @@ class AppointmentCalendar extends Component
 
         $this->viewingPatientId = (int) $patient->id;
         $this->loadAppointments();
-        session()->flash('success', $appointment->status === 'Waiting'
+        $this->dispatch('flash-message', type: 'success', message: $appointment->status === 'Waiting'
             ? 'Patient record linked. You can now admit the patient.'
             : 'Request linked to existing patient.');
     }
@@ -1174,7 +1181,7 @@ class AppointmentCalendar extends Component
 
         $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
         if (! $appointment || ! in_array($appointment->status, ['Waiting', 'Scheduled'], true)) {
-            session()->flash('error', 'Only waiting or scheduled appointments can create a patient link.');
+            $this->dispatch('flash-message', type: 'error', message: 'Only waiting or scheduled appointments can create a patient link.');
             return;
         }
 
@@ -1183,7 +1190,7 @@ class AppointmentCalendar extends Component
         $lastName    = trim((string) ($requestData['last_name'] ?? ''));
 
         if ($firstName === '' || $lastName === '') {
-            session()->flash('error', 'Request must have both first and last name before creating a patient record.');
+            $this->dispatch('flash-message', type: 'error', message: 'Request must have both first and last name before creating a patient record.');
             return;
         }
 
@@ -1197,7 +1204,7 @@ class AppointmentCalendar extends Component
         $this->selectedPendingPatientId = $patientId;
         $this->loadAppointments();
         $this->hydratePendingReviewContext((object) array_merge((array) $appointment, ['patient_id' => $patientId]));
-        session()->flash('success', $appointment->status === 'Waiting'
+        $this->dispatch('flash-message', type: 'success', message: $appointment->status === 'Waiting'
             ? 'New patient created and linked. You can now admit the patient.'
             : 'New patient created and linked successfully.');
     }
@@ -1210,13 +1217,13 @@ class AppointmentCalendar extends Component
 
         $appointment = DB::table('appointments')->where('id', $this->viewingAppointmentId)->first();
         if (! $appointment || ! in_array((string) $appointment->status, ['Waiting', 'Scheduled'], true)) {
-            session()->flash('error', 'Only waiting or scheduled appointments can be unlinked.');
+            $this->dispatch('flash-message', type: 'error', message: 'Only waiting or scheduled appointments can be unlinked.');
             return;
         }
 
         $currentPatientId = (int) ($appointment->patient_id ?? 0);
         if ($currentPatientId <= 0) {
-            session()->flash('error', 'This appointment is not linked to a patient record.');
+            $this->dispatch('flash-message', type: 'error', message: 'This appointment is not linked to a patient record.');
             return;
         }
 
@@ -1230,7 +1237,7 @@ class AppointmentCalendar extends Component
         $this->selectedPendingPatientId = null;
         $this->loadAppointments();
         $this->hydratePendingReviewContext((object) array_merge((array) $appointment, ['patient_id' => null]));
-        session()->flash('success', 'Appointment unlinked. Staff can now relink to the correct patient record.');
+        $this->dispatch('flash-message', type: 'success', message: 'Appointment unlinked. Staff can now relink to the correct patient record.');
     }
 
     protected function syncRequesterAccountPatientLink(object $appointment, int $patientId): void
@@ -1445,7 +1452,7 @@ class AppointmentCalendar extends Component
         }
 
         if (! $patientId) {
-            session()->flash('error', 'Patient record was not found for this appointment.');
+            $this->dispatch('flash-message', type: 'error', message: 'Patient record was not found for this appointment.');
             $this->dispatch('patient-form-open-failed');
 
             return;
@@ -1457,7 +1464,7 @@ class AppointmentCalendar extends Component
     public function previewPendingPatientRecord(int $patientId, int $startStep = 1): void
     {
         if ($patientId <= 0) {
-            session()->flash('error', 'Patient record was not found.');
+            $this->dispatch('flash-message', type: 'error', message: 'Patient record was not found.');
             $this->dispatch('patient-form-open-failed');
 
             return;
@@ -1466,7 +1473,7 @@ class AppointmentCalendar extends Component
         $patientExists = DB::table('patients')->where('id', $patientId)->exists();
 
         if (! $patientExists) {
-            session()->flash('error', 'Patient record was not found.');
+            $this->dispatch('flash-message', type: 'error', message: 'Patient record was not found.');
             $this->dispatch('patient-form-open-failed');
 
             return;
@@ -1490,10 +1497,29 @@ class AppointmentCalendar extends Component
         }
     }
 
+    public function canOpenViewingPatientChart(): bool
+    {
+        $user = Auth::user();
+        if (! $user || ! $this->viewingAppointmentId) {
+            return false;
+        }
+
+        $appointment = DB::table('appointments')
+            ->select('status', 'dentist_id')
+            ->where('id', $this->viewingAppointmentId)
+            ->first();
+
+        if (! $appointment || $appointment->status !== 'Ongoing') {
+            return false;
+        }
+
+        return $user->isAdmin() || (int) ($appointment->dentist_id ?? 0) === (int) $user->id;
+    }
+
     public function admitPatient()
     {
-        if (! Auth::user()?->isDentist()) {
-            session()->flash('error', 'Only dentists can admit patients from the lobby.');
+        if (! Auth::user()?->canHandleChairsideFlow()) {
+            $this->dispatch('flash-message', type: 'error', message: 'Only admins or dentists can admit patients from the lobby.');
             return;
         }
 
@@ -1504,7 +1530,7 @@ class AppointmentCalendar extends Component
         );
 
         if (! $result['ok']) {
-            session()->flash('error', $result['error']);
+            $this->dispatch('flash-message', type: 'error', message: $result['error']);
             return;
         }
 

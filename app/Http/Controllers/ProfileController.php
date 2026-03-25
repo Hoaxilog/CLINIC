@@ -59,7 +59,7 @@ class ProfileController extends Controller
         $user = DB::table('users')->where('id', $userId)->first();
 
         if (! $user) {
-            return back()->with('failed', 'We could not find your account details.');
+            return back()->with('error', 'We could not find your account details.');
         }
 
         return back()->with('success', 'Account details are managed by the clinic.');
@@ -97,7 +97,7 @@ class ProfileController extends Controller
         $user = DB::table('users')->where('id', Auth::id())->first();
 
         if (! $user || empty($user->email)) {
-            return back()->with('failed', 'We could not find an email address for your account.');
+            return back()->with('error', 'We could not find an email address for your account.');
         }
 
         $key = 'profile-reset:'.Str::lower($user->email).'|'.$request->ip();
@@ -105,7 +105,7 @@ class ProfileController extends Controller
             $seconds = RateLimiter::availableIn($key);
             $minutes = max(1, ceil($seconds / 60));
 
-            return back()->with('failed', "Too many requests. Try again in {$minutes} minute(s).");
+            return back()->with('error', "Too many requests. Try again in {$minutes} minute(s).");
         }
 
         RateLimiter::hit($key, 300);

@@ -83,6 +83,37 @@ class DentalChart extends Component
         'oralExam.partial_denture' => 'Partial Denture',
     ];
 
+    #[On('fillDentalChart')]
+    public function fillFromRecord($data)
+    {
+        $this->resetValidation();
+        // Reset to defaults first
+        $this->teeth = [];
+        $this->oralExam = [
+            'oral_hygiene_status' => '',
+            'gingiva' => '',
+            'calcular_deposits' => '',
+            'stains' => '',
+            'complete_denture' => '',
+            'partial_denture' => '',
+        ];
+        $this->chartComments = ['notes' => '', 'treatment_plan' => ''];
+        $this->dentitionType = $this->defaultDentitionTypeFromAge();
+
+        if (!empty($data)) {
+            if (isset($data['teeth'])) {
+                $this->teeth = $data['teeth'];
+                $this->oralExam = array_merge($this->oralExam, $data['oral_exam'] ?? []);
+                $this->chartComments = array_merge($this->chartComments, $data['comments'] ?? []);
+                $meta = $data['meta'] ?? [];
+                $this->dentitionType = $this->normalizeDentitionType($meta['dentition_type'] ?? 'adult');
+                $this->numberingSystem = is_string($meta['numbering_system'] ?? null) ? $meta['numbering_system'] : 'FDI';
+            } else {
+                $this->teeth = $data;
+            }
+        }
+    }
+
     public function updatedSelectedHistoryId($value)
     {
         $this->dispatch('switchChartHistory', chartId: $value);
@@ -139,6 +170,7 @@ class DentalChart extends Component
             if ($field) {
                 $this->dispatch('scroll-to-error', field: $field);
             }
+            $this->dispatch('patient-form-navigation-finished', currentStep: 3);
             return;
         }
 

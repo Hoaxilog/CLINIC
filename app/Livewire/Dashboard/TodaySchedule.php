@@ -171,8 +171,8 @@ class TodaySchedule extends Component
 
     public function admitPatient()
     {
-        if (! Auth::user()?->isDentist()) {
-            session()->flash('error', 'Only dentists can admit patients from the lobby.');
+        if (! Auth::user()?->canHandleChairsideFlow()) {
+            $this->dispatch('flash-message', type: 'error', message: 'Only admins or dentists can admit patients from the lobby.');
 
             return;
         }
@@ -184,7 +184,7 @@ class TodaySchedule extends Component
             return;
         }
         if ($appointment->status !== 'Waiting') {
-            session()->flash('error', 'Only Ready patients can be admitted.');
+            $this->dispatch('flash-message', type: 'error', message: 'Only Ready patients can be admitted.');
 
             return;
         }
@@ -208,7 +208,7 @@ class TodaySchedule extends Component
             ->exists();
 
         if ($hasConflict) {
-            session()->flash('error', 'Cannot admit: This slot is double-booked.');
+            $this->dispatch('flash-message', type: 'error', message: 'Cannot admit: This slot is double-booked.');
         } else {
             $updated = DB::table('appointments')
                 ->where('id', $this->viewingAppointmentId)
@@ -221,7 +221,7 @@ class TodaySchedule extends Component
                 ]);
 
             if (! $updated) {
-                session()->flash('error', 'This appointment was already admitted or updated. Please refresh.');
+                $this->dispatch('flash-message', type: 'error', message: 'This appointment was already admitted or updated. Please refresh.');
 
                 return;
             }
@@ -235,7 +235,7 @@ class TodaySchedule extends Component
                 ->event('appointment_admitted')
                 ->log('Admitted Patient to Chair');
 
-            session()->flash('success', 'Patient admitted to chair successfully!');
+            $this->dispatch('flash-message', type: 'success', message: 'Patient admitted to chair successfully!');
 
             $this->refreshWaitingQueue();
             $this->refreshOngoingAppointments();
@@ -247,7 +247,7 @@ class TodaySchedule extends Component
     public function callNextPatient()
     {
         if (Auth::user()?->role !== 1) {
-            session()->flash('error', 'Only dentists can call the next patient.');
+            $this->dispatch('flash-message', type: 'error', message: 'Only dentists can call the next patient.');
 
             return;
         }
@@ -262,14 +262,14 @@ class TodaySchedule extends Component
             ->first();
 
         if (! $next) {
-            session()->flash('info', 'No Ready patients in queue.');
+            $this->dispatch('flash-message', type: 'info', message: 'No Ready patients in queue.');
 
             return;
         }
 
         $service = DB::table('services')->where('id', $next->service_id)->first();
         if (! $service) {
-            session()->flash('error', 'Missing service for selected appointment.');
+            $this->dispatch('flash-message', type: 'error', message: 'Missing service for selected appointment.');
 
             return;
         }
@@ -291,7 +291,7 @@ class TodaySchedule extends Component
             ->exists();
 
         if ($hasConflict) {
-            session()->flash('error', 'Cannot call next: This slot is double-booked.');
+            $this->dispatch('flash-message', type: 'error', message: 'Cannot call next: This slot is double-booked.');
 
             return;
         }
@@ -431,6 +431,25 @@ class TodaySchedule extends Component
         }
     }
 
+    public function canOpenViewingPatientChart(): bool
+    {
+        $user = Auth::user();
+        if (! $user || ! $this->viewingAppointmentId) {
+            return false;
+        }
+
+        $appointment = DB::table('appointments')
+            ->select('status', 'dentist_id')
+            ->where('id', $this->viewingAppointmentId)
+            ->first();
+
+        if (! $appointment || $appointment->status !== 'Ongoing') {
+            return false;
+        }
+
+        return $user->isAdmin() || (int) ($appointment->dentist_id ?? 0) === (int) $user->id;
+    }
+
     public function processPatient()
     {
         if ($this->viewingAppointmentId) {
@@ -473,7 +492,7 @@ class TodaySchedule extends Component
                     ->log($logMessage);
             }
 
-            session()->flash('success', "Appointment status updated to '$newStatus'.");
+            $this->dispatch('flash-message', type: 'success', message: "Appointment status updated to '$newStatus'.");
             $this->refreshAllSections();
             $this->closeAppointmentModal();
         }

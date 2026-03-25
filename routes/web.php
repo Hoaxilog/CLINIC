@@ -48,9 +48,6 @@ Route::middleware(['guest'])->group(function () {
     Route::get('auth/google/callback', [LoginController::class, 'handleGoogleCallback'])
         ->name('auth.google.callback');
 
-    // Forgot Password Routes
-    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.forgot');
-    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 
     // (Reset routes moved below to allow both guests and authenticated users)
 
@@ -59,6 +56,8 @@ Route::middleware(['guest'])->group(function () {
     Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
 
     Route::get('/email/verify-notice', [VerificationController::class, 'showNotice'])->name('verification.notice');
+    Route::get('/email/verify-expired', [VerificationController::class, 'showExpired'])->name('verification.expired');
+    Route::post('/email/verify/resend', [VerificationController::class, 'resend'])->name('verification.resend');
 
     // 2. The Verification Link (Clicked from email)
     Route::get('/email/verify/{id}/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
@@ -66,9 +65,12 @@ Route::middleware(['guest'])->group(function () {
 
 });
 
-// Allow both guests and authenticated users to reset password via emailed token
+// Password reset flow — accessible to ALL users (guest + authenticated)
+Route::view('/reset-password/expired', 'auth.reset-password-expired')->name('password.expired'); // must be BEFORE {token}
 Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.forgot');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 
 // Public booking route (supports both guests and authenticated users)
 Route::view('/book', 'book')->name('book');

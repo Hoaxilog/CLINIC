@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -64,18 +65,22 @@ class UserController extends Controller
             return redirect()->route('users.index')->with('error', 'Internal roles are not configured.');
         }
 
-        $request->validate([
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email'), Rule::unique('users', 'username')],
-            'password' => ['required', 'confirmed', 'min:8'],
-            'role' => ['required', 'integer', Rule::in($allowedRoleIds)],
-        ]);
+        $validated = $this->validateUserRequest($request, $allowedRoleIds, true);
 
         $token = Str::random(64);
+        $firstName = $validated['first_name'];
+        $lastName = $validated['last_name'];
+        $mobileNumber = $validated['mobile_number'];
+        $recipientName = trim(implode(' ', array_filter([$firstName, $lastName]))) ?: 'Team Member';
+
         $insertData = [
-            'username' => $request->email,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'username' => $validated['email'],
+            'email' => $validated['email'],
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'mobile_number' => $mobileNumber,
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
             'verification_token' => $token,
             'email_verified_at' => null,
             'created_at' => now(),
@@ -85,8 +90,8 @@ class UserController extends Controller
         $newUserId = DB::table('users')->insertGetId($insertData);
         $newUser = DB::table('users')->where('id', $newUserId)->first();
 
-        Mail::send('auth.emails.verify-email', ['token' => $token, 'id' => $newUserId, 'name' => 'Team Member'], function ($message) use ($request) {
-            $message->to($request->email);
+        Mail::send('auth.emails.verify-email', ['token' => $token, 'id' => $newUserId, 'name' => $recipientName], function ($message) use ($validated) {
+            $message->to($validated['email']);
             $message->subject('Verify Your Email Address - Tejadent');
         });
 
@@ -133,39 +138,22 @@ class UserController extends Controller
         }
 
         // 2. Validate Inputs
-        $request->validate([
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($id),
-                Rule::unique('users', 'username')->ignore($id),
-            ],
-            'first_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['nullable', 'string', 'max:255'],
-            'mobile_number' => ['nullable', 'string', 'max:255'],
-            'role' => ['required', 'integer', Rule::in($this->editableRoleIds())],
-            'password' => ['nullable', 'confirmed', 'min:8'],
-        ]);
+        $validated = $this->validateUserRequest($request, $this->editableRoleIds(), false, $id);
 
         // 3. Prepare the New Data
         $updateData = [
-            'username' => $request->email,
-            'email' => $request->email,
-            'first_name' => $request->filled('first_name') ? $request->first_name : null,
-            'last_name' => $request->filled('last_name') ? $request->last_name : null,
-            'mobile_number' => $request->filled('mobile_number') ? $request->mobile_number : null,
-            'name' => trim(implode(' ', array_filter([
-                $request->input('first_name'),
-                $request->input('last_name'),
-            ]))) ?: null,
-            'role' => $request->role,
+            'username' => $validated['email'],
+            'email' => $validated['email'],
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'mobile_number' => $validated['mobile_number'],
+            'role' => $validated['role'],
             'updated_at' => now(),
         ];
 
         // Handle Password (only if provided)
-        if ($request->filled('password')) {
-            $updateData['password'] = Hash::make($request->password);
+        if (! empty($validated['password'])) {
+            $updateData['password'] = Hash::make($validated['password']);
         }
 
         // 4. === SMART DIFF CHECK (The Fix) ===
@@ -304,5 +292,75 @@ class UserController extends Controller
         );
 
         return $attributes;
+    }
+
+    private function userValidationRules(array $allowedRoleIds, bool $passwordRequired, ?int $userId = null): array
+    {
+        $passwordRules = [$passwordRequired ? 'required' : 'nullable', 'confirmed', 'min:8'];
+
+        return [
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($userId),
+                Rule::unique('users', 'username')->ignore($userId),
+            ],
+            'first_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\s'\\-]+$/u"],
+            'last_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\s'\\-]+$/u"],
+            'mobile_number' => ['nullable', 'regex:/^09\\d{9}$/'],
+            'role' => ['required', 'integer', Rule::in($allowedRoleIds)],
+            'password' => $passwordRules,
+        ];
+    }
+
+    private function userValidationMessages(): array
+    {
+        return [
+            'first_name.required' => 'First name is required.',
+            'first_name.min' => 'First name must be at least 2 characters.',
+            'first_name.regex' => 'First name may only contain letters, spaces, hyphens, and apostrophes.',
+            'last_name.required' => 'Last name is required.',
+            'last_name.min' => 'Last name must be at least 2 characters.',
+            'last_name.regex' => 'Last name may only contain letters, spaces, hyphens, and apostrophes.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Enter a valid email address.',
+            'email.unique' => 'That email is already in use.',
+            'mobile_number.regex' => 'Mobile number must be in 09XXXXXXXXX format.',
+            'role.required' => 'Please select a role.',
+            'role.in' => 'The selected role is invalid.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
+        ];
+    }
+
+    private function validateUserRequest(Request $request, array $allowedRoleIds, bool $passwordRequired, ?int $userId = null): array
+    {
+        $input = [
+            'first_name' => trim((string) $request->input('first_name')),
+            'last_name' => trim((string) $request->input('last_name')),
+            'email' => strtolower(trim((string) $request->input('email'))),
+            'mobile_number' => trim((string) $request->input('mobile_number')),
+            'role' => $request->input('role'),
+            'password' => (string) $request->input('password', ''),
+            'password_confirmation' => (string) $request->input('password_confirmation', ''),
+        ];
+
+        if ($input['mobile_number'] === '') {
+            $input['mobile_number'] = null;
+        }
+
+        if (! $passwordRequired && $input['password'] === '') {
+            $input['password'] = null;
+            $input['password_confirmation'] = null;
+        }
+
+        $validator = Validator::make(
+            $input,
+            $this->userValidationRules($allowedRoleIds, $passwordRequired, $userId),
+            $this->userValidationMessages()
+        );
+
+        return $validator->validate();
     }
 }

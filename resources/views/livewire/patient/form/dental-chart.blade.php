@@ -10,26 +10,15 @@
         </div>
     </div>
 
-    @if (count($history) > 0 || $isCreating)
+    @if (count($history) > 0 || $isCreating || ! $isReadOnly)
 
         <div class="relative flex h-full min-w-0 flex-1 flex-col bg-slate-50 transition-all duration-300">
 
             <div
-                class="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
+                class="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4"
+                x-init="$nextTick(() => { $dispatch('dental-chart-ready'); })">
                 <div class="flex items-center gap-4">
                     <h2 class="text-lg font-semibold text-slate-900">Dental Chart</h2>
-                    @if (count($history) > 0)
-                        <div class="flex items-center gap-2">
-                            <select wire:model.live="selectedHistoryId" x-on:change="$dispatch('show-dental-loading')"
-                                class="px-3 py-2 border border-gray-300 rounded-md text-sm w-full focus:border-blue-500 focus:ring-blue-500 min-w-[200px] disabled:bg-gray-100 disabled:text-gray-400"
-                                @if (!$isReadOnly) disabled @endif>
-                                <option value="" disabled>Select History Record...</option>
-                                @foreach ($history as $record)
-                                    <option value="{{ $record['id'] }}">{{ $record['date'] }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
                 </div>
 
                 <div class="flex items-center gap-3">
@@ -45,17 +34,16 @@
                             Child
                         </button>
                     </div>
-                    @if ($isReadOnly && count($history) > 0)
-                        <button wire:click="triggerNewChart" x-on:click="$dispatch('show-dental-loading')"
+                    @if ($isReadOnly)
+                        <button type="button" wire:click="$dispatch('openNewVisitRecord')"
                             class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
-                            title="Start a fresh chart for today">
+                            title="Start a fresh connected record from Health History">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round">
                                 <path d="M12 5v14M5 12h14" />
                             </svg>
-                            <span wire:loading.remove wire:target="triggerNewChart">New Chart</span>
-                            <span wire:loading wire:target="triggerNewChart">Loading...</span>
+                            New Record
                         </button>
                     @endif
                 </div>
@@ -209,15 +197,16 @@
                 <p class="text-gray-500 mt-2 max-w-md mx-auto">This patient does not have any dental records yet. Click
                     the button below to create the first chart.</p>
             </div>
-            <button wire:click="triggerNewChart" x-on:click="$dispatch('show-dental-loading')"
+            <button type="button" wire:click="$dispatch('openNewVisitRecord')"
                 class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round">
                     <path d="M12 5v14M5 12h14" />
                 </svg>
-                Add Dental Chart
+                New Record
             </button>
         </div>
     @endif
 </div>
+

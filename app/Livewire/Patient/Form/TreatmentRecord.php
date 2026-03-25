@@ -75,6 +75,22 @@ class TreatmentRecord extends Component
         }
     }
 
+    #[On('fillTreatmentRecord')]
+    public function fillForm($data)
+    {
+        $this->resetValidation();
+        $this->reset(['dmd', 'treatment', 'cost_of_treatment', 'amount_charged', 'remarks', 'beforeImages', 'afterImages']);
+        $this->existingImages = [];
+
+        if (!empty($data)) {
+            if (!empty($data['image_list'])) {
+                $this->existingImages = $data['image_list'];
+                unset($data['image_list']);
+            }
+            $this->fill($data);
+        }
+    }
+
     #[On('validateTreatmentRecord')]
     public function validateForm()
     {
@@ -87,6 +103,7 @@ class TreatmentRecord extends Component
             if ($field) {
                 $this->dispatch('scroll-to-error', field: $field);
             }
+            $this->dispatch('patient-form-navigation-finished', currentStep: 4);
             return;
         }
 
@@ -94,6 +111,7 @@ class TreatmentRecord extends Component
         $afterCount = is_array($this->afterImages) ? count($this->afterImages) : 0;
         if (($beforeCount + $afterCount) > 4) {
             $this->addError('beforeImages', 'You can upload up to 4 images total.');
+            $this->dispatch('patient-form-navigation-finished', currentStep: 4);
             return;
         }
 

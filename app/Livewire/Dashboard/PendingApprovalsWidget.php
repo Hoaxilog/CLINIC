@@ -116,7 +116,7 @@ class PendingApprovalsWidget extends Component
 
         $didUpdate = $this->updateAppointmentStatusById($appointmentId, 'Scheduled');
         if ($didUpdate) {
-            session()->flash('success', 'Appointment request approved.');
+            $this->dispatch('flash-message', type: 'success', message: 'Appointment request approved.');
             $this->loadPendingApprovals();
 
             if ($this->selectedApproval && $this->selectedApproval->id === $appointmentId) {
@@ -132,7 +132,7 @@ class PendingApprovalsWidget extends Component
         }
 
         $this->updateAppointmentStatusById($appointmentId, 'Cancelled');
-        session()->flash('info', 'Appointment request rejected.');
+        $this->dispatch('flash-message', type: 'info', message: 'Appointment request rejected.');
         $this->loadPendingApprovals();
 
         if ($this->selectedApproval && $this->selectedApproval->id === $appointmentId) {

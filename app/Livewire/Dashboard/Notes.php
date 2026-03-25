@@ -120,7 +120,7 @@ class Notes extends Component
         $this->loadNotes();
 
         if ($message) {
-            $this->dispatch('browser:notes:flash', ['message' => $message]);
+            $this->dispatch('flash-message', type: 'success', message: $message);
         }
     }
 

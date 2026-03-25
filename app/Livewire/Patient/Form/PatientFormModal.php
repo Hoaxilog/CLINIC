@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Patient\Form;
 
+use Carbon\Carbon;
 use App\Services\DentalChartService;
 use App\Services\HealthHistoryService;
 use App\Support\PatientFormDraftService;
 use App\Services\PatientService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -21,6 +23,7 @@ class PatientFormModal extends Component
     public $isReadOnly = false;
     public $isSaving = false;
     public $forceNewRecord = false;
+    public $pendingNavigationStep = null;
 
     // ── Form Data ─────────────────────────────────────────────────────────────
     public $basicInfoData = [];
@@ -36,6 +39,8 @@ class PatientFormModal extends Component
     public $chartKey = 'initial';
     public $healthHistoryList = [];
     public $selectedHealthHistoryId = '';
+    public $visitHistoryList = [];
+    public $selectedVisitDate = '';
     public $patientAge = null;
 
     // ── Dental Draft ──────────────────────────────────────────────────────────
@@ -69,6 +74,13 @@ class PatientFormModal extends Component
         $this->isReadOnly = true;
         $this->newPatientId = $id;
         $this->checkAdminRole();
+
+        if (! $this->canAccessPatientRecord((int) $id)) {
+            $this->dispatch('flash-message', type: 'error', message: 'This patient is currently in session with another dentist. Only the assigned dentist or an admin can open the active record.');
+            $this->dispatch('patient-form-open-failed');
+
+            return;
+        }
 
         $this->loadPatientData($id);
 
@@ -123,8 +135,44 @@ class PatientFormModal extends Component
 
         $maxStep = $this->getMaxStep();
         if ($step >= 1 && $step <= $maxStep) {
+            if (! $this->isReadOnly && $this->currentStep === 1 && $step !== 1) {
+                $this->dispatch('flash-message', type: 'info', message: 'Save basic information first before opening the other sections.');
+                $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
+
+                return;
+            }
+
+            if ($step !== $this->currentStep) {
+                $this->dispatch('patient-form-navigation-started', targetStep: $step);
+            }
+
+            if (! $this->isReadOnly) {
+                if ($step < $this->currentStep) {
+                    $this->pendingNavigationStep = null;
+                    $this->currentStep = $step;
+                    $this->syncDataToSteps();
+                    $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
+
+                    return;
+                }
+
+                if ($step > ($this->currentStep + 1)) {
+                    $step = $this->currentStep + 1;
+                }
+
+                if ($step === $this->currentStep) {
+                    return;
+                }
+
+                $this->pendingNavigationStep = $step;
+                $this->triggerStepValidation($this->currentStep);
+
+                return;
+            }
+
             $this->currentStep = $step;
             $this->syncDataToSteps();
+            $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
         }
     }
 
@@ -137,12 +185,17 @@ class PatientFormModal extends Component
         if (! $this->validateConsentForUpdate()) {
             return;
         }
+
+        $this->pendingNavigationStep = null;
         $this->isSaving = true;
         $this->triggerStepValidation($this->currentStep);
     }
 
     public function cancelEdit(): void
     {
+        $this->pendingNavigationStep = null;
+        $this->isSaving = false;
+        $this->resetErrorBag(['consentAuthorizationAccepted', 'consentTruthfulnessAccepted']);
         $this->clearCurrentDraftAfterSuccessfulSave();
 
         if ($this->isEditing && ! $this->isReadOnly) {
@@ -178,6 +231,10 @@ class PatientFormModal extends Component
     {
         $this->basicInfoData = $data;
 
+        if ($this->completePendingNavigationIfNeeded(1)) {
+            return;
+        }
+
         if ($this->isSaving) {
             $this->isEditing ? $this->updateBasicInfo() : $this->createFullPatientRecord();
         } elseif (! $this->isEditing) {
@@ -191,23 +248,12 @@ class PatientFormModal extends Component
     {
         $this->healthHistoryData = $data;
 
+        if ($this->completePendingNavigationIfNeeded(2)) {
+            return;
+        }
+
         if ($this->isSaving && $this->isEditing) {
-            // Save health history
-            $hService = app(HealthHistoryService::class);
-            $modifier = $this->modifier();
-            $selectedId = $this->healthHistoryData['selectedHistoryId'] ?? $this->selectedHealthHistoryId;
-
-            if ($selectedId && is_numeric($selectedId) && $selectedId !== 'new') {
-                $hService->update((int) $selectedId, $this->newPatientId, $this->healthHistoryData, $modifier);
-            } else {
-                $hService->create($this->newPatientId, $this->healthHistoryData, $modifier);
-            }
-
-            $this->dispatch('patient-added');
-            $this->isReadOnly = true;
-            $this->isSaving   = false;
-            $this->clearCurrentDraftAfterSuccessfulSave();
-            session()->flash('info', 'Health records saved.');
+            $this->persistEditSession();
         } elseif ($this->isSaving && ! $this->isEditing) {
             // Create flow: advance to step 3 if admin, otherwise done via createFullPatientRecord
             $this->currentStep = 3;
@@ -219,6 +265,10 @@ class PatientFormModal extends Component
     public function handleDentalChart($data): void
     {
         $this->dentalChartData = $data;
+
+        if ($this->completePendingNavigationIfNeeded(3)) {
+            return;
+        }
 
         if ($this->isSaving) {
             $this->dispatch('validateTreatmentRecord')->to('patient.form.treatment-record');
@@ -232,13 +282,12 @@ class PatientFormModal extends Component
     {
         $this->treatmentRecordData = $data;
 
+        if ($this->completePendingNavigationIfNeeded(4)) {
+            return;
+        }
+
         if ($this->isSaving && $this->isEditing && $this->isAdmin) {
-            $this->saveDentalAndTreatment();
-            $this->dispatch('patient-added');
-            $this->isReadOnly = true;
-            $this->isSaving   = false;
-            $this->clearCurrentDraftAfterSuccessfulSave();
-            session()->flash('success', 'Dental chart and treatment record saved.');
+            $this->persistEditSession();
         }
 
         $this->isSaving = false;
@@ -260,14 +309,22 @@ class PatientFormModal extends Component
             if ($record) {
                 $this->healthHistoryData = (array) $record;
                 $this->selectedHealthHistoryId = $historyId;
+                $this->selectedVisitDate = $this->normalizeVisitMomentKey($record->created_at ?? null) ?? '';
                 $this->isReadOnly = true;
+                $this->syncDentalContextToVisitMoment($record->created_at ?? null);
             }
         }
 
+        $this->dispatch('setHealthHistoryContext',
+            gender: $this->basicInfoData['gender'] ?? null,
+            historyList: $this->healthHistoryList,
+            selectedId: $this->selectedHealthHistoryId
+        )->to('patient.form.health-history');
         $this->dispatch('fillHealthHistory',
             data: $this->healthHistoryData,
             gender: $this->basicInfoData['gender'] ?? null
         )->to('patient.form.health-history');
+        $this->dispatch('health-history-ready');
     }
 
     #[On('switchChartHistory')]
@@ -275,20 +332,40 @@ class PatientFormModal extends Component
     {
         if (empty($chartId)) {
             $this->loadLatestDentalChart($this->newPatientId);
+            $this->dispatch('dental-chart-ready');
             return;
         }
 
         $chart = DB::table('dental_charts')->where('id', $chartId)->first();
         if ($chart) {
             $this->isReadOnly = true;
-            $this->selectedHistoryId = $chartId;
-            $this->currentDentalChartId = $chartId;
-            $this->dentalChartData = ! empty($chart->chart_data)
-                ? json_decode($chart->chart_data, true)
-                : [];
-            $this->treatmentRecordData = app(DentalChartService::class)->getTreatmentRecord($chartId);
-            $this->chartKey = uniqid();
+            $this->applyDentalChartRecord($chart);
+            $this->selectedVisitDate = $this->normalizeVisitMomentKey($chart->created_at ?? null) ?? '';
+            $this->syncHealthContextToVisitMoment($chart->created_at ?? null);
         }
+
+        $this->dispatch('dental-chart-ready');
+    }
+
+    public function updatedSelectedVisitDate($value): void
+    {
+        if (! $this->isEditing || ! $this->isReadOnly || empty($value) || $value === 'new') {
+            return;
+        }
+
+        $this->loadVisitContextBySelection($value);
+        $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
+    }
+
+    public function selectVisitRecord($value): void
+    {
+        if (! $this->isEditing || ! $this->isReadOnly || empty($value) || $value === 'new') {
+            return;
+        }
+
+        $this->selectedVisitDate = $value;
+        $this->loadVisitContextBySelection($value);
+        $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
     }
 
     #[On('startNewChartSession')]
@@ -307,6 +384,44 @@ class PatientFormModal extends Component
     public function enableEditMode(): void
     {
         $this->isReadOnly = false;
+    }
+
+    #[On('openNewVisitRecord')]
+    public function startNewVisitRecord(): void
+    {
+        if (! $this->isEditing || ! $this->isAdmin) {
+            return;
+        }
+
+        $this->ensureDentalDataLoaded();
+
+        $this->isReadOnly = false;
+        $this->isSaving = false;
+        $this->pendingNavigationStep = null;
+        $this->currentStep = 2;
+        $this->selectedVisitDate = '';
+        $this->selectedHealthHistoryId = 'new';
+        $this->healthHistoryData = [];
+
+        $this->forceNewRecord = true;
+        $this->dentalChartData = [];
+        $this->treatmentRecordData = [];
+        $this->currentDentalChartId = null;
+        $this->selectedHistoryId = '';
+        $this->chartKey = uniqid();
+
+        $this->dispatch('setHealthHistoryContext',
+            gender: $this->basicInfoData['gender'] ?? null,
+            historyList: $this->healthHistoryList,
+            selectedId: $this->selectedHealthHistoryId
+        )->to('patient.form.health-history');
+
+        $this->dispatch('fillHealthHistory',
+            data: $this->healthHistoryData,
+            gender: $this->basicInfoData['gender'] ?? null
+        )->to('patient.form.health-history');
+
+        $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -476,7 +591,7 @@ class PatientFormModal extends Component
         $this->dispatch('patient-added');
         $this->clearCurrentDraftAfterSuccessfulSave();
         $this->closeModal();
-        session()->flash('success', 'New patient record created successfully!');
+        $this->dispatch('flash-message', type: 'success', message: 'New patient record created successfully!');
     }
 
     private function updateBasicInfo(): void
@@ -487,7 +602,7 @@ class PatientFormModal extends Component
         $this->isReadOnly = true;
         $this->isSaving   = false;
         $this->clearCurrentDraftAfterSuccessfulSave();
-        session()->flash('info', 'Patient information updated.');
+        $this->dispatch('flash-message', type: 'info', message: 'Patient information updated.');
     }
 
     private function saveHealthHistoryRecord(): void
@@ -515,8 +630,33 @@ class PatientFormModal extends Component
         $this->dispatch('patient-added');
         $this->isReadOnly = true;
         $this->isSaving   = false;
+        $this->pendingNavigationStep = null;
         $this->clearCurrentDraftAfterSuccessfulSave();
-        session()->flash('success', $message);
+        $this->dispatch('flash-message', type: 'success', message: $message);
+    }
+
+    private function persistEditSession(): void
+    {
+        DB::transaction(function () {
+            app(PatientService::class)->update($this->newPatientId, $this->basicInfoData, $this->modifier());
+
+            $this->saveHealthHistoryRecord();
+
+            if ($this->isAdmin) {
+                $this->saveDentalAndTreatment();
+            }
+        });
+
+        $this->loadPatientData($this->newPatientId);
+
+        if ($this->isAdmin) {
+            $this->dentalDataLoaded = false;
+            $this->ensureDentalDataLoaded();
+        }
+
+        $this->completeSave($this->isAdmin
+            ? 'Patient record changes saved.'
+            : 'Patient record changes saved.');
     }
 
     private function saveDentalAndTreatment(): void
@@ -541,9 +681,28 @@ class PatientFormModal extends Component
 
         $this->basicInfoData            = $result['basicInfo'];
         $this->healthHistoryList        = $result['healthHistoryList'];
-        $this->healthHistoryData        = $result['latestHealthHistory'];
-        $this->selectedHealthHistoryId  = $result['selectedHealthHistoryId'];
         $this->patientAge               = $result['age'];
+        $this->visitHistoryList         = $this->buildVisitHistoryList($id);
+
+        $defaultVisitSelection = $this->visitHistoryList[0]['value'] ?? null;
+        if ($defaultVisitSelection) {
+            $this->selectedVisitDate = $defaultVisitSelection;
+            $this->loadVisitContextBySelection($defaultVisitSelection);
+        } else {
+            $this->selectedVisitDate = '';
+            $this->healthHistoryData = $result['latestHealthHistory'] ?? [];
+            $this->selectedHealthHistoryId = (string) ($result['selectedHealthHistoryId'] ?? '');
+
+            if (Schema::hasTable('dental_charts')) {
+                $this->clearDentalContextForVisitDate();
+            } else {
+                $this->selectedHistoryId = '';
+                $this->currentDentalChartId = null;
+                $this->dentalChartData = [];
+                $this->treatmentRecordData = [];
+                $this->chartKey = uniqid();
+            }
+        }
     }
 
     private function loadLatestDentalChart(int $patientId): void
@@ -555,6 +714,231 @@ class PatientFormModal extends Component
         $this->treatmentRecordData    = $result['treatmentRecord'];
         $this->selectedHistoryId      = '';
         $this->chartKey               = uniqid();
+    }
+
+    private function loadVisitContextBySelection(string $selection): void
+    {
+        $visitMoment = $this->parseVisitSelection($selection);
+
+        if (! $visitMoment || ! $this->newPatientId) {
+            return;
+        }
+
+        $this->selectedVisitDate = $selection;
+        $this->syncHealthContextToVisitMoment($visitMoment);
+        $this->syncDentalContextToVisitMoment($visitMoment);
+
+        // Load chart history so the dental chart panel condition (count($history) > 0)
+        // shows the chart, and mark dental data as loaded so ensureDentalDataLoaded()
+        // won't overwrite the record-date-specific chart on subsequent navigations.
+        if ($this->isAdmin && $this->newPatientId) {
+            $this->chartHistory = app(DentalChartService::class)->getHistory($this->newPatientId);
+        }
+        $this->dentalDataLoaded = true;
+
+        // Explicitly push data to child components so they update even when
+        // already mounted on the current step (wire:key remount is not reliable
+        // when the component is already visible in the DOM).
+        $this->dispatch('fillDentalChart', data: $this->dentalChartData)
+            ->to('patient.form.dental-chart');
+
+        $this->dispatch('fillTreatmentRecord', data: $this->treatmentRecordData)
+            ->to('patient.form.treatment-record');
+
+        $this->dispatch('dental-chart-ready');
+    }
+
+    private function applyDentalChartRecord(object $chart): void
+    {
+        $chartId = (int) ($chart->id ?? 0);
+        $this->selectedHistoryId = $chartId > 0 ? (string) $chartId : '';
+        $this->currentDentalChartId = $chartId > 0 ? $chartId : null;
+        $this->dentalChartData = ! empty($chart->chart_data)
+            ? json_decode($chart->chart_data, true)
+            : [];
+        $this->treatmentRecordData = $chartId > 0
+            ? app(DentalChartService::class)->getTreatmentRecord($chartId)
+            : [];
+        $this->chartKey = uniqid();
+    }
+
+    private function clearDentalContextForVisitDate(): void
+    {
+        $this->selectedHistoryId = '';
+        $this->currentDentalChartId = null;
+        $this->dentalChartData = [];
+        $this->treatmentRecordData = [];
+        $this->chartKey = uniqid();
+    }
+
+    private function syncDentalContextToVisitMoment($visitMoment): void
+    {
+        if (empty($visitMoment) || ! $this->newPatientId || ! Schema::hasTable('dental_charts')) {
+            $this->clearDentalContextForVisitDate();
+
+            return;
+        }
+
+        [$windowStart, $windowEnd] = $this->buildVisitMomentWindow($visitMoment);
+
+        $records = DB::table('dental_charts')
+            ->where('patient_id', $this->newPatientId)
+            ->whereBetween('created_at', [$windowStart, $windowEnd])
+            ->orderByDesc('created_at')
+            ->get();
+
+        $chart = $this->findClosestRecordByMoment($records, $visitMoment);
+
+        if (! $chart) {
+            $this->clearDentalContextForVisitDate();
+
+            return;
+        }
+
+        $this->applyDentalChartRecord($chart);
+    }
+
+    private function syncHealthContextToVisitMoment($visitMoment): void
+    {
+        if (empty($visitMoment) || ! $this->newPatientId || ! Schema::hasTable('health_histories')) {
+            $this->healthHistoryData = [];
+            $this->selectedHealthHistoryId = '';
+            $this->dispatchHealthHistoryState();
+            return;
+        }
+
+        [$windowStart, $windowEnd] = $this->buildVisitMomentWindow($visitMoment);
+
+        $records = DB::table('health_histories')
+            ->where('patient_id', $this->newPatientId)
+            ->whereBetween('created_at', [$windowStart, $windowEnd])
+            ->orderByDesc('created_at')
+            ->get();
+
+        $record = $this->findClosestRecordByMoment($records, $visitMoment);
+
+        if (! $record) {
+            $this->healthHistoryData = [];
+            $this->selectedHealthHistoryId = '';
+        } else {
+            $this->healthHistoryData = (array) $record;
+            $this->selectedHealthHistoryId = (string) $record->id;
+        }
+
+        $this->dispatchHealthHistoryState();
+    }
+
+    private function buildVisitHistoryList(int $patientId): array
+    {
+        if ($patientId <= 0) {
+            return [];
+        }
+
+        $healthMoments = Schema::hasTable('health_histories')
+            ? DB::table('health_histories')
+                ->where('patient_id', $patientId)
+                ->pluck('created_at')
+                ->all()
+            : [];
+
+        $dentalMoments = Schema::hasTable('dental_charts')
+            ? DB::table('dental_charts')
+                ->where('patient_id', $patientId)
+                ->pluck('created_at')
+                ->all()
+            : [];
+
+        $records = collect(array_merge($healthMoments, $dentalMoments))
+            ->map(fn ($value) => $this->normalizeVisitMomentKey($value))
+            ->filter()
+            ->unique()
+            ->map(fn (string $moment) => [
+                'value' => $moment,
+                'label' => Carbon::createFromFormat('Y-m-d H:i', $moment)->format('F j, Y - h:i A'),
+                'sort_at' => Carbon::createFromFormat('Y-m-d H:i', $moment)->timestamp,
+            ])
+            ->sortByDesc('sort_at')
+            ->values();
+
+        return $records
+            ->map(fn (array $record) => [
+                'value' => $record['value'],
+                'label' => $record['label'],
+            ])->all();
+    }
+
+    private function parseVisitSelection($value): ?Carbon
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::createFromFormat('Y-m-d H:i', $value);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function findClosestRecordByMoment($records, $visitMoment): ?object
+    {
+        $target = Carbon::parse($visitMoment);
+
+        return collect($records)
+            ->filter(fn ($record) => ! empty($record->created_at))
+            ->sortBy(fn ($record) => abs(Carbon::parse($record->created_at)->diffInSeconds($target, false)))
+            ->first();
+    }
+
+    private function normalizeVisitMomentKey($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->format('Y-m-d H:i');
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function buildVisitMomentWindow($visitMoment): array
+    {
+        $target = Carbon::parse($visitMoment);
+
+        return [
+            $target->copy()->startOfMinute(),
+            $target->copy()->endOfMinute(),
+        ];
+    }
+
+    private function dispatchHealthHistoryState(): void
+    {
+        $this->dispatch('setHealthHistoryContext',
+            gender: $this->basicInfoData['gender'] ?? null,
+            historyList: $this->healthHistoryList,
+            selectedId: $this->selectedHealthHistoryId
+        )->to('patient.form.health-history');
+        $this->dispatch('fillHealthHistory',
+            data: $this->healthHistoryData,
+            gender: $this->basicInfoData['gender'] ?? null
+        )->to('patient.form.health-history');
+        $this->dispatch('health-history-ready');
+    }
+
+
+    private function normalizeVisitDate($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->toDateString();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -572,6 +956,31 @@ class PatientFormModal extends Component
     private function checkAdminRole(): void
     {
         $this->isAdmin = Auth::user()?->canAccessOperationalPages() ?? false;
+    }
+
+    private function canAccessPatientRecord(int $patientId): bool
+    {
+        $user = Auth::user();
+        if (! $user || $patientId <= 0) {
+            return false;
+        }
+
+        $ongoingAppointment = DB::table('appointments')
+            ->select('dentist_id')
+            ->where('patient_id', $patientId)
+            ->where('status', 'Ongoing')
+            ->orderByDesc('updated_at')
+            ->first();
+
+        if (! $ongoingAppointment) {
+            return $user->canAccessOperationalPages();
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return (int) ($ongoingAppointment->dentist_id ?? 0) === (int) $user->id;
     }
 
     private function modifier(): string
@@ -634,6 +1043,9 @@ class PatientFormModal extends Component
             }
 
             if (($this->currentStep == 3 || $this->currentStep == 4) && $this->isAdmin) {
+                // ensureDentalDataLoaded() is a no-op when $dentalDataLoaded is already
+                // true (set by loadVisitContextBySelection), so it won't overwrite the
+                // record-date-specific chart. It only runs on the very first tab open.
                 $this->ensureDentalDataLoaded();
 
                 if ($this->hasPendingDentalDraft && is_array($this->pendingDentalDraft)) {
@@ -644,6 +1056,21 @@ class PatientFormModal extends Component
                 }
             }
         }
+    }
+
+    private function completePendingNavigationIfNeeded(int $validatedStep): bool
+    {
+        if (! $this->isEditing || $this->pendingNavigationStep === null || $validatedStep !== $this->currentStep) {
+            return false;
+        }
+
+        $targetStep = (int) $this->pendingNavigationStep;
+        $this->pendingNavigationStep = null;
+        $this->currentStep = $targetStep;
+        $this->syncDataToSteps();
+        $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
+
+        return true;
     }
 
     private function ensureDentalDataLoaded(): void

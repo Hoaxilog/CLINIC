@@ -39,11 +39,48 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="mb-8 rounded-none border-l-4 border-red-500 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
+                    <span class="font-bold block">Please fix the following:</span>
+                    <ul class="mt-2 list-disc pl-5 space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('users.store') }}">
                 @csrf
 
                 {{-- SECTION 1: ACCOUNT DETAILS --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">First Name</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.364 4.56M15 19H9"></path></svg>
+                            </span>
+                            <input type="text" name="first_name" value="{{ old('first_name') }}" placeholder="Enter first name" required maxlength="100" pattern="[A-Za-zÀ-ÿ\s'\-]+"
+                                title="First name may only contain letters, spaces, hyphens, and apostrophes."
+                                class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('first_name') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Last Name</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.364 4.56M15 19H9"></path></svg>
+                            </span>
+                            <input type="text" name="last_name" value="{{ old('last_name') }}" placeholder="Enter last name" required maxlength="100" pattern="[A-Za-zÀ-ÿ\s'\-]+"
+                                title="Last name may only contain letters, spaces, hyphens, and apostrophes."
+                                class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('last_name') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
                     {{-- Email --}}
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Email</label>
@@ -52,10 +89,21 @@
                                 {{-- User Icon --}}
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             </span>
-                            <input type="email" name="email" value="{{ old('email') }}" placeholder="e.g. staff@tejadent.com" required
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="e.g. staff@tejadent.com" required maxlength="255"
                                 class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                         </div>
                         @error('email') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Mobile Number</label>
+                        <div class="flex min-w-0">
+                            <span class="inline-flex shrink-0 items-center px-3 border-2 border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm font-semibold select-none">+63</span>
+                            <input type="text" inputmode="numeric" maxlength="11" name="mobile_number" value="{{ old('mobile_number') }}" placeholder="09XXXXXXXXX" pattern="09[0-9]{9}"
+                                title="Mobile number must be in 09XXXXXXXXX format." oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)"
+                                class="min-w-0 w-full pr-4 py-3 border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
+                        </div>
+                        @error('mobile_number') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Role --}}
@@ -90,7 +138,7 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             </span>
-                            <input type="password" id="admin-create-password" name="password" placeholder="Min. 8 characters" required
+                            <input type="password" id="admin-create-password" name="password" placeholder="Min. 8 characters" required minlength="8"
                                 class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                             <button type="button"
                                 onclick="toggleAdminCreatePassword('admin-create-password','admin-create-eye-open','admin-create-eye-closed')"
@@ -115,7 +163,7 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             </span>
-                            <input type="password" id="admin-create-password-confirmation" name="password_confirmation" placeholder="Re-enter password" required
+                            <input type="password" id="admin-create-password-confirmation" name="password_confirmation" placeholder="Re-enter password" required minlength="8"
                                 class="w-full pl-10 pr-4 py-3 rounded-none border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                             <button type="button"
                                 onclick="toggleAdminCreatePassword('admin-create-password-confirmation','admin-create-confirm-eye-open','admin-create-confirm-eye-closed')"

@@ -16,11 +16,29 @@
         </div>
 
         <h2 class="text-3xl font-extrabold text-gray-800 mb-4">Verify Your Email</h2>
+
+        @if (session('success'))
+            <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('failed'))
+            <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {{ session('failed') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {{ $errors->first('email') }}
+            </div>
+        @endif
         
         <p class="text-gray-600 mb-6 text-lg">
             Thanks for signing up! We've sent a verification link to:
             <br>
-            <span class="font-bold text-gray-800">{{ session('email') ?? 'your email address' }}</span>
+            <span class="font-bold text-gray-800">{{ old('email', session('email')) ?? 'your email address' }}</span>
         </p>
 
         <p class="text-gray-500 text-sm mb-8">
@@ -28,6 +46,16 @@
         </p>
 
         <div class="space-y-4">
+            @if (old('email', session('email')))
+                <form method="POST" action="{{ route('verification.resend') }}">
+                    @csrf
+                    <input type="hidden" name="email" value="{{ old('email', session('email')) }}">
+                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg bg-[#0086DA] px-4 py-3 font-bold text-white transition hover:bg-[#0070b7]">
+                        Send New Verification Email
+                    </button>
+                </form>
+            @endif
+
             <a href="{{ route('login') }}" class="inline-block w-full bg-white border-2 border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition">
                 Return to Login
             </a>

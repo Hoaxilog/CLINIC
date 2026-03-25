@@ -24,37 +24,13 @@
             x-init="$nextTick(() => { $dispatch('health-history-ready'); })">
             <div class="flex items-center gap-4">
                 <h2 class="text-lg font-semibold text-slate-900">Health History</h2>
-
-                {{-- History Dropdown: DO NOT DISABLE (User needs to switch views) --}}
-                @if (count($historyList) > 1 && $isReadOnly && !$isCreating)
-                    <div class="flex items-center gap-2">
-                        <select wire:model.live="selectedHistoryId" x-on:change="$dispatch('show-health-history-loading')"
-                            class="px-3 py-2 border border-gray-300 rounded-md text-sm w-full focus:border-blue-500 focus:ring-blue-500 min-w-[200px]">
-                            
-                            @if($isCreating)
-                                <option value="new" class="font-bold text-blue-600">New Record (Unsaved)</option>
-                            @else
-                                <option value="" disabled>Select History Record...</option>
-                            @endif
-                                            
-                            <optgroup label="Past Records">
-                                @foreach ($historyList as $history)
-                                    <option value="{{ $history['id'] }}">
-                                        📅 {{ $history['label'] }}
-                                    </option>
-                                @endforeach
-                            </optgroup>
-                        </select>
-                    </div>
-                @endif
             </div>
 
             <div class="flex items-center gap-3">
-                {{-- New Record Button: ALWAYS CLICKABLE --}}
-                @if (count($historyList) > 0 && $isReadOnly && !$isCreating)
-                    <button wire:click="triggerNewHistory" x-on:click="$dispatch('show-health-history-loading')"
+                @if ($isReadOnly && count($historyList) > 0 && ! $isCreating)
+                    <button type="button" wire:click="$dispatch('openNewVisitRecord')"
                         class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
-                        title="Start a fresh health record">
+                        title="Start a fresh connected record">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round">
@@ -286,16 +262,18 @@
                 <p class="text-gray-500 mt-2 max-w-md mx-auto">This patient does not have any medical records yet.
                     Please add a record before proceeding.</p>
             </div>
-            <button wire:click="triggerNewHistory" x-on:click="$dispatch('show-health-history-loading')"
+            <button type="button" wire:click="$dispatch('openNewVisitRecord')"
                 class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round">
                     <path d="M12 5v14M5 12h14" />
                 </svg>
-                Add Health History
+                New Record
             </button>
         </div>
     @endif
 
 </div>
+
+

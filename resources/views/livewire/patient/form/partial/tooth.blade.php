@@ -58,7 +58,7 @@
     $hasMoreTools = count($outerTools) > 0;
 @endphp
 
-<div wire:key="tooth-{{ $tooth }}" x-data="{ tooth: {{ $tooth }}, open: false, part: null, expanded: false }"
+<div wire:key="tooth-{{ $instanceKey ?? $tooth }}-{{ $tooth }}" x-data="{ tooth: {{ $tooth }}, open: false, part: null, expanded: false }"
     x-on:picker-open.window="if ($event.detail.tooth !== tooth) { open = false; expanded = false; }"
     x-on:keydown.escape.window="open = false; expanded = false" x-bind:class="open ? 'z-[1000]' : 'z-10'"
     class="flex flex-col items-center group w-20 sm:w-16 relative overflow-visible">

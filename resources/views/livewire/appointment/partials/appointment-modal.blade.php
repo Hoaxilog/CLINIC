@@ -714,7 +714,7 @@
                                     class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
                                     View Patient Info
                                 </button>
-                                @if (auth()->user()->isDentist())
+                                @if (auth()->user()?->canHandleChairsideFlow())
                                     <button type="button" wire:click="admitPatient"
                                         wire:loading.attr="disabled" wire:target="admitPatient"
                                         wire:confirm="Admit this patient to the chair now?"
@@ -725,7 +725,7 @@
                                     </button>
                                 @endif
                             @elseif($appointmentStatus === 'Ongoing')
-                                @if (auth()->user()->canHandleChairsideFlow())
+                                @if ($this->canOpenViewingPatientChart())
                                     <button type="button" @click="openingPatientForm = true" wire:click="dispatchPatientForm(3)"
                                         class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
                                         View Dental Chart

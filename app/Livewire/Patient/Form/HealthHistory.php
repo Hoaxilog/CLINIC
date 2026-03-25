@@ -68,7 +68,7 @@ class HealthHistory extends Component
 
     public $isCreating = '';
 
-    public function mount($data = [], $gender = null, $isReadOnly = false)
+    public function mount($data = [], $gender = null, $isReadOnly = false, $historyList = [], $selectedHistoryId = '')
     {
         if (! empty($data)) {
             $this->fill($data);
@@ -76,8 +76,11 @@ class HealthHistory extends Component
         if ($gender) {
             $this->gender = $gender;
         }
-        // Capture the passed state
+
         $this->isReadOnly = $isReadOnly;
+        $this->historyList = is_array($historyList) ? $historyList : [];
+        $this->selectedHistoryId = $selectedHistoryId;
+        $this->isCreating = $selectedHistoryId === 'new';
     }
 
     public function triggerNewHistory()
@@ -85,19 +88,7 @@ class HealthHistory extends Component
         $this->isCreating = true;
         $this->selectedHistoryId = 'new';
 
-        $this->reset([
-            'when_last_visit_q1', 'what_last_visit_reason_q1', 'what_seeing_dentist_reason_q2',
-            'is_clicking_jaw_q3a', 'is_pain_jaw_q3b', 'is_difficulty_opening_closing_q3c',
-            'is_locking_jaw_q3d', 'is_clench_grind_q4', 'is_bad_experience_q5',
-            'is_nervous_q6', 'what_nervous_concern_q6',
-            'is_condition_q1', 'what_condition_reason_q1',
-            'is_hospitalized_q2', 'what_hospitalized_reason_q2',
-            'is_serious_illness_operation_q3', 'what_serious_illness_operation_reason_q3',
-            'is_taking_medications_q4', 'what_medications_list_q4',
-            'is_allergic_medications_q5', 'what_allergies_list_q5',
-            'is_allergic_latex_rubber_metals_q6',
-            'is_pregnant_q7', 'is_breast_feeding_q8',
-        ]);
+        $this->resetHealthFields();
 
         $this->dispatch('enableEditMode');
     }
@@ -108,10 +99,7 @@ class HealthHistory extends Component
         $this->gender = $gender;
         $this->historyList = $historyList;
         $this->selectedHistoryId = $selectedId;
-
-        if ($selectedId !== 'new') {
-            $this->isCreating = false;
-        }
+        $this->isCreating = $selectedId === 'new';
     }
 
     public function updatedSelectedHistoryId($value)
@@ -228,6 +216,7 @@ class HealthHistory extends Component
             if ($field) {
                 $this->dispatch('scroll-to-error', field: $field);
             }
+            $this->dispatch('patient-form-navigation-finished', currentStep: 2);
 
             return;
         }
@@ -267,20 +256,39 @@ class HealthHistory extends Component
     #[On('fillHealthHistory')]
     public function fillForm($data, $gender)
     {
+        $this->resetValidation();
+        $this->resetHealthFields();
         $this->fill($data);
         if ($gender) {
             $this->gender = $gender;
         }
     }
 
-    #[On('resetForm')]
     public function resetForm()
     {
-        $this->resetExcept(['isReadOnly']);
+        $this->resetExcept(['isReadOnly', 'historyList', 'selectedHistoryId', 'gender', 'isCreating']);
+        $this->resetValidation();
     }
 
     public function render()
     {
         return view('livewire.patient.form.health-history');
+    }
+
+    private function resetHealthFields(): void
+    {
+        $this->reset([
+            'when_last_visit_q1', 'what_last_visit_reason_q1', 'what_seeing_dentist_reason_q2',
+            'is_clicking_jaw_q3a', 'is_pain_jaw_q3b', 'is_difficulty_opening_closing_q3c',
+            'is_locking_jaw_q3d', 'is_clench_grind_q4', 'is_bad_experience_q5',
+            'is_nervous_q6', 'what_nervous_concern_q6',
+            'is_condition_q1', 'what_condition_reason_q1',
+            'is_hospitalized_q2', 'what_hospitalized_reason_q2',
+            'is_serious_illness_operation_q3', 'what_serious_illness_operation_reason_q3',
+            'is_taking_medications_q4', 'what_medications_list_q4',
+            'is_allergic_medications_q5', 'what_allergies_list_q5',
+            'is_allergic_latex_rubber_metals_q6',
+            'is_pregnant_q7', 'is_breast_feeding_q8',
+        ]);
     }
 }

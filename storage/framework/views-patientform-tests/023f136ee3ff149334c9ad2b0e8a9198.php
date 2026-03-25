@@ -1,0 +1,483 @@
+<section class="space-y-8">
+    <?php
+        $labelClass = 'mb-1.5 block text-sm font-semibold text-[#1a2e3b]';
+        $errorBag = session('errors');
+        $inputClass =
+            'w-full rounded-md border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-[#1a2e3b] placeholder:text-gray-400 focus:border-[#0086da] focus:outline-none focus:ring-2 focus:ring-[#e8f4fc] transition';
+        $fieldClass = fn(string $field) => ($errorBag && $errorBag->has($field))
+            ? $inputClass . ' border-red-400 focus:border-red-500 focus:ring-red-100'
+            : $inputClass;
+        $readonlyClass =
+            'w-full rounded-md border border-gray-200 bg-[#f6fafd] px-3.5 py-2.5 text-sm text-gray-500 cursor-not-allowed';
+    ?>
+
+    <div class="rounded-sm border border-gray-200 bg-white p-5 md:p-6">
+        <div class="mb-5 border-b border-gray-100 pb-4">
+            <h2 class="text-base font-semibold text-[#1a2e3b]">Patient Information</h2>
+            <p class="mt-1 text-xs text-gray-500">Fill in the patient's profile and contact details below.</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div>
+                <label for="last_name" class="<?php echo e($labelClass); ?>">Last Name <span class="text-red-600">*</span></label>
+                <input wire:model.defer="last_name" type="text" id="last_name" class="<?php echo e($fieldClass('last_name')); ?>"
+                    placeholder="e.g., Dela Cruz">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['last_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="last_name" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="first_name" class="<?php echo e($labelClass); ?>">First Name <span class="text-red-600">*</span></label>
+                <input wire:model.defer="first_name" type="text" id="first_name" class="<?php echo e($fieldClass('first_name')); ?>"
+                    placeholder="e.g., Juan">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['first_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="first_name" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="middle_name" class="<?php echo e($labelClass); ?>">Middle Name <span class="text-red-600">*</span></label>
+                <input wire:model.defer="middle_name" type="text" id="middle_name" class="<?php echo e($fieldClass('middle_name')); ?>"
+                    placeholder="e.g., Reyes">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['middle_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="middle_name" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="nickname" class="<?php echo e($labelClass); ?>">Nickname</label>
+                <input wire:model.defer="nickname" type="text" id="nickname" class="<?php echo e($fieldClass('nickname')); ?>"
+                    placeholder="e.g., Jun">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['nickname'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="nickname" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="occupation" class="<?php echo e($labelClass); ?>">Occupation <span class="text-red-600">*</span></label>
+                <input wire:model.defer="occupation" type="text" id="occupation" class="<?php echo e($fieldClass('occupation')); ?>"
+                    placeholder="e.g., Engineer">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['occupation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="occupation" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="birth_date" class="<?php echo e($labelClass); ?>">Date of Birth <span class="text-red-600">*</span></label>
+                <input wire:model.live="birth_date" type="date" id="birth_date" class="<?php echo e($fieldClass('birth_date')); ?>">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['birth_date'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="birth_date" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label class="<?php echo e($labelClass); ?>">Age</label>
+                <input type="text" value="<?php echo e($this->age); ?>" readonly class="<?php echo e($readonlyClass); ?>" placeholder="Age">
+            </div>
+
+            <div>
+                <label class="<?php echo e($labelClass); ?>">Sex <span class="text-red-600">*</span></label>
+                <select wire:model.defer="gender" class="<?php echo e($fieldClass('gender')); ?>">
+                    <option value="" disabled>Select...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['gender'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="gender" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="civil_status" class="<?php echo e($labelClass); ?>">Civil Status <span class="text-red-600">*</span></label>
+                <input wire:model.defer="civil_status" type="text" id="civil_status" class="<?php echo e($fieldClass('civil_status')); ?>"
+                    placeholder="e.g., Single">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['civil_status'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="civil_status" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div class="md:col-span-2 xl:col-span-2">
+                <label for="home_address" class="<?php echo e($labelClass); ?>">Home Address <span class="text-red-600">*</span></label>
+                <input wire:model.defer="home_address" type="text" id="home_address" class="<?php echo e($fieldClass('home_address')); ?>"
+                    placeholder="e.g., 123 Rizal St, Brgy. 1, Manila">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['home_address'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="home_address" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="home_number" class="<?php echo e($labelClass); ?>">Home Phone Number</label>
+                <input wire:model.defer="home_number" type="number" id="home_number" class="<?php echo e($fieldClass('home_number')); ?>"
+                    placeholder="e.g., (02) 8123 4567">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['home_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="home_number" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div class="md:col-span-2 xl:col-span-2">
+                <label for="office_address" class="<?php echo e($labelClass); ?>">Office Address</label>
+                <input wire:model.defer="office_address" type="text" id="office_address" class="<?php echo e($fieldClass('office_address')); ?>"
+                    placeholder="e.g., 456 Ayala Ave, Makati">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['office_address'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="office_address" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="office_number" class="<?php echo e($labelClass); ?>">Office Phone Number</label>
+                <input wire:model.defer="office_number" type="number" id="office_number" class="<?php echo e($fieldClass('office_number')); ?>"
+                    placeholder="e.g., (02) 8888 8888">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['office_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="office_number" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="mobile_number" class="<?php echo e($labelClass); ?>">Mobile Number <span class="text-red-600">*</span></label>
+                <div class="flex min-w-0">
+                    <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                    <input wire:model.defer="mobile_number" type="text" inputmode="numeric" maxlength="11" id="mobile_number" class="<?php echo e($fieldClass('mobile_number')); ?> min-w-0 flex-1"
+                        placeholder="09171234567">
+                </div>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['mobile_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="mobile_number" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="email_address" class="<?php echo e($labelClass); ?>">E-mail Address <span class="text-red-600">*</span></label>
+                <input wire:model.defer="email_address" type="email" id="email_address" class="<?php echo e($fieldClass('email_address')); ?>"
+                    placeholder="e.g., juan.delacruz@gmail.com">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['email_address'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="email_address" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div class="md:col-span-2 xl:col-span-3">
+                <label for="referral" class="<?php echo e($labelClass); ?>">Whom may we thank for referring you?</label>
+                <input wire:model.defer="referral" type="text" id="referral" class="<?php echo e($fieldClass('referral')); ?>"
+                    placeholder="e.g., Dr. Santos / Maria Lim">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['referral'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="referral" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-sm border border-gray-200 bg-white p-5 md:p-6">
+        <div class="mb-5 border-b border-gray-100 pb-4">
+            <h2 class="text-base font-semibold text-[#1a2e3b]">Emergency Contact</h2>
+            <p class="mt-1 text-xs text-gray-500">Person to contact in case of emergency.</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div>
+                <label for="emergency_contact_name" class="<?php echo e($labelClass); ?>">Name <span class="text-red-600">*</span></label>
+                <input wire:model.defer="emergency_contact_name" type="text" id="emergency_contact_name"
+                    class="<?php echo e($fieldClass('emergency_contact_name')); ?>" placeholder="e.g., Maria Dela Cruz">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['emergency_contact_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="emergency_contact_name" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="emergency_contact_number" class="<?php echo e($labelClass); ?>">Contact Number <span class="text-red-600">*</span></label>
+                <div class="flex min-w-0">
+                    <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                    <input wire:model.defer="emergency_contact_number" type="text" inputmode="numeric" maxlength="11" id="emergency_contact_number"
+                        class="<?php echo e($fieldClass('emergency_contact_number')); ?> min-w-0 flex-1" placeholder="09187654321">
+                </div>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['emergency_contact_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="emergency_contact_number"
+                        class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            <div>
+                <label for="relationship" class="<?php echo e($labelClass); ?>">Relationship to Patient <span class="text-red-600">*</span></label>
+                <input wire:model.defer="relationship" type="text" id="relationship" class="<?php echo e($fieldClass('relationship')); ?>"
+                    placeholder="e.g., Spouse">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['relationship'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span data-error-for="relationship" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($this->age !== null && $this->age < 18): ?>
+        <div class="rounded-sm border border-amber-200 bg-amber-50/60 p-5 md:p-6">
+            <div class="mb-5 border-b border-amber-200 pb-4">
+                <h2 class="text-base font-semibold text-amber-900">For Patients Below 18</h2>
+                <p class="mt-1 text-xs text-amber-700">Please complete guardian and parent details below.</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                    <label for="who_answering" class="<?php echo e($labelClass); ?>">Who is answering this form? <span class="text-red-600">*</span></label>
+                    <input wire:model.defer="who_answering" type="text" id="who_answering" class="<?php echo e($fieldClass('who_answering')); ?>"
+                        placeholder="e.g., Maria Dela Cruz">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['who_answering'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span data-error-for="who_answering" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="relationship_to_patient" class="<?php echo e($labelClass); ?>">Relationship to Patient <span class="text-red-600">*</span></label>
+                    <input wire:model.defer="relationship_to_patient" type="text" id="relationship_to_patient"
+                        class="<?php echo e($fieldClass('relationship_to_patient')); ?>" placeholder="e.g., Mother">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['relationship_to_patient'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span data-error-for="relationship_to_patient"
+                            class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="father_name" class="<?php echo e($labelClass); ?>">Father's Name</label>
+                    <input wire:model.defer="father_name" type="text" id="father_name" class="<?php echo e($fieldClass('father_name')); ?>"
+                        placeholder="e.g., Pedro Dela Cruz">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['father_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span data-error-for="father_name" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="father_number" class="<?php echo e($labelClass); ?>">Father's Contact Number</label>
+                    <div class="flex min-w-0">
+                        <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                        <input wire:model.defer="father_number" type="text" inputmode="numeric" maxlength="11" id="father_number" class="<?php echo e($fieldClass('father_number')); ?> min-w-0 flex-1"
+                            placeholder="09151112222">
+                    </div>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['father_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span data-error-for="father_number" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="mother_name" class="<?php echo e($labelClass); ?>">Mother's Name</label>
+                    <input wire:model.defer="mother_name" type="text" id="mother_name" class="<?php echo e($fieldClass('mother_name')); ?>"
+                        placeholder="e.g., Maria Dela Cruz">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['mother_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span data-error-for="mother_name" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="mother_number" class="<?php echo e($labelClass); ?>">Mother's Contact Number</label>
+                    <div class="flex min-w-0">
+                        <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                        <input wire:model.defer="mother_number" type="text" inputmode="numeric" maxlength="11" id="mother_number" class="<?php echo e($fieldClass('mother_number')); ?> min-w-0 flex-1"
+                            placeholder="09163334444">
+                    </div>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['mother_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span data-error-for="mother_number" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="guardian_name" class="<?php echo e($labelClass); ?>">Guardian's Name</label>
+                    <input wire:model.defer="guardian_name" type="text" id="guardian_name" class="<?php echo e($fieldClass('guardian_name')); ?>"
+                        placeholder="e.g., Jose Santos">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['guardian_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span data-error-for="guardian_name" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="guardian_number" class="<?php echo e($labelClass); ?>">Guardian's Contact Number</label>
+                    <div class="flex min-w-0">
+                        <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
+                        <input wire:model.defer="guardian_number" type="text" inputmode="numeric" maxlength="11" id="guardian_number" class="<?php echo e($fieldClass('guardian_number')); ?> min-w-0 flex-1"
+                            placeholder="09175556666">
+                    </div>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['guardian_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <span data-error-for="guardian_number" class="mt-1 block text-xs text-red-500"><?php echo e($message); ?></span>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+</section>
+<?php /**PATH C:\JOELJOELJOELJOELJOEL\CLINIC\resources\views/livewire/patient/form/basic-info.blade.php ENDPATH**/ ?>

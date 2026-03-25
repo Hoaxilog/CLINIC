@@ -10,61 +10,83 @@
             x-on:patient-form-closed.window="stopSyncTimer()"
             x-on:patient-form-draft-pause.window="pausePersist($event.detail?.ms || 2000)"
             x-on:patient-form-draft-cleared.window="handleDraftCleared($event.detail)"
+            x-on:patient-form-navigation-started.window="navigationLoading = true; navigationStartedAt = Date.now()"
+            x-on:patient-form-navigation-finished.window="handleNavigationFinished($event.detail)"
             x-on:patient-added.window="handleSuccessfulSave()" x-on:input.capture="markDirtyDebounced()"
             x-on:change.capture="markDirtyDebounced()" x-on:click.capture="handleClickCapture($event)">
 
             <div
                 class="w-full max-w-[108rem] overflow-hidden rounded-md border border-gray-200 bg-[#f6fafd] shadow-2xl">
                 <!-- Modal Content -->
-                <div class="flex max-h-[92vh] flex-col">
+                <div class="relative flex max-h-[92vh] flex-col">
+                    <div x-cloak x-show="navigationLoading"
+                        class="absolute inset-0 z-40 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+                        <div class="flex flex-col items-center gap-3 text-center">
+                            <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
+                            <div class="text-sm font-semibold text-gray-700">Loading section...</div>
+                        </div>
+                    </div>
+
+                    <div wire:loading.flex wire:target="selectVisitRecord,goToStep,startNewVisitRecord"
+                        class="absolute inset-0 z-40 items-center justify-center bg-white/70 backdrop-blur-sm">
+                        <div class="flex flex-col items-center gap-3 text-center">
+                            <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
+                            <div class="text-sm font-semibold text-gray-700">Loading section...</div>
+                        </div>
+                    </div>
+
 
                     <!-- Stepper Header -->
                     <div class="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
+                        @php
+                            $basicInfoEditing = $isEditing && ! $isReadOnly && $currentStep == 1;
+                            $canNavigateFromBasicInfo = ! $basicInfoEditing;
+                        @endphp
                         <div class="flex flex-wrap items-center justify-center gap-y-3">
 
-                            <!-- Tab 1: Basic Information -->
-                            <div
-                                @if ($isEditing) wire:click="goToStep(1)" @endif
-                                class="flex items-center gap-2.5 transition {{ $currentStep == 1 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 1 ? 'cursor-pointer hover:text-[#0086da]' : '' }}">
-                                <span
-                                    class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 1 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">1</span>
-                                <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Basic Information</span>
-                            </div>
-
-                            <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
-
-                            <!-- Tab 2: Health Records -->
-                            <div
-                                @if ($isEditing) wire:click="goToStep(2)" @endif
-                                class="flex items-center gap-2.5 transition {{ $currentStep == 2 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 2 ? 'cursor-pointer hover:text-[#0086da]' : '' }}">
-                                <span
-                                    class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 2 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">2</span>
-                                <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Health Records</span>
-                            </div>
-
-                            @if ($isAdmin)
-                                <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
-
-                                <!-- Tab 3: Dental Chart (admin only) -->
+                                <!-- Tab 1: Basic Information -->
                                 <div
-                                    @if ($isEditing) wire:click="goToStep(3)" @endif
-                                    class="flex items-center gap-2.5 transition {{ $currentStep == 3 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 3 ? 'cursor-pointer hover:text-[#0086da]' : '' }}">
+                                    @if ($isEditing) x-on:click.prevent="handleStepNavigation(1)" @endif
+                                    class="flex items-center gap-2.5 transition {{ $currentStep == 1 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 1 ? 'cursor-pointer hover:text-[#0086da]' : '' }}">
                                     <span
-                                        class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 3 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">3</span>
-                                    <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Dental Chart</span>
+                                        class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 1 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">1</span>
+                                    <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Basic Information</span>
                                 </div>
 
                                 <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
 
-                                <!-- Tab 4: Treatment Record (admin only) -->
+                                <!-- Tab 2: Health Records -->
                                 <div
-                                    @if ($isEditing) wire:click="goToStep(4)" @endif
-                                    class="flex items-center gap-2.5 transition {{ $currentStep == 4 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 4 ? 'cursor-pointer hover:text-[#0086da]' : '' }}">
+                                    @if ($isEditing && $canNavigateFromBasicInfo) x-on:click.prevent="handleStepNavigation(2)" @endif
+                                    class="flex items-center gap-2.5 transition {{ $currentStep == 2 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 2 && $canNavigateFromBasicInfo ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $basicInfoEditing ? 'cursor-not-allowed opacity-60' : '' }}">
                                     <span
-                                        class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 4 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">4</span>
-                                    <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Treatment Record</span>
+                                        class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 2 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">2</span>
+                                    <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Health Records</span>
                                 </div>
-                            @endif
+
+                                @if ($isAdmin)
+                                    <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
+
+                                    <!-- Tab 3: Dental Chart (admin only) -->
+                                    <div
+                                        @if ($isEditing && $canNavigateFromBasicInfo) x-on:click.prevent="handleStepNavigation(3)" @endif
+                                        class="flex items-center gap-2.5 transition {{ $currentStep == 3 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 3 && $canNavigateFromBasicInfo ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $basicInfoEditing ? 'cursor-not-allowed opacity-60' : '' }}">
+                                        <span
+                                            class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 3 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">3</span>
+                                        <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Dental Chart</span>
+                                    </div>
+
+                                    <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
+
+                                    <!-- Tab 4: Treatment Record (admin only) -->
+                                    <div
+                                        @if ($isEditing && $canNavigateFromBasicInfo) x-on:click.prevent="handleStepNavigation(4)" @endif
+                                        class="flex items-center gap-2.5 transition {{ $currentStep == 4 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 4 && $canNavigateFromBasicInfo ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $basicInfoEditing ? 'cursor-not-allowed opacity-60' : '' }}">
+                                        <span
+                                            class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 4 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">4</span>
+                                        <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Treatment Record</span>
+                                    </div>
+                                @endif
 
                         </div>
 
@@ -115,6 +137,29 @@
                     <!-- Scrollable Form Area -->
                     <div data-form-scroll class="overflow-y-auto bg-[#f6fafd] px-4 py-5 sm:px-6 sm:py-6">
 
+                        {{-- Record Date bar — shown on steps 2-4 only --}}
+                        @if ($isEditing && !empty($visitHistoryList) && $currentStep >= 2 && $isReadOnly)
+                            <div class="mb-5 flex items-center justify-between rounded-md border border-[#cce3f5] bg-white px-8 py-3 shadow-sm">
+                                <div class="flex items-center gap-2 text-[#0086da]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Record Date</span>
+                                </div>
+                                <select
+                                    x-on:change="handleVisitRecordSelection($event)"
+                                    class="w-72 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 focus:border-[#0086da] focus:outline-none focus:ring-1 focus:ring-[#0086da] sm:w-80">
+                                    @foreach ($visitHistoryList as $visit)
+                                        <option value="{{ $visit['value'] }}" @selected($selectedVisitDate === $visit['value'])>{{ $visit['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+        @endif
+
                         {{-- Tab 1: Basic Info --}}
                         @if ($currentStep == 1)
                             <div class="{{ $isReadOnly ? 'pointer-events-none' : '' }}">
@@ -126,7 +171,8 @@
                         @if ($currentStep == 2 && $isEditing)
                             <livewire:patient.form.health-history wire:key="health-history"
                                 :data="$healthHistoryData" :gender="$basicInfoData['gender'] ?? null"
-                                :isReadOnly="$isReadOnly" />
+                                :isReadOnly="$isReadOnly" :historyList="$healthHistoryList"
+                                :selectedHistoryId="$selectedHealthHistoryId" />
                         @endif
 
                         {{-- Tab 3: Dental Chart (admin only) --}}
@@ -167,13 +213,12 @@
 
                             // Edit Visit Record: dentist only, step 2 read-only
                             $showEditVisitButton = $isEditing && $isReadOnly && $currentStep == 2 && $isAdmin;
+                            $showNewRecordButton = $isEditing && $isReadOnly && $currentStep == 4 && $isAdmin;
 
-                            // Save button:
-                            //  - Create mode step 1 → "Register Patient"
-                            //  - Edit step 1 editing → "Save Changes"
-                            //  - Edit step 2 dentist editing → "Save Visit Record"
-                            //  - Edit step 2 staff → never (always read-only on this tab)
-                            $shouldShowSave = ! $isReadOnly;
+                            $finalEditableStep = $isEditing
+                                ? ($currentStep === 1 ? 1 : ($isAdmin ? 4 : 1))
+                                : ($isAdmin ? 4 : 2);
+                            $shouldShowSave = ! $isReadOnly && (! $isEditing || $currentStep === $finalEditableStep);
 
                             $showNext = false; // tabs + save buttons replace Next
                             $showBack = false; // tabs replace Back
@@ -253,6 +298,18 @@
                                     </button>
                                 @endif
 
+                                @if ($showNewRecordButton)
+                                    <button data-draft-ignore wire:click="startNewVisitRecord" type="button"
+                                        class="inline-flex items-center gap-2 rounded-sm bg-[#0086da] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0073a8]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 5v14M5 12h14"></path>
+                                        </svg>
+                                        New Record
+                                    </button>
+                                @endif
+
                                 @if ($shouldShowSave)
                                     <button data-draft-ignore
                                         x-on:click="$dispatch('patient-form-draft-pause', { ms: 3000 })"
@@ -260,10 +317,8 @@
                                         class="rounded-sm bg-[#0086da] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0073a8]">
                                         @if (!$isEditing)
                                             Register Patient
-                                        @elseif ($currentStep == 2)
-                                            Save Visit Record
                                         @else
-                                            Save Changes
+                                            Save All Changes
                                         @endif
                                     </button>
                                 @endif
@@ -325,6 +380,8 @@
                             updatedAtLabel: '',
                         },
                         restoring: false,
+                        navigationLoading: false,
+                        navigationStartedAt: 0,
 
                         init() {
                             this.startSyncTimer();
@@ -499,6 +556,7 @@
 
                         async handleSuccessfulSave() {
                             this.pausePersist(3500);
+                            this.navigationLoading = false;
                             this.cancelPendingDebounce();
                             localStorage.removeItem(this.buildKey());
                             this.prompt.visible = false;
@@ -517,6 +575,63 @@
                                     // no-op fallback: local is already cleared
                                 }
                             }
+                        },
+
+                        handleNavigationFinished(detail) {
+                            if (detail && detail.currentStep) {
+                                this.currentStep = Number(detail.currentStep || this.currentStep);
+                            }
+
+                            const elapsed = this.navigationStartedAt ? Date.now() - this.navigationStartedAt : 0;
+                            const remaining = Math.max(0, 350 - elapsed);
+
+                            window.setTimeout(() => {
+                                requestAnimationFrame(() => {
+                                    this.navigationLoading = false;
+                                    this.navigationStartedAt = 0;
+                                });
+                            }, remaining);
+                        },
+
+                        async handleVisitRecordSelection(event) {
+                            const value = event?.target?.value;
+                            if (!value) {
+                                return;
+                            }
+
+                            await this.prepareNavigationLoading();
+
+                            try {
+                                await this.$wire.selectVisitRecord(value);
+                                this.handleNavigationFinished({
+                                    currentStep: this.currentStep,
+                                    source: 'record-date-change',
+                                    value,
+                                });
+                            } catch (error) {
+                                this.navigationLoading = false;
+                                this.navigationStartedAt = 0;
+                            }
+                        },
+
+                        async handleStepNavigation(step) {
+                            const targetStep = Number(step || 0);
+                            if (!targetStep || targetStep === this.currentStep) {
+                                return;
+                            }
+
+                            await this.prepareNavigationLoading();
+                            await this.$wire.goToStep(targetStep);
+                        },
+
+                        async prepareNavigationLoading() {
+                            if (!this.navigationLoading) {
+                                this.navigationLoading = true;
+                                this.navigationStartedAt = Date.now();
+                            }
+
+                            await new Promise((resolve) => requestAnimationFrame(resolve));
+                            await new Promise((resolve) => requestAnimationFrame(resolve));
                         },
 
                         startSyncTimer() {

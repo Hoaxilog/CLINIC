@@ -37,7 +37,7 @@
             </div>
 
             <div>
-                <label for="middle_name" class="{{ $labelClass }}">Middle Name <span class="text-red-600">*</span></label>
+                <label for="middle_name" class="{{ $labelClass }}">Middle Name</label>
                 <input wire:model.defer="middle_name" type="text" id="middle_name" class="{{ $fieldClass('middle_name') }}"
                     placeholder="e.g., Reyes">
                 @error('middle_name')
@@ -79,7 +79,7 @@
             <div>
                 <label class="{{ $labelClass }}">Sex <span class="text-red-600">*</span></label>
                 <select wire:model.defer="gender" class="{{ $fieldClass('gender') }}">
-                    <option value="" disabled>Select...</option>
+                    <option value="" >Select...</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                 </select>

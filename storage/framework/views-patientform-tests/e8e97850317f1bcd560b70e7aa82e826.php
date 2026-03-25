@@ -1,0 +1,425 @@
+<?php
+    $colors = [
+        'red' => '#ef4444',
+        'blue' => '#3b82f6',
+        'green' => '#22c55e',
+        'white' => '#FFFFFF',
+    ];
+
+    $data = $teeth[$tooth] ?? [];
+
+    $toothForImage = $tooth;
+    $quadrant = intdiv((int) $tooth, 10);
+    $position = ((int) $tooth) % 10;
+    if (in_array($quadrant, [5, 6, 7, 8], true) && $position >= 1 && $position <= 5) {
+        $quadrantMap = [5 => 1, 6 => 2, 7 => 3, 8 => 4];
+        $toothForImage = ((int) $quadrantMap[$quadrant] * 10) + $position;
+    }
+
+    $topColor = $data['top']['color'] ?? 'white';
+    $rightColor = $data['right']['color'] ?? 'white';
+    $bottomColor = $data['bottom']['color'] ?? 'white';
+    $leftColor = $data['left']['color'] ?? 'white';
+    $centerColor = $data['center']['color'] ?? 'white';
+
+    $toolLabels = $toolLabels ?? [];
+
+    $getTooltip = function ($partKey) use ($data, $toolLabels) {
+        $code = $data[$partKey]['code'] ?? null;
+        if (!$code) {
+            return '';
+        }
+        $label = $toolLabels[$code] ?? '';
+        return $label ? "$code - $label" : $code;
+    };
+ 
+    $s1 = $data['line_1'] ?? null;
+    $s2 = $data['line_2'] ?? null;
+    $s3 = $data['line_3'] ?? null;
+
+    $getLineTooltip = function ($status) use ($toolLabels) {
+        if (!$status) {
+            return '';
+        }
+        $code = $status['code'];
+        $label = $toolLabels[$code] ?? '';
+        return $label ? "$code - $label" : $code;
+    };
+
+    $picker = $picker ?? ['open' => false, 'tooth' => null, 'part' => null, 'expanded' => false];
+    $quickTools = $quickTools ?? [];
+    $tools = $tools ?? [];
+    $quickCodes = array_map(fn($tool) => $tool['code'], $quickTools);
+    $outerTools = array_values(
+        array_filter($tools, function ($tool) use ($quickCodes) {
+            return !in_array($tool['code'], $quickCodes, true);
+        }),
+    );
+    $hasMoreTools = count($outerTools) > 0;
+?>
+
+<div <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'tooth-'.e($tooth).''; ?>wire:key="tooth-<?php echo e($tooth); ?>" x-data="{ tooth: <?php echo e($tooth); ?>, open: false, part: null, expanded: false }"
+    x-on:picker-open.window="if ($event.detail.tooth !== tooth) { open = false; expanded = false; }"
+    x-on:keydown.escape.window="open = false; expanded = false" x-bind:class="open ? 'z-[1000]' : 'z-10'"
+    class="flex flex-col items-center group w-20 sm:w-16 relative overflow-visible">
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($isLower) && $isLower): ?>
+        
+        
+        <div class="relative w-18 h-18 sm:w-14 sm:h-14 z-10 overflow-visible">
+            <svg viewBox="0 0 100 100"
+                class="w-full h-full drop-shadow-sm hover:scale-110 transition-transform duration-200 z-0 relative">
+                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'top'; expanded = false; $dispatch('picker-open', { tooth })"
+                    d="M 50 50 L 20 22 C 28 10, 42 12, 50 18 C 58 12, 72 10, 80 22 L 50 50 Z"
+                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'top')" stroke="#7DC242" stroke-width="2.5"
+                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'top')"><?php echo e($getTooltip('top')); ?></title>
+                </path>
+                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'right'; expanded = false; $dispatch('picker-open', { tooth })"
+                    d="M 50 50 L 80 22 C 90 28, 88 42, 82 50 C 88 58, 90 72, 80 78 L 50 50 Z"
+                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'right')" stroke="#7DC242" stroke-width="2.5"
+                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'right')"><?php echo e($getTooltip('right')); ?></title>
+                </path>
+                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'bottom'; expanded = false; $dispatch('picker-open', { tooth })"
+                    d="M 50 50 L 80 78 C 72 90, 58 88, 50 82 C 42 88, 28 90, 20 78 L 50 50 Z"
+                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'bottom')" stroke="#7DC242" stroke-width="2.5"
+                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'bottom')"><?php echo e($getTooltip('bottom')); ?></title>
+                </path>
+                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'left'; expanded = false; $dispatch('picker-open', { tooth })"
+                    d="M 50 50 L 20 78 C 10 72, 12 58, 18 50 C 12 42, 10 28, 20 22 L 50 50 Z"
+                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'left')" stroke="#7DC242" stroke-width="2.5"
+                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'left')"><?php echo e($getTooltip('left')); ?></title>
+                </path>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($type === 'circle'): ?>
+                    <circle x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
+                        cx="50" cy="50" r="14" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
+                        stroke="#7DC242" stroke-width="2.5" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')"><?php echo e($getTooltip('center')); ?></title>
+                    </circle>
+                <?php else: ?>
+                    <rect x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
+                        x="37" y="37" width="26" height="26" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
+                        stroke="#7DC242" stroke-width="2.5" stroke-linejoin="round"
+                        class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')"><?php echo e($getTooltip('center')); ?></title>
+                    </rect>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </svg>
+
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($quickTools) > 0): ?>
+                <div class="absolute left-1/2 top-1/2 z-[100] -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+                    x-cloak x-show="open" x-transition.opacity x-on:click.away="open = false; expanded = false">
+                    <?php
+                        $innerItems = array_merge([['label' => 'Clear Surface', 'code' => '__CLEAR__', 'color' => 'gray']], $quickTools);
+                        $innerCount = count($innerItems) + ($hasMoreTools ? 1 : 0);
+                        $outerCount = count($outerTools);
+
+                        $cx = 175;
+                        $cy = 175;
+                        $innerOuterR = 110;
+                        $innerInnerR = 60;
+                        $outerOuterR = 170;
+                        $outerInnerR = 120;
+
+                        $polar = function ($radius, $angleDeg) use ($cx, $cy) {
+                            $rad = deg2rad($angleDeg);
+                            return [$cx + $radius * cos($rad), $cy + $radius * sin($rad)];
+                        };
+                        $arc = function ($rOuter, $rInner, $start, $end) use ($polar) {
+                            $largeArc = abs($end - $start) > 180 ? 1 : 0;
+                            [$x1, $y1] = $polar($rOuter, $start);
+                            [$x2, $y2] = $polar($rOuter, $end);
+                            [$x3, $y3] = $polar($rInner, $end);
+                            [$x4, $y4] = $polar($rInner, $start);
+                            return "M {$x1} {$y1} A {$rOuter} {$rOuter} 0 {$largeArc} 1 {$x2} {$y2} L {$x3} {$y3} A {$rInner} {$rInner} 0 {$largeArc} 0 {$x4} {$y4} Z";
+                        };
+                    ?>
+                    <svg viewBox="0 0 350 350" class="w-[18rem] h-[18rem]">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $innerItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $tool): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                            <?php
+                                $start = $innerCount > 0 ? (360 * $index) / $innerCount - 90 : 0;
+                                $end = $innerCount > 0 ? (360 * ($index + 1)) / $innerCount - 90 : 0;
+                                $mid = ($start + $end) / 2;
+                                [$tx, $ty] = $polar(($innerInnerR + $innerOuterR) / 2, $mid);
+                                $isRed = $tool['color'] === 'red';
+                                $fill = $tool['color'] === 'gray' ? '#4b5563' : ($isRed ? '#ef4444' : '#3b82f6');
+                                $isClear = $tool['code'] === '__CLEAR__';
+                                $displayCode = $isClear ? 'CLR' : $tool['code'];
+                            ?>
+                            <path d="<?php echo e($arc($innerOuterR, $innerInnerR, $start, $end)); ?>" fill="<?php echo e($fill); ?>"
+                                stroke="#e5e7eb" stroke-width="1.5" class="cursor-pointer hover:opacity-90"
+                                x-on:click.stop="<?php echo e($isClear ? '$store.dentalChart.clearPart(tooth, part);' : '$store.dentalChart.applyTool(\'' . $tool['code'] . '\', tooth, part);'); ?> open = false; expanded = false">
+                                <title><?php echo e($tool['label']); ?></title>
+                            </path>
+                            <text x="<?php echo e($tx); ?>" y="<?php echo e($ty); ?>" text-anchor="middle"
+                                dominant-baseline="middle"
+                                class="fill-white text-[16px] font-bold select-none pointer-events-none">
+                                <?php echo e($displayCode); ?>
+
+                            </text>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($hasMoreTools): ?>
+                            <?php
+                                $moreIndex = $innerCount - 1;
+                                $start = $innerCount > 0 ? (360 * $moreIndex) / $innerCount - 90 : 0;
+                                $end = $innerCount > 0 ? (360 * ($moreIndex + 1)) / $innerCount - 90 : 0;
+                                $mid = ($start + $end) / 2;
+                                [$tx, $ty] = $polar(($innerInnerR + $innerOuterR) / 2, $mid);
+                            ?>
+                            <path d="<?php echo e($arc($innerOuterR, $innerInnerR, $start, $end)); ?>" fill="#374151"
+                                stroke="#e5e7eb" stroke-width="1.5" class="cursor-pointer hover:opacity-90"
+                                x-on:click.stop="expanded = !expanded">
+                                <title x-text="expanded ? 'Hide more' : 'View more'">View more</title>
+                            </path>
+                            <text x="<?php echo e($tx); ?>" y="<?php echo e($ty); ?>" text-anchor="middle"
+                                dominant-baseline="middle"
+                                class="fill-white text-[16px] font-bold select-none pointer-events-none">
+                                <tspan x-text="expanded ? 'Less' : 'More'">More</tspan>
+                            </text>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($outerCount > 0): ?>
+                            <g x-show="expanded">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $outerTools; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $tool): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                    <?php
+                                        $start = (360 * $index) / $outerCount - 90;
+                                        $end = (360 * ($index + 1)) / $outerCount - 90;
+                                        $mid = ($start + $end) / 2;
+                                        [$tx, $ty] = $polar(($outerInnerR + $outerOuterR) / 2, $mid);
+                                        $isRed = $tool['color'] === 'red';
+                                        $fill = $isRed ? '#ef4444' : '#3b82f6';
+                                    ?>
+                                    <path d="<?php echo e($arc($outerOuterR, $outerInnerR, $start, $end)); ?>"
+                                        fill="<?php echo e($fill); ?>" stroke="#e5e7eb" stroke-width="1.5"
+                                        class="cursor-pointer hover:opacity-90"
+                                        x-on:click.stop="$store.dentalChart.applyTool('<?php echo e($tool['code']); ?>', tooth, part); open = false; expanded = false">
+                                        <title><?php echo e($tool['label']); ?></title>
+                                    </path>
+                                    <text x="<?php echo e($tx); ?>" y="<?php echo e($ty); ?>" text-anchor="middle"
+                                        dominant-baseline="middle"
+                                        class="fill-white text-[14px] font-bold select-none pointer-events-none">
+                                        <?php echo e($tool['code']); ?>
+
+                                    </text>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                            </g>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <circle cx="<?php echo e($cx); ?>" cy="<?php echo e($cy); ?>" r="36" fill="#111827"
+                            stroke="#e5e7eb" stroke-width="1.5" class="cursor-pointer hover:opacity-90"
+                            x-on:click.stop="open = false; expanded = false" />
+                        <text x="<?php echo e($cx); ?>" y="<?php echo e($cy); ?>" text-anchor="middle"
+                            dominant-baseline="middle"
+                            class="fill-white text-[18px] font-bold select-none pointer-events-none">
+                            X
+                        </text>
+                    </svg>
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        </div>
+
+        
+        <div class="h-20 sm:h-18 w-full flex items-start justify-center -mt-1 z-0">
+            <img src="<?php echo e(asset('images/teeth/' . $toothForImage . '.png')); ?>" alt="T<?php echo e($tooth); ?>"
+                class="w-16 sm:w-10 h-auto object-contain opacity-80" onerror="this.style.display='none'" />
+        </div>
+
+        
+        <div
+            class="w-full border border-gray-400 bg-gray-50 mb-1 mt-6 max-md:mt-15 shadow-sm flex flex-col text-[12px] md:text-[10px] font-bold text-center leading-none">
+            <div x-bind:title="$store.dentalChart.getStatusTooltip(tooth, 1)"
+                class="h-7 md:h-6 border-b border-gray-300 flex items-center justify-center select-none"
+                x-bind:class="$store.dentalChart.getStatusClass(tooth, 1)"
+                x-text="$store.dentalChart.getStatusCode(tooth, 1)"><?php echo e($s1['code'] ?? '-'); ?></div>
+            <div x-bind:title="$store.dentalChart.getStatusTooltip(tooth, 2)"
+                class="h-7 md:h-6 border-b border-gray-300 flex items-center justify-center select-none"
+                x-bind:class="$store.dentalChart.getStatusClass(tooth, 2)"
+                x-text="$store.dentalChart.getStatusCode(tooth, 2)"><?php echo e($s2['code'] ?? '-'); ?></div>
+            <div x-bind:title="$store.dentalChart.getStatusTooltip(tooth, 3)"
+                class="h-7 md:h-6 flex items-center justify-center select-none"
+                x-bind:class="$store.dentalChart.getStatusClass(tooth, 3)"
+                x-text="$store.dentalChart.getStatusCode(tooth, 3)"><?php echo e($s3['code'] ?? '-'); ?></div>
+        </div>
+
+        <span class="text-sm font-bold text-gray-500 mt-1 select-none"><?php echo e($tooth); ?></span>
+    <?php else: ?>
+        
+        <span class="text-sm font-bold text-gray-500 mb-1 select-none"><?php echo e($tooth); ?></span>
+
+        
+        <div
+            class="w-full border border-gray-400 bg-gray-50 mb-6 max-md:mb-15 shadow-sm flex flex-col text-[12px] md:text-[10px] font-bold text-center leading-none">
+            <div x-bind:title="$store.dentalChart.getStatusTooltip(tooth, 1)"
+                class="h-7 md:h-6 border-b border-gray-300 flex items-center justify-center select-none"
+                x-bind:class="$store.dentalChart.getStatusClass(tooth, 1)"
+                x-text="$store.dentalChart.getStatusCode(tooth, 1)"><?php echo e($s1['code'] ?? '-'); ?></div>
+            <div x-bind:title="$store.dentalChart.getStatusTooltip(tooth, 2)"
+                class="h-7 md:h-6 border-b border-gray-300 flex items-center justify-center select-none"
+                x-bind:class="$store.dentalChart.getStatusClass(tooth, 2)"
+                x-text="$store.dentalChart.getStatusCode(tooth, 2)"><?php echo e($s2['code'] ?? '-'); ?></div>
+            <div x-bind:title="$store.dentalChart.getStatusTooltip(tooth, 3)"
+                class="h-7 md:h-6 flex items-center justify-center select-none"
+                x-bind:class="$store.dentalChart.getStatusClass(tooth, 3)"
+                x-text="$store.dentalChart.getStatusCode(tooth, 3)"><?php echo e($s3['code'] ?? '-'); ?></div>
+        </div>
+
+        <div class="h-20 sm:h-18 w-full flex items-end justify-center -mb-1 z-0">
+            <img src="<?php echo e(asset('images/teeth/' . $toothForImage . '.png')); ?>" alt="T<?php echo e($tooth); ?>"
+                class="w-16 sm:w-10 h-auto object-contain opacity-80" onerror="this.style.display='none'" />
+        </div>
+
+        <div class="relative w-18 h-18 sm:w-14 sm:h-14 z-10 overflow-visible">
+            <svg viewBox="0 0 100 100"
+                class="w-full h-full drop-shadow-sm hover:scale-110 transition-transform duration-200 relative z-0">
+                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'top'; expanded = false; $dispatch('picker-open', { tooth })"
+                    d="M 50 50 L 20 22 C 28 10, 42 12, 50 18 C 58 12, 72 10, 80 22 L 50 50 Z"
+                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'top')" stroke="#7DC242" stroke-width="2.5"
+                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'top')"><?php echo e($getTooltip('top')); ?></title>
+                </path>
+                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'right'; expanded = false; $dispatch('picker-open', { tooth })"
+                    d="M 50 50 L 80 22 C 90 28, 88 42, 82 50 C 88 58, 90 72, 80 78 L 50 50 Z"
+                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'right')" stroke="#7DC242" stroke-width="2.5"
+                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'right')"><?php echo e($getTooltip('right')); ?></title>
+                </path>
+                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'bottom'; expanded = false; $dispatch('picker-open', { tooth })"
+                    d="M 50 50 L 80 78 C 72 90, 58 88, 50 82 C 42 88, 28 90, 20 78 L 50 50 Z"
+                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'bottom')" stroke="#7DC242" stroke-width="2.5"
+                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'bottom')"><?php echo e($getTooltip('bottom')); ?></title>
+                </path>
+                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'left'; expanded = false; $dispatch('picker-open', { tooth })"
+                    d="M 50 50 L 20 78 C 10 72, 12 58, 18 50 C 12 42, 10 28, 20 22 L 50 50 Z"
+                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'left')" stroke="#7DC242" stroke-width="2.5"
+                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'left')"><?php echo e($getTooltip('left')); ?></title>
+                </path>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($type === 'circle'): ?>
+                    <circle x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
+                        cx="50" cy="50" r="14" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
+                        stroke="#7DC242" stroke-width="2.5" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')"><?php echo e($getTooltip('center')); ?></title>
+                    </circle>
+                <?php else: ?>
+                    <rect x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
+                        x="37" y="37" width="26" height="26" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
+                        stroke="#7DC242" stroke-width="2.5" stroke-linejoin="round"
+                        class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')"><?php echo e($getTooltip('center')); ?></title>
+                    </rect>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </svg>
+
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($quickTools) > 0): ?>
+                <div class="absolute left-1/2 top-1/2 z-[100] -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+                    x-cloak x-show="open" x-transition.opacity x-on:click.away="open = false; expanded = false">
+                    <?php
+                        $innerItems = array_merge([['label' => 'Clear Surface', 'code' => '__CLEAR__', 'color' => 'gray']], $quickTools);
+                        $innerCount = count($innerItems) + ($hasMoreTools ? 1 : 0);
+                        $outerCount = count($outerTools);
+
+                        $cx = 175;
+                        $cy = 175;
+                        $innerOuterR = 110;
+                        $innerInnerR = 60;
+                        $outerOuterR = 170;
+                        $outerInnerR = 120;
+
+                        $polar = function ($radius, $angleDeg) use ($cx, $cy) {
+                            $rad = deg2rad($angleDeg);
+                            return [$cx + $radius * cos($rad), $cy + $radius * sin($rad)];
+                        };
+                        $arc = function ($rOuter, $rInner, $start, $end) use ($polar) {
+                            $largeArc = abs($end - $start) > 180 ? 1 : 0;
+                            [$x1, $y1] = $polar($rOuter, $start);
+                            [$x2, $y2] = $polar($rOuter, $end);
+                            [$x3, $y3] = $polar($rInner, $end);
+                            [$x4, $y4] = $polar($rInner, $start);
+                            return "M {$x1} {$y1} A {$rOuter} {$rOuter} 0 {$largeArc} 1 {$x2} {$y2} L {$x3} {$y3} A {$rInner} {$rInner} 0 {$largeArc} 0 {$x4} {$y4} Z";
+                        };
+                    ?>
+                    <svg viewBox="0 0 350 350" class="w-[18rem] h-[18rem]">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $innerItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $tool): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                            <?php
+                                $start = $innerCount > 0 ? (360 * $index) / $innerCount - 90 : 0;
+                                $end = $innerCount > 0 ? (360 * ($index + 1)) / $innerCount - 90 : 0;
+                                $mid = ($start + $end) / 2;
+                                [$tx, $ty] = $polar(($innerInnerR + $innerOuterR) / 2, $mid);
+                                $isRed = $tool['color'] === 'red';
+                                $fill = $tool['color'] === 'gray' ? '#4b5563' : ($isRed ? '#ef4444' : '#3b82f6');
+                                $isClear = $tool['code'] === '__CLEAR__';
+                                $displayCode = $isClear ? 'CLR' : $tool['code'];
+                            ?>
+                            <path d="<?php echo e($arc($innerOuterR, $innerInnerR, $start, $end)); ?>" fill="<?php echo e($fill); ?>"
+                                stroke="#e5e7eb" stroke-width="1.5" class="cursor-pointer hover:opacity-90"
+                                x-on:click.stop="<?php echo e($isClear ? '$store.dentalChart.clearPart(tooth, part);' : '$store.dentalChart.applyTool(\'' . $tool['code'] . '\', tooth, part);'); ?> open = false; expanded = false">
+                                <title><?php echo e($tool['label']); ?></title>
+                            </path>
+                            <text x="<?php echo e($tx); ?>" y="<?php echo e($ty); ?>" text-anchor="middle"
+                                dominant-baseline="middle"
+                                class="fill-white text-[16px] font-bold select-none pointer-events-none">
+                                <?php echo e($displayCode); ?>
+
+                            </text>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($hasMoreTools): ?>
+                            <?php
+                                $moreIndex = $innerCount - 1;
+                                $start = $innerCount > 0 ? (360 * $moreIndex) / $innerCount - 90 : 0;
+                                $end = $innerCount > 0 ? (360 * ($moreIndex + 1)) / $innerCount - 90 : 0;
+                                $mid = ($start + $end) / 2;
+                                [$tx, $ty] = $polar(($innerInnerR + $innerOuterR) / 2, $mid);
+                            ?>
+                            <path d="<?php echo e($arc($innerOuterR, $innerInnerR, $start, $end)); ?>" fill="#374151"
+                                stroke="#e5e7eb" stroke-width="1.5" class="cursor-pointer hover:opacity-90"
+                                x-on:click.stop="expanded = !expanded">
+                                <title x-text="expanded ? 'Hide more' : 'View more'">View more</title>
+                            </path>
+                            <text x="<?php echo e($tx); ?>" y="<?php echo e($ty); ?>" text-anchor="middle"
+                                dominant-baseline="middle"
+                                class="fill-white text-[16px] font-bold select-none pointer-events-none">
+                                <tspan x-text="expanded ? 'Less' : 'More'">More</tspan>
+                            </text>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($outerCount > 0): ?>
+                            <g x-show="expanded">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $outerTools; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $tool): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                    <?php
+                                        $start = (360 * $index) / $outerCount - 90;
+                                        $end = (360 * ($index + 1)) / $outerCount - 90;
+                                        $mid = ($start + $end) / 2;
+                                        [$tx, $ty] = $polar(($outerInnerR + $outerOuterR) / 2, $mid);
+                                        $isRed = $tool['color'] === 'red';
+                                        $fill = $isRed ? '#ef4444' : '#3b82f6';
+                                    ?>
+                                    <path d="<?php echo e($arc($outerOuterR, $outerInnerR, $start, $end)); ?>"
+                                        fill="<?php echo e($fill); ?>" stroke="#e5e7eb" stroke-width="1.5"
+                                        class="cursor-pointer hover:opacity-90"
+                                        x-on:click.stop="$store.dentalChart.applyTool('<?php echo e($tool['code']); ?>', tooth, part); open = false; expanded = false">
+                                        <title><?php echo e($tool['label']); ?></title>
+                                    </path>
+                                    <text x="<?php echo e($tx); ?>" y="<?php echo e($ty); ?>" text-anchor="middle"
+                                        dominant-baseline="middle"
+                                        class="fill-white text-[14px] font-bold select-none pointer-events-none">
+                                        <?php echo e($tool['code']); ?>
+
+                                    </text>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                            </g>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <circle cx="<?php echo e($cx); ?>" cy="<?php echo e($cy); ?>" r="36" fill="#111827"
+                            stroke="#e5e7eb" stroke-width="1.5" class="cursor-pointer hover:opacity-90"
+                            x-on:click.stop="open = false; expanded = false" />
+                        <text x="<?php echo e($cx); ?>" y="<?php echo e($cy); ?>" text-anchor="middle"
+                            dominant-baseline="middle"
+                            class="fill-white text-[18px] font-bold select-none pointer-events-none">
+                            X
+                        </text>
+                    </svg>
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+</div>
+<?php /**PATH C:\JOELJOELJOELJOELJOEL\CLINIC\resources\views/livewire/patient/form/partial/tooth.blade.php ENDPATH**/ ?>

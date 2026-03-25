@@ -24,16 +24,8 @@
 
     <div id="staff-profile-wrap" class="mx-auto flex w-full max-w-[1400px] flex-col gap-7">
 
-            @if (session('success'))
-                <div class="border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if (session('failed'))
-                <div class="border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                    {{ session('failed') }}
-                </div>
-            @endif
+            {{-- Flash toast --}}
+            <x-flash-toast />
 
             <div class="border-b border-[#e4eff8] pb-6">
                 <h1 class="text-[1.7rem] font-extrabold leading-[1.1] tracking-[-.02em] text-[#1a2e3b]">My Profile</h1>
