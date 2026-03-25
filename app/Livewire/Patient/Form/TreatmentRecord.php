@@ -2,6 +2,11 @@
 
 namespace App\Livewire\Patient\Form;
 
+use App\Livewire\Patient\Form\Concerns\SanitizesPatientFormInput;
+use App\Support\Services\ServiceCatalog;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
@@ -11,14 +16,34 @@ use Illuminate\Validation\ValidationException;
 class TreatmentRecord extends Component
 {
     use WithFileUploads;
+    use SanitizesPatientFormInput;
 
     protected const DECIMAL_FIELDS = [
         'cost_of_treatment',
         'amount_charged',
     ];
 
+    protected const FALLBACK_TREATMENT_OPTIONS = [
+        'Consultation',
+        'Oral Prophylaxis',
+        'Tooth Extraction',
+        'Restoration',
+        'Composite Filling',
+        'Amalgam Filling',
+        'Root Canal Treatment',
+        'Crown Placement',
+        'Bridge Placement',
+        'Denture',
+        'Sealant',
+        'Fluoride Treatment',
+        'Orthodontic Adjustment',
+        'Teeth Whitening',
+        'Emergency Treatment',
+    ];
+
     public $dmd = '';
     public $treatment = '';
+    public $selectedTreatments = [];
     public $cost_of_treatment = '';
     public $amount_charged = '';
     public $remarks = '';
@@ -41,19 +66,21 @@ class TreatmentRecord extends Component
             $this->fill($data);
         }
 
-        $this->sanitizeDecimalFields();
+        $this->applyDefaultDentistName();
+        $this->selectedTreatments = $this->parseTreatmentString($this->treatment);
+        $this->sanitizeFormData();
     }
 
     public function rules()
     {
         return [
             // [UPDATED] Made these fields Required
-            'dmd' => 'required|string',
-            'treatment' => 'required|string',
+            'dmd' => ['required', 'string', 'regex:/^[\pL\pM\s\'\-.&,\/()]+$/u'],
+            'treatment' => ['required', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
             'cost_of_treatment' => 'required|numeric|min:0',
             'amount_charged' => 'required|numeric|min:0',
             
-            'remarks' => 'nullable|string',
+            'remarks' => ['nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
             'beforeImages' => 'nullable|array|max:4',
             'beforeImages.*' => 'image|max:10240',
             'afterImages' => 'nullable|array|max:4',
@@ -75,9 +102,7 @@ class TreatmentRecord extends Component
             return;
         }
 
-        if (in_array($propertyName, self::DECIMAL_FIELDS, true)) {
-            $this->{$propertyName} = $this->sanitizeDecimalValue($this->{$propertyName});
-        }
+        $this->sanitizeField($propertyName);
 
         $this->resetValidation($propertyName);
 
@@ -86,11 +111,18 @@ class TreatmentRecord extends Component
         }
     }
 
+    public function updatedSelectedTreatments($value): void
+    {
+        $this->selectedTreatments = $this->sanitizeSelectedTreatments($value);
+        $this->treatment = implode(', ', $this->selectedTreatments);
+        $this->resetValidation('treatment');
+    }
+
     #[On('fillTreatmentRecord')]
     public function fillForm($data)
     {
         $this->resetValidation();
-        $this->reset(['dmd', 'treatment', 'cost_of_treatment', 'amount_charged', 'remarks', 'beforeImages', 'afterImages']);
+        $this->reset(['dmd', 'treatment', 'selectedTreatments', 'cost_of_treatment', 'amount_charged', 'remarks', 'beforeImages', 'afterImages']);
         $this->existingImages = [];
 
         if (!empty($data)) {
@@ -101,7 +133,9 @@ class TreatmentRecord extends Component
             $this->fill($data);
         }
 
-        $this->sanitizeDecimalFields();
+        $this->applyDefaultDentistName();
+        $this->selectedTreatments = $this->parseTreatmentString($this->treatment);
+        $this->sanitizeFormData();
     }
 
     #[On('validateTreatmentRecord')]
@@ -109,6 +143,7 @@ class TreatmentRecord extends Component
     {
         // This will now fail and stop if fields are empty
         try {
+            $this->sanitizeFormData();
             $validatedData = $this->validate();
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
@@ -151,30 +186,120 @@ class TreatmentRecord extends Component
 
     public function render()
     {
-        return view('livewire.patient.form.treatment-record');
+        $treatmentOptions = $this->resolveTreatmentOptions();
+
+        return view('livewire.patient.form.treatment-record', [
+            'treatmentOptions' => $treatmentOptions,
+        ]);
     }
 
-    protected function sanitizeDecimalFields(): void
+    protected function sanitizeFormData(): void
     {
         foreach (self::DECIMAL_FIELDS as $field) {
+            $this->sanitizeField($field);
+        }
+
+        $this->selectedTreatments = $this->sanitizeSelectedTreatments($this->selectedTreatments);
+        $this->treatment = implode(', ', $this->selectedTreatments);
+        $this->sanitizeField('dmd');
+        $this->sanitizeField('remarks');
+    }
+
+    protected function sanitizeField(string $field): void
+    {
+        if (in_array($field, self::DECIMAL_FIELDS, true)) {
             $this->{$field} = $this->sanitizeDecimalValue($this->{$field});
+            return;
+        }
+
+        if ($field === 'dmd') {
+            $this->dmd = $this->sanitizeTitleCaseText($this->dmd, false, '.,&/()-');
+            return;
+        }
+
+        if ($field === 'treatment') {
+            $this->selectedTreatments = $this->parseTreatmentString($this->treatment);
+            $this->treatment = implode(', ', $this->selectedTreatments);
+            return;
+        }
+
+        if ($field === 'remarks') {
+            $this->{$field} = $this->sanitizeSentenceCaseText($this->{$field}, true, '.,&()/:;!?-');
         }
     }
 
-    protected function sanitizeDecimalValue($value): string
+    private function applyDefaultDentistName(): void
     {
-        $sanitized = preg_replace('/[^0-9.]/', '', (string) $value) ?? '';
-
-        if ($sanitized === '') {
-            return '';
+        if (filled($this->dmd)) {
+            return;
         }
 
-        $parts = explode('.', $sanitized, 3);
-
-        if (count($parts) === 1) {
-            return $parts[0];
+        $user = Auth::user();
+        if (! $user) {
+            return;
         }
 
-        return $parts[0].'.'.preg_replace('/\./', '', $parts[1].($parts[2] ?? ''));
+        $name = trim(collect([
+            $user->first_name ?? null,
+            $user->last_name ?? null,
+        ])->filter()->implode(' '));
+
+        if ($name !== '') {
+            $this->dmd = $name;
+        }
+    }
+
+    private function parseTreatmentString($value): array
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        return $this->sanitizeSelectedTreatments(array_map('trim', explode(',', $value)));
+    }
+
+    private function sanitizeSelectedTreatments($value): array
+    {
+        $selected = is_array($value) ? $value : [];
+        $clean = [];
+
+        foreach ($selected as $item) {
+            $item = is_string($item) ? trim($item) : '';
+            if ($item !== '') {
+                $clean[] = $item;
+            }
+        }
+
+        return array_values(array_unique($clean));
+    }
+
+    private function resolveTreatmentOptions(): array
+    {
+        $options = [];
+
+        if (Schema::hasTable('services') && Schema::hasColumn('services', 'service_name')) {
+            $options = DB::table('services')
+                ->whereNotNull('service_name')
+                ->where('service_name', '!=', '')
+                ->orderBy('service_name')
+                ->pluck('service_name')
+                ->map(fn($name) => trim((string) $name))
+                ->filter()
+                ->values()
+                ->all();
+        }
+
+        $catalogOptions = collect(ServiceCatalog::all())
+            ->pluck('title')
+            ->map(fn($name) => trim((string) $name))
+            ->filter()
+            ->values()
+            ->all();
+
+        return array_values(array_unique(array_merge(
+            $options,
+            $catalogOptions,
+            self::FALLBACK_TREATMENT_OPTIONS,
+        )));
     }
 }

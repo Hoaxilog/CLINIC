@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Support\InputSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -20,16 +21,27 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
+        $input = [
+            'first_name' => InputSanitizer::sanitizeTitleCase($request->input('first_name')),
+            'last_name' => InputSanitizer::sanitizeTitleCase($request->input('last_name')),
+            'email' => InputSanitizer::sanitizeEmail($request->input('email')),
+            'mobile_number' => InputSanitizer::sanitizeCountryCodeLocalNumber($request->input('mobile_number')),
+            'password' => (string) $request->input('password', ''),
+            'password_confirmation' => (string) $request->input('password_confirmation', ''),
+            'g-recaptcha-response' => $request->input('g-recaptcha-response'),
+        ];
+
         // 1. Validate standard fields + reCAPTCHA presence
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
+        $validator = Validator::make($input, [
+            'first_name' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+            'last_name' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
             'email' => 'required|string|email|max:255|unique:users',
-            'mobile_number' => 'required|string|max:20',
+            'mobile_number' => ['required', 'regex:/^\\d{10}$/'],
             'password' => 'required|string|min:8|confirmed',
             'g-recaptcha-response' => 'required',
         ], [
             'g-recaptcha-response.required' => 'Please complete the captcha.',
+            'mobile_number.regex' => 'Mobile number must be exactly 10 digits after +63.',
         ]);
 
         if ($validator->fails()) {
@@ -60,17 +72,18 @@ class RegisterController extends Controller
 
         // 3. Proceed with account creation ONLY if validation above passed
         $token = \Illuminate\Support\Str::random(64);
-        $firstName = trim((string) $request->input('first_name'));
-        $lastName = trim((string) $request->input('last_name'));
-        $mobileNumber = trim((string) $request->input('mobile_number'));
+        $firstName = $input['first_name'];
+        $lastName = $input['last_name'];
+        $email = $input['email'];
+        $mobileNumber = $input['mobile_number'];
         
         $userId = DB::table('users')->insertGetId([
-            'username' => $request->email,
+            'username' => $email,
             'first_name' => $firstName,
             'last_name' => $lastName,
-            'email' => $request->email,
+            'email' => $email,
             'mobile_number' => $mobileNumber,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($input['password']),
             'role' => (int) $patientRoleId,
             'verification_token' => $token,
             'email_verified_at' => null,
@@ -79,12 +92,12 @@ class RegisterController extends Controller
         ]);
 
         // Send Verification Email
-        Mail::send('auth.emails.verify-email', ['token' => $token, 'id' => $userId, 'name' => trim($firstName.' '.$lastName)], function($message) use($request) {
-            $message->to($request->email);
+        Mail::send('auth.emails.verify-email', ['token' => $token, 'id' => $userId, 'name' => trim($firstName.' '.$lastName)], function($message) use($email) {
+            $message->to($email);
             $message->subject('Verify Your Email Address - Tejadent');
         });
 
-        return redirect()->route('verification.notice')->with('email', $request->email);
+        return redirect()->route('verification.notice')->with('email', $email);
     }
 
 }

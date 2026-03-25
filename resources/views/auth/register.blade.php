@@ -141,12 +141,12 @@
                         <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">Mobile Number</label>
                         <div class="flex min-w-0">
                             <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-[#cfe3f2] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none rounded-l-xl {{ $errors->has('mobile_number') ? 'border-red-500' : '' }}">+63</span>
-                            <input type="text" inputmode="numeric" maxlength="11" name="mobile_number" value="{{ old('mobile_number') }}"
+                            <input type="text" inputmode="numeric" maxlength="10" name="mobile_number" value="{{ old('mobile_number') }}"
                                 @class([
                                     'min-w-0 w-full rounded-r-xl border bg-[#f7fbfe] px-4 py-3.5 text-[.95rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:bg-white focus:ring-4 focus:ring-[#0086da]/10',
                                     'border-red-500' => $errors->has('mobile_number'),
                                     'border-[#cfe3f2]' => !$errors->has('mobile_number'),
-                                ]) placeholder="09XXXXXXXXX" required>
+                                ]) placeholder="9171234567" oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,10)" required>
                         </div>
                         @error('mobile_number')
                             <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
@@ -233,4 +233,3 @@
 </body>
 
 </html>
-

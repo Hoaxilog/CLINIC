@@ -99,8 +99,8 @@
                         <label class="block text-gray-700 font-bold mb-2 ml-1 text-sm uppercase tracking-wider">Mobile Number</label>
                         <div class="flex min-w-0">
                             <span class="inline-flex shrink-0 items-center px-3 border-2 border-r-0 border-gray-300 bg-gray-100 text-gray-600 text-sm font-semibold select-none">+63</span>
-                            <input type="text" inputmode="numeric" maxlength="11" name="mobile_number" value="{{ old('mobile_number') }}" placeholder="09XXXXXXXXX" pattern="09[0-9]{9}"
-                                title="Mobile number must be in 09XXXXXXXXX format." oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)"
+                            <input type="text" inputmode="numeric" maxlength="10" name="mobile_number" value="{{ old('mobile_number') }}" placeholder="9171234567" pattern="[0-9]{10}"
+                                title="Mobile number must be exactly 10 digits after +63." oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,10)"
                                 class="min-w-0 w-full pr-4 py-3 border-2 border-gray-300 focus:outline-none focus:border-[#4F46E5] transition duration-200 text-gray-800 font-medium placeholder-gray-400">
                         </div>
                         @error('mobile_number') <p class="text-red-500 text-xs mt-1 ml-1 font-bold">{{ $message }}</p> @enderror

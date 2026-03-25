@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use App\Support\InputSanitizer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,7 @@ class PatientDashboardController extends Controller
 
     protected const REQUEST_SLOT_CAP = 5;
 
-    protected const SELF_SERVICE_CHANGE_WINDOW_DAYS = 7;
+    protected const SELF_SERVICE_CHANGE_WINDOW_MINUTES = 30;
 
     protected const SELF_SERVICE_CHANGE_LIMIT = 3;
 
@@ -301,7 +302,7 @@ class PatientDashboardController extends Controller
         $this->ensureOwnsAppointment($appointment, $user);
 
         $validated = $request->validate([
-            'cancellation_reason' => 'nullable|string|max:500',
+            'cancellation_reason' => ['nullable', 'string', 'max:500', "regex:/^[\\pL\\pM\\pN\\s'\",.&()\\/:;!?-]+$/u"],
         ]);
 
         if (! in_array($appointment->status, self::PATIENT_CANCELLABLE_STATUSES, true)) {
@@ -402,7 +403,7 @@ class PatientDashboardController extends Controller
                 'appointment_cancelled_by_patient',
                 'appointment_rescheduled_by_patient',
             ])
-            ->where('created_at', '>=', now()->subDays(self::SELF_SERVICE_CHANGE_WINDOW_DAYS))
+            ->where('created_at', '>=', now()->subMinutes(self::SELF_SERVICE_CHANGE_WINDOW_MINUTES))
             ->count();
 
         return $recentChanges >= self::SELF_SERVICE_CHANGE_LIMIT;
@@ -668,7 +669,7 @@ class PatientDashboardController extends Controller
 
     protected function normalizeCancellationReason(?string $reason): ?string
     {
-        $reason = trim((string) $reason);
+        $reason = InputSanitizer::sanitizeSentenceCase($reason, true, '.,&()/:;!?-');
 
         return $reason !== '' ? $reason : null;
     }

@@ -1,5 +1,5 @@
 <div class="relative flex h-[68vh] w-full flex-col rounded-2xl border border-slate-200 bg-white lg:flex-row"
-    x-data="{ chartLoading: {{ (count($history) > 0 || $isCreating) ? 'true' : 'false' }} }"
+    x-data="{ chartLoading: {{ $this->shouldShowChart ? 'true' : 'false' }} }"
     x-on:show-dental-loading.window="chartLoading = true"
     x-on:dental-chart-ready.window="chartLoading = false">
     <div x-cloak x-show="chartLoading"
@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    @if (count($history) > 0 || $isCreating || ! $isReadOnly)
+    @if ($this->shouldShowChart)
 
         <div class="relative flex h-full min-w-0 flex-1 flex-col bg-slate-50 transition-all duration-300">
 
@@ -34,18 +34,6 @@
                             Child
                         </button>
                     </div>
-                    @if ($isReadOnly)
-                        <button type="button" wire:click="$dispatch('openNewVisitRecord')"
-                            class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
-                            title="Start a fresh connected record from Health History">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M12 5v14M5 12h14" />
-                            </svg>
-                            New Record
-                        </button>
-                    @endif
                 </div>
             </div>
 

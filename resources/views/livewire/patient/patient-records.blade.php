@@ -1,7 +1,7 @@
 @php
     $isPatientUser = auth()->check() && auth()->user()->role === 3;
 @endphp
-<div class="h-full flex flex-col" style="font-family:'Montserrat',sans-serif;" wire:poll.5s>
+<div class="h-full flex flex-col" style="font-family:'Montserrat',sans-serif;">
 
     {{-- ── TOOLBAR ── --}}
     <div class="flex flex-col gap-4 mb-6">
@@ -505,8 +505,7 @@
                                                     : null;
                                             @endphp
                                             <tr
-                                                wire:click="selectPatient({{ $patient->id }})"
-                                                class="cursor-pointer transition hover:bg-[#f8fbfe] @if ($patient->id == $selectedPatient?->id) bg-[#f0f8fe] @endif">
+                                                class="transition hover:bg-[#f8fbfe]">
                                                 <td class="px-5 py-3.5">
                                                     <div class="flex items-center gap-3">
                                                         <div class="flex h-9 w-9 items-center justify-center bg-[#e8f4fc] text-gray-800 flex-shrink-0">

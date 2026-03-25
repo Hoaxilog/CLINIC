@@ -84,7 +84,7 @@ class PatientFormModal extends Component
 
         $this->loadPatientData($id);
 
-        $this->currentStep = $startStep;
+        $this->currentStep = max(1, min((int) $startStep, $this->getMaxStep()));
         if ($this->isAdmin && $this->currentStep >= 3) {
             $this->ensureDentalDataLoaded();
         }
@@ -121,7 +121,7 @@ class PatientFormModal extends Component
     public function previousStep(): void
     {
         if ($this->currentStep > 1) {
-            $this->currentStep--;
+            $this->goToStep($this->currentStep - 1);
         }
     }
 
@@ -130,6 +130,13 @@ class PatientFormModal extends Component
         // Free tab navigation is only allowed in edit/view mode.
         // Create mode stays sequential to enforce validation order.
         if (! $this->isEditing) {
+            return;
+        }
+
+        if (! $this->isReadOnly && $step !== $this->currentStep) {
+            $this->dispatch('flash-message', type: 'info', message: 'Finish saving or cancel the current edit before opening another section.');
+            $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
+
             return;
         }
 
@@ -147,15 +154,6 @@ class PatientFormModal extends Component
             }
 
             if (! $this->isReadOnly) {
-                if ($step < $this->currentStep) {
-                    $this->pendingNavigationStep = null;
-                    $this->currentStep = $step;
-                    $this->syncDataToSteps();
-                    $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
-
-                    return;
-                }
-
                 if ($step > ($this->currentStep + 1)) {
                     $step = $this->currentStep + 1;
                 }
@@ -164,6 +162,9 @@ class PatientFormModal extends Component
                     return;
                 }
 
+                // Editable child forms rely on wire:model.defer. Leaving the step
+                // without asking the current component for its data drops unsynced
+                // changes (especially treatment fields and selected images).
                 $this->pendingNavigationStep = $step;
                 $this->triggerStepValidation($this->currentStep);
 
@@ -383,6 +384,10 @@ class PatientFormModal extends Component
     #[On('enableEditMode')]
     public function enableEditMode(): void
     {
+        if (! $this->isAdmin) {
+            return;
+        }
+
         $this->isReadOnly = false;
     }
 
@@ -640,7 +645,9 @@ class PatientFormModal extends Component
         DB::transaction(function () {
             app(PatientService::class)->update($this->newPatientId, $this->basicInfoData, $this->modifier());
 
-            $this->saveHealthHistoryRecord();
+            if ($this->currentStep === 2) {
+                $this->saveHealthHistoryRecord();
+            }
 
             if ($this->isAdmin) {
                 $this->saveDentalAndTreatment();
@@ -664,7 +671,17 @@ class PatientFormModal extends Component
         $dcService = app(DentalChartService::class);
         $modifier  = $this->modifier();
 
-        $chartId = $dcService->save($this->newPatientId, $this->dentalChartData, $modifier, $this->forceNewRecord);
+        $existingChartId = (! $this->forceNewRecord && $this->currentDentalChartId)
+            ? (int) $this->currentDentalChartId
+            : null;
+
+        $chartId = $dcService->save(
+            $this->newPatientId,
+            $this->dentalChartData,
+            $modifier,
+            $this->forceNewRecord,
+            $existingChartId
+        );
         $this->forceNewRecord = false;
 
         if ($chartId) {
@@ -955,7 +972,7 @@ class PatientFormModal extends Component
 
     private function checkAdminRole(): void
     {
-        $this->isAdmin = Auth::user()?->canAccessOperationalPages() ?? false;
+        $this->isAdmin = Auth::user()?->canHandleChairsideFlow() ?? false;
     }
 
     private function canAccessPatientRecord(int $patientId): bool

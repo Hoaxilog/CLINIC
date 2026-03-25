@@ -252,8 +252,9 @@
                                     </label>
                                     <div class="flex w-full min-w-0 items-stretch">
                                         <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none whitespace-nowrap {{ $errors->has('contact_number') ? 'border-red-400' : '' }}">+63</span>
-                                        <input type="text" inputmode="numeric" maxlength="11" wire:model.defer="contact_number"
-                                            data-validate-field="contact_number" placeholder="09XX XXX XXXX"
+                                        <input type="text" inputmode="numeric" maxlength="10" wire:model.defer="contact_number"
+                                            data-validate-field="contact_number" placeholder="9171234567"
+                                            oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,10)"
                                             class="{{ $fieldClass('contact_number') }} min-w-0 w-full flex-1">
                                     </div>
                                     @error('contact_number')
@@ -1033,8 +1034,8 @@
                 },
                 {
                     key: 'contact_number',
-                    message: 'Contact number must be exactly 11 digits.',
-                    validate: () => /^\d{11}$/.test((document.querySelector('[data-validate-field="contact_number"]')?.value || '').trim()),
+                    message: 'Contact number must be exactly 10 digits after +63.',
+                    validate: () => /^\d{10}$/.test((document.querySelector('[data-validate-field="contact_number"]')?.value || '').trim()),
                 },
                 {
                     key: 'email',

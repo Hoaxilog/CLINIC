@@ -11,10 +11,18 @@ use Illuminate\Support\Facades\DB;
 class DentalChartService
 {
     /**
-     * Save (create or update today's) dental chart for a patient.
-     * Returns the chart ID.
+     * Save a dental chart.
+     * - When $existingChartId is provided, update that exact chart.
+     * - When forcing a new record, always insert.
+     * - Otherwise, preserve the legacy "update today's latest chart" behavior.
      */
-    public function save(int $patientId, array $chartData, string $modifier, bool $forceNew = false): ?int
+    public function save(
+        int $patientId,
+        array $chartData,
+        string $modifier,
+        bool $forceNew = false,
+        ?int $existingChartId = null
+    ): ?int
     {
         if (empty($chartData)) {
             return null;
@@ -22,7 +30,31 @@ class DentalChartService
 
         $chartId = null;
 
-        if (! $forceNew) {
+        if (! $forceNew && $existingChartId) {
+            $existing = DB::table('dental_charts')
+                ->where('id', $existingChartId)
+                ->where('patient_id', $patientId)
+                ->first();
+
+            if ($existing) {
+                DB::table('dental_charts')
+                    ->where('id', $existingChartId)
+                    ->update([
+                        'chart_data' => json_encode($chartData),
+                        'modified_by' => $modifier,
+                        'updated_at' => now(),
+                    ]);
+
+                $chartId = $existingChartId;
+
+                $this->logChart('dental_chart_updated', $chartId, [
+                    'old' => ['chart_data' => $existing->chart_data],
+                    'attributes' => ['chart_data' => json_encode($chartData)],
+                ]);
+            }
+        }
+
+        if (! $forceNew && ! $chartId) {
             $existingToday = DB::table('dental_charts')
                 ->where('patient_id', $patientId)
                 ->whereDate('created_at', Carbon::today())

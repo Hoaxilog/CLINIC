@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\InputSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -308,7 +309,7 @@ class UserController extends Controller
             ],
             'first_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\s'\\-]+$/u"],
             'last_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\s'\\-]+$/u"],
-            'mobile_number' => ['nullable', 'regex:/^09\\d{9}$/'],
+            'mobile_number' => ['nullable', 'regex:/^\\d{10}$/'],
             'role' => ['required', 'integer', Rule::in($allowedRoleIds)],
             'password' => $passwordRules,
         ];
@@ -326,7 +327,7 @@ class UserController extends Controller
             'email.required' => 'Email is required.',
             'email.email' => 'Enter a valid email address.',
             'email.unique' => 'That email is already in use.',
-            'mobile_number.regex' => 'Mobile number must be in 09XXXXXXXXX format.',
+            'mobile_number.regex' => 'Mobile number must be exactly 10 digits after +63.',
             'role.required' => 'Please select a role.',
             'role.in' => 'The selected role is invalid.',
             'password.min' => 'Password must be at least 8 characters.',
@@ -337,10 +338,10 @@ class UserController extends Controller
     private function validateUserRequest(Request $request, array $allowedRoleIds, bool $passwordRequired, ?int $userId = null): array
     {
         $input = [
-            'first_name' => trim((string) $request->input('first_name')),
-            'last_name' => trim((string) $request->input('last_name')),
-            'email' => strtolower(trim((string) $request->input('email'))),
-            'mobile_number' => trim((string) $request->input('mobile_number')),
+            'first_name' => InputSanitizer::sanitizeTitleCase($request->input('first_name')),
+            'last_name' => InputSanitizer::sanitizeTitleCase($request->input('last_name')),
+            'email' => InputSanitizer::sanitizeEmail($request->input('email')),
+            'mobile_number' => InputSanitizer::sanitizeCountryCodeLocalNumber($request->input('mobile_number')),
             'role' => $request->input('role'),
             'password' => (string) $request->input('password', ''),
             'password_confirmation' => (string) $request->input('password_confirmation', ''),

@@ -5,6 +5,7 @@ namespace App\Livewire\Appointment;
 use App\Services\AppointmentService;
 use App\Services\BlockedSlotService;
 use App\Services\CalendarQueryService;
+use App\Support\InputSanitizer;
 use App\Support\PatientMatchService;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
@@ -16,7 +17,7 @@ use Livewire\Component;
 
 class AppointmentCalendar extends Component
 {
-    private const PH_CONTACT_RULE = 'regex:/^\d{11}$/';
+    private const PH_CONTACT_RULE = 'regex:/^\d{10}$/';
 
     protected const SLOT_CAPACITY = 2;
 
@@ -152,9 +153,9 @@ class AppointmentCalendar extends Component
     public $blockReason = '';
 
     protected $rules = [
-        'firstName' => 'required|string|max:100',
-        'lastName' => 'required|string|max:100',
-        'middleName' => 'nullable|string|max:100',
+        'firstName' => ["required", 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+        'lastName' => ["required", 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+        'middleName' => ['nullable', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
         'contactNumber' => ['required', 'string', self::PH_CONTACT_RULE],
         'selectedService' => 'required',
         'selectedDate' => 'required',
@@ -164,7 +165,7 @@ class AppointmentCalendar extends Component
     ];
 
     protected $messages = [
-        'contactNumber.regex' => 'Contact number must be exactly 11 digits.',
+        'contactNumber.regex' => 'Contact number must be exactly 10 digits after +63.',
     ];
 
     public function mount(?string $initialTab = null)
@@ -191,6 +192,7 @@ class AppointmentCalendar extends Component
         $this->generateTimeSlots();
         $this->loadAppointments();
         $this->servicesList = DB::table('services')->get();
+        $this->sanitizeFormInputs();
 
         $this->hydratePrefillFromRequest();
 
@@ -549,11 +551,13 @@ class AppointmentCalendar extends Component
             return;
         }
 
+        $this->blockReason = InputSanitizer::sanitizeSentenceCase($this->blockReason ?? '', true, '.,&()/:;!?-');
+
         $this->validate([
             'blockDate'      => 'required|date',
             'blockStartTime' => 'required|date_format:H:i',
             'blockEndTime'   => 'required|date_format:H:i|after:blockStartTime',
-            'blockReason'    => 'nullable|string|max:255',
+            'blockReason'    => ['nullable', 'string', 'max:255', "regex:/^[\\pL\\pM\\pN\\s'\",.&()\\/:;!?-]+$/u"],
         ]);
 
         $start = Carbon::parse($this->blockDate.' '.$this->blockStartTime);
@@ -630,6 +634,8 @@ class AppointmentCalendar extends Component
 
     public function updated($propertyName): void
     {
+        $this->sanitizeUpdatedProperty(is_string($propertyName) ? $propertyName : null);
+
         $clearableFields = [
             'firstName',
             'middleName',
@@ -661,14 +667,18 @@ class AppointmentCalendar extends Component
             return;
         }
 
+        $this->sanitizeFormInputs();
+
         $this->validate([
-            'firstName'       => 'required|string|max:100',
-            'lastName'        => 'required|string|max:100',
+            'firstName'       => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+            'lastName'        => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
             'contactNumber'   => ['required', 'string', self::PH_CONTACT_RULE],
             'selectedService' => 'required',
             'selectedDate'    => 'required',
             'selectedTime'    => 'required',
             'birthDate'       => 'required',
+        ], [
+            'contactNumber.regex' => 'Contact number must be exactly 10 digits after +63.',
         ]);
 
         try {
@@ -721,14 +731,18 @@ class AppointmentCalendar extends Component
 
     public function validateAppointmentForConfirm()
     {
+        $this->sanitizeFormInputs();
+
         $this->validate([
-            'firstName' => 'required|string|max:100',
-            'lastName' => 'required|string|max:100',
+            'firstName' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+            'lastName' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
             'contactNumber' => ['required', 'string', self::PH_CONTACT_RULE],
             'selectedService' => 'required',
             'selectedDate' => 'required',
             'selectedTime' => 'required',
             'birthDate' => 'required',
+        ], [
+            'contactNumber.regex' => 'Contact number must be exactly 10 digits after +63.',
         ]);
 
         return true;
@@ -1384,7 +1398,7 @@ class AppointmentCalendar extends Component
     // This runs automatically whenever $searchQuery changes (as you type)
     public function updatedSearchQuery($value)
     {
-        $this->searchQuery = is_string($value) ? trim($value) : '';
+        $this->searchQuery = InputSanitizer::sanitizeSearch($value);
 
         if (strlen($this->searchQuery) < 2) {
             $this->patientSearchResults = [];
@@ -1456,10 +1470,10 @@ class AppointmentCalendar extends Component
             }
         }
 
-        $firstName = trim((string) request()->query('prefill_first_name', ''));
-        $lastName = trim((string) request()->query('prefill_last_name', ''));
-        $middleName = trim((string) request()->query('prefill_middle_name', ''));
-        $contactNumber = trim((string) request()->query('prefill_contact_number', ''));
+        $firstName = InputSanitizer::sanitizeTitleCase(request()->query('prefill_first_name', ''));
+        $lastName = InputSanitizer::sanitizeTitleCase(request()->query('prefill_last_name', ''));
+        $middleName = InputSanitizer::sanitizeTitleCase(request()->query('prefill_middle_name', ''));
+        $contactNumber = InputSanitizer::sanitizeCountryCodeLocalNumber(request()->query('prefill_contact_number', ''));
         $birthDate = trim((string) request()->query('prefill_birth_date', ''));
         $serviceId = (string) request()->query('prefill_service_id', '');
 
@@ -1503,6 +1517,8 @@ class AppointmentCalendar extends Component
             $this->selectedService = (string) $this->prefillAppointmentPayload['service_id'];
             $this->updatedSelectedService($this->selectedService);
         }
+
+        $this->sanitizeFormInputs();
     }
 
     public function processPatient()
@@ -1725,5 +1741,42 @@ class AppointmentCalendar extends Component
     public function render()
     {
         return view('livewire.appointment.appointment-calendar');
+    }
+
+    protected function sanitizeFormInputs(): void
+    {
+        foreach (['firstName', 'middleName', 'lastName'] as $field) {
+            $this->{$field} = InputSanitizer::sanitizeTitleCase($this->{$field} ?? '');
+        }
+
+        $this->contactNumber = InputSanitizer::sanitizeCountryCodeLocalNumber($this->contactNumber ?? '');
+        $this->searchQuery = InputSanitizer::sanitizeSearch($this->searchQuery ?? '');
+        $this->blockReason = InputSanitizer::sanitizeSentenceCase($this->blockReason ?? '', true, '.,&()/:;!?-');
+    }
+
+    protected function sanitizeUpdatedProperty(?string $propertyName): void
+    {
+        if (! is_string($propertyName) || $propertyName === '') {
+            return;
+        }
+
+        if (in_array($propertyName, ['firstName', 'middleName', 'lastName'], true)) {
+            $this->{$propertyName} = InputSanitizer::sanitizeTitleCase($this->{$propertyName} ?? '');
+            return;
+        }
+
+        if ($propertyName === 'contactNumber') {
+            $this->contactNumber = InputSanitizer::sanitizeCountryCodeLocalNumber($this->contactNumber ?? '');
+            return;
+        }
+
+        if ($propertyName === 'searchQuery') {
+            $this->searchQuery = InputSanitizer::sanitizeSearch($this->searchQuery ?? '');
+            return;
+        }
+
+        if ($propertyName === 'blockReason') {
+            $this->blockReason = InputSanitizer::sanitizeSentenceCase($this->blockReason ?? '', true, '.,&()/:;!?-');
+        }
     }
 }

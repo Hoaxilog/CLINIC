@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Dashboard;
 
+use App\Support\InputSanitizer;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth; // [ADDED] Needed to identify the user
@@ -17,8 +18,8 @@ class Notes extends Component
     public $content = '';
 
     protected $rules = [
-        'title' => 'required|string',
-        'content' => 'nullable|string',
+        'title' => ['required', 'string', "regex:/^[\\pL\\pM\\pN\\s'\",.&()\\/:;!?-]+$/u"],
+        'content' => ['nullable', 'string', "regex:/^[\\pL\\pM\\pN\\s'\",.&()\\/:;!?-]+$/u"],
     ];
 
     public function mount()
@@ -65,6 +66,7 @@ class Notes extends Component
 
     public function save()
     {
+        $this->sanitizeFields();
         $this->validate();
 
         DB::table('notes')->insert([
@@ -81,6 +83,7 @@ class Notes extends Component
 
     public function update()
     {
+        $this->sanitizeFields();
         $this->validate();
 
         if ($this->noteId) {
@@ -147,6 +150,14 @@ class Notes extends Component
 
     public function updated($propertyName): void
     {
+        if ($propertyName === 'title') {
+            $this->title = InputSanitizer::sanitizeSentenceCase($this->title ?? '', true, '.,&()/:;!?-');
+        }
+
+        if ($propertyName === 'content') {
+            $this->content = InputSanitizer::sanitizeSentenceCase($this->content ?? '', true, '.,&()/:;!?-');
+        }
+
         if (in_array($propertyName, ['title', 'content'], true)) {
             $this->resetValidation($propertyName);
         }
@@ -158,6 +169,12 @@ class Notes extends Component
         $this->title = '';
         $this->content = '';
         $this->isEditing = false;
+    }
+
+    protected function sanitizeFields(): void
+    {
+        $this->title = InputSanitizer::sanitizeSentenceCase($this->title ?? '', true, '.,&()/:;!?-');
+        $this->content = InputSanitizer::sanitizeSentenceCase($this->content ?? '', true, '.,&()/:;!?-');
     }
 
     public function render()

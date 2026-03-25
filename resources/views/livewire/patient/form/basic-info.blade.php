@@ -139,9 +139,9 @@
                 <label for="mobile_number" class="{{ $labelClass }}">Mobile Number <span class="text-red-600">*</span></label>
                 <div class="flex min-w-0">
                     <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
-                    <input wire:model.defer="mobile_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="11"
-                        oninput="this.value = this.value.replace(/\D/g, '')" id="mobile_number" class="{{ $fieldClass('mobile_number') }} min-w-0 flex-1"
-                        placeholder="09171234567">
+                    <input wire:model.defer="mobile_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                        oninput="this.value = this.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10)" id="mobile_number" class="{{ $fieldClass('mobile_number') }} min-w-0 flex-1"
+                        placeholder="9171234567">
                 </div>
                 @error('mobile_number')
                     <span data-error-for="mobile_number" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
@@ -188,9 +188,9 @@
                 <label for="emergency_contact_number" class="{{ $labelClass }}">Contact Number <span class="text-red-600">*</span></label>
                 <div class="flex min-w-0">
                     <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
-                    <input wire:model.defer="emergency_contact_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="11"
-                        oninput="this.value = this.value.replace(/\D/g, '')" id="emergency_contact_number"
-                        class="{{ $fieldClass('emergency_contact_number') }} min-w-0 flex-1" placeholder="09187654321">
+                    <input wire:model.defer="emergency_contact_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                        oninput="this.value = this.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10)" id="emergency_contact_number"
+                        class="{{ $fieldClass('emergency_contact_number') }} min-w-0 flex-1" placeholder="9187654321">
                 </div>
                 @error('emergency_contact_number')
                     <span data-error-for="emergency_contact_number"
@@ -249,9 +249,9 @@
                     <label for="father_number" class="{{ $labelClass }}">Father's Contact Number</label>
                     <div class="flex min-w-0">
                         <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
-                        <input wire:model.defer="father_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="11"
-                            oninput="this.value = this.value.replace(/\D/g, '')" id="father_number" class="{{ $fieldClass('father_number') }} min-w-0 flex-1"
-                            placeholder="09151112222">
+                        <input wire:model.defer="father_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                            oninput="this.value = this.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10)" id="father_number" class="{{ $fieldClass('father_number') }} min-w-0 flex-1"
+                            placeholder="9151112222">
                     </div>
                     @error('father_number')
                         <span data-error-for="father_number" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
@@ -271,9 +271,9 @@
                     <label for="mother_number" class="{{ $labelClass }}">Mother's Contact Number</label>
                     <div class="flex min-w-0">
                         <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
-                        <input wire:model.defer="mother_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="11"
-                            oninput="this.value = this.value.replace(/\D/g, '')" id="mother_number" class="{{ $fieldClass('mother_number') }} min-w-0 flex-1"
-                            placeholder="09163334444">
+                        <input wire:model.defer="mother_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                            oninput="this.value = this.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10)" id="mother_number" class="{{ $fieldClass('mother_number') }} min-w-0 flex-1"
+                            placeholder="9163334444">
                     </div>
                     @error('mother_number')
                         <span data-error-for="mother_number" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
@@ -293,9 +293,9 @@
                     <label for="guardian_number" class="{{ $labelClass }}">Guardian's Contact Number</label>
                     <div class="flex min-w-0">
                         <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm font-semibold select-none">+63</span>
-                        <input wire:model.defer="guardian_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="11"
-                            oninput="this.value = this.value.replace(/\D/g, '')" id="guardian_number" class="{{ $fieldClass('guardian_number') }} min-w-0 flex-1"
-                            placeholder="09175556666">
+                        <input wire:model.defer="guardian_number" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                            oninput="this.value = this.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10)" id="guardian_number" class="{{ $fieldClass('guardian_number') }} min-w-0 flex-1"
+                            placeholder="9175556666">
                     </div>
                     @error('guardian_number')
                         <span data-error-for="guardian_number" class="mt-1 block text-xs text-red-500">{{ $message }}</span>

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Appointment;
 
+use App\Support\InputSanitizer;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -16,7 +17,7 @@ use Throwable;
 
 class BookAppointment extends Component
 {
-    private const PH_CONTACT_RULE = 'regex:/^\d{11}$/';
+    private const PH_CONTACT_RULE = 'regex:/^\d{10}$/';
 
     protected const SLOT_CAPACITY = 2;
 
@@ -95,11 +96,13 @@ class BookAppointment extends Component
             $user = Auth::user();
             $this->email = $user->email;
             $this->contact_number = $user->mobile_number ?? '';
-            $this->first_name = trim((string) ($user->first_name ?? ''));
-            $this->last_name = trim((string) ($user->last_name ?? ''));
+            $this->first_name = InputSanitizer::sanitizeTitleCase($user->first_name ?? '');
+            $this->last_name = InputSanitizer::sanitizeTitleCase($user->last_name ?? '');
 
             $this->prefillFromPreviousBooking();
         }
+
+        $this->sanitizeBookingFields();
     }
 
     // This runs automatically when $selectedDate is updated via JavaScript
@@ -120,7 +123,7 @@ class BookAppointment extends Component
 
     public function updatedEmail($value): void
     {
-        $normalizedEmail = $this->normalizeEmail($value);
+        $normalizedEmail = InputSanitizer::sanitizeEmail($value);
         if ($normalizedEmail === '' || $normalizedEmail !== $this->guestEmailOtpTargetEmail) {
             $this->resetGuestEmailOtpState();
         }
@@ -135,6 +138,8 @@ class BookAppointment extends Component
 
     public function updated($propertyName): void
     {
+        $this->sanitizeField($propertyName);
+
         // Keep server-side error bag in sync with user edits so error UI does not reappear after rerenders.
         $clearableFields = [
             'first_name',
@@ -184,6 +189,8 @@ class BookAppointment extends Component
         if ($value !== 'someone_else') {
             $this->prefillFromPreviousBooking();
         }
+
+        $this->sanitizeBookingFields();
     }
 
     public function generateSlots($dateString)
@@ -555,10 +562,12 @@ class BookAppointment extends Component
 
     protected function validateBookingFormData(): void
     {
+        $this->sanitizeBookingFields();
+
         $this->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'middle_name' => 'nullable|string|max:100',
+            'first_name' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+            'last_name' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+            'middle_name' => ['nullable', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
             'email' => 'required|email',
             'service_id' => 'required',
             'selectedDate' => 'required|date_format:Y-m-d|after_or_equal:today',
@@ -567,7 +576,7 @@ class BookAppointment extends Component
             'booking_for' => 'required|in:self,someone_else',
             'booking_agreement' => 'accepted',
         ], [
-            'contact_number.regex' => 'Contact number must be exactly 11 digits.',
+            'contact_number.regex' => 'Contact number must be exactly 10 digits after +63.',
             'booking_agreement.accepted' => 'Please confirm the booking agreement before submitting your request.',
         ]);
 
@@ -576,11 +585,11 @@ class BookAppointment extends Component
                 'patient_birth_date' => 'required|date|before_or_equal:today',
             ]
             : [
-                'patient_first_name' => 'required',
-                'patient_middle_name' => 'nullable|string|max:100',
-                'patient_last_name' => 'required',
+                'patient_first_name' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+                'patient_middle_name' => ['nullable', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+                'patient_last_name' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
                 'patient_birth_date' => 'required|date|before_or_equal:today',
-                'relationship_to_patient' => 'required|string|max:100',
+                'relationship_to_patient' => ['required', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
             ];
 
         $this->validate($patientRules, [
@@ -606,6 +615,8 @@ class BookAppointment extends Component
         if ($this->isBookingForSelf()) {
             $this->patient_birth_date = $this->preferExistingValue($this->patient_birth_date, $previousBooking->birth_date ?? null);
         }
+
+        $this->sanitizeBookingFields();
     }
 
     protected function findPreviousBookingProfile(): ?object
@@ -927,7 +938,7 @@ class BookAppointment extends Component
 
     protected function normalizeEmail(mixed $email): string
     {
-        return strtolower(trim((string) $email));
+        return InputSanitizer::sanitizeEmail($email);
     }
 
     protected function isBookingForSelf(): bool
@@ -937,12 +948,12 @@ class BookAppointment extends Component
 
     protected function resolvedPatientFirstName(): string
     {
-        return trim((string) ($this->isBookingForSelf() ? $this->first_name : $this->patient_first_name));
+        return InputSanitizer::sanitizeTitleCase($this->isBookingForSelf() ? $this->first_name : $this->patient_first_name);
     }
 
     protected function resolvedPatientLastName(): string
     {
-        return trim((string) ($this->isBookingForSelf() ? $this->last_name : $this->patient_last_name));
+        return InputSanitizer::sanitizeTitleCase($this->isBookingForSelf() ? $this->last_name : $this->patient_last_name);
     }
 
     protected function resolvedPatientBirthDate(): ?string
@@ -954,21 +965,21 @@ class BookAppointment extends Component
 
     protected function normalizedRelationshipToPatient(): ?string
     {
-        $relationship = trim((string) $this->relationship_to_patient);
+        $relationship = InputSanitizer::sanitizeTitleCase($this->relationship_to_patient);
 
         return $relationship !== '' ? $relationship : null;
     }
 
     protected function normalizedRequesterMiddleName(): ?string
     {
-        $middleName = trim((string) $this->middle_name);
+        $middleName = InputSanitizer::sanitizeTitleCase($this->middle_name);
 
         return $middleName !== '' ? $middleName : null;
     }
 
     protected function normalizedRequestedPatientMiddleName(): ?string
     {
-        $middleName = trim((string) $this->patient_middle_name);
+        $middleName = InputSanitizer::sanitizeTitleCase($this->patient_middle_name);
 
         return $middleName !== '' ? $middleName : null;
     }
@@ -1093,5 +1104,32 @@ class BookAppointment extends Component
     protected function guestOtpVerifyThrottleKey(string $email, string $ip): string
     {
         return 'guest-book-otp-verify:'.sha1($email.'|'.$ip);
+    }
+
+    protected function sanitizeBookingFields(): void
+    {
+        foreach (['first_name', 'last_name', 'middle_name', 'patient_first_name', 'patient_middle_name', 'patient_last_name', 'relationship_to_patient'] as $field) {
+            $this->{$field} = InputSanitizer::sanitizeTitleCase($this->{$field} ?? '');
+        }
+
+        $this->contact_number = InputSanitizer::sanitizeCountryCodeLocalNumber($this->contact_number ?? '');
+        $this->email = InputSanitizer::sanitizeEmail($this->email ?? '');
+    }
+
+    protected function sanitizeField(string $propertyName): void
+    {
+        if (in_array($propertyName, ['first_name', 'last_name', 'middle_name', 'patient_first_name', 'patient_middle_name', 'patient_last_name', 'relationship_to_patient'], true)) {
+            $this->{$propertyName} = InputSanitizer::sanitizeTitleCase($this->{$propertyName} ?? '');
+            return;
+        }
+
+        if ($propertyName === 'contact_number') {
+            $this->contact_number = InputSanitizer::sanitizeCountryCodeLocalNumber($this->contact_number ?? '');
+            return;
+        }
+
+        if ($propertyName === 'email') {
+            $this->email = InputSanitizer::sanitizeEmail($this->email ?? '');
+        }
     }
 }

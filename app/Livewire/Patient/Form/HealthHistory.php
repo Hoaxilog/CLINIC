@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Patient\Form;
 
+use App\Livewire\Patient\Form\Concerns\SanitizesPatientFormInput;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
@@ -9,6 +10,19 @@ use Livewire\Component;
 
 class HealthHistory extends Component
 {
+    use SanitizesPatientFormInput;
+
+    protected const SENTENCE_CASE_FIELDS = [
+        'what_last_visit_reason_q1',
+        'what_seeing_dentist_reason_q2',
+        'what_nervous_concern_q6',
+        'what_condition_reason_q1',
+        'what_hospitalized_reason_q2',
+        'what_serious_illness_operation_reason_q3',
+        'what_medications_list_q4',
+        'what_allergies_list_q5',
+    ];
+
     public $when_last_visit_q1;
 
     public $what_last_visit_reason_q1 = '';
@@ -81,6 +95,7 @@ class HealthHistory extends Component
         $this->historyList = is_array($historyList) ? $historyList : [];
         $this->selectedHistoryId = $selectedHistoryId;
         $this->isCreating = $selectedHistoryId === 'new';
+        $this->sanitizeFormData();
     }
 
     public function triggerNewHistory()
@@ -118,6 +133,7 @@ class HealthHistory extends Component
             return;
         }
 
+        $this->sanitizeField($propertyName);
         $this->resetValidation($propertyName);
     }
 
@@ -145,8 +161,8 @@ class HealthHistory extends Component
 
         return [
             'when_last_visit_q1' => 'nullable|date',
-            'what_last_visit_reason_q1' => 'nullable|string',
-            'what_seeing_dentist_reason_q2' => 'required|string',
+            'what_last_visit_reason_q1' => ['nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
+            'what_seeing_dentist_reason_q2' => ['required', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
 
             'is_clicking_jaw_q3a' => 'required|boolean',
             'is_pain_jaw_q3b' => 'required|boolean',
@@ -156,22 +172,22 @@ class HealthHistory extends Component
             'is_bad_experience_q5' => 'required|boolean',
 
             'is_nervous_q6' => 'required|boolean',
-            'what_nervous_concern_q6' => 'required_if:is_nervous_q6,true|nullable|string',
+            'what_nervous_concern_q6' => ['required_if:is_nervous_q6,true', 'nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
 
             'is_condition_q1' => 'required|boolean',
-            'what_condition_reason_q1' => 'required_if:is_condition_q1,true|nullable|string',
+            'what_condition_reason_q1' => ['required_if:is_condition_q1,true', 'nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
 
             'is_hospitalized_q2' => 'required|boolean',
-            'what_hospitalized_reason_q2' => 'required_if:is_hospitalized_q2,true|nullable|string',
+            'what_hospitalized_reason_q2' => ['required_if:is_hospitalized_q2,true', 'nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
 
             'is_serious_illness_operation_q3' => 'required|boolean',
-            'what_serious_illness_operation_reason_q3' => 'required_if:is_serious_illness_operation_q3,true|nullable|string',
+            'what_serious_illness_operation_reason_q3' => ['required_if:is_serious_illness_operation_q3,true', 'nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
 
             'is_taking_medications_q4' => 'required|boolean',
-            'what_medications_list_q4' => 'required_if:is_taking_medications_q4,true|nullable|string',
+            'what_medications_list_q4' => ['required_if:is_taking_medications_q4,true', 'nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
 
             'is_allergic_medications_q5' => 'required|boolean',
-            'what_allergies_list_q5' => 'required_if:is_allergic_medications_q5,true|nullable|string',
+            'what_allergies_list_q5' => ['required_if:is_allergic_medications_q5,true', 'nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
 
             'is_allergic_latex_rubber_metals_q6' => 'required|boolean',
 
@@ -209,6 +225,7 @@ class HealthHistory extends Component
     public function validateForm()
     {
         try {
+            $this->sanitizeFormData();
             $validatedData = $this->validate();
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
@@ -262,6 +279,7 @@ class HealthHistory extends Component
         if ($gender) {
             $this->gender = $gender;
         }
+        $this->sanitizeFormData();
     }
 
     public function resetForm()
@@ -290,5 +308,21 @@ class HealthHistory extends Component
             'is_allergic_latex_rubber_metals_q6',
             'is_pregnant_q7', 'is_breast_feeding_q8',
         ]);
+    }
+
+    private function sanitizeFormData(): void
+    {
+        foreach (self::SENTENCE_CASE_FIELDS as $field) {
+            $this->sanitizeField($field);
+        }
+    }
+
+    private function sanitizeField(string $field): void
+    {
+        if (! in_array($field, self::SENTENCE_CASE_FIELDS, true)) {
+            return;
+        }
+
+        $this->{$field} = $this->sanitizeSentenceCaseText($this->{$field}, true, '.,&()/:;!?-');
     }
 }

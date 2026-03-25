@@ -25,21 +25,6 @@
             <div class="flex items-center gap-4">
                 <h2 class="text-lg font-semibold text-slate-900">Health History</h2>
             </div>
-
-            <div class="flex items-center gap-3">
-                @if ($isReadOnly && count($historyList) > 0 && ! $isCreating)
-                    <button type="button" wire:click="$dispatch('openNewVisitRecord')"
-                        class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
-                        title="Start a fresh connected record">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        New Record
-                    </button>
-                @endif
-            </div>
         </div>
 
         <div data-health-history-scroll data-form-scroll

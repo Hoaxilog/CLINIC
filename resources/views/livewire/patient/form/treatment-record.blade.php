@@ -16,50 +16,99 @@
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div class="xl:col-span-7 rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                <div>
-                    <label for="dmd" class="{{ $labelClass }}">DMD <span class="text-red-600">*</span></label>
-                    <input wire:model.defer="dmd" type="text" id="dmd" class="{{ $fieldClass('dmd') }}"
-                        placeholder="e.g., Dr. Name" @if ($isReadOnly) disabled @endif>
-                    @error('dmd')
-                        <span data-error-for="dmd" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
-                    @enderror
+            <div class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)]">
+                <div class="space-y-5">
+                    <div>
+                        <label for="dmd" class="{{ $labelClass }}">DMD <span class="text-red-600">*</span></label>
+                        <input wire:model.defer="dmd" type="text" id="dmd" class="{{ $fieldClass('dmd') }}"
+                            placeholder="Assigned practitioner" disabled readonly>
+                        @error('dmd')
+                            <span data-error-for="dmd" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="cost_of_treatment" class="{{ $labelClass }}">Estimated Cost <span class="text-red-600">*</span></label>
+                        <input wire:model.defer="cost_of_treatment" type="text" inputmode="decimal"
+                            oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')" id="cost_of_treatment"
+                            class="{{ $fieldClass('cost_of_treatment') }}" placeholder="0.00" @if ($isReadOnly) disabled @endif>
+                        @error('cost_of_treatment')
+                            <span data-error-for="cost_of_treatment" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="amount_charged" class="{{ $labelClass }}">Payment <span class="text-red-600">*</span></label>
+                        <input wire:model.defer="amount_charged" type="text" inputmode="decimal"
+                            oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')" id="amount_charged"
+                            class="{{ $fieldClass('amount_charged') }}" placeholder="0.00" @if ($isReadOnly) disabled @endif>
+                        @error('amount_charged')
+                            <span data-error-for="amount_charged" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
 
-                <div>
-                    <label for="treatment" class="{{ $labelClass }}">Treatment <span class="text-red-600">*</span></label>
-                    <input wire:model.defer="treatment" type="text" id="treatment" class="{{ $fieldClass('treatment') }}"
-                        placeholder="e.g., Extraction" @if ($isReadOnly) disabled @endif>
+                <div x-data="{ treatmentOpen: false }" class="flex h-full flex-col">
+                    <div class="flex items-center justify-between gap-3">
+                        <label for="treatment" class="{{ $labelClass }}">Treatment <span class="text-red-600">*</span></label>
+                        @if (!$isReadOnly && !empty($selectedTreatments))
+                            <span class="text-xs font-medium text-slate-500">{{ count($selectedTreatments) }} selected</span>
+                        @endif
+                    </div>
+                    <input wire:model.defer="treatment" type="hidden" id="treatment">
+                    <div class="relative flex-1">
+                        <div class="{{ $fieldClass('treatment') }} flex h-full min-h-[13.5rem] flex-col px-3 py-3">
+                            <div class="flex flex-wrap gap-2">
+                                @if (!empty($selectedTreatments))
+                                    @foreach ($selectedTreatments as $selectedTreatment)
+                                        <span class="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">
+                                            {{ $selectedTreatment }}
+                                        </span>
+                                    @endforeach
+                                @else
+                                    <span class="text-sm text-slate-400">Select treatment(s)...</span>
+                                @endif
+                            </div>
+
+                            @if (!$isReadOnly)
+                                <div class="mt-auto flex justify-end pt-4">
+                                    <button type="button" @click="treatmentOpen = !treatmentOpen"
+                                        class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">
+                                        {{ !empty($selectedTreatments) ? 'Select More' : 'Choose Treatments' }}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition" :class="treatmentOpen ? 'rotate-180' : ''"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+
+                        @if (!$isReadOnly)
+                            <div x-cloak x-show="treatmentOpen" @click.outside="treatmentOpen = false"
+                                class="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
+                                <div class="max-h-64 overflow-y-auto pr-1">
+                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        @foreach ($treatmentOptions as $option)
+                                            <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+                                                <input type="checkbox" value="{{ $option }}" wire:model.live="selectedTreatments"
+                                                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500">
+                                                <span>{{ $option }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                     @error('treatment')
                         <span data-error-for="treatment" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                     @enderror
                 </div>
 
-                <div>
-                    <label for="cost_of_treatment" class="{{ $labelClass }}">Estimated Cost <span class="text-red-600">*</span></label>
-                    <input wire:model.defer="cost_of_treatment" type="text" inputmode="decimal"
-                        oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')" id="cost_of_treatment"
-                        class="{{ $fieldClass('cost_of_treatment') }}" placeholder="0.00" @if ($isReadOnly) disabled @endif>
-                    @error('cost_of_treatment')
-                        <span data-error-for="cost_of_treatment"
-                            class="mt-1 block text-xs text-red-500">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="amount_charged" class="{{ $labelClass }}">Payment <span class="text-red-600">*</span></label>
-                    <input wire:model.defer="amount_charged" type="text" inputmode="decimal"
-                        oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')" id="amount_charged" class="{{ $fieldClass('amount_charged') }}"
-                        placeholder="0.00" @if ($isReadOnly) disabled @endif>
-                    @error('amount_charged')
-                        <span data-error-for="amount_charged"
-                            class="mt-1 block text-xs text-red-500">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="md:col-span-2">
+                <div class="xl:col-span-2">
                     <label for="remarks" class="{{ $labelClass }}">Remarks</label>
-                    <textarea wire:model.defer="remarks" id="remarks" rows="5" class="{{ $fieldClass('remarks') }}"
+                    <textarea wire:model.defer="remarks" id="remarks" rows="4" class="{{ $fieldClass('remarks') }}"
                         placeholder="Enter notes here..." @if ($isReadOnly) disabled @endif></textarea>
                     @error('remarks')
                         <span data-error-for="remarks" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
@@ -78,6 +127,9 @@
                             <label for="beforeImages" class="{{ $labelClass }}">Before</label>
                             <input wire:model="beforeImages" type="file" id="beforeImages" multiple
                                 class="{{ $fieldClass('beforeImages') }}" accept="image/*">
+                            <div wire:loading wire:target="beforeImages" class="mt-2 text-xs text-slate-500">
+                                Uploading before images...
+                            </div>
                             @error('beforeImages')
                                 <span class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                             @enderror
@@ -90,6 +142,9 @@
                             <label for="afterImages" class="{{ $labelClass }}">After</label>
                             <input wire:model="afterImages" type="file" id="afterImages" multiple
                                 class="{{ $fieldClass('afterImages') }}" accept="image/*">
+                            <div wire:loading wire:target="afterImages" class="mt-2 text-xs text-slate-500">
+                                Uploading after images...
+                            </div>
                             @error('afterImages')
                                 <span class="mt-1 block text-xs text-red-500">{{ $message }}</span>
                             @enderror
@@ -107,6 +162,44 @@
                             ->filter(fn($i) => ($i['image_type'] ?? '') === 'after')
                             ->values();
                     @endphp
+
+                    @if (!empty($beforeImages))
+                        <div>
+                            <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-sky-600">
+                                Pending Before Images
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                @foreach ($beforeImages as $image)
+                                    <button type="button"
+                                        class="overflow-hidden rounded-lg border border-sky-200 bg-sky-50 p-1"
+                                        @click="activeImage = '{{ $image->temporaryUrl() }}'; activeLabel = 'before preview'; showImage = true">
+                                        <img class="h-32 w-full rounded-md object-cover"
+                                            src="{{ $image->temporaryUrl() }}" alt="Before image preview">
+                                    </button>
+                                @endforeach
+                            </div>
+                            <p class="mt-2 text-xs text-slate-500">Preview only. These images will be saved when you save the record.</p>
+                        </div>
+                    @endif
+
+                    @if (!empty($afterImages))
+                        <div>
+                            <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                                Pending After Images
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                @foreach ($afterImages as $image)
+                                    <button type="button"
+                                        class="overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 p-1"
+                                        @click="activeImage = '{{ $image->temporaryUrl() }}'; activeLabel = 'after preview'; showImage = true">
+                                        <img class="h-32 w-full rounded-md object-cover"
+                                            src="{{ $image->temporaryUrl() }}" alt="After image preview">
+                                    </button>
+                                @endforeach
+                            </div>
+                            <p class="mt-2 text-xs text-slate-500">Preview only. These images will be saved when you save the record.</p>
+                        </div>
+                    @endif
 
                     @if ($beforeList->isNotEmpty())
                         <div>

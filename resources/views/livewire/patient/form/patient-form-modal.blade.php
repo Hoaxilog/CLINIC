@@ -40,14 +40,15 @@
                     <div class="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
                         @php
                             $basicInfoEditing = $isEditing && ! $isReadOnly && $currentStep == 1;
-                            $canNavigateFromBasicInfo = ! $basicInfoEditing;
+                            $editingLockedToSection = $isEditing && ! $isReadOnly;
+                            $canNavigateFromBasicInfo = ! $basicInfoEditing && ! $editingLockedToSection;
                         @endphp
                         <div class="flex flex-wrap items-center justify-center gap-y-3">
 
                                 <!-- Tab 1: Basic Information -->
                                 <div
-                                    @if ($isEditing) x-on:click.prevent="handleStepNavigation(1)" @endif
-                                    class="flex items-center gap-2.5 transition {{ $currentStep == 1 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 1 ? 'cursor-pointer hover:text-[#0086da]' : '' }}">
+                                    @if ($isEditing && !$editingLockedToSection) x-on:click.prevent="handleStepNavigation(1)" @endif
+                                    class="flex items-center gap-2.5 transition {{ $currentStep == 1 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 1 && !$editingLockedToSection ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $editingLockedToSection && $currentStep !== 1 ? 'cursor-not-allowed opacity-60' : '' }}">
                                     <span
                                         class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 1 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">1</span>
                                     <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Basic Information</span>
@@ -138,7 +139,7 @@
                     <div data-form-scroll class="overflow-y-auto bg-[#f6fafd] px-4 py-5 sm:px-6 sm:py-6">
 
                         {{-- Record Date bar — shown on steps 2-4 only --}}
-                        @if ($isEditing && !empty($visitHistoryList) && $currentStep >= 2 && $isReadOnly)
+                        @if ($isEditing && !empty($visitHistoryList) && $currentStep >= 2 && ($isReadOnly || ($isAdmin && in_array($currentStep, [3, 4], true))))
                             <div class="mb-5 flex items-center justify-between rounded-md border border-[#cce3f5] bg-white px-8 py-3 shadow-sm">
                                 <div class="flex items-center gap-2 text-[#0086da]">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -151,6 +152,7 @@
                                 </div>
                                 <select
                                     x-on:change="handleVisitRecordSelection($event)"
+                                    @disabled(!$isReadOnly)
                                     class="w-72 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 focus:border-[#0086da] focus:outline-none focus:ring-1 focus:ring-[#0086da] sm:w-80">
                                     @foreach ($visitHistoryList as $visit)
                                         <option value="{{ $visit['value'] }}" @selected($selectedVisitDate === $visit['value'])>{{ $visit['label'] }}</option>
@@ -171,7 +173,7 @@
                         @if ($currentStep == 2 && $isEditing)
                             <livewire:patient.form.health-history wire:key="health-history"
                                 :data="$healthHistoryData" :gender="$basicInfoData['gender'] ?? null"
-                                :isReadOnly="$isReadOnly" :historyList="$healthHistoryList"
+                                :isReadOnly="$selectedHealthHistoryId !== 'new'" :historyList="$healthHistoryList"
                                 :selectedHistoryId="$selectedHealthHistoryId" />
                         @endif
 
@@ -209,11 +211,12 @@
                         @php
                             // ── Button visibility matrix ──────────────────────────────────────────
                             // Edit This Record: step 1 read-only only
-                            $showEditButton = $isEditing && $isReadOnly && $currentStep == 1;
+                            $showEditButton = $isEditing && $isReadOnly && $currentStep == 1 && $isAdmin;
 
-                            // Edit Visit Record: dentist only, step 2 read-only
-                            $showEditVisitButton = $isEditing && $isReadOnly && $currentStep == 2 && $isAdmin;
-                            $showNewRecordButton = $isEditing && $isReadOnly && $currentStep == 4 && $isAdmin;
+                            // Health history stays read-only for existing records.
+                            $showEditVisitButton = false;
+                            $showEditClinicalButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [3, 4], true);
+                            $showNewRecordButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [2, 3, 4], true);
 
                             $finalEditableStep = $isEditing
                                 ? ($currentStep === 1 ? 1 : ($isAdmin ? 4 : 1))
@@ -295,6 +298,18 @@
                                             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                         </svg>
                                         Edit Visit Record
+                                    </button>
+                                @endif
+
+                                @if ($showEditClinicalButton)
+                                    <button wire:click="enableEditMode" type="button"
+                                        class="inline-flex items-center gap-2 rounded-sm bg-[#0086da] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0073a8]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                        </svg>
+                                        Edit Clinical Record
                                     </button>
                                 @endif
 

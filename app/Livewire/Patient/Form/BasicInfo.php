@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Patient\Form;
 
+use App\Livewire\Patient\Form\Concerns\SanitizesPatientFormInput;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\On;
@@ -9,6 +10,8 @@ use Livewire\Component;
 
 class BasicInfo extends Component
 {
+    use SanitizesPatientFormInput;
+
     protected const DIGITS_ONLY_FIELDS = [
         'home_number',
         'office_number',
@@ -17,6 +20,36 @@ class BasicInfo extends Component
         'father_number',
         'mother_number',
         'guardian_number',
+    ];
+
+    protected const COUNTRY_CODE_NUMBER_FIELDS = [
+        'mobile_number',
+        'emergency_contact_number',
+        'father_number',
+        'mother_number',
+        'guardian_number',
+    ];
+
+    protected const TITLE_CASE_FIELDS = [
+        'last_name',
+        'first_name',
+        'middle_name',
+        'nickname',
+        'occupation',
+        'civil_status',
+        'referral',
+        'emergency_contact_name',
+        'relationship',
+        'who_answering',
+        'relationship_to_patient',
+        'father_name',
+        'mother_name',
+        'guardian_name',
+    ];
+
+    protected const SENTENCE_CASE_FIELDS = [
+        'home_address',
+        'office_address',
     ];
 
     // ... (Properties remain the same) ...
@@ -82,7 +115,7 @@ class BasicInfo extends Component
             $this->fill($data);
         }
 
-        $this->sanitizeDigitsOnlyFields();
+        $this->sanitizeFormData();
     }
 
     // ... (getAgeProperty, rules, validationAttributes remain the same) ...
@@ -136,34 +169,34 @@ class BasicInfo extends Component
         // ];
 
         $rules = [
-            'last_name' => 'required|string',
-            'first_name' => 'required|string',
-            'middle_name' => 'nullable|string',
-            'nickname' => 'nullable|string',
-            'occupation' => 'required|string',
+            'last_name' => ['required', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'first_name' => ['required', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'middle_name' => ['nullable', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'nickname' => ['nullable', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'occupation' => ['required', 'string', 'regex:/^[\pL\pM\s\'\-.&,\/()]+$/u'],
             'birth_date' => 'required|date',
             'gender' => 'required|in:Male,Female,Other',
-            'civil_status' => 'required|string',
-            'home_address' => 'required|string',
-            'office_address' => 'nullable|string',
-            'home_number' => 'nullable|numeric',
-            'office_number' => 'nullable|numeric',
-            'mobile_number' => 'required|numeric',
+            'civil_status' => ['required', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'home_address' => ['required', 'string', 'regex:/^[\pL\pM\pN\s\'",.#&\/:\-]+$/u'],
+            'office_address' => ['nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.#&\/:\-]+$/u'],
+            'home_number' => ['nullable', 'regex:/^\d+$/'],
+            'office_number' => ['nullable', 'regex:/^\d+$/'],
+            'mobile_number' => ['required', 'regex:/^\d{10}$/'],
             'email_address' => 'required|email',
-            'referral' => 'nullable|string',
+            'referral' => ['nullable', 'string', 'regex:/^[\pL\pM\s\'\-.&,\/()]+$/u'],
 
-            'emergency_contact_name' => 'required|string',
-            'emergency_contact_number' => 'required|numeric',
-            'relationship' => 'required|string',
+            'emergency_contact_name' => ['required', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'emergency_contact_number' => ['required', 'regex:/^\d{10}$/'],
+            'relationship' => ['required', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
 
-            'who_answering' => 'nullable|string',
-            'relationship_to_patient' => 'nullable|string',
-            'father_name' => 'nullable|string',
-            'father_number' => 'nullable|numeric',
-            'mother_name' => 'nullable|string',
-            'mother_number' => 'nullable|numeric',
-            'guardian_name' => 'nullable|string',
-            'guardian_number' => 'nullable|numeric',
+            'who_answering' => ['nullable', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'relationship_to_patient' => ['nullable', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'father_name' => ['nullable', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'father_number' => ['nullable', 'regex:/^\d{10}$/'],
+            'mother_name' => ['nullable', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'mother_number' => ['nullable', 'regex:/^\d{10}$/'],
+            'guardian_name' => ['nullable', 'string', 'regex:/^[\pL\pM\s\'\-]+$/u'],
+            'guardian_number' => ['nullable', 'regex:/^\d{10}$/'],
         ];
 
         if ($this->age !== null && $this->age < 18) {
@@ -195,6 +228,7 @@ class BasicInfo extends Component
     public function validateForm()
     {
         try {
+            $this->sanitizeFormData();
             $validatedData = $this->validate();
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
@@ -215,7 +249,7 @@ class BasicInfo extends Component
     {
         $this->resetValidation();
         $this->fill($data);
-        $this->sanitizeDigitsOnlyFields();
+        $this->sanitizeFormData();
     }
 
     #[On('resetForm')]
@@ -228,24 +262,70 @@ class BasicInfo extends Component
     public function updated($propertyName): void
     {
         if (is_string($propertyName) && $propertyName !== '') {
-            if (in_array($propertyName, self::DIGITS_ONLY_FIELDS, true)) {
-                $this->{$propertyName} = $this->sanitizeDigitsOnly($this->{$propertyName});
-            }
-
+            $this->sanitizeField($propertyName);
             $this->resetValidation($propertyName);
         }
     }
 
-    protected function sanitizeDigitsOnlyFields(): void
+    protected function sanitizeFormData(): void
     {
         foreach (self::DIGITS_ONLY_FIELDS as $field) {
-            $this->{$field} = $this->sanitizeDigitsOnly($this->{$field});
+            $this->sanitizeField($field);
+        }
+
+        foreach (self::TITLE_CASE_FIELDS as $field) {
+            $this->sanitizeField($field);
+        }
+
+        foreach (self::SENTENCE_CASE_FIELDS as $field) {
+            $this->sanitizeField($field);
+        }
+
+        $this->email_address = $this->sanitizeEmail($this->email_address);
+        $this->gender = $this->sanitizeEnumValue($this->gender, ['Male', 'Female', 'Other']);
+    }
+
+    protected function sanitizeField(string $field): void
+    {
+        if (in_array($field, self::DIGITS_ONLY_FIELDS, true)) {
+            $digits = $this->sanitizeDigitsOnly($this->{$field});
+            if (in_array($field, self::COUNTRY_CODE_NUMBER_FIELDS, true)) {
+                $digits = $this->normalizeCountryCodeLocalNumber($digits);
+            }
+
+            $this->{$field} = $digits;
+            return;
+        }
+
+        if (in_array($field, self::TITLE_CASE_FIELDS, true)) {
+            $extra = $field === 'occupation' || $field === 'referral'
+                ? '.,&/()-'
+                : '';
+            $this->{$field} = $this->sanitizeTitleCaseText($this->{$field}, false, $extra);
+            return;
+        }
+
+        if (in_array($field, self::SENTENCE_CASE_FIELDS, true)) {
+            $this->{$field} = $this->sanitizeSentenceCaseText($this->{$field}, true, '.,#&/:-');
+            return;
+        }
+
+        if ($field === 'email_address') {
+            $this->{$field} = $this->sanitizeEmail($this->{$field});
         }
     }
 
-    protected function sanitizeDigitsOnly($value): string
+    protected function normalizeCountryCodeLocalNumber(string $value): string
     {
-        return preg_replace('/\D+/', '', (string) $value) ?? '';
+        if (str_starts_with($value, '63') && strlen($value) >= 12) {
+            $value = substr($value, 2);
+        }
+
+        if (str_starts_with($value, '0')) {
+            $value = substr($value, 1);
+        }
+
+        return substr($value, 0, 10);
     }
 
     public function render()

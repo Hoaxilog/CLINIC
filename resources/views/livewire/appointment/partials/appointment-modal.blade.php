@@ -294,9 +294,13 @@
                 <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                         <label class="{{ $labelClass }}">Contact Number <span class="text-red-500 normal-case tracking-normal">*</span></label>
-                        <input wire:model="contactNumber" type="text" inputmode="numeric" maxlength="11" pattern="[0-9]{11}"
-                            class="{{ $isViewing ? $readonlyInp : $contactInputClass }}"
-                            @if ($isViewing) readonly @endif />
+                        <div class="flex min-w-0">
+                            <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-[#cfe2f1] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none @error('contactNumber') border-red-400 @enderror">+63</span>
+                            <input wire:model="contactNumber" type="text" inputmode="numeric" maxlength="10" pattern="[0-9]{10}"
+                                oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,10)"
+                                class="{{ $isViewing ? $readonlyInp : $contactInputClass }}"
+                                @if ($isViewing) readonly @endif />
+                        </div>
                         @error('contactNumber')<span class="mt-1 block text-xs text-red-500">{{ $message }}</span>@enderror
                     </div>
                     <div>

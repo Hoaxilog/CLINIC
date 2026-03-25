@@ -147,11 +147,11 @@
                             </label>
                             <div class="flex min-w-0">
                                 <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none @error('mobile_number') border-red-400 @enderror">+63</span>
-                                <input type="text" inputmode="numeric" maxlength="11" name="mobile_number"
+                                <input type="text" inputmode="numeric" maxlength="10" name="mobile_number"
                                     value="{{ old('mobile_number', $user->mobile_number) }}"
-                                    placeholder="09XXXXXXXXX" pattern="09[0-9]{9}"
-                                    title="Mobile number must be in 09XXXXXXXXX format."
-                                    oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)"
+                                    placeholder="9171234567" pattern="[0-9]{10}"
+                                    title="Mobile number must be exactly 10 digits after +63."
+                                    oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,10)"
                                     class="min-w-0 w-full border border-[#d4e8f5] bg-white pr-4 py-3 text-sm text-[#1a2e3b] placeholder:text-[#9bbdd0] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('mobile_number') border-red-400 focus:ring-red-200 focus:border-red-500 @enderror">
                             </div>
                             @error('mobile_number')

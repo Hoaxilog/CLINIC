@@ -26,7 +26,7 @@ class PatientRecords extends Component
 
     public function mount()
     {
-        $this->fetchFirstPatient();
+        //
     }
 
     public function selectPatient($patientId)
@@ -98,14 +98,14 @@ class PatientRecords extends Component
     public function updatedSearch()
     {
         $this->resetPage();
-        $this->fetchFirstPatient(); 
+        $this->syncSelectionAfterDatasetChange();
     }
     
     public function setSort($option)
     {
         $this->sortOption = $option;
         $this->resetPage();
-        $this->fetchFirstPatient(); 
+        $this->syncSelectionAfterDatasetChange();
         $this->dispatch('closeSortDropdown');
 
     }
@@ -149,15 +149,31 @@ class PatientRecords extends Component
         return $query;
     }
 
-    protected function fetchFirstPatient()
+    protected function syncSelectionAfterDatasetChange(): void
     {
-        $patient = $this->getPatientsQuery()->first();
-        
-        if ($patient) {
-            $this->selectPatient($patient->id);
-        } else {
-            $this->selectedPatient = null;
-            $this->lastVisit = null;
+        if (! $this->showProfile) {
+            return;
+        }
+
+        if (! $this->selectedPatient?->id) {
+            return;
+        }
+
+        $existsInQuery = (clone $this->getPatientsQuery())
+            ->where('id', $this->selectedPatient->id)
+            ->exists();
+
+        if ($existsInQuery) {
+            $this->selectPatient($this->selectedPatient->id);
+            return;
+        }
+
+        $this->selectedPatient = null;
+        $this->lastVisit = null;
+        $this->treatmentRecords = [];
+
+        if ($this->showProfile) {
+            $this->showProfile = false;
         }
     }
 
