@@ -20,6 +20,7 @@
 {{-- ── 1. SESSION-BASED TOAST ─────────────────────────────────────── --}}
 @if ($fType)
 <div
+    x-cloak
     x-data="{ visible: true }"
     x-show="visible"
     x-init="setTimeout(() => visible = false, 5000)"
@@ -85,6 +86,7 @@
 
 {{-- ── 2. LIVEWIRE / JS DISPATCH TOAST ─────────────────────────────── --}}
 <div
+    x-cloak
     x-data="{
         visible: false,
         type: 'success',
@@ -111,7 +113,7 @@
     style="font-family:'Montserrat',sans-serif; position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; width:100%; max-width:480px; padding:0 16px;"
 >
     {{-- Success --}}
-    <div x-show="type === 'success'" class="flex items-start gap-3 bg-white border-l-4 border-[#0086da] shadow-[0_8px_40px_rgba(0,0,0,0.13)] px-5 py-4">
+    <div x-cloak x-show="type === 'success'" class="flex items-start gap-3 bg-white border-l-4 border-[#0086da] shadow-[0_8px_40px_rgba(0,0,0,0.13)] px-5 py-4">
         <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center bg-[#0086da]">
             <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="square" d="M5 13l4 4L19 7"/></svg>
         </div>
@@ -125,7 +127,7 @@
     </div>
 
     {{-- Error --}}
-    <div x-show="type === 'error'" class="flex items-start gap-3 bg-white border-l-4 border-red-500 shadow-[0_8px_40px_rgba(0,0,0,0.13)] px-5 py-4">
+    <div x-cloak x-show="type === 'error'" class="flex items-start gap-3 bg-white border-l-4 border-red-500 shadow-[0_8px_40px_rgba(0,0,0,0.13)] px-5 py-4">
         <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center bg-red-500">
             <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="square" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
@@ -139,7 +141,7 @@
     </div>
 
     {{-- Info --}}
-    <div x-show="type === 'info'" class="flex items-start gap-3 bg-white border-l-4 border-[#3d5a6e] shadow-[0_8px_40px_rgba(0,0,0,0.13)] px-5 py-4">
+    <div x-cloak x-show="type === 'info'" class="flex items-start gap-3 bg-white border-l-4 border-[#3d5a6e] shadow-[0_8px_40px_rgba(0,0,0,0.13)] px-5 py-4">
         <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center bg-[#3d5a6e]">
             <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="square" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>

@@ -17,7 +17,7 @@ class AppointmentService
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Create or find a patient by contact number, then create a Scheduled appointment.
+     * Create a staff-side scheduled appointment without creating a patient record yet.
      * Returns $appointmentId.
      */
     public function createScheduled(array $data): int
@@ -25,66 +25,12 @@ class AppointmentService
         $modifier = $this->modifier();
         $normalizedBirthDate = $data['birth_date'];
 
-        $patient = DB::table('patients')->where('mobile_number', $data['contact_number'])->first();
-
-        if ($patient) {
-            $patientId = $patient->id;
-            $old = (array) $patient;
-            $updates = [
-                'first_name'   => $data['first_name'],
-                'last_name'    => $data['last_name'],
-                'middle_name'  => $data['middle_name'],
-                'birth_date'   => $normalizedBirthDate,
-            ];
-            DB::table('patients')->where('id', $patientId)->update($updates);
-
-            $hasChanges = (
-                $old['first_name'] !== $updates['first_name'] ||
-                $old['last_name'] !== $updates['last_name'] ||
-                ($old['middle_name'] ?? null) !== $updates['middle_name'] ||
-                $old['birth_date'] !== $updates['birth_date']
-            );
-
-            if ($hasChanges) {
-                $subject = new Patient;
-                $subject->id = $patientId;
-                activity()->causedBy(Auth::user())->performedOn($subject)
-                    ->event('patient_updated')
-                    ->withProperties(['old' => array_intersect_key($old, $updates), 'attributes' => $updates])
-                    ->log('Updated Patient');
-            }
-        } else {
-            $patientId = DB::table('patients')->insertGetId([
-                'first_name'    => $data['first_name'],
-                'last_name'     => $data['last_name'],
-                'middle_name'   => $data['middle_name'],
-                'mobile_number' => $data['contact_number'],
-                'birth_date'    => $normalizedBirthDate,
-                'modified_by'   => $modifier,
-                'created_at'    => now(),
-                'updated_at'    => now(),
-            ]);
-
-            $subject = new Patient;
-            $subject->id = $patientId;
-            activity()->causedBy(Auth::user())->performedOn($subject)
-                ->event('patient_created')
-                ->withProperties(['attributes' => [
-                    'first_name'    => $data['first_name'],
-                    'last_name'     => $data['last_name'],
-                    'middle_name'   => $data['middle_name'],
-                    'mobile_number' => $data['contact_number'],
-                    'birth_date'    => $normalizedBirthDate,
-                ]])
-                ->log('Created Patient');
-        }
-
         $appointmentDateTime = Carbon::parse($data['appointment_date'])
             ->setTimeFromTimeString($data['time'])
             ->toDateTimeString();
 
         $payload = [
-            'patient_id'       => $patientId,
+            'patient_id'       => null,
             'service_id'       => $data['service_id'],
             'appointment_date' => $appointmentDateTime,
             'status'           => 'Scheduled',
@@ -97,6 +43,32 @@ class AppointmentService
             $payload['booking_type'] = 'online_appointment';
         }
 
+        // Keep an appointment-level identity snapshot so details still render
+        // even if the patient link is later removed or corrected.
+        if (Schema::hasColumn('appointments', 'requester_first_name')) {
+            $payload['requester_first_name'] = $data['first_name'];
+        }
+
+        if (Schema::hasColumn('appointments', 'requester_last_name')) {
+            $payload['requester_last_name'] = $data['last_name'];
+        }
+
+        if (Schema::hasColumn('appointments', 'requester_middle_name')) {
+            $payload['requester_middle_name'] = $data['middle_name'] ?: null;
+        }
+
+        if (Schema::hasColumn('appointments', 'requester_contact_number')) {
+            $payload['requester_contact_number'] = $data['contact_number'];
+        }
+
+        if (Schema::hasColumn('appointments', 'requester_birth_date')) {
+            $payload['requester_birth_date'] = $normalizedBirthDate;
+        }
+
+        if (Schema::hasColumn('appointments', 'booking_for_other')) {
+            $payload['booking_for_other'] = false;
+        }
+
         $appointmentId = DB::table('appointments')->insertGetId($payload);
 
         $subject = new Appointment;
@@ -104,7 +76,7 @@ class AppointmentService
         activity()->causedBy(Auth::user())->performedOn($subject)
             ->event('appointment_created')
             ->withProperties(['attributes' => [
-                'patient_id'       => $patientId,
+                'patient_id'       => null,
                 'patient_name'     => trim("{$data['last_name']}, {$data['first_name']} {$data['middle_name']}"),
                 'service_id'       => $data['service_id'],
                 'appointment_date' => $appointmentDateTime,
@@ -245,19 +217,21 @@ class AppointmentService
         DB::table('appointments')->where('id', $appointmentId)->update([
             'appointment_date' => $proposedDateTime,
             'service_id'       => $serviceId,
+            'status'           => 'Scheduled',
             'updated_at'       => now(),
         ]);
 
         $subject     = new Appointment;
         $subject->id = $appointmentId;
         activity()->causedBy(Auth::user())->performedOn($subject)
-            ->event('appointment_request_rescheduled')
+            ->event('appointment_rescheduled_and_approved')
             ->withProperties(['attributes' => [
                 'appointment_id'   => $appointmentId,
                 'appointment_date' => $proposedDateTime,
                 'service_id'       => $serviceId,
+                'status'           => 'Scheduled',
             ]])
-            ->log('Rescheduled Appointment Request');
+            ->log('Rescheduled And Approved Appointment');
     }
 
     // ─────────────────────────────────────────────────────────────────────────

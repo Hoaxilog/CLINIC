@@ -164,7 +164,7 @@
                     email address.</p>
 
                 <div class="info-box">
-                    <p class="text" style="margin: 0;">For your security, this reset link expires in 5 minutes. If you
+                    <p class="text" style="margin: 0;">For your security, this reset link expires in {{ config('verification.link_expires_in_minutes') }} minutes. If you
                         did not request this change, you can ignore this email.</p>
                 </div>
 

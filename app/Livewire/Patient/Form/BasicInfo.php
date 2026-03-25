@@ -9,6 +9,16 @@ use Livewire\Component;
 
 class BasicInfo extends Component
 {
+    protected const DIGITS_ONLY_FIELDS = [
+        'home_number',
+        'office_number',
+        'mobile_number',
+        'emergency_contact_number',
+        'father_number',
+        'mother_number',
+        'guardian_number',
+    ];
+
     // ... (Properties remain the same) ...
     // == Step 1: Patient Information ==
     public $last_name = '';
@@ -71,6 +81,8 @@ class BasicInfo extends Component
         if (! empty($data)) {
             $this->fill($data);
         }
+
+        $this->sanitizeDigitsOnlyFields();
     }
 
     // ... (getAgeProperty, rules, validationAttributes remain the same) ...
@@ -203,6 +215,7 @@ class BasicInfo extends Component
     {
         $this->resetValidation();
         $this->fill($data);
+        $this->sanitizeDigitsOnlyFields();
     }
 
     #[On('resetForm')]
@@ -215,8 +228,24 @@ class BasicInfo extends Component
     public function updated($propertyName): void
     {
         if (is_string($propertyName) && $propertyName !== '') {
+            if (in_array($propertyName, self::DIGITS_ONLY_FIELDS, true)) {
+                $this->{$propertyName} = $this->sanitizeDigitsOnly($this->{$propertyName});
+            }
+
             $this->resetValidation($propertyName);
         }
+    }
+
+    protected function sanitizeDigitsOnlyFields(): void
+    {
+        foreach (self::DIGITS_ONLY_FIELDS as $field) {
+            $this->{$field} = $this->sanitizeDigitsOnly($this->{$field});
+        }
+    }
+
+    protected function sanitizeDigitsOnly($value): string
+    {
+        return preg_replace('/\D+/', '', (string) $value) ?? '';
     }
 
     public function render()

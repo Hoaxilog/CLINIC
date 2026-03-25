@@ -37,7 +37,8 @@
 
                 <div>
                     <label for="cost_of_treatment" class="{{ $labelClass }}">Estimated Cost <span class="text-red-600">*</span></label>
-                    <input wire:model.defer="cost_of_treatment" type="number" id="cost_of_treatment"
+                    <input wire:model.defer="cost_of_treatment" type="text" inputmode="decimal"
+                        oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')" id="cost_of_treatment"
                         class="{{ $fieldClass('cost_of_treatment') }}" placeholder="0.00" @if ($isReadOnly) disabled @endif>
                     @error('cost_of_treatment')
                         <span data-error-for="cost_of_treatment"
@@ -47,7 +48,8 @@
 
                 <div>
                     <label for="amount_charged" class="{{ $labelClass }}">Payment <span class="text-red-600">*</span></label>
-                    <input wire:model.defer="amount_charged" type="number" id="amount_charged" class="{{ $fieldClass('amount_charged') }}"
+                    <input wire:model.defer="amount_charged" type="text" inputmode="decimal"
+                        oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')" id="amount_charged" class="{{ $fieldClass('amount_charged') }}"
                         placeholder="0.00" @if ($isReadOnly) disabled @endif>
                     @error('amount_charged')
                         <span data-error-for="amount_charged"

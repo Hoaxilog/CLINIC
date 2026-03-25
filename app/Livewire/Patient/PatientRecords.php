@@ -43,11 +43,25 @@ class PatientRecords extends Component
                             ->orderBy('appointment_date', 'desc')
                             ->first();
 
-        $this->treatmentRecords = DB::table('treatment_records')
+        $rawRecords = DB::table('treatment_records')
             ->where('patient_id', $patientId)
             ->orderBy('created_at', 'desc')
             ->limit(6)
             ->get();
+
+        $recordIds = $rawRecords->pluck('id')->filter()->values();
+        $allImages = $recordIds->isNotEmpty()
+            ? DB::table('treatment_record_images')
+                ->whereIn('treatment_record_id', $recordIds->all())
+                ->orderBy('sort_order')
+                ->get()
+                ->groupBy('treatment_record_id')
+            : collect();
+
+        $this->treatmentRecords = $rawRecords->map(function ($record) use ($allImages) {
+            $record->image_list = $allImages->get($record->id, collect())->values()->toArray();
+            return $record;
+        });
 
         $latestStatus = DB::table('appointments')
             ->where('patient_id', $patientId)
@@ -188,7 +202,7 @@ class PatientRecords extends Component
 
     public function render()
     {
-        $patients = $this->getPatientsQuery()->paginate(10);
+        $patients = $this->getPatientsQuery()->paginate(9);
         $patientIds = $patients->getCollection()->pluck('id')->filter()->values();
 
         $lastCompletedMap = collect();

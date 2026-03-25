@@ -50,6 +50,18 @@
                 default => 'bg-slate-400',
             };
         };
+
+        $activityTypeClass = static function (string $type): string {
+            return match ($type) {
+                'Logged in' => 'border-slate-200 bg-slate-50 text-slate-700',
+                'appointment created' => 'border-sky-200 bg-sky-50 text-sky-700',
+                'appointment updated' => 'border-indigo-200 bg-indigo-50 text-indigo-700',
+                'treatment record added', 'treatment record updated' => 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                'profile updated' => 'border-slate-200 bg-slate-50 text-slate-700',
+                'payment recorded' => 'border-amber-200 bg-amber-50 text-amber-700',
+                default => 'border-slate-200 bg-slate-50 text-slate-700',
+            };
+        };
     @endphp
 
     <style>
@@ -345,7 +357,75 @@
 
                 {{-- ── Right sidebar ── --}}
                 <aside class="space-y-6">
+                    <article class="dash-reveal overflow-hidden rounded-sm border border-[#e4eff8] bg-white">
+                        <div
+                            class="flex flex-col gap-3 border-b border-[#e4eff8] px-6 py-6 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <div
+                                    class="mb-3 inline-flex items-center gap-[10px] text-[.63rem] font-bold uppercase tracking-[.22em] text-[#0086da]">
+                                    Activity
+                                </div>
+                                <h2 class="text-[1.35rem] leading-[1.15] font-extrabold tracking-[-.02em] text-[#1a2e3b]">
+                                    Activity Log</h2>
+                                <p class="mt-1 text-[.85rem] leading-[1.7] text-[#587189]">Recent updates related to your appointments, records, and account.</p>
+                            </div>
+                            <span class="text-[.62rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Latest 8
+                                entries</span>
+                        </div>
 
+                        @if (($activityLog ?? collect())->count() > 0)
+                            <div class="max-h-[560px] divide-y divide-[#edf5fb] overflow-y-auto">
+                                @foreach ($activityLog as $activity)
+                                    @php
+                                        $activityAt = $activity['logged_at'] instanceof \Carbon\Carbon
+                                            ? $activity['logged_at']
+                                            : \Carbon\Carbon::parse($activity['logged_at']);
+                                        $activityStatus = trim((string) ($activity['status'] ?? ''));
+                                        $activityType = trim((string) ($activity['type'] ?? 'activity'));
+                                    @endphp
+                                    <div class="px-6 py-5">
+                                        <div class="flex flex-col gap-4">
+                                            <div class="space-y-3">
+                                                <div class="flex flex-wrap items-center gap-2">
+                                                    <span
+                                                        class="inline-flex rounded-sm border px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.16em] {{ $activityTypeClass($activityType) }}">
+                                                        {{ $activityType }}
+                                                    </span>
+                                                    @if ($activityStatus !== '')
+                                                        <span
+                                                            class="inline-flex rounded-sm border px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.16em] {{ $statusBadgeClass($activityStatus) }}">
+                                                            {{ $activityStatus }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <p class="text-[.98rem] font-semibold leading-[1.65] text-[#1a2e3b]">
+                                                    {{ $activity['description'] }}
+                                                </p>
+                                            </div>
+
+                                            <div class="grid grid-cols-2 gap-3 border-t border-[#edf5fb] pt-3 text-[.8rem]">
+                                                <div>
+                                                    <p class="text-[.62rem] font-bold uppercase tracking-[0.16em] text-[#7a9db5]">Date</p>
+                                                    <p class="mt-1 font-medium text-[#1a2e3b]">{{ $activityAt->format('Y-m-d') }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[.62rem] font-bold uppercase tracking-[0.16em] text-[#7a9db5]">Time</p>
+                                                    <p class="mt-1 font-medium text-[#1a2e3b]">{{ $activityAt->format('h:i A') }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="px-6 py-6">
+                                <div class="rounded-sm border border-dashed border-[#d4e8f5] bg-[#f6fafd] p-6">
+                                    <h3 class="text-lg font-semibold text-[#1a2e3b]">No recent activity yet</h3>
+                                    <p class="mt-2 text-[.88rem] leading-[1.8] text-[#587189]">Recent appointment, treatment, and account updates will appear here.</p>
+                                </div>
+                            </div>
+                        @endif
+                    </article>
                 </aside>
             </section>
         </div>

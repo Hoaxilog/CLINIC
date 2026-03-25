@@ -12,6 +12,11 @@ class TreatmentRecord extends Component
 {
     use WithFileUploads;
 
+    protected const DECIMAL_FIELDS = [
+        'cost_of_treatment',
+        'amount_charged',
+    ];
+
     public $dmd = '';
     public $treatment = '';
     public $cost_of_treatment = '';
@@ -35,6 +40,8 @@ class TreatmentRecord extends Component
             }
             $this->fill($data);
         }
+
+        $this->sanitizeDecimalFields();
     }
 
     public function rules()
@@ -68,6 +75,10 @@ class TreatmentRecord extends Component
             return;
         }
 
+        if (in_array($propertyName, self::DECIMAL_FIELDS, true)) {
+            $this->{$propertyName} = $this->sanitizeDecimalValue($this->{$propertyName});
+        }
+
         $this->resetValidation($propertyName);
 
         if (in_array($propertyName, ['beforeImages', 'afterImages'], true)) {
@@ -89,6 +100,8 @@ class TreatmentRecord extends Component
             }
             $this->fill($data);
         }
+
+        $this->sanitizeDecimalFields();
     }
 
     #[On('validateTreatmentRecord')]
@@ -139,5 +152,29 @@ class TreatmentRecord extends Component
     public function render()
     {
         return view('livewire.patient.form.treatment-record');
+    }
+
+    protected function sanitizeDecimalFields(): void
+    {
+        foreach (self::DECIMAL_FIELDS as $field) {
+            $this->{$field} = $this->sanitizeDecimalValue($this->{$field});
+        }
+    }
+
+    protected function sanitizeDecimalValue($value): string
+    {
+        $sanitized = preg_replace('/[^0-9.]/', '', (string) $value) ?? '';
+
+        if ($sanitized === '') {
+            return '';
+        }
+
+        $parts = explode('.', $sanitized, 3);
+
+        if (count($parts) === 1) {
+            return $parts[0];
+        }
+
+        return $parts[0].'.'.preg_replace('/\./', '', $parts[1].($parts[2] ?? ''));
     }
 }

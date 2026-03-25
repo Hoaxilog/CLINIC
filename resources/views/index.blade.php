@@ -299,12 +299,11 @@
                         <li>
                             <a href="{{ route('patient-records') }}" title="Patient Records"
                                 class="{{ request()->is('patient-records') ? 'active' : '' }} 
-                            nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
-                            transition-all duration-200
-                            text-slate-300 hover:bg-white/10 hover:text-white 
-                            [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
-                            group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0
-                                group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
+                                transition-all duration-200
+                                text-slate-300 hover:bg-white/10 hover:text-white
+                                [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)]
+                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
                                 <span
                                     class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-open-icon lucide-folder-open"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg>
@@ -325,7 +324,7 @@
                             <button type="button" data-appointment-toggle
                                 title="Appointments"
                                 aria-expanded="{{ $isAppointmentMenuOpen ? 'true' : 'false' }}"
-                                class="{{ $isAppointmentGroupActive ? 'active' : '' }} nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 transition-all duration-200 hover:bg-white/10 hover:text-white group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0 [&.active]:bg-transparent [&.active]:text-[#0086DA] [&.active]:shadow-none group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                class="{{ $isAppointmentGroupActive ? 'active' : '' }} nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 transition-all duration-200 hover:bg-white/10 hover:text-white group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0 [&.active]:bg-transparent [&.active]:text-[#0086DA] [&.active]:shadow-none">
                                 <span
                                     class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-[#0086DA] group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-icon lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
@@ -416,13 +415,7 @@
                             </li>
                             <li>
                                 <a href="{{ route('activity-logs') }}" title="Activity Logs"
-                                    class="{{ request()->is('activity-logs') ? 'active' : '' }} 
-                                nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5
-                            transition-all duration-200
-                                text-slate-300 hover:bg-white/10 hover:text-white 
-                                [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] 
-                                group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0
-                                group-[.collapsed]:[&.active]:bg-white group-[.collapsed]:[&.active]:text-[#0086DA] group-[.collapsed]:[&.active]:shadow-[0_8px_18px_-14px_rgba(0,134,218,0.65)]">
+                                class="{{ request()->is('activity-logs') ? 'active' : '' }} nav-item group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 text-slate-300 hover:bg-white/10 hover:text-white [&.active]:bg-[#0086DA] [&.active]:text-white [&.active]:shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] group-[.collapsed]:mx-auto group-[.collapsed]:w-12 group-[.collapsed]:justify-center group-[.collapsed]:px-1 group-[.collapsed]:gap-0">
                                     <span
                                         class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-200 group-[.active]:text-sky-300 group-[.collapsed]:h-10 group-[.collapsed]:w-10">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-clock-icon lucide-clipboard-clock"><path d="M16 14v2.2l1.6 1"/><path d="M16 4h2a2 2 0 0 1 2 2v.832"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2"/><circle cx="16" cy="16" r="6"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
@@ -530,6 +523,7 @@
         })();
     </script>
 
+    <x-flash-toast />
     @livewireScripts
 </body>
 

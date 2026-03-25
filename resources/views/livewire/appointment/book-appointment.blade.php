@@ -245,19 +245,19 @@
                                     </div>
                                 @endif
 
-                                <div>
+                                <div class="min-w-0" data-validate-group="contact_number">
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
                                         Contact Number <span class="text-red-500">*</span>
                                     </label>
-                                    <div class="flex min-w-0">
+                                    <div class="flex w-full min-w-0 items-stretch">
                                         <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none whitespace-nowrap {{ $errors->has('contact_number') ? 'border-red-400' : '' }}">+63</span>
                                         <input type="text" inputmode="numeric" maxlength="11" wire:model.defer="contact_number"
                                             data-validate-field="contact_number" placeholder="09XX XXX XXXX"
-                                            class="{{ $fieldClass('contact_number') }} min-w-0 flex-1">
+                                            class="{{ $fieldClass('contact_number') }} min-w-0 w-full flex-1">
                                     </div>
                                     @error('contact_number')
-                                        <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                        <p class="block w-full text-[.75rem] text-red-500 mt-1.5 break-words validation-error"
                                             data-error-for="contact_number">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -352,7 +352,7 @@
                                                 Your Relationship to the Patient <span class="text-red-500">*</span>
                                             </label>
                                             <input type="text" wire:model.defer="relationship_to_patient"
-                                                data-validate-field="relationship_to_patient" placeholder="Mother, spouse, sibling"
+                                                data-validate-field="relationship_to_patient" placeholder="Mother, spouse, etc"
                                                 class="{{ $fieldClass('relationship_to_patient') }}">
                                             @error('relationship_to_patient')
                                                 <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
@@ -604,12 +604,7 @@
                                 {{-- Header --}}
                                 <div class="flex items-center gap-3 mb-8 pb-6 border-b border-[#e4eff8]">
                                     <div class="w-8 h-8 bg-[#0086da] flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
-                                            stroke-width="2.5" viewBox="0 0 24 24">
-                                            <path stroke-linecap="square"
-                                                d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 2 2 0 01-.45-2.11l1.27-1.27a16 16 0 01-6-6L6.09 7.91a2 2 0 01-2.11-.45A19.79 19.79 0 01.1 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.1.67.24 1.34.43 2" />
-                                            <path stroke-linecap="square" d="M22 2l-7 20-4-9-9-4 20-7z" />
-                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
                                     </div>
                                     <div>
                                         <div class="text-[.6rem] font-bold uppercase tracking-[.2em] text-[#0086da]">Step 3
@@ -644,6 +639,7 @@
                                 <div id="otpStatusPanel" class="hidden"
                                     data-expires-at="{{ $guestEmailOtpExpiresAt }}"
                                     data-cooldown-until="{{ $guestEmailOtpCooldownUntil }}"
+                                    data-lock-until="{{ $guestEmailOtpResendLockedUntil }}"
                                     data-resends-remaining="{{ $this->guestOtpResendsRemaining }}">
                                 </div>
 
@@ -908,7 +904,9 @@
             const resendBtn = document.getElementById('otpResendButton');
             const expSecs = secondsUntil(panel.dataset.expiresAt || '');
             const coolSecs = secondsUntil(panel.dataset.cooldownUntil || '');
+            const lockSecs = secondsUntil(panel.dataset.lockUntil || '');
             const remaining = Number(panel.dataset.resendsRemaining || 0);
+            const effectiveRemaining = lockSecs <= 0 && remaining < 1 && panel.dataset.lockUntil ? 3 : remaining;
 
             if (expiryText) {
                 expiryText.textContent = expSecs > 0
@@ -916,15 +914,17 @@
                     : 'Code expired. Request a new OTP.';
             }
             if (resendLabel) {
-                if (remaining < 1) {
+                if (lockSecs > 0) {
+                    resendLabel.textContent = `Resend OTP locked (${formatCountdown(lockSecs)})`;
+                } else if (effectiveRemaining < 1) {
                     resendLabel.textContent = 'Resend OTP (0/3)';
                 } else if (coolSecs > 0) {
                     resendLabel.textContent = `Resend OTP (${formatCountdown(coolSecs)})`;
                 } else {
-                    resendLabel.textContent = `Resend OTP (${remaining}/3)`;
+                    resendLabel.textContent = `Resend OTP (${effectiveRemaining}/3)`;
                 }
             }
-            if (resendBtn) resendBtn.disabled = coolSecs > 0 || remaining < 1 || resendBtn.dataset.tapLocked === '1';
+            if (resendBtn) resendBtn.disabled = lockSecs > 0 || coolSecs > 0 || effectiveRemaining < 1 || resendBtn.dataset.tapLocked === '1';
         }
 
         function bindSingleTapGuards() {
@@ -987,7 +987,7 @@
                     `[data-validate-field="${key}"]`);
                 if (!target) return;
                 err = document.createElement('p');
-                err.className = 'text-[.75rem] text-red-500 mt-1.5 validation-error';
+                err.className = 'block w-full mt-1.5 break-words text-[.75rem] text-red-500 validation-error';
                 err.dataset.errorFor = key;
                 // If target is a container div, append inside so error renders below children
                 if (target.tagName === 'DIV') {

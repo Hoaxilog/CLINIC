@@ -28,8 +28,6 @@
         </div>
     </div>
 
-    {{-- Flash toast --}}
-    <x-flash-toast />
 
     {{-- ── Admins ── --}}
     <section class="mb-6 border border-[#e4eff8] bg-white shadow-[0_20px_48px_rgba(0,134,218,.07)]">

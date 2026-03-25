@@ -35,6 +35,9 @@ class AppointmentCalendar extends Component
 
     public $timeSlots = [];
 
+    /** @var array<int, array<string, mixed>> */
+    public $rescheduleTimeOptions = [];
+
     /** @var array<int, array<string, mixed>>|Collection<int, object> */
     public $appointments = [];
 
@@ -227,6 +230,61 @@ class AppointmentCalendar extends Component
         }
     }
 
+    protected function refreshRescheduleTimeOptions(): void
+    {
+        $this->rescheduleTimeOptions = [];
+
+        if (! $this->isViewing || ! $this->isRescheduling || $this->appointmentStatus !== 'Pending') {
+            return;
+        }
+
+        $slotDate = $this->selectedDate ?: $this->appointmentDate;
+        if (empty($slotDate)) {
+            return;
+        }
+
+        $durationInMinutes = $this->resolveSelectedServiceDurationMinutes();
+
+        foreach ($this->timeSlots as $time) {
+            $slotStart = Carbon::parse($slotDate.' '.$time)->seconds(0);
+            $slotEnd = $slotStart->copy()->addMinutes($durationInMinutes);
+            $approvedConflicts = $this->countApprovedConflictsForRange($slotStart, $slotEnd);
+            $requestCount = $this->countActiveRequestsForExactSlot($slotStart);
+            $isPast = $slotStart->lt(now());
+            $isBlocked = $this->hasBlockedConflict($slotStart, $slotEnd);
+            $isApprovedFull = $approvedConflicts >= self::SLOT_CAPACITY;
+            $isRequestFull = $requestCount >= self::REQUEST_SLOT_CAP;
+
+            $status = null;
+            if ($isPast) {
+                $status = 'Past';
+            } elseif ($isBlocked) {
+                $status = 'Blocked';
+            } elseif ($isApprovedFull) {
+                $status = 'Full';
+            } elseif ($isRequestFull) {
+                $status = 'Max Requests';
+            }
+
+            $this->rescheduleTimeOptions[] = [
+                'value' => $time,
+                'label' => Carbon::parse($time)->format('g:i A'),
+                'disabled' => $isPast || $isBlocked || $isApprovedFull || $isRequestFull,
+                'status' => $status,
+            ];
+        }
+
+        if (! empty($this->selectedTime)) {
+            $selectedTime = substr((string) $this->selectedTime, 0, 5);
+            $selectedOption = collect($this->rescheduleTimeOptions)->firstWhere('value', $selectedTime);
+
+            if (($selectedOption['disabled'] ?? false) === true) {
+                $this->selectedTime = null;
+                $this->endTime = null;
+            }
+        }
+    }
+
     public function loadAppointments()
     {
         $this->refreshAppointments();
@@ -350,6 +408,7 @@ class AppointmentCalendar extends Component
         $this->selectedPendingPatientId = null;
         $this->pendingApprovalSafety = [];
         $this->isRescheduling = false;
+        $this->rescheduleTimeOptions = [];
 
     }
 
@@ -422,8 +481,6 @@ class AppointmentCalendar extends Component
             $this->occupiedSlotCounts,
             $this->blockedSlotMap
         );
-
-        $this->isBlockMode = false;
 
         if (! $result['ok']) {
             if ($result['error'] ?? false) {
@@ -550,6 +607,8 @@ class AppointmentCalendar extends Component
         } else {
             $this->endTime = null;
         }
+
+        $this->refreshRescheduleTimeOptions();
     }
 
     public function updatedSelectedTime($value): void
@@ -557,6 +616,11 @@ class AppointmentCalendar extends Component
         if (! empty($this->selectedService)) {
             $this->updatedSelectedService($this->selectedService);
         }
+    }
+
+    public function updatedSelectedDate($value): void
+    {
+        $this->refreshRescheduleTimeOptions();
     }
 
     public function updatedBirthDate($value): void
@@ -767,6 +831,38 @@ class AppointmentCalendar extends Component
         return app(BlockedSlotService::class)->isEnabled();
     }
 
+    protected function resolveSelectedServiceDurationMinutes(): int
+    {
+        $service = $this->servicesList->firstWhere('id', $this->selectedService);
+
+        return max(60, $this->durationToMinutes($service?->duration));
+    }
+
+    protected function countApprovedConflictsForRange(Carbon $proposedStart, Carbon $proposedEnd): int
+    {
+        return DB::table('appointments')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->where('appointments.id', '!=', $this->viewingAppointmentId)
+            ->where(function ($query) use ($proposedStart, $proposedEnd) {
+                $existingStart = 'appointments.appointment_date';
+                $existingEnd = DB::raw('DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)');
+
+                $query->where($existingStart, '<', $proposedEnd->toDateTimeString())
+                    ->where($existingEnd, '>', $proposedStart->toDateTimeString())
+                    ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES);
+            })
+            ->count();
+    }
+
+    protected function countActiveRequestsForExactSlot(Carbon $slotStart): int
+    {
+        return DB::table('appointments')
+            ->where('id', '!=', $this->viewingAppointmentId)
+            ->where('appointment_date', $slotStart->toDateTimeString())
+            ->whereNotIn('status', self::INACTIVE_APPOINTMENT_STATUSES)
+            ->count();
+    }
+
     public function viewAppointment($appointmentId)
     {
         // Fast path: use already loaded weekly data.
@@ -936,12 +1032,14 @@ class AppointmentCalendar extends Component
             $this->selectedTime = substr((string) $this->selectedTime, 0, 5);
         }
         $this->updatedSelectedService($this->selectedService);
+        $this->refreshRescheduleTimeOptions();
         $this->resetValidation(['selectedDate', 'selectedTime', 'conflict']);
     }
 
     public function cancelPendingReschedule(): void
     {
         $this->isRescheduling = false;
+        $this->rescheduleTimeOptions = [];
         $this->resetValidation(['selectedDate', 'selectedTime', 'conflict']);
 
         if ($this->viewingAppointmentId) {
@@ -982,18 +1080,7 @@ class AppointmentCalendar extends Component
             return;
         }
 
-        $approvedConflicts = DB::table('appointments')
-            ->join('services', 'appointments.service_id', '=', 'services.id')
-            ->where('appointments.id', '!=', $this->viewingAppointmentId)
-            ->where(function ($query) use ($proposedStart, $proposedEnd) {
-                $existingStart = 'appointments.appointment_date';
-                $existingEnd = DB::raw('DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)');
-
-                $query->where($existingStart, '<', $proposedEnd->toDateTimeString())
-                    ->where($existingEnd, '>', $proposedStart->toDateTimeString())
-                    ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES);
-            })
-            ->count();
+        $approvedConflicts = $this->countApprovedConflictsForRange($proposedStart, $proposedEnd);
 
         if ($approvedConflicts >= self::SLOT_CAPACITY) {
             $this->addError('conflict', 'This time slot already has two approved appointments.');
@@ -1001,11 +1088,7 @@ class AppointmentCalendar extends Component
             return;
         }
 
-        $requestCountInTargetSlot = DB::table('appointments')
-            ->where('id', '!=', $this->viewingAppointmentId)
-            ->where('appointment_date', $proposedStart->toDateTimeString())
-            ->whereNotIn('status', self::INACTIVE_APPOINTMENT_STATUSES)
-            ->count();
+        $requestCountInTargetSlot = $this->countActiveRequestsForExactSlot($proposedStart);
 
         if ($requestCountInTargetSlot >= self::REQUEST_SLOT_CAP) {
             $this->addError('conflict', 'This time slot already reached the maximum of 5 requests.');
@@ -1022,7 +1105,7 @@ class AppointmentCalendar extends Component
         $this->isRescheduling = false;
         $this->loadAppointments();
         $this->viewAppointment((int) $this->viewingAppointmentId);
-        $this->dispatch('flash-message', type: 'success', message: 'Appointment request rescheduled successfully.');
+        $this->dispatch('flash-message', type: 'success', message: 'Appointment rescheduled and approved successfully.');
     }
 
 
@@ -1166,8 +1249,8 @@ class AppointmentCalendar extends Component
             $appointment
         );
 
-        $this->viewingPatientId = (int) $patient->id;
         $this->loadAppointments();
+        $this->viewAppointment((int) $this->viewingAppointmentId);
         $this->dispatch('flash-message', type: 'success', message: $appointment->status === 'Waiting'
             ? 'Patient record linked. You can now admit the patient.'
             : 'Request linked to existing patient.');
@@ -1200,10 +1283,8 @@ class AppointmentCalendar extends Component
             $appointment
         );
 
-        $this->viewingPatientId = $patientId;
-        $this->selectedPendingPatientId = $patientId;
         $this->loadAppointments();
-        $this->hydratePendingReviewContext((object) array_merge((array) $appointment, ['patient_id' => $patientId]));
+        $this->viewAppointment((int) $this->viewingAppointmentId);
         $this->dispatch('flash-message', type: 'success', message: $appointment->status === 'Waiting'
             ? 'New patient created and linked. You can now admit the patient.'
             : 'New patient created and linked successfully.');
@@ -1233,10 +1314,8 @@ class AppointmentCalendar extends Component
             $appointment
         );
 
-        $this->viewingPatientId = null;
-        $this->selectedPendingPatientId = null;
         $this->loadAppointments();
-        $this->hydratePendingReviewContext((object) array_merge((array) $appointment, ['patient_id' => null]));
+        $this->viewAppointment((int) $this->viewingAppointmentId);
         $this->dispatch('flash-message', type: 'success', message: 'Appointment unlinked. Staff can now relink to the correct patient record.');
     }
 

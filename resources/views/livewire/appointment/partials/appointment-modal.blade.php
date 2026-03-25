@@ -156,12 +156,24 @@
                     <div>
                         <label class="{{ $labelClass }}">Start Time</label>
                         @if ($isViewing && $appointmentStatus === 'Pending' && $isRescheduling)
-                            <select wire:model.live="selectedTime" class="{{ $inputBase }}">
-                                <option value="">-- Select Time --</option>
-                                @foreach ($timeSlots as $time)
-                                    <option value="{{ $time }}">{{ \Carbon\Carbon::parse($time)->format('g:i A') }}</option>
-                                @endforeach
-                            </select>
+                            <div class="relative">
+                                <select wire:model.live="selectedTime" wire:loading.attr="disabled" wire:target="selectedDate"
+                                    class="{{ $inputBase }} pr-12 disabled:cursor-wait disabled:bg-[#f8fbfe] disabled:text-[#7f94a3]">
+                                    <option value="">-- Select Time --</option>
+                                    @foreach ($rescheduleTimeOptions as $slot)
+                                        <option value="{{ $slot['value'] }}" @disabled($slot['disabled'])>
+                                            {{ $slot['label'] }}{{ !empty($slot['status']) ? ' · '.$slot['status'] : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-10 hidden items-center"
+                                    wire:loading.flex wire:target="selectedDate">
+                                    <svg class="h-4 w-4 animate-spin text-[#0086da]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle class="opacity-20" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5"></circle>
+                                        <path class="opacity-100" fill="currentColor" d="M12 3a9 9 0 0 1 9 9h-3a6 6 0 0 0-6-6V3z"></path>
+                                    </svg>
+                                </div>
+                            </div>
                             @error('selectedTime')<span class="mt-1 block text-xs text-red-500">{{ $message }}</span>@enderror
                         @elseif($isViewing)
                             {{-- Plain text — timeSlots is empty in view mode so use a readonly input --}}

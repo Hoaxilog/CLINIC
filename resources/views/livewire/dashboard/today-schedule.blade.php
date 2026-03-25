@@ -461,5 +461,5 @@
             </div>
         </div>
     </div>
-    @include('components.flash-toast')
+
 </div>

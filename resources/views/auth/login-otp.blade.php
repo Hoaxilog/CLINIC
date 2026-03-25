@@ -73,16 +73,16 @@
 
         <form method="POST" action="{{ route('login.otp.resend') }}" class="mt-4">
             @csrf
-            <button id="resendOtpButton" type="submit" @disabled(($otpSendCount ?? 1) >= ($otpMaxSends ?? 3) || ($resendCooldownRemaining ?? 0) > 0)
+            <button id="resendOtpButton" type="submit" @disabled(($resendLockRemaining ?? 0) > 0 || ($resendCooldownRemaining ?? 0) > 0)
                 data-cooldown="{{ (int) ($resendCooldownRemaining ?? 0) }}"
-                data-max-reached="{{ (int) (($otpSendCount ?? 1) >= ($otpMaxSends ?? 3)) }}"
+                data-lock="{{ (int) ($resendLockRemaining ?? 0) }}"
                 class="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60">
                 RESEND CODE
             </button>
             <p id="resendOtpHint" class="mt-2 text-center text-xs text-gray-500">
-                OTP send {{ (int) ($otpSendCount ?? 1) }} of {{ (int) ($otpMaxSends ?? 3) }}
-                @if (($otpSendCount ?? 1) >= ($otpMaxSends ?? 3))
-                    - limit reached for this login session.
+                OTP resend {{ (int) ($otpResendCount ?? 0) }} of {{ (int) ($otpMaxResends ?? 3) }}
+                @if (($resendLockRemaining ?? 0) > 0)
+                    - resend locked for {{ (int) ($resendLockRemaining ?? 0) }}s.
                 @elseif(($resendCooldownRemaining ?? 0) > 0)
                     - resend available in {{ (int) ($resendCooldownRemaining ?? 0) }}s.
                 @endif
@@ -164,10 +164,24 @@
 
         if (resendButton && resendHint) {
             let remaining = Number(resendButton.dataset.cooldown || 0);
-            const maxReached = resendButton.dataset.maxReached === '1';
+            let lockRemaining = Number(resendButton.dataset.lock || 0);
 
-            if (maxReached) {
-                resendHint.textContent = 'OTP send limit reached for this login session.';
+            if (lockRemaining > 0) {
+                resendButton.disabled = true;
+
+                const tickLock = () => {
+                    if (lockRemaining <= 0) {
+                        resendButton.disabled = false;
+                        resendHint.textContent = 'OTP resend lock expired. You can request a new OTP now.';
+                        return;
+                    }
+
+                    resendHint.textContent = `OTP resend locked for ${lockRemaining}s.`;
+                    lockRemaining -= 1;
+                    window.setTimeout(tickLock, 1000);
+                };
+
+                tickLock();
             } else if (remaining > 0) {
                 resendButton.disabled = true;
 

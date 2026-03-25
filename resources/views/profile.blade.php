@@ -24,8 +24,6 @@
 
     <div id="staff-profile-wrap" class="mx-auto flex w-full max-w-[1400px] flex-col gap-7">
 
-            {{-- Flash toast --}}
-            <x-flash-toast />
 
             <div class="border-b border-[#e4eff8] pb-6">
                 <h1 class="text-[1.7rem] font-extrabold leading-[1.1] tracking-[-.02em] text-[#1a2e3b]">My Profile</h1>

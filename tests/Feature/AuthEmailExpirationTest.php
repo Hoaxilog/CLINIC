@@ -28,7 +28,7 @@ class AuthEmailExpirationTest extends TestCase
         });
     }
 
-    public function test_login_otp_session_expires_in_five_minutes(): void
+    public function test_login_otp_session_expires_in_three_minutes(): void
     {
         Mail::fake();
 
@@ -52,11 +52,11 @@ class AuthEmailExpirationTest extends TestCase
         $pendingOtp = session('pending_otp_login');
 
         $this->assertNotNull($pendingOtp);
-        $this->assertTrue(now()->addMinutes(4)->lt($pendingOtp['expires_at']));
-        $this->assertTrue(now()->addMinutes(6)->gt($pendingOtp['expires_at']));
+        $this->assertTrue(now()->addMinutes(2)->lt($pendingOtp['expires_at']));
+        $this->assertTrue(now()->addMinutes(4)->gt($pendingOtp['expires_at']));
     }
 
-    public function test_email_verification_link_expires_after_five_minutes(): void
+    public function test_email_verification_link_expires_after_three_minutes(): void
     {
         $userId = DB::table('users')->insertGetId([
             'username' => 'patient@example.com',
@@ -66,12 +66,12 @@ class AuthEmailExpirationTest extends TestCase
             'email_verified_at' => null,
             'google_id' => null,
             'verification_token' => 'expired-verification-token',
-            'created_at' => now()->subMinutes(6),
-            'updated_at' => now()->subMinutes(6),
+            'created_at' => now()->subMinutes(4),
+            'updated_at' => now()->subMinutes(4),
         ]);
 
         $this->get(route('verification.verify', ['id' => $userId, 'token' => 'expired-verification-token']))
-            ->assertRedirect(route('verification.notice'));
+            ->assertRedirect(route('verification.expired'));
 
         $this->assertNull(
             DB::table('users')->where('id', $userId)->value('verification_token')

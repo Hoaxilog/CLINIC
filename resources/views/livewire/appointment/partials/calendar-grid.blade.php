@@ -96,11 +96,9 @@
                                 <button type="button"
                                     wire:key="mobile-slot-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $time) }}"
                                         @if ($isBlockMode) @if ($mobileIsBlocked)
-                                            wire:click="unblockSlot({{ $mobileBlockedSlot->id }})"
-                                            wire:confirm="Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($mobileBlockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($mobileBlockedSlot->end_time)->format('h:i A') }}?"
+                                            @click="confirm('Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($mobileBlockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($mobileBlockedSlot->end_time)->format('h:i A') }}?') && $wire.unblockSlot({{ $mobileBlockedSlot->id }})"
                                         @elseif(!$mobileHasAppointments)
-                                            wire:click="blockSlot('{{ $date->toDateString() }}', '{{ $time }}')"
-                                            wire:confirm="Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?" @endif
+                                            @click="confirm('Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?') && $wire.blockSlot('{{ $date->toDateString() }}', '{{ $time }}')" @endif
                                     @elseif($mobileIsBlocked)
                                         @click.prevent="showBlocked('{{ $date->toDateString() }}', '{{ $time }}')"
                                     @elseif(!$mobileIsOccupied) @click="modalOpen = true"
@@ -150,11 +148,9 @@
 
                     <div wire:key="calendar-slot-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $time) }}"
                         @if ($isBlockMode) @if ($isBlocked)
-                                wire:click="unblockSlot({{ $blockedSlot->id }})"
-                                wire:confirm="Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($blockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($blockedSlot->end_time)->format('h:i A') }}?"
+                                @click="confirm('Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($blockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($blockedSlot->end_time)->format('h:i A') }}?') && $wire.unblockSlot({{ $blockedSlot->id }})"
                             @elseif(!$hasAppointments)
-                                wire:click="blockSlot('{{ $date->toDateString() }}', '{{ $time }}')"
-                                wire:confirm="Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?" @endif
+                                @click="confirm('Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?') && $wire.blockSlot('{{ $date->toDateString() }}', '{{ $time }}')" @endif
                         @elseif($isBlocked)
                             @click.prevent="showBlocked('{{ $date->toDateString() }}', '{{ $time }}')"
                         @elseif(!$isOccupied) @click="modalOpen = true"

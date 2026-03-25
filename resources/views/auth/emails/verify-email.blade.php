@@ -164,7 +164,7 @@
                     so we can activate your account and keep your patient access secure.</p>
 
                 <div class="info-box">
-                    <p class="text" style="margin: 0;">This verification link expires in 5 minutes. Once verified, you
+                    <p class="text" style="margin: 0;">This verification link expires in {{ config('verification.link_expires_in_minutes') }} minutes. Once verified, you
                         can sign in normally and continue booking appointments from your dashboard.</p>
                 </div>
 

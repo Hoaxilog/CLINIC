@@ -108,15 +108,15 @@ class ForgotPasswordUiTest extends TestCase
             ->assertSee('border-red-500', false);
     }
 
-    public function test_reset_password_link_expires_after_five_minutes(): void
+    public function test_reset_password_link_expires_after_three_minutes(): void
     {
         DB::table('password_reset_tokens')->insert([
             'email' => 'patient@example.com',
             'token' => 'expired-token',
-            'created_at' => now()->subMinutes(6),
+            'created_at' => now()->subMinutes(4),
         ]);
 
         $this->get(route('password.reset', ['token' => 'expired-token', 'email' => 'patient@example.com']))
-            ->assertRedirect('/forgot-password');
+            ->assertRedirect(route('password.expired'));
     }
 }

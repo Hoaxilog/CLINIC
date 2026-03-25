@@ -15,16 +15,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class LoginController extends Controller
 {
-    private const OTP_EXPIRES_IN_MINUTES = 5;
-
-    private const OTP_RESEND_COOLDOWN_SECONDS = 60;
-
-    private const OTP_MAX_SENDS_PER_SESSION = 3;
 
     // Show Login Page
     public function index()
@@ -111,10 +107,7 @@ class LoginController extends Controller
                 return $this->startOtpChallenge($request, $user);
             }
 
-            Auth::loginUsingId($user->id);
-            $request->session()->regenerate();
-
-            return $this->redirectByRole($user->role);
+            return $this->completeLogin($request, $user);
         }
 
         if ($user && empty($user->password) && ! empty($user->google_id)) {
@@ -152,10 +145,7 @@ class LoginController extends Controller
                         return $this->startOtpChallenge($request, $user);
                     }
 
-                    Auth::loginUsingId($user->id);
-                    $request->session()->regenerate();
-
-                    return $this->redirectByRole($user->role);
+                    return $this->completeLogin($request, $user);
                 }
 
                 DB::table('users')
@@ -170,10 +160,7 @@ class LoginController extends Controller
                     return $this->startOtpChallenge($request, $user);
                 }
 
-                Auth::loginUsingId($user->id);
-                $request->session()->regenerate();
-
-                return $this->redirectByRole($user->role);
+                return $this->completeLogin($request, $user);
             }
 
             $patientRoleId = DB::table('roles')
@@ -195,10 +182,9 @@ class LoginController extends Controller
                 'updated_at' => now(),
             ]);
 
-            Auth::loginUsingId($newUserId);
-            $request->session()->regenerate();
+            $newUser = DB::table('users')->where('id', $newUserId)->first();
 
-            return redirect()->route('patient.dashboard');
+            return $this->completeLogin($request, $newUser);
         } catch (Exception $th) {
             return redirect('/login')->with('failed', 'Google Login failed. Please try again.');
         }
@@ -228,16 +214,24 @@ class LoginController extends Controller
         $remainingCooldown = 0;
 
         if ($lastSentAt) {
-            $elapsed = now()->diffInSeconds($lastSentAt);
-            $remainingCooldown = max(0, self::OTP_RESEND_COOLDOWN_SECONDS - $elapsed);
+            $elapsed = $lastSentAt->diffInSeconds(now(), false);
+            $remainingCooldown = max(0, $this->otpResendCooldownSeconds() - $elapsed);
         }
+
+        $resendState = $this->otpResendState((string) $pendingOtp['email']);
+        $lockRemaining = $this->otpResendLockRemaining($resendState);
+        $resendCount = max(
+            (int) ($pendingOtp['resend_count'] ?? 0),
+            $this->otpResendCount($resendState)
+        );
 
         return view('auth.login-otp', [
             'email' => $pendingOtp['email'],
             'expiresAt' => $pendingOtp['expires_at'],
-            'otpSendCount' => (int) ($pendingOtp['send_count'] ?? 1),
-            'otpMaxSends' => self::OTP_MAX_SENDS_PER_SESSION,
+            'otpResendCount' => $resendCount,
+            'otpMaxResends' => $this->otpMaxResends(),
             'resendCooldownRemaining' => $remainingCooldown,
+            'resendLockRemaining' => $lockRemaining,
         ]);
     }
 
@@ -257,7 +251,7 @@ class LoginController extends Controller
         }
 
         $verifyKey = $this->otpVerifyThrottleKey((int) $pendingOtp['user_id'], (string) $request->ip());
-        if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
+        if (RateLimiter::tooManyAttempts($verifyKey, $this->otpVerifyMaxAttempts())) {
             $seconds = RateLimiter::availableIn($verifyKey);
             $minutes = max(1, (int) ceil($seconds / 60));
 
@@ -273,7 +267,7 @@ class LoginController extends Controller
         }
 
         if (! Hash::check($request->otp, $pendingOtp['code_hash'])) {
-            RateLimiter::hit($verifyKey, 300);
+            RateLimiter::hit($verifyKey, $this->otpVerifyBlockSeconds());
 
             return back()->withErrors([
                 'otp' => 'Invalid OTP code.',
@@ -290,8 +284,7 @@ class LoginController extends Controller
 
         RateLimiter::clear($verifyKey);
         $request->session()->forget('pending_otp_login');
-        Auth::loginUsingId($user->id);
-        $request->session()->regenerate();
+        $this->completeLogin($request, $user, false);
         $this->rememberTrustedOtpDevice($user->id);
 
         return $this->redirectByRole($user->role);
@@ -305,16 +298,27 @@ class LoginController extends Controller
             return redirect()->route('login')->with('failed', 'Your OTP session has expired. Please log in again.');
         }
 
-        $sendCount = (int) ($pendingOtp['send_count'] ?? 1);
-        if ($sendCount >= self::OTP_MAX_SENDS_PER_SESSION) {
-            return back()->with('failed', 'Maximum OTP sends reached for this session. Please log in again.');
+        $resendState = $this->otpResendState((string) $pendingOtp['email']);
+        $lockRemaining = $this->otpResendLockRemaining($resendState);
+        if ($lockRemaining > 0) {
+            $minutes = max(1, (int) ceil($lockRemaining / 60));
+
+            return back()->with('failed', "OTP resend limit reached. Try again in {$minutes} minute(s).");
+        }
+
+        $resendCount = max(
+            (int) ($pendingOtp['resend_count'] ?? 0),
+            $this->otpResendCount($resendState)
+        );
+        if ($resendCount >= $this->otpMaxResends()) {
+            return back()->with('failed', 'OTP resend limit reached. Please wait for the lock window to expire.');
         }
 
         if (! empty($pendingOtp['last_sent_at'])) {
             $lastSentAt = Carbon::parse($pendingOtp['last_sent_at']);
-            $elapsed = now()->diffInSeconds($lastSentAt);
-            if ($elapsed < self::OTP_RESEND_COOLDOWN_SECONDS) {
-                $remaining = self::OTP_RESEND_COOLDOWN_SECONDS - $elapsed;
+            $elapsed = $lastSentAt->diffInSeconds(now(), false);
+            if ($elapsed < $this->otpResendCooldownSeconds()) {
+                $remaining = $this->otpResendCooldownSeconds() - $elapsed;
 
                 return back()->with('failed', "Please wait {$remaining} second(s) before resending OTP.");
             }
@@ -336,8 +340,9 @@ class LoginController extends Controller
             return redirect()->route('login')->with('failed', 'We could not complete the login. Please try again.');
         }
 
-        RateLimiter::hit($resendKey, 600);
-        $this->issueOtpChallenge($request, $user, $pendingOtp);
+        RateLimiter::hit($resendKey, $this->otpResendLockSeconds());
+        $newResendCount = $this->recordOtpResend((string) $pendingOtp['email']);
+        $this->issueOtpChallenge($request, $user, $pendingOtp, true, $newResendCount);
 
         return back()->with('success', 'A new OTP was sent to your email.');
     }
@@ -374,10 +379,17 @@ class LoginController extends Controller
     private function startOtpChallenge(Request $request, $user)
     {
         if ($this->hasTrustedOtpDevice($request, (int) $user->id)) {
-            Auth::loginUsingId($user->id);
-            $request->session()->regenerate();
+            return $this->completeLogin($request, $user);
+        }
 
-            return $this->redirectByRole($user->role);
+        $lockRemaining = $this->otpResendLockRemaining($this->otpResendState((string) $user->email));
+        if ($lockRemaining > 0) {
+            $minutes = max(1, (int) ceil($lockRemaining / 60));
+
+            return redirect()
+                ->route('login')
+                ->with('failed', "OTP resend limit reached. Try again in {$minutes} minute(s).")
+                ->withInput($request->only('email'));
         }
 
         $this->issueOtpChallenge($request, $user);
@@ -387,11 +399,13 @@ class LoginController extends Controller
             ->with('success', 'We sent a one-time code to your email.');
     }
 
-    private function issueOtpChallenge(Request $request, $user, ?array $previousOtpData = null): void
+    private function issueOtpChallenge(Request $request, $user, ?array $previousOtpData = null, bool $isResend = false, ?int $resendCountOverride = null): void
     {
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $expiresAt = now()->addMinutes(self::OTP_EXPIRES_IN_MINUTES);
-        $newSendCount = ((int) ($previousOtpData['send_count'] ?? 0)) + 1;
+        $expiresAt = now()->addMinutes($this->otpExpiresInMinutes());
+        $newResendCount = $resendCountOverride ?? ($isResend
+            ? ((int) ($previousOtpData['resend_count'] ?? 0)) + 1
+            : 0);
         $sentAt = now();
 
         $request->session()->put('pending_otp_login', [
@@ -400,7 +414,7 @@ class LoginController extends Controller
             'role' => $user->role,
             'code_hash' => Hash::make($code),
             'expires_at' => $expiresAt,
-            'send_count' => $newSendCount,
+            'resend_count' => $newResendCount,
             'last_sent_at' => $sentAt->toDateTimeString(),
         ]);
 
@@ -422,6 +436,85 @@ class LoginController extends Controller
     private function otpResendThrottleKey(int $userId, string $ip): string
     {
         return 'otp-resend:'.$userId.'|'.$ip;
+    }
+
+    private function otpExpiresInMinutes(): int
+    {
+        return max(1, (int) config('verification.otp_expires_in_minutes', 3));
+    }
+
+    private function otpResendCooldownSeconds(): int
+    {
+        return max(1, (int) config('verification.resend_cooldown_seconds', 60));
+    }
+
+    private function otpMaxResends(): int
+    {
+        return max(0, (int) config('verification.max_resends', 3));
+    }
+
+    private function otpResendLockSeconds(): int
+    {
+        return max(1, (int) config('verification.otp_resend_lock_seconds', 600));
+    }
+
+    private function otpVerifyMaxAttempts(): int
+    {
+        return max(1, (int) config('verification.otp_verify_max_attempts', 5));
+    }
+
+    private function otpVerifyBlockSeconds(): int
+    {
+        return max(1, (int) config('verification.otp_verify_block_seconds', 300));
+    }
+
+    private function otpResendState(string $email): array
+    {
+        return cache()->get($this->otpResendStateKey($email), [
+            'count' => 0,
+            'locked_until' => null,
+        ]);
+    }
+
+    private function otpResendCount(array $state): int
+    {
+        return (int) ($state['count'] ?? 0);
+    }
+
+    private function otpResendLockRemaining(array $state): int
+    {
+        $lockedUntil = $state['locked_until'] ?? null;
+
+        if (! $lockedUntil) {
+            return 0;
+        }
+
+        return max(0, now()->diffInSeconds(Carbon::parse($lockedUntil), false));
+    }
+
+    private function recordOtpResend(string $email): int
+    {
+        $state = $this->otpResendState($email);
+        $count = min($this->otpMaxResends(), $this->otpResendCount($state) + 1);
+        $lockedUntil = $count >= $this->otpMaxResends()
+            ? now()->addSeconds($this->otpResendLockSeconds())->toDateTimeString()
+            : null;
+
+        cache()->put(
+            $this->otpResendStateKey($email),
+            [
+                'count' => $count,
+                'locked_until' => $lockedUntil,
+            ],
+            now()->addSeconds($this->otpResendLockSeconds())
+        );
+
+        return $count;
+    }
+
+    private function otpResendStateKey(string $email): string
+    {
+        return 'login-otp-resend-state:'.sha1(Str::lower(trim($email)));
     }
 
     private function hasTrustedOtpDevice(Request $request, int $userId): bool
@@ -463,5 +556,57 @@ class LoginController extends Controller
     private function trustedOtpCacheKey(int $userId, string $token): string
     {
         return 'trusted-otp:'.$userId.':'.hash('sha256', $token);
+    }
+
+    private function completeLogin(Request $request, object $user, bool $redirect = true)
+    {
+        Auth::loginUsingId($user->id);
+        $request->session()->regenerate();
+        $this->logSuccessfulLogin($request, $user);
+
+        if (! $redirect) {
+            return null;
+        }
+
+        return $this->redirectByRole($user->role);
+    }
+
+    private function logSuccessfulLogin(Request $request, object $user): void
+    {
+        if (! Schema::hasTable('activity_log')) {
+            return;
+        }
+
+        $loggedAt = now();
+
+        $alreadyLoggedToday = DB::table('activity_log')
+            ->where('event', 'user_logged_in')
+            ->where('subject_type', User::class)
+            ->where('subject_id', $user->id)
+            ->whereDate('created_at', $loggedAt->toDateString())
+            ->exists();
+
+        if ($alreadyLoggedToday) {
+            return;
+        }
+
+        DB::table('activity_log')->insert([
+            'log_name' => 'default',
+            'description' => 'Logged In',
+            'subject_id' => $user->id,
+            'subject_type' => User::class,
+            'causer_id' => $user->id,
+            'causer_type' => User::class,
+            'properties' => json_encode([
+                'attributes' => [
+                    'ip_address' => (string) $request->ip(),
+                    'login_at' => $loggedAt->toDateTimeString(),
+                ],
+            ]),
+            'batch_uuid' => null,
+            'event' => 'user_logged_in',
+            'created_at' => $loggedAt,
+            'updated_at' => $loggedAt,
+        ]);
     }
 }

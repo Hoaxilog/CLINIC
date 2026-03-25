@@ -56,6 +56,11 @@ class PatientDashboardController extends Controller
                 'services.service_name'
             );
 
+        $allAppointments = (clone $appointmentsQuery)
+            ->orderByDesc('appointments.updated_at')
+            ->orderByDesc('appointments.appointment_date')
+            ->get();
+
         $pendingRequests = (clone $appointmentsQuery)
             ->where('appointments.status', 'Pending')
             ->orderBy('appointments.appointment_date', 'asc')
@@ -151,6 +156,8 @@ class PatientDashboardController extends Controller
             $requesterDisplayName = 'Patient';
         }
 
+        $activityLog = $this->buildPatientActivityLog($user, $allAppointments);
+
         return view('patient.dashboard', [
             'user' => $user,
             'requesterDisplayName' => $requesterDisplayName,
@@ -163,6 +170,7 @@ class PatientDashboardController extends Controller
             'dashboardStats' => $dashboardStats,
             'profileCompleteness' => $profileCompleteness,
             'nextAppointmentSummary' => $nextAppointmentSummary,
+            'activityLog' => $activityLog,
             'selfServiceLimitMessage' => $this->selfServiceLimitMessage(),
         ]);
     }
@@ -448,6 +456,276 @@ class PatientDashboardController extends Controller
         }
 
         return (string) ($user->email ?? $user->username ?? 'Patient');
+    }
+
+    protected function buildPatientActivityLog($user, $appointments)
+    {
+        $appointments = collect($appointments);
+
+        $appointmentsById = $appointments
+            ->keyBy(fn ($appointment) => (int) $appointment->id)
+            ->map(fn ($appointment) => [
+                'id' => (int) $appointment->id,
+                'patient_id' => $appointment->patient_id ? (int) $appointment->patient_id : null,
+                'appointment_date' => $appointment->appointment_date,
+                'service_name' => $appointment->service_name ?? 'Service',
+                'status' => $appointment->status ?? null,
+            ])
+            ->all();
+
+        $appointmentIds = array_values(array_filter(array_map('intval', array_keys($appointmentsById))));
+        $patientIds = $appointments
+            ->pluck('patient_id')
+            ->filter(fn ($patientId) => filled($patientId))
+            ->map(fn ($patientId) => (int) $patientId)
+            ->unique()
+            ->values()
+            ->all();
+
+        $activityEntries = collect();
+
+        if (Schema::hasTable('activity_log')) {
+            if (! empty($appointmentIds)) {
+                $appointmentActivities = DB::table('activity_log')
+                    ->where('subject_type', Appointment::class)
+                    ->whereIn('subject_id', $appointmentIds)
+                    ->orderByDesc('created_at')
+                    ->limit(20)
+                    ->get();
+
+                $activityEntries = $activityEntries->merge(
+                    $appointmentActivities
+                        ->map(fn ($activity) => $this->mapAppointmentActivityLogEntry($activity, $appointmentsById))
+                        ->filter()
+                );
+            }
+
+            if (! empty($patientIds)) {
+                $patientActivities = DB::table('activity_log')
+                    ->where('subject_type', 'App\\Models\\Patient')
+                    ->whereIn('subject_id', $patientIds)
+                    ->whereIn('event', ['patient_created', 'patient_updated'])
+                    ->orderByDesc('created_at')
+                    ->limit(10)
+                    ->get();
+
+                $activityEntries = $activityEntries->merge(
+                    $patientActivities
+                        ->map(fn ($activity) => $this->mapProfileActivityLogEntry($activity))
+                        ->filter()
+                );
+            }
+
+            $userActivities = DB::table('activity_log')
+                ->where('subject_type', 'App\\Models\\User')
+                ->where('subject_id', $user->id)
+                ->whereIn('event', ['user_updated', 'user_logged_in'])
+                ->orderByDesc('created_at')
+                ->limit(16)
+                ->get();
+
+            $activityEntries = $activityEntries->merge(
+                $userActivities
+                    ->map(fn ($activity) => $this->mapUserActivityLogEntry($activity))
+                    ->filter()
+            );
+
+            if (! empty($patientIds) && Schema::hasTable('treatment_records')) {
+                $treatmentRecordIds = DB::table('treatment_records')
+                    ->whereIn('patient_id', $patientIds)
+                    ->pluck('id')
+                    ->map(fn ($recordId) => (int) $recordId)
+                    ->all();
+
+                if (! empty($treatmentRecordIds)) {
+                    $treatmentActivities = DB::table('activity_log')
+                        ->where('subject_type', 'App\\Models\\TreatmentRecord')
+                        ->whereIn('subject_id', $treatmentRecordIds)
+                        ->whereIn('event', ['treatment_record_created', 'treatment_record_updated'])
+                        ->orderByDesc('created_at')
+                        ->limit(12)
+                        ->get();
+
+                    $activityEntries = $activityEntries->merge(
+                        $treatmentActivities
+                            ->map(fn ($activity) => $this->mapTreatmentActivityLogEntry($activity))
+                            ->filter()
+                    );
+                }
+            }
+        }
+
+        if (! empty($patientIds) && Schema::hasTable('treatment_records')) {
+            $payments = DB::table('treatment_records')
+                ->whereIn('patient_id', $patientIds)
+                ->whereNotNull('amount_charged')
+                ->where('amount_charged', '>', 0)
+                ->orderByDesc('updated_at')
+                ->orderByDesc('created_at')
+                ->limit(8)
+                ->get([
+                    'id',
+                    'treatment',
+                    'amount_charged',
+                    'created_at',
+                    'updated_at',
+                ]);
+
+            $activityEntries = $activityEntries->merge(
+                $payments->map(function ($payment) {
+                    $loggedAt = $payment->updated_at ?? $payment->created_at ?? now();
+                    $treatmentName = trim((string) ($payment->treatment ?? ''));
+                    $amount = number_format((float) $payment->amount_charged, 2);
+
+                    return [
+                        'key' => 'payment-'.$payment->id,
+                        'type' => 'payment recorded',
+                        'description' => $treatmentName !== ''
+                            ? "Payment of PHP {$amount} recorded for {$treatmentName}."
+                            : "Payment of PHP {$amount} recorded.",
+                        'status' => 'Paid',
+                        'logged_at' => Carbon::parse($loggedAt),
+                    ];
+                })
+            );
+        }
+
+        return $activityEntries
+            ->sortByDesc(fn (array $entry) => $entry['logged_at']->getTimestamp())
+            ->unique('key')
+            ->take(8)
+            ->values();
+    }
+
+    protected function mapAppointmentActivityLogEntry(object $activity, array $appointmentsById): ?array
+    {
+        $event = strtolower((string) ($activity->event ?? ''));
+        $description = strtolower((string) ($activity->description ?? ''));
+        $appointment = $appointmentsById[(int) ($activity->subject_id ?? 0)] ?? null;
+        $serviceName = $appointment['service_name'] ?? 'Appointment';
+        $status = $appointment['status'] ?? null;
+        $appointmentDate = ! empty($appointment['appointment_date'])
+            ? Carbon::parse($appointment['appointment_date'])->format('M d, Y h:i A')
+            : null;
+
+        if (str_contains($event, 'rescheduled') || str_contains($description, 'rescheduled')) {
+            return [
+                'key' => 'appointment-'.((int) ($activity->subject_id ?? 0)).'-updated',
+                'type' => 'appointment updated',
+                'description' => $appointmentDate
+                    ? "{$serviceName} was rescheduled to {$appointmentDate}."
+                    : "{$serviceName} was rescheduled.",
+                'status' => $status,
+                'logged_at' => Carbon::parse($activity->created_at ?? now()),
+            ];
+        }
+
+        if (str_contains($event, 'cancelled') || str_contains($description, 'cancelled')) {
+            return [
+                'key' => 'appointment-'.((int) ($activity->subject_id ?? 0)).'-updated',
+                'type' => 'appointment updated',
+                'description' => $appointmentDate
+                    ? "{$serviceName} on {$appointmentDate} was cancelled."
+                    : "{$serviceName} was cancelled.",
+                'status' => 'Cancelled',
+                'logged_at' => Carbon::parse($activity->created_at ?? now()),
+            ];
+        }
+
+        if (str_contains($event, 'approved') || str_contains($event, 'updated')) {
+            return [
+                'key' => 'appointment-'.((int) ($activity->subject_id ?? 0)).'-updated',
+                'type' => 'appointment updated',
+                'description' => $appointmentDate
+                    ? "{$serviceName} was updated for {$appointmentDate}."
+                    : "{$serviceName} details were updated.",
+                'status' => $status,
+                'logged_at' => Carbon::parse($activity->created_at ?? now()),
+            ];
+        }
+
+        if (str_contains($event, 'created') || str_contains($description, 'created')) {
+            return [
+                'key' => 'appointment-'.((int) ($activity->subject_id ?? 0)).'-created',
+                'type' => 'appointment created',
+                'description' => $appointmentDate
+                    ? "{$serviceName} was created for {$appointmentDate}."
+                    : "{$serviceName} request was created.",
+                'status' => $status,
+                'logged_at' => Carbon::parse($activity->created_at ?? now()),
+            ];
+        }
+
+        return null;
+    }
+
+    protected function mapTreatmentActivityLogEntry(object $activity): ?array
+    {
+        $properties = $this->decodeActivityProperties($activity->properties ?? null);
+        $attributes = is_array($properties['attributes'] ?? null) ? $properties['attributes'] : [];
+        $treatmentName = trim((string) ($attributes['treatment'] ?? ''));
+        $event = strtolower((string) ($activity->event ?? ''));
+        $isUpdate = str_contains($event, 'updated');
+        $actionLabel = $isUpdate ? 'treatment record updated' : 'treatment record added';
+
+        return [
+            'key' => 'activity-'.$activity->id,
+            'type' => $actionLabel,
+            'description' => $treatmentName !== ''
+                ? ucfirst($actionLabel).' for '.$treatmentName.'.'
+                : ucfirst($actionLabel).'.',
+            'status' => null,
+            'logged_at' => Carbon::parse($activity->created_at ?? now()),
+        ];
+    }
+
+    protected function mapProfileActivityLogEntry(object $activity): array
+    {
+        return [
+            'key' => 'activity-'.$activity->id,
+            'type' => 'profile updated',
+            'description' => 'Your profile information was updated.',
+            'status' => 'Updated',
+            'logged_at' => Carbon::parse($activity->created_at ?? now()),
+        ];
+    }
+
+    protected function mapUserActivityLogEntry(object $activity): ?array
+    {
+        $event = strtolower((string) ($activity->event ?? ''));
+
+        if ($event === 'user_logged_in') {
+            $properties = $this->decodeActivityProperties($activity->properties ?? null);
+            $attributes = is_array($properties['attributes'] ?? null) ? $properties['attributes'] : [];
+            $loginAt = ! empty($attributes['login_at'])
+                ? Carbon::parse($attributes['login_at'])
+                : Carbon::parse($activity->created_at ?? now());
+
+            return [
+                'key' => 'activity-'.$activity->id,
+                'type' => 'Logged in',
+                'description' => 'Successfully logged into your account.',
+                'status' => 'Success',
+                'logged_at' => $loginAt,
+            ];
+        }
+
+        return $this->mapProfileActivityLogEntry($activity);
+    }
+
+    protected function decodeActivityProperties($properties): array
+    {
+        if (is_array($properties)) {
+            return $properties;
+        }
+
+        if (is_string($properties) && $properties !== '') {
+            $decoded = json_decode($properties, true);
+
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
     }
 
     protected function validateRescheduleAvailability(Appointment $appointment, string $selectedDate, string $selectedSlot): ?string

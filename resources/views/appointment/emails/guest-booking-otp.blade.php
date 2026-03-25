@@ -161,7 +161,7 @@
                     <span class="otp-code">{{ $otp }}</span>
                 </div>
 
-                <p class="text">This code expires in 5 minutes, at
+                <p class="text">This code expires in {{ config('verification.otp_expires_in_minutes') }} minutes, at
                     <strong style="color: #1a2e3b;">{{ \Carbon\Carbon::parse($expiresAt)->format('g:i A') }}</strong>.
                 </p>
                 <p class="text">If you did not request this, you can ignore this email.</p>

@@ -11,7 +11,6 @@ use Illuminate\Support\Str;
 
 class VerificationController extends Controller
 {
-    private const VERIFICATION_LINK_EXPIRES_IN_MINUTES = 5;
 
     public function showNotice()
     {
@@ -77,6 +76,20 @@ class VerificationController extends Controller
     {
         $request->validate(['email' => 'required|email|exists:users,email']);
 
+        $resendState = $this->resendState((string) $request->email, (string) $request->ip());
+        $remaining = $this->resendCooldownRemaining($resendState);
+        if ($remaining > 0) {
+            return back()->withErrors([
+                'email' => "Please wait {$remaining} second(s) before requesting a new verification email.",
+            ])->withInput();
+        }
+
+        if ($this->resendCount($resendState) >= $this->maxResends()) {
+            return back()->withErrors([
+                'email' => 'You have reached the maximum of 3 resend attempts for this verification flow.',
+            ])->withInput();
+        }
+
         $user = DB::table('users')->where('email', $request->email)->first();
 
         if ($user->email_verified_at) {
@@ -97,6 +110,8 @@ class VerificationController extends Controller
             }
         );
 
+        $this->storeResendState((string) $request->email, (string) $request->ip(), $this->resendCount($resendState) + 1);
+
         return back()->with('success', 'A fresh verification link has been sent.');
     }
 
@@ -109,7 +124,63 @@ class VerificationController extends Controller
         }
 
         return Carbon::parse($issuedAt)
-            ->addMinutes(self::VERIFICATION_LINK_EXPIRES_IN_MINUTES)
+            ->addMinutes($this->linkExpiresInMinutes())
             ->isPast();
+    }
+
+    private function linkExpiresInMinutes(): int
+    {
+        return max(1, (int) config('verification.link_expires_in_minutes', 3));
+    }
+
+    private function resendCooldownSeconds(): int
+    {
+        return max(1, (int) config('verification.resend_cooldown_seconds', 60));
+    }
+
+    private function maxResends(): int
+    {
+        return max(0, (int) config('verification.max_resends', 3));
+    }
+
+    private function resendState(string $email, string $ip): array
+    {
+        return cache()->get($this->resendStateKey($email, $ip), [
+            'count' => 0,
+            'cooldown_until' => null,
+        ]);
+    }
+
+    private function resendCooldownRemaining(array $state): int
+    {
+        $cooldownUntil = $state['cooldown_until'] ?? null;
+
+        if (! $cooldownUntil) {
+            return 0;
+        }
+
+        return max(0, now()->diffInSeconds(Carbon::parse($cooldownUntil), false));
+    }
+
+    private function resendCount(array $state): int
+    {
+        return (int) ($state['count'] ?? 0);
+    }
+
+    private function storeResendState(string $email, string $ip, int $count): void
+    {
+        cache()->put(
+            $this->resendStateKey($email, $ip),
+            [
+                'count' => $count,
+                'cooldown_until' => now()->addSeconds($this->resendCooldownSeconds())->toDateTimeString(),
+            ],
+            now()->addMinutes($this->linkExpiresInMinutes())
+        );
+    }
+
+    private function resendStateKey(string $email, string $ip): string
+    {
+        return 'verification-resend-state:'.sha1(Str::lower(trim($email)).'|'.$ip);
     }
 }

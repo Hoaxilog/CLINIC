@@ -339,7 +339,7 @@
         </div>
     @endif
 
-    @include('components.flash-toast')
+
 
     @push('script')
         <script>

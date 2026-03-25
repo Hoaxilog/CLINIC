@@ -4,6 +4,7 @@ namespace App\Livewire\Appointment;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -24,16 +25,6 @@ class BookAppointment extends Component
     protected const REQUEST_SLOT_CAP = 5;
 
     protected const INACTIVE_APPOINTMENT_STATUSES = ['Cancelled', 'Completed'];
-
-    protected const OTP_MAX_SEND_ATTEMPTS = 4;
-
-    protected const OTP_MAX_SEND_WINDOW_SECONDS = 15 * 60;
-
-    protected const OTP_RESEND_COOLDOWN_SECONDS = 60;
-
-    protected const OTP_MAX_RESENDS = 3;
-
-    protected const OTP_EXPIRES_IN_MINUTES = 5;
 
     // Form data
     public $first_name;
@@ -75,6 +66,8 @@ class BookAppointment extends Component
     public $guestEmailOtpExpiresAt = null;
 
     public $guestEmailOtpCooldownUntil = null;
+
+    public $guestEmailOtpResendLockedUntil = null;
 
     public $guestEmailOtpVerified = false;
 
@@ -258,12 +251,12 @@ class BookAppointment extends Component
             return;
         }
 
+        if (! $this->assertBookingStillAvailable()) {
+            return;
+        }
+
         if (! Auth::check()) {
             if ($this->canResumeGuestOtpStep()) {
-                if (! $this->assertBookingStillAvailable()) {
-                    return;
-                }
-
                 $this->guestEmailOtp = '';
                 $this->resetValidation('guestEmailOtp');
                 $this->otpMessage = 'Enter the 6-digit code we already sent to your email.';
@@ -273,10 +266,6 @@ class BookAppointment extends Component
             }
 
             if (! $this->verifyRecaptchaForGuest()) {
-                return;
-            }
-
-            if (! $this->assertBookingStillAvailable()) {
                 return;
             }
 
@@ -326,13 +315,23 @@ class BookAppointment extends Component
             return;
         }
 
-        if ($isResend && $this->remainingGuestOtpResends() < 1) {
-            $this->addError('guestEmailOtp', 'You can only resend the OTP 3 times. Please submit the form again to request a new OTP session.');
+        $resendState = $this->guestEmailOtpResendState($normalizedEmail);
+        $lockRemaining = $this->guestEmailOtpResendLockRemaining($resendState);
+        if ($lockRemaining > 0) {
+            $seconds = max(1, $lockRemaining);
+            $this->guestEmailOtpResendCount = $this->guestEmailOtpResendStateCount($resendState);
+            $this->guestEmailOtpResendLockedUntil = $resendState['locked_until'] ?? null;
+            $this->addError('guestEmailOtp', "OTP resend limit reached. Please wait {$seconds} second(s) before requesting another OTP.");
 
             return;
         }
 
-        $sendThrottleKey = $this->guestOtpSendThrottleKey($normalizedEmail, (string) request()->ip());
+        if ($isResend && max($this->guestEmailOtpResendCount, $this->guestEmailOtpResendStateCount($resendState)) >= $this->otpMaxResends()) {
+            $this->addError('guestEmailOtp', 'OTP resend limit reached. Please wait for the lock window to expire.');
+
+            return;
+        }
+
         $cooldownKey = $this->guestOtpCooldownThrottleKey($normalizedEmail, (string) request()->ip());
 
         if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
@@ -342,20 +341,11 @@ class BookAppointment extends Component
             return;
         }
 
-        if (RateLimiter::tooManyAttempts($sendThrottleKey, self::OTP_MAX_SEND_ATTEMPTS)) {
-            $seconds = RateLimiter::availableIn($sendThrottleKey);
-            $minutes = max(1, (int) ceil($seconds / 60));
-            $this->addError('guestEmailOtp', 'You have reached the maximum of '.self::OTP_MAX_SEND_ATTEMPTS." OTP sends. Try again in {$minutes} minute(s).");
-
-            return;
-        }
-
-        RateLimiter::hit($cooldownKey, self::OTP_RESEND_COOLDOWN_SECONDS);
-        RateLimiter::hit($sendThrottleKey, self::OTP_MAX_SEND_WINDOW_SECONDS);
+        RateLimiter::hit($cooldownKey, $this->otpResendCooldownSeconds());
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $expiresAt = now()->addMinutes(self::OTP_EXPIRES_IN_MINUTES);
-        $cooldownUntil = now()->addSeconds(self::OTP_RESEND_COOLDOWN_SECONDS);
+        $expiresAt = now()->addMinutes($this->otpExpiresInMinutes());
+        $cooldownUntil = now()->addSeconds($this->otpResendCooldownSeconds());
 
         $this->guestEmailOtpHash = Hash::make($code);
         $this->guestEmailOtpExpiresAt = $expiresAt->toDateTimeString();
@@ -363,7 +353,11 @@ class BookAppointment extends Component
         $this->guestEmailOtpVerified = false;
         $this->guestEmailOtpTargetEmail = $normalizedEmail;
         $this->guestEmailOtp = '';
-        $this->guestEmailOtpResendCount = $isResend ? ((int) $this->guestEmailOtpResendCount + 1) : 0;
+        $this->guestEmailOtpResendCount = $isResend
+            ? $this->recordGuestEmailOtpResend($normalizedEmail)
+            : $this->guestEmailOtpResendStateCount($resendState);
+        $latestResendState = $this->guestEmailOtpResendState($normalizedEmail);
+        $this->guestEmailOtpResendLockedUntil = $latestResendState['locked_until'] ?? null;
 
         Mail::send('appointment.emails.guest-booking-otp', [
             'otp' => $code,
@@ -418,7 +412,7 @@ class BookAppointment extends Component
         }
 
         $verifyThrottleKey = $this->guestOtpVerifyThrottleKey($normalizedEmail, (string) request()->ip());
-        if (RateLimiter::tooManyAttempts($verifyThrottleKey, 5)) {
+        if (RateLimiter::tooManyAttempts($verifyThrottleKey, $this->otpVerifyMaxAttempts())) {
             $seconds = RateLimiter::availableIn($verifyThrottleKey);
             $minutes = max(1, (int) ceil($seconds / 60));
             $this->addError('guestEmailOtp', "Too many OTP attempts. Try again in {$minutes} minute(s).");
@@ -434,7 +428,7 @@ class BookAppointment extends Component
         }
 
         if (! Hash::check((string) $this->guestEmailOtp, (string) $this->guestEmailOtpHash)) {
-            RateLimiter::hit($verifyThrottleKey, 15 * 60);
+            RateLimiter::hit($verifyThrottleKey, $this->otpVerifyBlockSeconds());
             $this->addError('guestEmailOtp', 'Invalid OTP code.');
 
             return;
@@ -915,6 +909,7 @@ class BookAppointment extends Component
         $this->guestEmailOtpHash = null;
         $this->guestEmailOtpExpiresAt = null;
         $this->guestEmailOtpCooldownUntil = null;
+        $this->guestEmailOtpResendLockedUntil = null;
         $this->guestEmailOtpVerified = false;
         $this->guestEmailOtpTargetEmail = null;
         $this->guestEmailOtpResendCount = 0;
@@ -927,7 +922,7 @@ class BookAppointment extends Component
 
     protected function remainingGuestOtpResends(): int
     {
-        return max(0, self::OTP_MAX_RESENDS - (int) $this->guestEmailOtpResendCount);
+        return max(0, $this->otpMaxResends() - (int) $this->guestEmailOtpResendCount);
     }
 
     protected function normalizeEmail(mixed $email): string
@@ -1011,9 +1006,88 @@ class BookAppointment extends Component
         return 'guest-book-otp-send:'.sha1($email.'|'.$ip);
     }
 
+    protected function otpExpiresInMinutes(): int
+    {
+        return max(1, (int) config('verification.otp_expires_in_minutes', 3));
+    }
+
+    protected function otpResendCooldownSeconds(): int
+    {
+        return max(1, (int) config('verification.resend_cooldown_seconds', 60));
+    }
+
+    protected function otpMaxResends(): int
+    {
+        return max(0, (int) config('verification.max_resends', 3));
+    }
+
+    protected function otpResendLockSeconds(): int
+    {
+        return max(1, (int) config('verification.otp_resend_lock_seconds', 600));
+    }
+
+    protected function otpVerifyMaxAttempts(): int
+    {
+        return max(1, (int) config('verification.otp_verify_max_attempts', 5));
+    }
+
+    protected function otpVerifyBlockSeconds(): int
+    {
+        return max(1, (int) config('verification.otp_verify_block_seconds', 300));
+    }
+
+    protected function guestEmailOtpResendState(string $email): array
+    {
+        return Cache::get($this->guestEmailOtpResendStateKey($email), [
+            'count' => 0,
+            'locked_until' => null,
+        ]);
+    }
+
+    protected function guestEmailOtpResendStateCount(array $state): int
+    {
+        return (int) ($state['count'] ?? 0);
+    }
+
+    protected function guestEmailOtpResendLockRemaining(array $state): int
+    {
+        $lockedUntil = $state['locked_until'] ?? null;
+
+        if (! $lockedUntil) {
+            return 0;
+        }
+
+        return max(0, now()->diffInSeconds(Carbon::parse($lockedUntil), false));
+    }
+
+    protected function recordGuestEmailOtpResend(string $email): int
+    {
+        $state = $this->guestEmailOtpResendState($email);
+        $count = min($this->otpMaxResends(), $this->guestEmailOtpResendStateCount($state) + 1);
+        $lockedUntil = $count >= $this->otpMaxResends()
+            ? now()->addSeconds($this->otpResendLockSeconds())->toDateTimeString()
+            : null;
+
+        Cache::put(
+            $this->guestEmailOtpResendStateKey($email),
+            [
+                'count' => $count,
+                'locked_until' => $lockedUntil,
+            ],
+            now()->addSeconds($this->otpResendLockSeconds())
+        );
+
+        return $count;
+    }
+
     protected function guestOtpCooldownThrottleKey(string $email, string $ip): string
     {
         return 'guest-book-otp-cooldown:'.sha1($email.'|'.$ip);
+    }
+
+    protected function guestEmailOtpResendStateKey(string $email): string
+    {
+        return 'guest-book-otp-resend-state:'.sha1($email);
     }
 
     protected function guestOtpVerifyThrottleKey(string $email, string $ip): string
