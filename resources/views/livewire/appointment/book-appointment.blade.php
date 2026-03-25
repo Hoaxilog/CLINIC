@@ -205,10 +205,10 @@
                                 <div>
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                        {{ $booking_for === 'someone_else' ? 'Contact Middle Name (Optional)' : 'Middle Name (Optional)' }}
+                                        {{ $booking_for === 'someone_else' ? 'Contact Middle Name' : 'Middle Name' }}
                                     </label>
                                     <input type="text" wire:model.defer="middle_name" data-validate-field="middle_name"
-                                        placeholder="Santos" class="{{ $fieldClass('middle_name') }}">
+                                        placeholder="(Optional)" class="{{ $fieldClass('middle_name') }}">
                                     @error('middle_name')
                                         <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
                                             data-error-for="middle_name">{{ $message }}</p>
@@ -263,18 +263,20 @@
                                     @enderror
                                 </div>
 
-                                <div class="md:col-span-2 xl:col-span-3">
-                                    <label
-                                        class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                        Email Address <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="email" wire:model.blur="email" data-validate-field="email"
-                                        placeholder="sample@gmail.com" class="{{ $fieldClass('email') }}">
-                                    @error('email')
-                                        <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
-                                            data-error-for="email">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                                @unless ($isPatientUser)
+                                    <div class="md:col-span-2 xl:col-span-3">
+                                        <label
+                                            class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                            Email Address <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="email" wire:model.blur="email" data-validate-field="email"
+                                            placeholder="sample@gmail.com" class="{{ $fieldClass('email') }}">
+                                        @error('email')
+                                            <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                                data-error-for="email">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                @endunless
 
                             </div>
 
@@ -350,7 +352,7 @@
                                         <div>
                                             <label
                                                 class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                                Your Relationship to the Patient <span class="text-red-500">*</span>
+                                                Relationship with patient<span class="text-red-500">*</span>
                                             </label>
                                             <input type="text" wire:model.defer="relationship_to_patient"
                                                 data-validate-field="relationship_to_patient" placeholder="Mother, spouse, etc"
@@ -645,8 +647,8 @@
                                 </div>
 
                                 {{-- OTP input + verify --}}
-                                <div class="mt-6 flex flex-col sm:flex-row gap-4 sm:items-end">
-                                    <div class="flex-1">
+                                <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end">
+                                    <div class="min-w-0 flex-1">
                                         <label
                                             class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">One-Time
                                             Code</label>
@@ -657,10 +659,11 @@
                                     </div>
                                     <button type="button" wire:click="verifyGuestEmailOtp" wire:loading.attr="disabled"
                                         data-single-tap wire:target="verifyGuestEmailOtp"
-                                        class="relative inline-flex h-[50px] items-center justify-center bg-[#0086da] px-7 text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0] disabled:opacity-60 disabled:cursor-not-allowed">
-                                        <span wire:loading.remove wire:target="verifyGuestEmailOtp">Verify & Book</span>
+                                        class="relative inline-flex h-[50px] w-full shrink-0 items-center justify-center whitespace-nowrap bg-[#0086da] px-7 text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[11rem]">
+                                        <span wire:loading.remove wire:target="verifyGuestEmailOtp"
+                                            class="inline-flex items-center justify-center whitespace-nowrap">Verify & Book</span>
                                         <span wire:loading wire:target="verifyGuestEmailOtp"
-                                            class="absolute inset-0 flex items-center justify-center gap-2 bg-[#0086da] px-7">
+                                            class="absolute inset-0 flex items-center justify-center gap-2 whitespace-nowrap bg-[#0086da] px-7">
                                             <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                                                 <circle cx="12" cy="12" r="10" stroke="currentColor"
                                                     stroke-opacity="0.2" stroke-width="4" />

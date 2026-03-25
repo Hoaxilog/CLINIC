@@ -65,10 +65,10 @@
                                     <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Health Records</span>
                                 </div>
 
-                                @if ($isAdmin)
+                                @if ($isEditing && $canViewClinicalRecords)
                                     <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
 
-                                    <!-- Tab 3: Dental Chart (admin only) -->
+                                    <!-- Tab 3: Dental Chart -->
                                     <div
                                         @if ($isEditing && $canNavigateFromBasicInfo) x-on:click.prevent="handleStepNavigation(3)" @endif
                                         class="flex items-center gap-2.5 transition {{ $currentStep == 3 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 3 && $canNavigateFromBasicInfo ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $basicInfoEditing ? 'cursor-not-allowed opacity-60' : '' }}">
@@ -79,7 +79,7 @@
 
                                     <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
 
-                                    <!-- Tab 4: Treatment Record (admin only) -->
+                                    <!-- Tab 4: Treatment Record -->
                                     <div
                                         @if ($isEditing && $canNavigateFromBasicInfo) x-on:click.prevent="handleStepNavigation(4)" @endif
                                         class="flex items-center gap-2.5 transition {{ $currentStep == 4 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 4 && $canNavigateFromBasicInfo ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $basicInfoEditing ? 'cursor-not-allowed opacity-60' : '' }}">
@@ -177,8 +177,8 @@
                                 :selectedHistoryId="$selectedHealthHistoryId" />
                         @endif
 
-                        {{-- Tab 3: Dental Chart (admin only) --}}
-                        @if ($currentStep == 3 && $isEditing && $isAdmin)
+                        {{-- Tab 3: Dental Chart --}}
+                        @if ($currentStep == 3 && $isEditing && $canViewClinicalRecords)
                             <div wire:loading.flex wire:target="startNewChartSession,switchChartHistory"
                                 class="absolute inset-0 z-30 items-center justify-center bg-white/70 backdrop-blur-sm text-center">
                                 <div class="flex flex-col items-center gap-3">
@@ -192,8 +192,8 @@
                                 :isCreating="$forceNewRecord" :patientAge="$patientAge" />
                         @endif
 
-                        {{-- Tab 4: Treatment Record (admin only) --}}
-                        @if ($currentStep == 4 && $isEditing && $isAdmin)
+                        {{-- Tab 4: Treatment Record --}}
+                        @if ($currentStep == 4 && $isEditing && $canViewClinicalRecords)
                             <livewire:patient.form.treatment-record
                                 :wire:key="'treatment-record-'.$chartKey"
                                 :data="$treatmentRecordData ?? []"

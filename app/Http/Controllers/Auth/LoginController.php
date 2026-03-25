@@ -349,6 +349,8 @@ class LoginController extends Controller
 
     private function redirectByRole($role, bool $isUnverified = false)
     {
+        $user = Auth::user();
+
         if (in_array((int) $role, [User::ROLE_ADMIN, User::ROLE_DENTIST], true)) {
             return redirect()->intended('/dashboard');
         }
@@ -356,6 +358,10 @@ class LoginController extends Controller
         if ((int) $role === User::ROLE_STAFF) {
             return $isUnverified ? redirect('/dashboard') : redirect()->intended('/appointment');
         } elseif ((int) $role === User::ROLE_PATIENT) {
+            if ($user && $user->requiresAccountSetupCompletion()) {
+                return redirect()->route('patient.complete-profile.show');
+            }
+
             return redirect()->intended('/patient/dashboard');
         }
 

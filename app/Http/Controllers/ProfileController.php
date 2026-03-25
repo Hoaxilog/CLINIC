@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\InputSanitizer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ProfileController extends Controller
@@ -20,6 +22,7 @@ class ProfileController extends Controller
         $isGoogleUser = $user && ! empty($user->google_id);
         $accountDisplayName = trim((string) ($user->first_name ?? '').' '.(string) ($user->last_name ?? ''));
         $accountMobileNumber = trim((string) ($user->mobile_number ?? ''));
+        $hasMiddleNameColumn = Schema::hasColumn('users', 'middle_name');
 
         if ($user && (int) $user->role === User::ROLE_PATIENT) {
             $latestRequestIdentity = DB::table('appointments')
@@ -44,7 +47,7 @@ class ProfileController extends Controller
                 $requesterDisplayName = 'Patient';
             }
 
-            return view('patient.profile', compact('user', 'isGoogleUser', 'requesterDisplayName', 'accountMobileNumber'));
+            return view('patient.profile', compact('user', 'isGoogleUser', 'requesterDisplayName', 'accountMobileNumber', 'hasMiddleNameColumn'));
         }
 
         // Fetch role name for display
@@ -60,6 +63,49 @@ class ProfileController extends Controller
 
         if (! $user) {
             return back()->with('error', 'We could not find your account details.');
+        }
+
+        if ((int) $user->role === User::ROLE_PATIENT) {
+            $hasMiddleNameColumn = Schema::hasColumn('users', 'middle_name');
+
+            $sanitized = [
+                'first_name' => InputSanitizer::sanitizeTitleCase($request->input('first_name')),
+                'last_name' => InputSanitizer::sanitizeTitleCase($request->input('last_name')),
+                'mobile_number' => InputSanitizer::sanitizeCountryCodeLocalNumber($request->input('mobile_number')),
+            ];
+
+            if ($hasMiddleNameColumn) {
+                $sanitized['middle_name'] = InputSanitizer::sanitizeTitleCase($request->input('middle_name'));
+            }
+
+            $rules = [
+                'first_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+                'last_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+                'mobile_number' => ['required', 'digits:10'],
+            ];
+
+            if ($hasMiddleNameColumn) {
+                $rules['middle_name'] = ['nullable', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"];
+            }
+
+            $validated = validator($sanitized, $rules, [
+                'mobile_number.digits' => 'Contact number must be exactly 10 digits after +63.',
+            ])->validate();
+
+            $updatePayload = [
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'mobile_number' => $validated['mobile_number'],
+                'updated_at' => now(),
+            ];
+
+            if ($hasMiddleNameColumn) {
+                $updatePayload['middle_name'] = ($validated['middle_name'] ?? '') !== '' ? $validated['middle_name'] : null;
+            }
+
+            DB::table('users')->where('id', $userId)->update($updatePayload);
+
+            return back()->with('success', 'Your account details were updated successfully.');
         }
 
         return back()->with('success', 'Account details are managed by the clinic.');

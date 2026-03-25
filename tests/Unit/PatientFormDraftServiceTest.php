@@ -6,16 +6,33 @@ use App\Models\PatientFormDraft;
 use App\Models\User;
 use App\Support\PatientFormDraftService;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class PatientFormDraftServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::dropIfExists('patient_form_drafts');
+        Schema::create('patient_form_drafts', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('patient_id')->default(0);
+            $table->string('mode', 10);
+            $table->unsignedTinyInteger('step')->default(1);
+            $table->longText('payload_json');
+            $table->timestamp('expires_at')->nullable();
+            $table->timestamps();
+        });
+    }
 
     public function test_it_upserts_and_fetches_draft_by_context(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->make();
+        $user->id = 1001;
         $service = new PatientFormDraftService();
 
         $service->upsertDraft($user->id, 'create', 0, 2, [
@@ -41,7 +58,8 @@ class PatientFormDraftServiceTest extends TestCase
 
     public function test_it_discards_context_specific_draft(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->make();
+        $user->id = 1002;
         $service = new PatientFormDraftService();
 
         $service->upsertDraft($user->id, 'create', 0, 1, ['mode' => 'create', 'patientId' => 0, 'currentStep' => 1]);
@@ -55,8 +73,10 @@ class PatientFormDraftServiceTest extends TestCase
 
     public function test_it_isolates_drafts_by_user_and_context(): void
     {
-        $userA = User::factory()->create();
-        $userB = User::factory()->create();
+        $userA = User::factory()->make();
+        $userA->id = 1003;
+        $userB = User::factory()->make();
+        $userB->id = 1004;
         $service = new PatientFormDraftService();
 
         $service->upsertDraft($userA->id, 'edit', 99, 3, ['mode' => 'edit', 'patientId' => 99, 'currentStep' => 3]);
@@ -73,7 +93,8 @@ class PatientFormDraftServiceTest extends TestCase
 
     public function test_it_purges_expired_drafts(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->make();
+        $user->id = 1005;
 
         PatientFormDraft::query()->create([
             'user_id' => $user->id,
@@ -98,4 +119,3 @@ class PatientFormDraftServiceTest extends TestCase
         $this->assertDatabaseCount('patient_form_drafts', 1);
     }
 }
-

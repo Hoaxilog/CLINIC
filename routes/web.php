@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\PatientDashboardController;
+use App\Http\Controllers\PatientOnboardingController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -108,6 +109,13 @@ Route::middleware(['auth', 'staffOrDentist'])->group(function () {
 
 // Patient-only routes
 Route::middleware(['auth', 'isPatient'])->group(function () {
+    Route::get('/patient/complete-profile', [PatientOnboardingController::class, 'show'])
+        ->name('patient.complete-profile.show');
+    Route::post('/patient/complete-profile', [PatientOnboardingController::class, 'store'])
+        ->name('patient.complete-profile.store');
+});
+
+Route::middleware(['auth', 'isPatient', 'patient.profile.complete'])->group(function () {
     Route::get('/patient/dashboard', [PatientDashboardController::class, 'index'])->name('patient.dashboard');
     Route::get('/patient/appointments/{appointment}/reschedule', [PatientDashboardController::class, 'editReschedule'])
         ->name('patient.appointments.reschedule.edit');

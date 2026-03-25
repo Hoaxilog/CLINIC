@@ -185,15 +185,17 @@
                 <p class="text-gray-500 mt-2 max-w-md mx-auto">This patient does not have any dental records yet. Click
                     the button below to create the first chart.</p>
             </div>
-            <button type="button" wire:click="$dispatch('openNewVisitRecord')"
-                class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M12 5v14M5 12h14" />
-                </svg>
-                New Record
-            </button>
+            @if (! $isReadOnly)
+                <button type="button" wire:click="$dispatch('openNewVisitRecord')"
+                    class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    New Record
+                </button>
+            @endif
         </div>
     @endif
 </div>

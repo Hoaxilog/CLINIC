@@ -132,14 +132,67 @@ class ReportController extends Controller
             ->orderBy('bucket', 'ASC')
             ->pluck('total', 'bucket');
 
+        $appointmentTrendStatusRaw = DB::table('appointments')
+            ->select(DB::raw($bucketExpr . ' as bucket'), 'status', DB::raw('count(*) as total'))
+            ->whereBetween('appointment_date', [$startDate, $endDate])
+            ->whereIn('status', ['Completed', 'Cancelled'])
+            ->groupBy('bucket', 'status')
+            ->orderBy('bucket', 'ASC')
+            ->get()
+            ->groupBy('bucket');
+
+        $firstAppointmentDates = DB::table('appointments')
+            ->whereNotNull('patient_id')
+            ->selectRaw('patient_id, MIN(appointment_date) as first_date')
+            ->groupBy('patient_id')
+            ->pluck('first_date', 'patient_id');
+
+        $bucketedPatientAppointments = DB::table('appointments')
+            ->whereNotNull('patient_id')
+            ->whereBetween('appointment_date', [$startDate, $endDate])
+            ->select(DB::raw($bucketExpr . ' as bucket'), 'patient_id')
+            ->distinct()
+            ->orderBy('bucket', 'ASC')
+            ->get()
+            ->groupBy('bucket');
+
         $dates = [];
         $totals = [];
+        $completedTotals = [];
+        $cancelledTotals = [];
+        $newVsReturningLabels = [];
+        $newPatientVisitTotals = [];
+        $returningPatientVisitTotals = [];
         if ($groupByMonth) {
             $period = CarbonPeriod::create($startDate->copy()->startOfMonth(), '1 month', $endDate);
             foreach ($period as $date) {
                 $key = $date->format('Y-m');
                 $dates[] = $date->format('M Y');
                 $totals[] = (int) ($appointmentTrendRaw[$key] ?? 0);
+                $bucketStatuses = collect($appointmentTrendStatusRaw->get($key, []));
+                $completedTotals[] = (int) ($bucketStatuses->firstWhere('status', 'Completed')->total ?? 0);
+                $cancelledTotals[] = (int) ($bucketStatuses->firstWhere('status', 'Cancelled')->total ?? 0);
+                $newVsReturningLabels[] = $date->format('M Y');
+
+                $bucketPatients = collect($bucketedPatientAppointments->get($key, []))->pluck('patient_id')->unique();
+                $newCount = 0;
+                $returningCount = 0;
+                foreach ($bucketPatients as $patientId) {
+                    $firstDate = $firstAppointmentDates[$patientId] ?? null;
+                    if (! $firstDate) {
+                        continue;
+                    }
+
+                    $firstBucket = Carbon::parse($firstDate)->format('Y-m');
+                    if ($firstBucket === $key) {
+                        $newCount++;
+                    } elseif ($firstBucket < $key) {
+                        $returningCount++;
+                    }
+                }
+
+                $newPatientVisitTotals[] = $newCount;
+                $returningPatientVisitTotals[] = $returningCount;
             }
         } else {
             $period = CarbonPeriod::create($startDate, '1 day', $endDate);
@@ -147,6 +200,30 @@ class ReportController extends Controller
                 $key = $date->format('Y-m-d');
                 $dates[] = $date->format('M d');
                 $totals[] = (int) ($appointmentTrendRaw[$key] ?? 0);
+                $bucketStatuses = collect($appointmentTrendStatusRaw->get($key, []));
+                $completedTotals[] = (int) ($bucketStatuses->firstWhere('status', 'Completed')->total ?? 0);
+                $cancelledTotals[] = (int) ($bucketStatuses->firstWhere('status', 'Cancelled')->total ?? 0);
+                $newVsReturningLabels[] = $date->format('M d');
+
+                $bucketPatients = collect($bucketedPatientAppointments->get($key, []))->pluck('patient_id')->unique();
+                $newCount = 0;
+                $returningCount = 0;
+                foreach ($bucketPatients as $patientId) {
+                    $firstDate = $firstAppointmentDates[$patientId] ?? null;
+                    if (! $firstDate) {
+                        continue;
+                    }
+
+                    $firstBucket = Carbon::parse($firstDate)->format('Y-m-d');
+                    if ($firstBucket === $key) {
+                        $newCount++;
+                    } elseif ($firstBucket < $key) {
+                        $returningCount++;
+                    }
+                }
+
+                $newPatientVisitTotals[] = $newCount;
+                $returningPatientVisitTotals[] = $returningCount;
             }
         }
 
@@ -171,8 +248,55 @@ class ReportController extends Controller
             ->limit(10)
             ->get();
 
-        $serviceNames = $serviceData->pluck('service_name');
+        $serviceNames  = $serviceData->pluck('service_name');
         $serviceCounts = $serviceData->pluck('total');
+
+        // Per-service revenue / cost / profit ─────────────────────────────
+        // Join treatment_records to appointments by patient_id + same date
+        $serviceProfitRaw = DB::table('appointments')
+            ->join('services', 'appointments.service_id', '=', 'services.id')
+            ->leftJoin('treatment_records', function ($join) {
+                $join->on('treatment_records.patient_id', '=', 'appointments.patient_id')
+                     ->whereRaw('DATE(treatment_records.created_at) = DATE(appointments.appointment_date)');
+            })
+            ->whereBetween('appointments.appointment_date', [$startDate, $endDate])
+            ->groupBy('services.service_name')
+            ->select(
+                'services.service_name',
+                DB::raw('COALESCE(SUM(COALESCE(treatment_records.amount_charged, 0)), 0) as revenue'),
+                DB::raw('COALESCE(SUM(COALESCE(treatment_records.cost_of_treatment, 0)), 0) as cost'),
+            )
+            ->get()
+            ->keyBy('service_name');
+
+        $serviceRevenues = $serviceNames->map(fn ($n) => (float) ($serviceProfitRaw[$n]->revenue ?? 0))->values();
+        $serviceCosts    = $serviceNames->map(fn ($n) => (float) ($serviceProfitRaw[$n]->cost    ?? 0))->values();
+        $serviceProfits  = $serviceNames->map(fn ($n) => (float) ($serviceProfitRaw[$n]->revenue ?? 0) - (float) ($serviceProfitRaw[$n]->cost ?? 0))->values();
+
+        $treatmentCountsMap = [];
+        $performedTreatmentRows = DB::table('treatment_records')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->pluck('treatment');
+
+        foreach ($performedTreatmentRows as $treatmentValue) {
+            $parts = preg_split('/\s*,\s*/', (string) $treatmentValue, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            foreach ($parts as $part) {
+                $label = trim($part);
+                if ($label === '') {
+                    continue;
+                }
+
+                $treatmentCountsMap[$label] = ($treatmentCountsMap[$label] ?? 0) + 1;
+            }
+        }
+
+        arsort($treatmentCountsMap);
+        $treatmentCountsMap = array_slice($treatmentCountsMap, 0, 10, true);
+        $serviceNames = collect(array_keys($treatmentCountsMap));
+        $serviceCounts = collect(array_values($treatmentCountsMap));
+        $serviceRevenues = collect();
+        $serviceCosts = collect();
+        $serviceProfits = collect();
 
         $totalAppointments = array_sum($totals);
         $completedCount = (int) ($statusData->firstWhere('status', 'Completed')->total ?? 0);
@@ -354,13 +478,81 @@ class ReportController extends Controller
                     : 'text-xs font-bold bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full'),
         ];
 
+        // ── Pending / Overdue Request Metrics ────────────────────────────────
+        $now = Carbon::now();
+
+        $totalPendingCount = (int) DB::table('appointments')
+            ->where('status', 'Pending')
+            ->count();
+
+        $overdueNotApprovedCount = (int) DB::table('appointments')
+            ->where('status', 'Pending')
+            ->where('appointment_date', '<', $now->toDateTimeString())
+            ->count();
+
+        $longWaitingCount = (int) DB::table('appointments')
+            ->where('status', 'Pending')
+            ->where('created_at', '<', $now->copy()->subDays(3)->toDateTimeString())
+            ->count();
+
+        $oldestPendingDays = (int) (DB::table('appointments')
+            ->where('status', 'Pending')
+            ->orderBy('created_at', 'asc')
+            ->value('created_at')
+            ? Carbon::parse(DB::table('appointments')
+                ->where('status', 'Pending')
+                ->orderBy('created_at', 'asc')
+                ->value('created_at'))->diffInDays($now)
+            : 0);
+
+        // Name expression helpers for overdue rows
+        $hasRequestedPatient = Schema::hasColumn('appointments', 'requested_patient_first_name');
+        $firstNameExpr = $hasRequestedPatient
+            ? "COALESCE(patients.first_name, appointments.requested_patient_first_name, appointments.requester_first_name)"
+            : "COALESCE(patients.first_name, appointments.requester_first_name)";
+        $lastNameExpr = $hasRequestedPatient
+            ? "COALESCE(patients.last_name, appointments.requested_patient_last_name, appointments.requester_last_name)"
+            : "COALESCE(patients.last_name, appointments.requester_last_name)";
+
+        $overdueRows = DB::table('appointments')
+            ->leftJoin('patients', 'appointments.patient_id', '=', 'patients.id')
+            ->leftJoin('services', 'appointments.service_id', '=', 'services.id')
+            ->where('appointments.status', 'Pending')
+            ->where(function ($q) use ($now) {
+                $q->where('appointments.appointment_date', '<', $now->toDateTimeString())
+                  ->orWhere('appointments.created_at', '<', $now->copy()->subDays(3)->toDateTimeString());
+            })
+            ->select(
+                'appointments.id',
+                'appointments.appointment_date',
+                'appointments.created_at',
+                'services.service_name',
+                DB::raw("TRIM(CONCAT({$firstNameExpr}, ' ', {$lastNameExpr})) as patient_name"),
+            )
+            ->orderBy('appointments.appointment_date', 'asc')
+            ->limit(10)
+            ->get()
+            ->map(function ($row) use ($now) {
+                $row->days_waiting   = (int) Carbon::parse($row->created_at)->diffInDays($now);
+                $row->is_overdue     = Carbon::parse($row->appointment_date)->isPast();
+                return $row;
+            });
+
         return view('reports.index', compact(
             'dates',
             'totals',
+            'completedTotals',
+            'cancelledTotals',
+            'newVsReturningLabels',
+            'newPatientVisitTotals',
+            'returningPatientVisitTotals',
             'statusLabels',
             'statusCounts',
             'serviceNames',
             'serviceCounts',
+            'serviceRevenues',
+            'serviceCosts',
+            'serviceProfits',
             'totalPatients',
             'newPatientsCount',
             'totalAppointments',
@@ -397,7 +589,12 @@ class ReportController extends Controller
             'rangeLabel',
             'fromDate',
             'toDate',
-            'section'
+            'section',
+            'totalPendingCount',
+            'overdueNotApprovedCount',
+            'longWaitingCount',
+            'oldestPendingDays',
+            'overdueRows',
         ));
     }
 

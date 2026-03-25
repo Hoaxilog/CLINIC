@@ -72,7 +72,6 @@
 
     @if ($showProfile && $selectedPatient)
         @php
-            $patientCode = sprintf('PT%04d', $selectedPatient->id);
             $patientFullName = trim(($selectedPatient->first_name ?? '') . ' ' . ($selectedPatient->last_name ?? ''));
             $patientInitials = strtoupper(
                 substr($selectedPatient->first_name ?? 'P', 0, 1) . substr($selectedPatient->last_name ?? '', 0, 1),
@@ -110,7 +109,7 @@
                             </div>
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="text-[.6rem] font-bold uppercase tracking-[.2em] text-[#0086da]">#{{ $patientCode }}</span>
+                                    <span class="text-[.6rem] font-bold uppercase tracking-[.2em] text-[#0086da]">ID: {{ $selectedPatient->id }}</span>
                                     <span class="inline-flex items-center px-2 py-0.5 text-[.6rem] font-bold uppercase tracking-[.14em]
                                         {{ $patientType === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-[#7a9db5]' }}">
                                         {{ $patientType }}
@@ -311,27 +310,6 @@
                                         <div class="mt-2 text-[1rem] font-extrabold text-[#1a2e3b]">{{ $selectedPatient->latest_status ?? '—' }}</div>
                                     </div>
                                 </div>
-
-                                <div class="flex flex-wrap gap-2">
-                                    <button type="button"
-                                        wire:click="$dispatch('editPatient', { id: {{ $selectedPatient->id }}, startStep: 1 })"
-                                        class="inline-flex items-center gap-2 bg-[#0086da] px-5 py-[10px] text-[.68rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-open-icon lucide-folder-open"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg>
-                                        View Full Records
-                                    </button>
-                                    @if (!$isPatientUser)
-                                        <button type="button"
-                                            wire:click="$dispatch('editPatient', { id: {{ $selectedPatient->id }}, startStep: 2 })"
-                                            class="inline-flex items-center gap-2 border border-[#d4e8f5] bg-white px-4 py-[10px] text-[.68rem] font-bold uppercase tracking-[.1em] text-[#3d5a6e] transition hover:border-[#0086da] hover:text-[#0086da]">
-                                            Add Health History
-                                        </button>
-                                        <button type="button"
-                                            wire:click="$dispatch('editPatient', { id: {{ $selectedPatient->id }}, startStep: 3 })"
-                                            class="inline-flex items-center gap-2 border border-[#d4e8f5] bg-white px-4 py-[10px] text-[.68rem] font-bold uppercase tracking-[.1em] text-[#3d5a6e] transition hover:border-[#0086da] hover:text-[#0086da]">
-                                            Dental Chart
-                                        </button>
-                                    @endif
-                                </div>
                             </div>
                         </div>
 
@@ -516,7 +494,7 @@
                                                                 {{ $patient->last_name }}, {{ $patient->first_name }}
                                                             </div>
                                                             <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#0086da]">
-                                                                #{{ sprintf('PT%04d', $patient->id) }}
+                                                                ID: {{ $patient->id }}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -569,14 +547,6 @@
                                                             </button>
                                                             @if (!$isPatientUser)
                                                                 <button type="button"
-                                                                    class="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[.78rem] font-semibold text-[#3d5a6e] transition hover:bg-[#f0f8fe] hover:text-[#0086da]"
-                                                                    wire:click="$dispatch('editPatient', { id: {{ $patient->id }}, startStep: 2 })"
-                                                                    onclick="event.stopPropagation();">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart-pulse-icon lucide-heart-pulse"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l1.5-6 5 12 3-9h6.3"/></svg>
-                                                                    Add Health History
-                                                                </button>
-                                                                <div class="border-t border-[#e4eff8]"></div>
-                                                                <button type="button"
                                                                     class="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[.78rem] font-semibold text-red-600 transition hover:bg-red-50"
                                                                     onclick="event.stopPropagation(); if (confirm('Delete this patient? This cannot be undone.')) { @this.deletePatient({{ $patient->id }}) }">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2-icon lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
@@ -604,7 +574,6 @@
                         @forelse($patients as $patient)
                             @php
                                 $patientName = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
-                                $patientCode = sprintf('PT%04d', $patient->id);
                                 $patientInitials = strtoupper(
                                     substr($patient->first_name ?? 'P', 0, 1) . substr($patient->last_name ?? '', 0, 1),
                                 );
@@ -637,7 +606,14 @@
                                             <div x-show="open" @click.away="open = false"
                                                 class="absolute right-0 z-20 mt-1 w-48 border border-[#e4eff8] bg-white shadow-[0_8px_24px_rgba(0,134,218,.12)]"
                                                 style="display:none;">
-
+                                                <button type="button"
+                                                    class="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[.78rem] font-semibold text-[#0086da] transition hover:bg-[#f0f8fe]"
+                                                    wire:click="openProfile({{ $patient->id }})"
+                                                    onclick="event.stopPropagation();">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                    Profile
+                                                </button>
+                                                <div class="border-t border-[#e4eff8]"></div>
                                                 <button type="button"
                                                     class="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[.78rem] font-semibold text-red-600 transition hover:bg-red-50"
                                                     onclick="event.stopPropagation(); if (confirm('Delete this patient? This cannot be undone.')) { @this.deletePatient({{ $patient->id }}) }">
@@ -654,7 +630,7 @@
                                     <div class="flex h-14 w-14 items-center justify-center bg-[#e8f4fc] text-gray-800">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     </div>
-                                    <div class="mt-2 text-[.58rem] font-bold uppercase tracking-[.2em] text-[#0086da]">#{{ $patientCode }}</div>
+                                    <div class="mt-2 text-[.58rem] font-bold uppercase tracking-[.2em] text-[#0086da]">ID: {{ $patient->id }}</div>
                                     <div class="mt-0.5 text-[.92rem] font-extrabold text-[#1a2e3b] tracking-tight">
                                         {{ $patientName ?: 'Unnamed Patient' }}
                                     </div>
@@ -686,10 +662,11 @@
                                             Add Appointment
                                         </a>
                                     @endif
-                                    <button type="button" wire:click="openProfile({{ $patient->id }})"
+                                    <button type="button"
+                                        wire:click="$dispatch('editPatient', { id: {{ $patient->id }}, startStep: 1 })"
                                         onclick="event.stopPropagation();"
                                         class="flex items-center justify-center gap-1.5 bg-[#0086da] py-2.5 text-[.68rem] font-bold uppercase tracking-[.08em] text-white transition hover:bg-[#006ab0]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-open"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg>
                                         View Record
                                     </button>
                                 </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\IsAdminMiddleware;
+use App\Http\Middleware\EnsurePatientProfileIsComplete;
 use App\Http\Middleware\StaffOrDentistMiddleware;
 use App\Http\Middleware\IsPatientMiddleware;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isAdmin' => IsAdminMiddleware::class,
             'staffOrDentist' => StaffOrDentistMiddleware::class,
             'isPatient' => IsPatientMiddleware::class,
+            'patient.profile.complete' => EnsurePatientProfileIsComplete::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

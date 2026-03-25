@@ -165,12 +165,6 @@
                                     You can reschedule while pending. Once confirmed by the clinic, contact the clinic for
                                     changes.</p> --}}
                             </div>
-                            @unless ($hasActiveRequest)
-                                <a href="{{ route('book') }}"
-                                    class="inline-flex shrink-0 items-center gap-[9px] whitespace-nowrap rounded-sm border border-[#0086da] px-6 py-[11px] text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#0086da] hover:text-white">
-                                    Book Another
-                                </a>
-                            @endunless
                         </div>
 
                         @if ($hasPending)

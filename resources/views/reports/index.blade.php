@@ -1,294 +1,701 @@
 @extends('index')
 
 @section('content')
-        <style>
-            .reports-wrap { display: grid; gap: 1rem; }
-            .report-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1rem; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); }
-            .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
-            .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
-            .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-            .title { margin: 0 0 .5rem; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .08em; }
-            .value { margin: 0; font-size: 2rem; line-height: 1.1; color: #111827; font-weight: 700; }
-            .value-compact { margin: .55rem 0 0; font-size: 2.1rem; line-height: 1.05; color: #111827; font-weight: 700; }
-            .metric-card { min-height: 0; display: block; }
-            .metric-card .value,
-            .metric-card .value-compact { margin-top: .55rem; font-size: 2.1rem; line-height: 1.05; }
-            .sub { margin: .45rem 0 0; color: #6b7280; font-size: .85rem; }
-            .heading { margin: 0; font-size: 1.02rem; font-weight: 700; color: #111827; }
-            .heading-row { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
-            .desc { margin: .2rem 0 0; color: #6b7280; font-size: .85rem; }
-            .chart-300 { height: 300px; margin-top: .8rem; }
-            .toolbar { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: .6rem; align-items: end; }
-            .input { width: 100%; border: 1px solid #d1d5db; border-radius: 10px; padding: .55rem .65rem; background: #fff; color: #111827; }
-            .btn { border: 1px solid #0f766e; border-radius: 10px; color: #fff; background: #0f766e; padding: .56rem .9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-            .btn-outline { border: 1px solid #0f766e; border-radius: 10px; color: #0f766e; background: #f0fdfa; padding: .5rem .9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-            .nav-pills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; margin-top: .9rem; }
-            .pill { border: 1px solid #cbd5e1; border-radius: 10px; padding: .6rem .7rem; text-align: center; text-decoration: none; color: #334155; background: #fff; font-weight: 600; }
-            .pill.active { border-color: #0f766e; color: #0f766e; background: #f0fdfa; }
-            .table-wrap { overflow: auto; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; }
-            .r-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
-            .r-table th, .r-table td { border-bottom: 1px solid #f1f5f9; padding: .65rem .75rem; text-align: left; white-space: nowrap; }
-            .r-table th { background: #f8fafc; color: #334155; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
-            .print-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
-            @media (max-width: 1280px) { .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-            @media (max-width: 768px) {
-                .grid-2, .grid-3, .grid-4, .nav-pills, .print-grid, .toolbar { grid-template-columns: 1fr; }
-                .value { font-size: 1.6rem; }
-                .chart-300 { height: 250px; }
-            }
-        </style>
+    @php
+        $baseQuery = request()->query();
+        $navUrl = fn (string $target) => route('reports.index', array_merge($baseQuery, ['section' => $target]));
+    @endphp
 
-        @php
-            $baseQuery = request()->query();
-            $navUrl = fn (string $target) => route('reports.index', array_merge($baseQuery, ['section' => $target]));
-        @endphp
+    <div class="space-y-4" style="font-family:'Montserrat',sans-serif;">
 
-        <div class="reports-wrap">
-            <div class="report-card">
-                <h1 class="heading">Clinic Reports Module</h1>
-                <p class="desc">Date range: {{ $rangeLabel }}</p>
+        {{-- ── HEADER CARD ── --}}
+        <section class="border border-gray-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 border border-[#0086da]/15 bg-[#0086da]/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0086da]">
+                        Analytics
+                    </div>
+                    <h1 class="mt-2 text-[1.1rem] font-extrabold tracking-tight text-[#1a2e3b]">Clinic Reports Module</h1>
+                    <p class="mt-1 text-[.76rem] text-[#7a9db5]">Date range: {{ $rangeLabel }}</p>
+                </div>
+            </div>
 
-                <form method="GET" action="{{ route('reports.index') }}" class="toolbar" style="margin-top:.8rem;">
-                    <input type="hidden" name="section" value="{{ $section }}">
+            {{-- Toolbar --}}
+            <form method="GET" action="{{ route('reports.index') }}" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <input type="hidden" name="section" value="{{ $section }}">
+                <div>
+                    <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Range</label>
+                    <select name="range" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                        <option value="today" @selected($range === 'today')>Today</option>
+                        <option value="week" @selected($range === 'week')>This Week</option>
+                        <option value="month" @selected($range === 'month')>This Month</option>
+                        <option value="year" @selected($range === 'year')>This Year</option>
+                        <option value="custom" @selected($range === 'custom')>Custom Date Range</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">From</label>
+                    <input type="date" name="from_date" value="{{ $fromDate }}" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                </div>
+                <div>
+                    <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">To</label>
+                    <input type="date" name="to_date" value="{{ $toDate }}" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-[#0086da] px-4 py-[9px] text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]">Apply</button>
+                </div>
+            </form>
+
+            {{-- Nav Tabs --}}
+            <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                @foreach([['overview','Overview'],['patients','Patient Reports'],['appointments','Appointment Reports'],['printable','Printable Reports']] as [$tab,$label])
+                    <a href="{{ $navUrl($tab) }}"
+                        class="border px-3 py-2 text-center text-[.68rem] font-bold uppercase tracking-[.08em] transition
+                            {{ $section === $tab
+                                ? 'border-[#0086da] bg-[#f0f8fe] text-[#0086da]'
+                                : 'border-gray-200 text-[#3d5a6e] hover:border-[#0086da] hover:text-[#0086da]' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
+        </section>
+
+        {{-- ══════════════════════════════════════════════════════════════
+             OVERVIEW SECTION
+        ══════════════════════════════════════════════════════════════ --}}
+        @if ($section === 'overview')
+
+            {{-- KPI Cards --}}
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                @php
+                    $kpis = [
+                        ['label' => 'New Patients',         'value' => number_format($newPatientsCount),        'color' => 'text-[#0086da]'],
+                        ['label' => 'Completed Appointments',      'value' => number_format($completedCount),          'color' => 'text-emerald-600'],
+                        ['label' => 'Cancelled Appointments',      'value' => number_format($cancelledCount),          'color' => 'text-rose-600'],
+                        ['label' => 'Completion Rate',      'value' => number_format($completionRate) . '%',    'color' => $completionRate >= 50 ? 'text-emerald-600' : 'text-amber-600',
+                         'sub' => number_format($totalAppointments) . ' total in range'],
+                    ];
+                @endphp
+                @foreach ($kpis as $kpi)
+                    <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                        <p class="text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">{{ $kpi['label'] }}</p>
+                        <p class="mt-2 text-3xl font-bold {{ $kpi['color'] }}">{{ $kpi['value'] }}</p>
+                        @if (!empty($kpi['sub']))
+                            <p class="mt-1 text-[.72rem] text-[#7a9db5]">{{ $kpi['sub'] }}</p>
+                        @endif
+                    </section>
+                @endforeach
+            </div>
+
+            {{-- Revenue Cards --}}
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <p class="text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Revenue</p>
+                    <p class="mt-2 text-2xl font-bold text-[#1a2e3b]">PHP {{ number_format($totalRevenue, 2) }}</p>
+                    <p class="mt-1 text-[.72rem] text-[#7a9db5]">Collected payments in range</p>
+                </section>
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <p class="text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Cost</p>
+                    <p class="mt-2 text-2xl font-bold text-[#1a2e3b]">PHP {{ number_format($totalCost, 2) }}</p>
+                    <p class="mt-1 text-[.72rem] text-[#7a9db5]">Treatment costs in range</p>
+                </section>
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <p class="text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Profit</p>
+                    <p class="mt-2 text-2xl font-bold {{ $totalProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">PHP {{ number_format($totalProfit, 2) }}</p>
+                    <p class="mt-1 text-[.72rem] text-[#7a9db5]">Margin: {{ $profitMargin === null ? '--' : number_format($profitMargin, 1) . '%' }}</p>
+                </section>
+            </div>
+
+
+            {{-- Charts Row 1 --}}
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Patient Mix</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">New vs Returning Patients</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Distinct patients per date bucket based on first appointment history</p>
+                    <div style="height:280px;margin-top:.8rem;"><canvas id="newVsReturningChart"></canvas></div>
+                </section>
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Trend</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">New Patient Records Over Time</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Patient records created over the selected period</p>
+                    <div style="height:280px;margin-top:.8rem;"><canvas id="patientRegLineChart"></canvas></div>
+                </section>
+            </div>
+
+            {{-- Charts Row 2 --}}
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Volume</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Appointment Trend</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Clinic volume by date buckets</p>
+                    <div style="height:280px;margin-top:.8rem;"><canvas id="appointmentTrendBarChart"></canvas></div>
+                </section>
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Output</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Most Performed Treatments</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Based on completed treatment records in the selected range</p>
+                    <div style="height:280px;margin-top:.8rem;"><canvas id="servicesBarChart"></canvas></div>
+                </section>
+            </div>
+        @endif
+
+        {{-- ══════════════════════════════════════════════════════════════
+             PATIENTS SECTION
+        ══════════════════════════════════════════════════════════════ --}}
+        @if ($section === 'patients')
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Demographics</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Gender Distribution</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Overall demographics</p>
+                    <div style="height:260px;margin-top:.8rem;"><canvas id="genderPieChart"></canvas></div>
+                </section>
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Demographics</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Age Distribution</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Grouped by age buckets</p>
+                    <div style="height:260px;margin-top:.8rem;"><canvas id="ageBarChart"></canvas></div>
+                </section>
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Growth</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">New Patient Records Over Time</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Patient records created over the selected period</p>
+                    <div style="height:260px;margin-top:.8rem;"><canvas id="patientRegLineChartPatients"></canvas></div>
+                </section>
+            </div>
+
+            <section class="border border-gray-200 bg-white shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-5 py-4">
                     <div>
-                        <label class="title" style="display:block;margin-bottom:.25rem;">Range</label>
-                        <select name="range" class="input">
-                            <option value="today" @selected($range === 'today')>Today</option>
-                            <option value="week" @selected($range === 'week')>This Week</option>
-                            <option value="month" @selected($range === 'month')>This Month</option>
-                            <option value="year" @selected($range === 'year')>This Year</option>
-                            <option value="custom" @selected($range === 'custom')>Custom Date Range</option>
+                        <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Table</div>
+                        <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Patient Registration Report</h3>
+                    </div>
+                    <a class="inline-flex items-center border border-[#0086da] bg-white px-4 py-[8px] text-[.68rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#f0f8fe]"
+                        target="_blank"
+                        href="{{ route('reports.print', ['reportType' => 'patients', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'patient_from' => $patientRegFrom, 'patient_to' => $patientRegTo, 'patient_gender' => $patientGender]) }}">
+                        Print Patient Report
+                    </a>
+                </div>
+
+                <form method="GET" action="{{ route('reports.index') }}" class="grid grid-cols-1 gap-3 border-b border-gray-200 px-5 py-4 sm:grid-cols-4">
+                    <input type="hidden" name="section" value="patients">
+                    <input type="hidden" name="range" value="{{ $range }}">
+                    <input type="hidden" name="from_date" value="{{ $fromDate }}">
+                    <input type="hidden" name="to_date" value="{{ $toDate }}">
+                    <div>
+                        <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">From</label>
+                        <input type="date" name="patient_from" value="{{ $patientRegFrom }}" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">To</label>
+                        <input type="date" name="patient_to" value="{{ $patientRegTo }}" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Gender</label>
+                        <select name="patient_gender" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                            <option value="">All</option>
+                            <option value="Male" @selected($patientGender === 'Male')>Male</option>
+                            <option value="Female" @selected($patientGender === 'Female')>Female</option>
+                            <option value="Other" @selected($patientGender === 'Other')>Other</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button class="w-full bg-[#0086da] px-4 py-[9px] text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]" type="submit">Filter</button>
+                    </div>
+                </form>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[.82rem]">
+                        <thead class="border-b border-gray-200 bg-[#f6fafd]">
+                            <tr>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Patient ID</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Full Name</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Gender</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Birth Date</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Mobile</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Date Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse ($patientRows as $row)
+                                <tr class="hover:bg-[#f8fbfe]">
+                                    <td class="px-5 py-3 text-[.78rem] font-bold text-[#0086da]">{{ $row->id }}</td>
+                                    <td class="px-5 py-3 font-semibold text-[#1a2e3b]">{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
+                                    <td class="px-5 py-3 text-[#3d5a6e]">{{ $row->gender ?? 'Unspecified' }}</td>
+                                    <td class="px-5 py-3 text-[#7a9db5]">{{ $row->birth_date ? \Carbon\Carbon::parse($row->birth_date)->format('M d, Y') : '—' }}</td>
+                                    <td class="px-5 py-3 text-[#3d5a6e]">{{ $row->mobile_number ?? '—' }}</td>
+                                    <td class="px-5 py-3 text-[#7a9db5]">{{ $row->created_at ? \Carbon\Carbon::parse($row->created_at)->format('M d, Y h:i A') : '—' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="6" class="px-5 py-8 text-center text-[.82rem] text-[#7a9db5]">No records found.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        @endif
+
+        {{-- ══════════════════════════════════════════════════════════════
+             APPOINTMENTS SECTION
+        ══════════════════════════════════════════════════════════════ --}}
+        @if ($section === 'appointments')
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Patient Mix</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">New vs Returning Patients</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Distinct patients per date bucket based on first appointment history</p>
+                    <div style="height:280px;margin-top:.8rem;"><canvas id="newVsReturningChartAppointments"></canvas></div>
+                </section>
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Booking Type</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Walk-In vs Online Appointment</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Booking behaviour</p>
+                    <div style="height:280px;margin-top:.8rem;"><canvas id="walkinPieChart"></canvas></div>
+                </section>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Volume</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Appointment Trend</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Per day or month based on range</p>
+                    <div style="height:280px;margin-top:.8rem;"><canvas id="appointmentTrendBarChartAppointments"></canvas></div>
+                </section>
+                <section class="border border-gray-200 bg-white p-5 shadow-sm">
+                    <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Output</div>
+                    <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Most Performed Treatments</h3>
+                    <p class="mt-0.5 text-[.72rem] text-[#7a9db5]">Based on completed treatment records in the selected range</p>
+                    <div style="height:280px;margin-top:.8rem;"><canvas id="servicesBarChartAppointments"></canvas></div>
+                </section>
+            </div>
+
+            <section class="border border-gray-200 bg-white shadow-sm">
+                <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-200 px-5 py-4">
+                    <div>
+                        <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Table</div>
+                        <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Appointment Report</h3>
+                        @php
+                            $appointmentCount      = ($appointmentRows ?? collect())->count();
+                            $totalPaymentMade      = (float)(($appointmentRows ?? collect())->sum('payment_made') ?? 0);
+                            $totalTreatmentCost    = (float)(($appointmentRows ?? collect())->sum('treatment_cost') ?? 0);
+                            $netFromTreatment      = $totalPaymentMade - $totalTreatmentCost;
+                        @endphp
+                        <p class="mt-1 text-[.72rem] text-[#7a9db5]">
+                            {{ number_format($appointmentCount) }} records ·
+                            Paid PHP {{ number_format($totalPaymentMade, 2) }} ·
+                            Cost PHP {{ number_format($totalTreatmentCost, 2) }} ·
+                            Net PHP {{ number_format($netFromTreatment, 2) }}
+                        </p>
+                    </div>
+                    <a class="inline-flex items-center border border-[#0086da] bg-white px-4 py-[8px] text-[.68rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#f0f8fe]"
+                        target="_blank"
+                        href="{{ route('reports.print', ['reportType' => 'appointments', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo, 'appointment_status' => $appointmentStatus, 'appointment_service' => $appointmentService]) }}">
+                        Print Report
+                    </a>
+                </div>
+
+                <form method="GET" action="{{ route('reports.index') }}" class="grid grid-cols-1 gap-3 border-b border-gray-200 px-5 py-4 sm:grid-cols-2 lg:grid-cols-5">
+                    <input type="hidden" name="section" value="appointments">
+                    <input type="hidden" name="range" value="{{ $range }}">
+                    <input type="hidden" name="from_date" value="{{ $fromDate }}">
+                    <input type="hidden" name="to_date" value="{{ $toDate }}">
+                    <div>
+                        <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">From</label>
+                        <input type="date" name="appointment_from" value="{{ $appointmentFrom }}" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">To</label>
+                        <input type="date" name="appointment_to" value="{{ $appointmentTo }}" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Status</label>
+                        <select name="appointment_status" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                            <option value="">All</option>
+                            @foreach (['Pending','Scheduled','Arrived','Ongoing','Completed','Cancelled','Waiting'] as $st)
+                                <option value="{{ $st }}" @selected($appointmentStatus === $st)>{{ $st }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
-                        <label class="title" style="display:block;margin-bottom:.25rem;">From</label>
-                        <input type="date" name="from_date" value="{{ $fromDate }}" class="input">
+                        <label class="mb-1 block text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Service</label>
+                        <select name="appointment_service" class="w-full border border-gray-200 bg-white px-3 py-[9px] text-[.8rem] text-[#1a2e3b] focus:border-[#0086da] focus:outline-none">
+                            <option value="">All</option>
+                            @foreach ($serviceOptions as $id => $name)
+                                <option value="{{ $id }}" @selected((string) $appointmentService === (string) $id)>{{ $name }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <div>
-                        <label class="title" style="display:block;margin-bottom:.25rem;">To</label>
-                        <input type="date" name="to_date" value="{{ $toDate }}" class="input">
+                    <div class="flex items-end">
+                        <button class="w-full bg-[#0086da] px-4 py-[9px] text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]" type="submit">Filter</button>
                     </div>
-                    <button class="btn" type="submit">Apply</button>
                 </form>
 
-                <nav class="nav-pills">
-                    <a href="{{ $navUrl('overview') }}" class="pill @if($section === 'overview') active @endif">Overview</a>
-                    <a href="{{ $navUrl('patients') }}" class="pill @if($section === 'patients') active @endif">Patient Reports</a>
-                    <a href="{{ $navUrl('appointments') }}" class="pill @if($section === 'appointments') active @endif">Appointment Reports</a>
-                    <a href="{{ $navUrl('printable') }}" class="pill @if($section === 'printable') active @endif">Printable Reports</a>
-                </nav>
-            </div>
-
-            @if ($section === 'overview')
-                <div class="grid-4">
-                    <section class="report-card metric-card"><p class="title">New Patients</p><p class="value-compact">{{ number_format($newPatientsCount) }}</p></section>
-                    <section class="report-card metric-card"><p class="title">Completed Appointments</p><p class="value-compact" style="color:#059669;">{{ number_format($completedCount) }}</p></section>
-                    <section class="report-card metric-card"><p class="title">Cancelled Appointments</p><p class="value-compact" style="color:#dc2626;">{{ number_format($cancelledCount) }}</p></section>
-                    <section class="report-card metric-card"><p class="title">Completion Rate</p><p class="value">{{ number_format($completionRate) }}%</p><p class="sub">{{ number_format($totalAppointments) }} total appointments in range</p></section>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[.82rem]">
+                        <thead class="border-b border-gray-200 bg-[#f6fafd]">
+                            <tr>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">ID</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Patient Name</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Service</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Treatment</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Date</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Status</th>
+                                <th class="px-5 py-3 text-[.55rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Payment</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse ($appointmentRows as $row)
+                                <tr class="hover:bg-[#f8fbfe]">
+                                    <td class="px-5 py-3 text-[.78rem] font-bold text-[#0086da]">{{ $row->id }}</td>
+                                    <td class="px-5 py-3 font-semibold text-[#1a2e3b]">{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
+                                    <td class="px-5 py-3 text-[#3d5a6e]">{{ $row->service_name ?? 'N/A' }}</td>
+                                    <td class="px-5 py-3 text-[#7a9db5]">{{ $row->treatment_performed ?: 'N/A' }}</td>
+                                    <td class="px-5 py-3 text-[#7a9db5]">{{ $row->appointment_date ? \Carbon\Carbon::parse($row->appointment_date)->format('M d, Y h:i A') : '—' }}</td>
+                                    <td class="px-5 py-3">
+                                        @php
+                                            $stColor = match(strtolower($row->status)) {
+                                                'completed'  => 'bg-emerald-100 text-emerald-700',
+                                                'cancelled'  => 'bg-rose-100 text-rose-700',
+                                                'ongoing'    => 'bg-sky-100 text-sky-700',
+                                                'arrived'    => 'bg-cyan-100 text-cyan-700',
+                                                'pending'    => 'bg-amber-100 text-amber-700',
+                                                default      => 'bg-gray-100 text-gray-600',
+                                            };
+                                        @endphp
+                                        <span class="inline-flex items-center px-2 py-0.5 text-[.6rem] font-bold uppercase tracking-[.12em] {{ $stColor }}">{{ $row->status }}</span>
+                                    </td>
+                                    <td class="px-5 py-3 font-semibold text-[#1a2e3b]">PHP {{ number_format((float)($row->payment_made ?? 0), 2) }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-5 py-8 text-center text-[.82rem] text-[#7a9db5]">No records found.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
+            </section>
+        @endif
 
-                <div class="grid-3">
-                    <section class="report-card"><p class="title">Revenue</p><p class="value">PHP {{ number_format($totalRevenue, 2) }}</p><p class="sub">Collected payments in selected range</p></section>
-                    <section class="report-card"><p class="title">Cost</p><p class="value">PHP {{ number_format($totalCost, 2) }}</p><p class="sub">Treatment costs in selected range</p></section>
-                    <section class="report-card"><p class="title">Profit</p><p class="value" style="color: {{ $totalProfit >= 0 ? '#059669' : '#dc2626' }};">PHP {{ number_format($totalProfit, 2) }}</p><p class="sub">Margin: {{ $profitMargin === null ? '--' : number_format($profitMargin, 1) . '%' }}</p></section>
+        {{-- ══════════════════════════════════════════════════════════════
+             PRINTABLE SECTION
+        ══════════════════════════════════════════════════════════════ --}}
+        @if ($section === 'printable')
+            <section class="border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="text-[.55rem] font-bold uppercase tracking-[.2em] text-[#7a9db5]">Export</div>
+                <h3 class="text-[.88rem] font-extrabold text-[#1a2e3b]">Printable Reports</h3>
+                <p class="mt-1 text-[.76rem] text-[#7a9db5]">Generate report previews, then print or save as PDF.</p>
+                <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <a class="flex items-center justify-center gap-2 bg-[#0086da] px-4 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]"
+                        target="_blank"
+                        href="{{ route('reports.print', ['reportType' => 'patients', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'patient_from' => $patientRegFrom, 'patient_to' => $patientRegTo, 'patient_gender' => $patientGender]) }}">
+                        Print Patient Report
+                    </a>
+                    <a class="flex items-center justify-center gap-2 bg-[#0086da] px-4 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]"
+                        target="_blank"
+                        href="{{ route('reports.print', ['reportType' => 'appointments', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo, 'appointment_status' => $appointmentStatus, 'appointment_service' => $appointmentService]) }}">
+                        Print Appointment Report
+                    </a>
+                    <a class="flex items-center justify-center gap-2 bg-[#0086da] px-4 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0]"
+                        target="_blank"
+                        href="{{ route('reports.print', ['reportType' => 'monthly-summary', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate]) }}">
+                        Print Monthly Summary
+                    </a>
                 </div>
+            </section>
+        @endif
 
-                <div class="grid-2">
-                    <section class="report-card"><h3 class="heading">Appointment Status Distribution</h3><p class="desc">Scheduled, Arrived, Ongoing, Completed, Cancelled</p><div class="chart-300"><canvas id="statusPieChart"></canvas></div></section>
-                    <section class="report-card"><h3 class="heading">Monthly Patient Registration Trend</h3><p class="desc">New patient registrations per month</p><div class="chart-300"><canvas id="patientRegLineChart"></canvas></div></section>
-                </div>
-
-                <div class="grid-2">
-                    <section class="report-card"><h3 class="heading">Appointment Trend</h3><p class="desc">Clinic volume by date buckets</p><div class="chart-300"><canvas id="appointmentTrendBarChart"></canvas></div></section>
-                    <section class="report-card"><h3 class="heading">Most Requested Services</h3><p class="desc">Service demand in selected range</p><div class="chart-300"><canvas id="servicesBarChart"></canvas></div></section>
-                </div>
-            @endif
-
-            @if ($section === 'patients')
-                <div class="grid-3">
-                    <section class="report-card"><h3 class="heading">Patient Gender Distribution</h3><p class="desc">Overall demographics</p><div class="chart-300"><canvas id="genderPieChart"></canvas></div></section>
-                    <section class="report-card"><h3 class="heading">Patient Age Distribution</h3><p class="desc">Grouped by age buckets</p><div class="chart-300"><canvas id="ageBarChart"></canvas></div></section>
-                    <section class="report-card"><h3 class="heading">Patient Registration Trend</h3><p class="desc">Monthly registration growth</p><div class="chart-300"><canvas id="patientRegLineChartPatients"></canvas></div></section>
-                </div>
-
-                <section class="report-card">
-                    <div class="heading-row">
-                        <h3 class="heading">Patient Registration Report</h3>
-                        <a class="btn-outline" target="_blank" href="{{ route('reports.print', ['reportType' => 'patients', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'patient_from' => $patientRegFrom, 'patient_to' => $patientRegTo, 'patient_gender' => $patientGender]) }}">Print Patient Report</a>
-                    </div>
-                    <form method="GET" action="{{ route('reports.index') }}" class="toolbar" style="margin:.8rem 0;">
-                        <input type="hidden" name="section" value="patients">
-                        <input type="hidden" name="range" value="{{ $range }}">
-                        <input type="hidden" name="from_date" value="{{ $fromDate }}">
-                        <input type="hidden" name="to_date" value="{{ $toDate }}">
-                        <div><label class="title" style="display:block;margin-bottom:.25rem;">From</label><input type="date" name="patient_from" value="{{ $patientRegFrom }}" class="input"></div>
-                        <div><label class="title" style="display:block;margin-bottom:.25rem;">To</label><input type="date" name="patient_to" value="{{ $patientRegTo }}" class="input"></div>
-                        <div><label class="title" style="display:block;margin-bottom:.25rem;">Gender</label><select name="patient_gender" class="input"><option value="">All</option><option value="Male" @selected($patientGender === 'Male')>Male</option><option value="Female" @selected($patientGender === 'Female')>Female</option><option value="Other" @selected($patientGender === 'Other')>Other</option></select></div>
-                        <button class="btn" type="submit">Filter</button>
-                    </form>
-                    <div class="table-wrap">
-                        <table class="r-table">
-                            <thead><tr><th>Patient ID</th><th>Full Name</th><th>Gender</th><th>Birth Date</th><th>Mobile Number</th><th>Date Registered</th></tr></thead>
-                            <tbody>
-                                @forelse ($patientRows as $row)
-                                    <tr>
-                                        <td>{{ $row->id }}</td>
-                                        <td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
-                                        <td>{{ $row->gender ?? 'Unspecified' }}</td>
-                                        <td>{{ $row->birth_date ? \Carbon\Carbon::parse($row->birth_date)->format('M d, Y') : '-' }}</td>
-                                        <td>{{ $row->mobile_number ?? '-' }}</td>
-                                        <td>{{ $row->created_at ? \Carbon\Carbon::parse($row->created_at)->format('M d, Y h:i A') : '-' }}</td>
-                                    </tr>
-                                @empty
-                                    <tr><td colspan="6">No records found.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            @endif
-
-            @if ($section === 'appointments')
-                <div class="grid-2">
-                    <section class="report-card"><h3 class="heading">Appointment Status Distribution</h3><p class="desc">Status outcome overview</p><div class="chart-300"><canvas id="statusPieChartAppointments"></canvas></div></section>
-                    <section class="report-card"><h3 class="heading">Walk-In vs Online Appointment</h3><p class="desc">Booking behavior</p><div class="chart-300"><canvas id="walkinPieChart"></canvas></div></section>
-                </div>
-
-                <div class="grid-2">
-                    <section class="report-card"><h3 class="heading">Appointment Trend</h3><p class="desc">Per day or month based on range</p><div class="chart-300"><canvas id="appointmentTrendBarChartAppointments"></canvas></div></section>
-                    <section class="report-card"><h3 class="heading">Most Requested Services</h3><p class="desc">Treatment demand in selected range</p><div class="chart-300"><canvas id="servicesBarChartAppointments"></canvas></div></section>
-                </div>
-
-                <section class="report-card">
-                    <div class="heading-row">
-                        <h3 class="heading">Appointment Report</h3>
-                        <a class="btn-outline" target="_blank" href="{{ route('reports.print', ['reportType' => 'appointments', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo, 'appointment_status' => $appointmentStatus, 'appointment_service' => $appointmentService]) }}">Print Appointment Report</a>
-                    </div>
-                    @php
-                        $appointmentCount = ($appointmentRows ?? collect())->count();
-                        $totalPaymentMade = (float) (($appointmentRows ?? collect())->sum('payment_made') ?? 0);
-                        $totalTreatmentCost = (float) (($appointmentRows ?? collect())->sum('treatment_cost') ?? 0);
-                        $netFromTreatment = $totalPaymentMade - $totalTreatmentCost;
-                    @endphp
-                    <p class="desc" style="margin-top:.55rem;">
-                        Findings: {{ number_format($appointmentCount) }} records, payment made PHP {{ number_format($totalPaymentMade, 2) }},
-                        treatment cost PHP {{ number_format($totalTreatmentCost, 2) }}, net PHP {{ number_format($netFromTreatment, 2) }}.
-                    </p>
-                    <form method="GET" action="{{ route('reports.index') }}" class="toolbar" style="margin:.8rem 0;">
-                        <input type="hidden" name="section" value="appointments">
-                        <input type="hidden" name="range" value="{{ $range }}">
-                        <input type="hidden" name="from_date" value="{{ $fromDate }}">
-                        <input type="hidden" name="to_date" value="{{ $toDate }}">
-                        <div><label class="title" style="display:block;margin-bottom:.25rem;">From</label><input type="date" name="appointment_from" value="{{ $appointmentFrom }}" class="input"></div>
-                        <div><label class="title" style="display:block;margin-bottom:.25rem;">To</label><input type="date" name="appointment_to" value="{{ $appointmentTo }}" class="input"></div>
-                        <div><label class="title" style="display:block;margin-bottom:.25rem;">Status</label><select name="appointment_status" class="input"><option value="">All</option>@foreach (['Pending','Scheduled','Arrived','Ongoing','Completed','Cancelled','Waiting'] as $status)<option value="{{ $status }}" @selected($appointmentStatus === $status)>{{ $status }}</option>@endforeach</select></div>
-                        <div><label class="title" style="display:block;margin-bottom:.25rem;">Service</label><select name="appointment_service" class="input"><option value="">All</option>@foreach ($serviceOptions as $id => $name)<option value="{{ $id }}" @selected((string) $appointmentService === (string) $id)>{{ $name }}</option>@endforeach</select></div>
-                        <button class="btn" type="submit">Filter</button>
-                    </form>
-                    <div class="table-wrap">
-                        <table class="r-table">
-                            <thead><tr><th>Appointment ID</th><th>Patient Name</th><th>Service</th><th>Treatment Performed</th><th>Appointment Date</th><th>Status</th><th>Payment Made</th></tr></thead>
-                            <tbody>
-                                @forelse ($appointmentRows as $row)
-                                    <tr>
-                                        <td>{{ $row->id }}</td>
-                                        <td>{{ trim(($row->last_name ?? '') . ', ' . ($row->first_name ?? '') . ' ' . ($row->middle_name ?? '')) }}</td>
-                                        <td>{{ $row->service_name ?? 'N/A' }}</td>
-                                        <td>{{ $row->treatment_performed ?: 'N/A' }}</td>
-                                        <td>{{ $row->appointment_date ? \Carbon\Carbon::parse($row->appointment_date)->format('M d, Y h:i A') : '-' }}</td>
-                                        <td>{{ $row->status }}</td>
-                                        <td>PHP {{ number_format((float) ($row->payment_made ?? 0), 2) }}</td>
-                                    </tr>
-                                @empty
-                                    <tr><td colspan="7">No records found.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-            @endif
-
-            @if ($section === 'printable')
-                <section class="report-card">
-                    <h3 class="heading">Printable Reports</h3>
-                    <p class="desc">Generate report previews then print or save as PDF.</p>
-                    <div class="print-grid" style="margin-top:.9rem;">
-                        <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'patients', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'patient_from' => $patientRegFrom, 'patient_to' => $patientRegTo, 'patient_gender' => $patientGender]) }}">Print Patient Report</a>
-                        <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'appointments', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate, 'appointment_from' => $appointmentFrom, 'appointment_to' => $appointmentTo, 'appointment_status' => $appointmentStatus, 'appointment_service' => $appointmentService]) }}">Print Appointment Report</a>
-                        <a class="btn" target="_blank" href="{{ route('reports.print', ['reportType' => 'monthly-summary', 'range' => $range, 'from_date' => $fromDate, 'to_date' => $toDate]) }}">Print Monthly Clinic Summary</a>
-                    </div>
-                </section>
-            @endif
-        </div>
-    </main>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         (() => {
             if (typeof Chart === 'undefined') return;
+
             const isMobile = window.innerWidth < 768;
-            const charts = {};
+
+            // ── Vibrant multi-color palette ─────────────────────────────────
+            const P = [
+                '#0086da','#10b981','#f59e0b','#ef4444','#8b5cf6',
+                '#06b6d4','#f97316','#ec4899','#84cc16','#6366f1',
+            ];
+            const palette = (n) => Array.from({ length: n }, (_, i) => P[i % P.length]);
+
+            // Age-group gradient (cool → warm)
+            const ageColors = ['#6366f1','#0086da','#06b6d4','#10b981','#f59e0b','#ef4444'];
+            const appointmentTrendCompletedTotals = @json($completedTotals);
+            const appointmentTrendCancelledTotals = @json($cancelledTotals);
+
             const build = (id, config) => {
                 const ctx = document.getElementById(id);
                 if (!ctx) return;
-                charts[id] = new Chart(ctx.getContext('2d'), config);
+                new Chart(ctx.getContext('2d'), config);
             };
 
-            build('statusPieChart', {
-                type: 'pie',
-                data: { labels: @json($statusLabels), datasets: [{ data: @json($statusCounts), backgroundColor: ['#0284c7', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'] }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
+            const integerTicks = {
+                precision: 0,
+                callback: (value) => Number.isInteger(Number(value)) ? value : '',
+            };
+
+            const appointmentTrendTooltip = {
+                callbacks: {
+                    label: (ctx) => ` Total: ${ctx.parsed.y}`,
+                    afterBody: (items) => {
+                        const dataIndex = items[0]?.dataIndex ?? 0;
+                        return [
+                            `Completed: ${appointmentTrendCompletedTotals[dataIndex] ?? 0}`,
+                            `Cancelled: ${appointmentTrendCancelledTotals[dataIndex] ?? 0}`,
+                        ];
+                    },
+                },
+            };
+
+            // New vs Returning Patients (overview)
+            build('newVsReturningChart', {
+                type: 'bar',
+                data: {
+                    labels: @json($newVsReturningLabels),
+                    datasets: [
+                        {
+                            label: 'New Patients',
+                            data: @json($newPatientVisitTotals),
+                            backgroundColor: '#0086da',
+                            borderRadius: 3,
+                        },
+                        {
+                            label: 'Returning Patients',
+                            data: @json($returningPatientVisitTotals),
+                            backgroundColor: '#10b981',
+                            borderRadius: 3,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        x: { stacked: false, ticks: { maxTicksLimit: isMobile ? 6 : 12 } },
+                        y: { beginAtZero: true, ticks: integerTicks },
+                    },
+                },
             });
-            build('statusPieChartAppointments', {
-                type: 'pie',
-                data: { labels: @json($statusLabels), datasets: [{ data: @json($statusCounts), backgroundColor: ['#0284c7', '#16a34a', '#f59e0b', '#0ea5e9', '#ef4444'] }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
+
+            // New vs Returning Patients (appointments tab)
+            build('newVsReturningChartAppointments', {
+                type: 'bar',
+                data: {
+                    labels: @json($newVsReturningLabels),
+                    datasets: [
+                        {
+                            label: 'New Patients',
+                            data: @json($newPatientVisitTotals),
+                            backgroundColor: '#0086da',
+                            borderRadius: 3,
+                        },
+                        {
+                            label: 'Returning Patients',
+                            data: @json($returningPatientVisitTotals),
+                            backgroundColor: '#10b981',
+                            borderRadius: 3,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        x: { stacked: false, ticks: { maxTicksLimit: isMobile ? 6 : 12 } },
+                        y: { beginAtZero: true, ticks: integerTicks },
+                    },
+                },
             });
+
+            // Patient Registration Line (overview)
             build('patientRegLineChart', {
                 type: 'line',
-                data: { labels: @json($patientRegMonths), datasets: [{ label: 'Patients', data: @json($patientRegCounts), borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, .12)', fill: true, tension: .3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
+                data: {
+                    labels: @json($patientRegMonths),
+                    datasets: [{
+                        label: 'Patients',
+                        data: @json($patientRegCounts),
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139,92,246,.12)',
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointRadius: 3,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: integerTicks } },
+                },
             });
+
+            // Patient Registration Line (patients tab)
             build('patientRegLineChartPatients', {
                 type: 'line',
-                data: { labels: @json($patientRegMonths), datasets: [{ label: 'Patients', data: @json($patientRegCounts), borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, .12)', fill: true, tension: .3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
+                data: {
+                    labels: @json($patientRegMonths),
+                    datasets: [{
+                        label: 'Patients',
+                        data: @json($patientRegCounts),
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139,92,246,.12)',
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointRadius: 3,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: integerTicks } },
+                },
             });
+
+            // Appointment Trend Bar (overview) — multi-color per bar
             build('appointmentTrendBarChart', {
                 type: 'bar',
-                data: { labels: @json($dates), datasets: [{ label: 'Appointments', data: @json($totals), backgroundColor: '#0891b2' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: isMobile ? 6 : 14 } }, y: { beginAtZero: true, ticks: { precision: 0 } } } },
+                data: {
+                    labels: @json($dates),
+                    datasets: [{
+                        label: 'Appointments',
+                        data: @json($totals),
+                        backgroundColor: palette(@json(count($totals))),
+                        borderRadius: 3,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: appointmentTrendTooltip },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: isMobile ? 6 : 14 } },
+                        y: { beginAtZero: true, ticks: integerTicks },
+                    },
+                },
             });
+
+            // Appointment Trend Bar (appointments tab)
             build('appointmentTrendBarChartAppointments', {
                 type: 'bar',
-                data: { labels: @json($dates), datasets: [{ label: 'Appointments', data: @json($totals), backgroundColor: '#0891b2' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: isMobile ? 6 : 14 } }, y: { beginAtZero: true, ticks: { precision: 0 } } } },
+                data: {
+                    labels: @json($dates),
+                    datasets: [{
+                        label: 'Appointments',
+                        data: @json($totals),
+                        backgroundColor: palette(@json(count($totals))),
+                        borderRadius: 3,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: appointmentTrendTooltip },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: isMobile ? 6 : 14 } },
+                        y: { beginAtZero: true, ticks: integerTicks },
+                    },
+                },
             });
+
+            // Per-service profit data (from controller)
+            const svcRevenues = [];
+            const svcCosts    = [];
+            const svcProfits  = [];
+
+            const svcTooltip = {
+                callbacks: {
+                    label: (ctx) => [
+                        ` Appointments : ${ctx.parsed.x ?? ctx.parsed.y}`,
+                        ` Revenue      : PHP ${Number(svcRevenues[ctx.dataIndex]).toLocaleString('en-PH', {minimumFractionDigits:2})}`,
+                        ` Cost         : PHP ${Number(svcCosts[ctx.dataIndex]).toLocaleString('en-PH', {minimumFractionDigits:2})}`,
+                        ` Profit       : PHP ${Number(svcProfits[ctx.dataIndex]).toLocaleString('en-PH', {minimumFractionDigits:2})}`,
+                    ],
+                },
+            };
+
+            // Services Bar (overview) — each bar its own color
             build('servicesBarChart', {
                 type: 'bar',
-                data: { labels: @json($serviceNames), datasets: [{ label: 'Count', data: @json($serviceCounts), backgroundColor: '#d97706' }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
+                data: {
+                    labels: @json($serviceNames),
+                    datasets: [{
+                        label: 'Treatments',
+                        data: @json($serviceCounts),
+                        backgroundColor: palette(@json(count($serviceCounts))),
+                        borderRadius: 3,
+                    }],
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, ticks: integerTicks } },
+                },
             });
+
+            // Services Bar (appointments tab)
             build('servicesBarChartAppointments', {
                 type: 'bar',
-                data: { labels: @json($serviceNames), datasets: [{ label: 'Count', data: @json($serviceCounts), backgroundColor: '#d97706' }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
+                data: {
+                    labels: @json($serviceNames),
+                    datasets: [{
+                        label: 'Treatments',
+                        data: @json($serviceCounts),
+                        backgroundColor: palette(@json(count($serviceCounts))),
+                        borderRadius: 3,
+                    }],
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, ticks: integerTicks } },
+                },
             });
+
+            // Walk-In vs Online Pie
             build('walkinPieChart', {
-                type: 'pie',
-                data: { labels: ['Walk-In', 'Online Appointment'], datasets: [{ data: [{{ $walkInCount }}, {{ $scheduledCount }}], backgroundColor: ['#f97316', '#0ea5e9'] }] },
+                type: 'doughnut',
+                data: {
+                    labels: ['Walk-In', 'Online Appointment'],
+                    datasets: [{ data: [{{ $walkInCount }}, {{ $scheduledCount }}], backgroundColor: ['#f97316','#0086da'], borderWidth: 2, borderColor: '#fff' }],
+                },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
             });
+
+            // Gender Pie — distinct gender colors
             build('genderPieChart', {
-                type: 'pie',
-                data: { labels: @json($genderLabels), datasets: [{ data: @json($genderCounts), backgroundColor: ['#3b82f6', '#ec4899', '#a855f7', '#94a3b8'] }] },
+                type: 'doughnut',
+                data: {
+                    labels: @json($genderLabels),
+                    datasets: [{ data: @json($genderCounts), backgroundColor: ['#0086da','#ec4899','#8b5cf6','#94a3b8'], borderWidth: 2, borderColor: '#fff' }],
+                },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
             });
+
+            // Age Group Bar — cool-to-warm gradient across groups
             build('ageBarChart', {
                 type: 'bar',
-                data: { labels: @json($ageGroupLabels), datasets: [{ label: 'Patients', data: @json($ageGroupCounts), backgroundColor: '#0f766e' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+                data: {
+                    labels: @json($ageGroupLabels),
+                    datasets: [{ label: 'Patients', data: @json($ageGroupCounts), backgroundColor: ageColors, borderRadius: 3 }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: integerTicks } },
+                },
             });
         })();
     </script>

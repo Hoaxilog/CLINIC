@@ -40,7 +40,7 @@ class AppointmentService
         ];
 
         if (Schema::hasColumn('appointments', 'booking_type')) {
-            $payload['booking_type'] = 'online_appointment';
+            $payload['booking_type'] = 'walk_in';
         }
 
         // Keep an appointment-level identity snapshot so details still render

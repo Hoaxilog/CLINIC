@@ -20,6 +20,7 @@ class PatientFormModal extends Component
     public $currentStep = 1;
     public $isEditing = false;
     public $isAdmin = false;
+    public $canViewClinicalRecords = false;
     public $isReadOnly = false;
     public $isSaving = false;
     public $forceNewRecord = false;
@@ -85,7 +86,7 @@ class PatientFormModal extends Component
         $this->loadPatientData($id);
 
         $this->currentStep = max(1, min((int) $startStep, $this->getMaxStep()));
-        if ($this->isAdmin && $this->currentStep >= 3) {
+        if ($this->canViewClinicalRecords && $this->currentStep >= 3) {
             $this->ensureDentalDataLoaded();
         }
         $this->showModal = true;
@@ -214,7 +215,7 @@ class PatientFormModal extends Component
                 data: $this->healthHistoryData,
                 gender: $this->basicInfoData['gender'] ?? null
             );
-            if ($this->isAdmin) {
+            if ($this->canViewClinicalRecords) {
                 $this->ensureDentalDataLoaded();
                 $this->loadLatestDentalChart($this->newPatientId);
             }
@@ -748,7 +749,7 @@ class PatientFormModal extends Component
         // Load chart history so the dental chart panel condition (count($history) > 0)
         // shows the chart, and mark dental data as loaded so ensureDentalDataLoaded()
         // won't overwrite the record-date-specific chart on subsequent navigations.
-        if ($this->isAdmin && $this->newPatientId) {
+        if ($this->canViewClinicalRecords && $this->newPatientId) {
             $this->chartHistory = app(DentalChartService::class)->getHistory($this->newPatientId);
         }
         $this->dentalDataLoaded = true;
@@ -973,6 +974,7 @@ class PatientFormModal extends Component
     private function checkAdminRole(): void
     {
         $this->isAdmin = Auth::user()?->canHandleChairsideFlow() ?? false;
+        $this->canViewClinicalRecords = Auth::user()?->canAccessOperationalPages() ?? false;
     }
 
     private function canAccessPatientRecord(int $patientId): bool
@@ -1012,8 +1014,8 @@ class PatientFormModal extends Component
             return $this->isAdmin ? 4 : 2;
         }
 
-        // Edit/view mode: 4 tabs for admin, 2 for staff
-        return $this->isAdmin ? 4 : 2;
+        // Edit/view mode: staff can view clinical records, but only admin/dentist can edit them.
+        return $this->canViewClinicalRecords ? 4 : 2;
     }
 
     private function triggerStepValidation(int $step): void
@@ -1059,7 +1061,7 @@ class PatientFormModal extends Component
                 )->to('patient.form.health-history');
             }
 
-            if (($this->currentStep == 3 || $this->currentStep == 4) && $this->isAdmin) {
+            if (($this->currentStep == 3 || $this->currentStep == 4) && $this->canViewClinicalRecords) {
                 // ensureDentalDataLoaded() is a no-op when $dentalDataLoaded is already
                 // true (set by loadVisitContextBySelection), so it won't overwrite the
                 // record-date-specific chart. It only runs on the very first tab open.
@@ -1092,7 +1094,7 @@ class PatientFormModal extends Component
 
     private function ensureDentalDataLoaded(): void
     {
-        if ($this->dentalDataLoaded || ! $this->isAdmin || ! $this->isEditing || ! $this->newPatientId) {
+        if ($this->dentalDataLoaded || ! $this->canViewClinicalRecords || ! $this->isEditing || ! $this->newPatientId) {
             return;
         }
 

@@ -414,37 +414,111 @@
                 @livewire('dashboard.cancelled-appointments-widget')
             @endif
 
-            <section class="border border-gray-200 bg-white p-6 shadow-sm">
-                <div class="mb-4">
-                    <h2 class="text-lg font-bold text-gray-900">{{ $isAdminDashboard ? 'Management Tools' : ($isDentistDashboard ? 'Quick Access' : 'Front Desk Support') }}</h2>
-                    <p class="mt-1 text-xs text-gray-500">
-                        {{ $isAdminDashboard ? 'Fast links for management, oversight, and approval work.' : ($isDentistDashboard ? 'Fast links for chairside and patient-care actions.' : 'Use these tools after reviewing cancelled appointments and follow-up needs.') }}
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 gap-3">
-                    @foreach ($quickLinks as $link)
-                        <a href="{{ $link['href'] }}"
-                            class="border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-[#0086DA] hover:bg-white">
-                            <div class="flex items-start justify-between gap-4">
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $link['label'] }}</p>
-                                    <p class="mt-1 text-xs leading-5 text-gray-500">{{ $link['description'] }}</p>
-                                </div>
-                                <span class="text-sm font-semibold text-[#0086DA]">Open</span>
+            @if ($isAdminDashboard)
+                @php
+                    $profitTrendMax = max(
+                        ! empty($trendProfit) ? max($trendProfit) : 0,
+                        1,
+                    );
+                    $profitTrendMin = min(
+                        ! empty($trendProfit) ? min($trendProfit) : 0,
+                        0,
+                    );
+                    $profitTrendRange = max($profitTrendMax - $profitTrendMin, 1);
+                    $latestTrendProfit = ! empty($trendProfit) ? (float) end($trendProfit) : 0;
+                    $previousTrendProfit = count($trendProfit) > 1 ? (float) $trendProfit[count($trendProfit) - 2] : 0;
+                    $profitTrendDelta = $latestTrendProfit - $previousTrendProfit;
+                @endphp
+                <section class="border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">Profit Over Time</h2>
+                            <p class="mt-1 text-xs text-gray-500">Daily clinic profit based on treatment records for {{ $rangeLabel ?? 'the selected range' }}.</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-semibold uppercase tracking-wide text-gray-400">Latest Day</div>
+                            <div class="mt-1 text-sm font-semibold {{ $profitTrendDelta >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">
+                                {{ $profitTrendDelta >= 0 ? '+' : '' }}PHP {{ number_format($profitTrendDelta, 2) }}
                             </div>
-                        </a>
-                    @endforeach
+                        </div>
+                    </div>
 
-                    @unless ($isAdminDashboard)
+                    @if (! empty($trendProfit))
+                        <div class="mt-6 overflow-x-auto pb-2">
+                            <div class="grid h-72 min-w-[720px] grid-rows-[repeat(6,minmax(0,1fr))_auto] gap-x-3 gap-y-2" style="grid-template-columns: 56px repeat({{ max(count($trendDates), 1) }}, minmax(44px, 1fr));">
+                                @for ($tick = 0; $tick <= 5; $tick++)
+                                    @php
+                                        $gridRow = $tick + 1;
+                                        $tickValue = $profitTrendMax - (($profitTrendRange / 5) * $tick);
+                                    @endphp
+                                    <div class="flex items-start justify-end pr-2 text-[11px] text-gray-400" style="grid-column: 1; grid-row: {{ $gridRow }};">
+                                        {{ number_format($tickValue, 0) }}
+                                    </div>
+                                    <div class="border-t border-gray-100" style="grid-column: 2 / {{ count($trendDates) + 2 }}; grid-row: {{ $gridRow }};"></div>
+                                @endfor
+
+                                @foreach ($trendProfit as $index => $amount)
+                                    @php
+                                        $normalizedHeight = (float) (($amount - $profitTrendMin) / $profitTrendRange) * 100;
+                                        $barHeight = max(6, (int) round($normalizedHeight));
+                                        $barClass = $amount >= 0 ? 'bg-emerald-500' : 'bg-rose-500';
+                                    @endphp
+                                    <div class="group relative flex min-w-0 flex-col items-center justify-end gap-2" style="grid-column: {{ $index + 2 }}; grid-row: 1 / 7;">
+                                        <div class="pointer-events-none absolute -top-20 left-1/2 z-10 w-32 -translate-x-1/2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-left opacity-0 shadow-lg transition group-hover:opacity-100">
+                                            <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{{ $trendDates[$index] ?? 'N/A' }}</div>
+                                            <div class="mt-2 text-xs font-semibold {{ $amount >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">
+                                                PHP {{ number_format($amount, 2) }}
+                                            </div>
+                                        </div>
+                                        <div class="flex h-full w-full items-end justify-center">
+                                            <div class="w-5 rounded-t-sm {{ $barClass }}" style="height: {{ $barHeight }}%"></div>
+                                        </div>
+                                        <div class="min-h-[2.25rem] pb-1 text-center">
+                                            <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                                {{ $trendDates[$index] ?? 'N/A' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-sm text-gray-500">
+                            No profit trend data available for this range yet.
+                        </div>
+                    @endif
+                </section>
+            @else
+                <section class="border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-bold text-gray-900">{{ $isDentistDashboard ? 'Quick Access' : 'Front Desk Support' }}</h2>
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ $isDentistDashboard ? 'Fast links for chairside and patient-care actions.' : 'Use these tools after reviewing cancelled appointments and follow-up needs.' }}
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3">
+                        @foreach ($quickLinks as $link)
+                            <a href="{{ $link['href'] }}"
+                                class="border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-[#0086DA] hover:bg-white">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">{{ $link['label'] }}</p>
+                                        <p class="mt-1 text-xs leading-5 text-gray-500">{{ $link['description'] }}</p>
+                                    </div>
+                                    <span class="text-sm font-semibold text-[#0086DA]">Open</span>
+                                </div>
+                            </a>
+                        @endforeach
+
                         <button type="button" id="addPatientQuickAction"
                             class="border border-dashed border-gray-300 bg-white px-4 py-4 text-left transition hover:border-[#0086DA]">
                             <p class="text-sm font-semibold text-gray-900">Add Patient</p>
                             <p class="mt-1 text-xs leading-5 text-gray-500">Launch the patient form modal without leaving the dashboard.</p>
                         </button>
-                    @endunless
-                </div>
-            </section>
+                    </div>
+                </section>
+            @endif
         </div>
 
         @if ($isDentistDashboard || $isAdminDashboard)

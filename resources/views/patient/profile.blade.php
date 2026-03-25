@@ -71,90 +71,119 @@
                 {{-- ── Left: Account Info + Identity ── --}}
                 <div class="space-y-6">
 
-                    {{-- Account Information tile --}}
-                    <article class="border border-[#e4eff8] bg-white shadow-[0_20px_48px_rgba(0,134,218,.07)]">
-                        {{-- Card header --}}
-                        <div class="flex items-center gap-3 border-b border-[#e4eff8] px-6 py-5 sm:px-8">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center bg-[#0086da]">
-                                <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="square" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="text-[.6rem] font-bold uppercase tracking-[.2em] text-[#0086da]">Overview</div>
-                                <div class="text-[.95rem] font-extrabold tracking-[-0.01em] text-[#1a2e3b]">Account Information</div>
-                            </div>
-                        </div>
-
-                        {{-- Info tiles --}}
-                        <div class="grid grid-cols-1 gap-[2px] bg-[#e4eff8] sm:grid-cols-3">
-                            <div class="bg-white px-6 py-5">
-                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Name</div>
-                                <div class="mt-2 text-sm font-semibold text-[#1a2e3b]">{{ $accountName }}</div>
-                            </div>
-                            <div class="bg-white px-6 py-5">
-                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Mobile</div>
-                                <div class="mt-2 truncate text-sm font-semibold text-[#1a2e3b]">{{ $accountMobileNumber ?: 'N/A' }}</div>
-                            </div>
-                            <div class="bg-white px-6 py-5">
-                                <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Email</div>
-                                <div class="mt-2 truncate text-sm font-semibold text-[#1a2e3b]">{{ $user->email ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <div class="border-t border-[#e4eff8] px-6 py-4 sm:px-8">
-                            <p class="text-[.82rem] leading-[1.7] text-[#7a9db5]">Member since <span class="font-semibold text-[#587189]">{{ $memberSince }}</span>. Clinic-side patient records are managed separately by staff.</p>
-                        </div>
-                    </article>
-
                     {{-- Account Identity --}}
-                    <article class="border border-[#e4eff8] bg-white shadow-[0_20px_48px_rgba(0,134,218,.07)]">
+                    <article x-data="{ editing: {{ $errors->any() ? 'true' : 'false' }} }"
+                        class="border border-[#e4eff8] bg-white shadow-[0_20px_48px_rgba(0,134,218,.07)]">
                         {{-- Card header --}}
-                        <div class="flex items-center gap-3 border-b border-[#e4eff8] px-6 py-5 sm:px-8">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center bg-[#0086da]">
-                                <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="square" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                                    <path stroke-linecap="square" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-[#e4eff8] px-6 py-5 sm:px-8">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center bg-[#0086da]">
+                                    <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="square" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                        <path stroke-linecap="square" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[.6rem] font-bold uppercase tracking-[.2em] text-[#0086da]">Details</div>
+                                    <div class="text-[.95rem] font-extrabold tracking-[-0.01em] text-[#1a2e3b]">Account Identity</div>
+                                </div>
+                            </div>
+                            <button type="button" x-show="!editing" x-cloak @click="editing = true"
+                                class="inline-flex items-center gap-2 border border-[#0086da] bg-white px-5 py-[10px] text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#f0f8fe]">
+                                <svg class="h-[12px] w-[12px]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="square" d="M12 20h9" />
+                                    <path stroke-linecap="square" d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
                                 </svg>
-                            </div>
-                            <div>
-                                <div class="text-[.6rem] font-bold uppercase tracking-[.2em] text-[#0086da]">Details</div>
-                                <div class="text-[.95rem] font-extrabold tracking-[-0.01em] text-[#1a2e3b]">Account Identity</div>
-                            </div>
+                                Edit
+                            </button>
                         </div>
 
-                        <div class="px-6 py-6 sm:px-8">
+                        <form x-ref="identityForm" action="{{ route('profile.update') }}" method="POST" class="px-6 py-6 sm:px-8">
+                            @csrf
+                            @method('PATCH')
+
                             <div class="grid gap-5 sm:grid-cols-2">
                                 <div class="space-y-2">
-                                    <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Name</label>
-                                    <input type="text" value="{{ $accountName }}" readonly
-                                        class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none cursor-not-allowed">
-                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">This is shown from your account profile.</p>
+                                    <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">First Name</label>
+                                    <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}"
+                                        x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
+                                        class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('first_name') border-red-400 focus:border-red-500 focus:ring-red-200 @enderror">
+                                    @error('first_name')
+                                        <span class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
+                                    @enderror
                                 </div>
 
                                 <div class="space-y-2">
+                                    <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Last Name</label>
+                                    <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}"
+                                        x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
+                                        class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('last_name') border-red-400 focus:border-red-500 focus:ring-red-200 @enderror">
+                                    @error('last_name')
+                                        <span class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                @if ($hasMiddleNameColumn)
+                                    <div class="space-y-2">
+                                        <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Middle Name</label>
+                                        <input type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name) }}"
+                                            x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
+                                            class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('middle_name') border-red-400 focus:border-red-500 focus:ring-red-200 @enderror">
+                                        @error('middle_name')
+                                            <span class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                @endif
+
+                                <div class="space-y-2 {{ $hasMiddleNameColumn ? '' : 'sm:col-span-2' }}">
                                     <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Mobile Number</label>
-                                    <input type="text" value="{{ $accountMobileNumber ?: 'N/A' }}" readonly
-                                        class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none cursor-not-allowed">
-                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">Used as your account contact. Clinic records are still staff-verified.</p>
+                                    <div class="flex">
+                                        <span class="inline-flex items-center border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] px-4 text-sm font-semibold text-[#3d5a6e]">+63</span>
+                                        <input type="text" name="mobile_number" inputmode="numeric" maxlength="10"
+                                            oninput="this.value = this.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10)"
+                                            value="{{ old('mobile_number', $user->mobile_number) }}"
+                                            x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
+                                            class="w-full min-w-0 border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('mobile_number') border-red-400 focus:border-red-500 focus:ring-red-200 @enderror">
+                                    </div>
+                                    @error('mobile_number')
+                                        <span class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
+                                    @enderror
                                 </div>
 
                                 <div class="space-y-2 sm:col-span-2">
                                     <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Email Address</label>
                                     <input type="text" value="{{ $user->email ?? 'N/A' }}" readonly
                                         class="w-full border border-[#e4eff8] bg-[#f6fafd] px-4 py-3 text-sm text-[#1a2e3b] outline-none cursor-not-allowed">
-                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">Your login email and account contact are separate from booking record verification.</p>
+                                    <p class="text-[.72rem] leading-[1.6] text-[#7a9db5]">Your login email is connected to your account and cannot be edited here.</p>
                                 </div>
                             </div>
 
-                            <div class="mt-6 flex items-start gap-3 border border-[#d4e8f5] bg-[#f6fafd] px-5 py-4">
+                            <div x-show="editing" x-cloak class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#e4eff8] pt-5">
+                                <p class="text-[.78rem] leading-[1.6] text-[#7a9db5]">You can edit your name and mobile number here. Email stays locked for account access.</p>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="button" @click="$refs.identityForm.reset(); editing = false"
+                                        class="inline-flex items-center gap-2 border border-[#d4e8f5] bg-white px-5 py-[11px] text-[.7rem] font-bold uppercase tracking-[.1em] text-[#587189] transition hover:bg-[#f6fafd]">
+                                        Cancel
+                                    </button>
+                                    <button type="submit"
+                                        class="inline-flex items-center gap-2 bg-[#0086da] px-6 py-[11px] text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition hover:-translate-y-px hover:bg-[#006ab0]">
+                                        <svg class="h-[12px] w-[12px]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <path stroke-linecap="square" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="px-6 pb-6 sm:px-8">
+                            <div class="flex items-start gap-3 border border-[#d4e8f5] bg-[#f6fafd] px-5 py-4">
                                 <svg class="mt-0.5 h-4 w-4 shrink-0 text-[#0086da]/60" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <circle cx="12" cy="12" r="10" />
                                     <path stroke-linecap="square" d="M12 8v4M12 16h.01" />
                                 </svg>
                                 <p class="text-[.82rem] leading-[1.7] text-[#587189]">
-                                    This page works as an account summary for your login and password. Booking contact details stay with your appointment records.
+                                    Member since <span class="font-semibold text-[#1a2e3b]">{{ $memberSince }}</span>
                                 </p>
                             </div>
                         </div>

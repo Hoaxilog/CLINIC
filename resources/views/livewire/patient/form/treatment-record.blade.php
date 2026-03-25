@@ -38,10 +38,12 @@
                     This patient does not have any treatment records yet. Create the first record from the visit flow.
                 </p>
             </div>
-            <button type="button" wire:click="$dispatch('openNewVisitRecord')"
-                class="mt-6 inline-flex items-center rounded-lg bg-[#0086da] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:bg-[#0073a8]">
-                + New Record
-            </button>
+            @if (! $isReadOnly)
+                <button type="button" wire:click="$dispatch('openNewVisitRecord')"
+                    class="mt-6 inline-flex items-center rounded-lg bg-[#0086da] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:bg-[#0073a8]">
+                    + New Record
+                </button>
+            @endif
         </div>
     @else
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
