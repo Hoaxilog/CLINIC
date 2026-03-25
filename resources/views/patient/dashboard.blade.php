@@ -366,8 +366,8 @@
                                     Activity
                                 </div>
                                 <h2 class="text-[1.35rem] leading-[1.15] font-extrabold tracking-[-.02em] text-[#1a2e3b]">
-                                    Activity Log</h2>
-                                <p class="mt-1 text-[.85rem] leading-[1.7] text-[#587189]">Recent updates related to your appointments, records, and account.</p>
+                                    Login Logs</h2>
+                                <p class="mt-1 text-[.85rem] leading-[1.7] text-[#587189]">Your most recent account sign-ins appear here.</p>
                             </div>
                             <span class="text-[.62rem] font-bold uppercase tracking-[.18em] text-[#7a9db5]">Latest 8
                                 entries</span>
@@ -382,6 +382,10 @@
                                             : \Carbon\Carbon::parse($activity['logged_at']);
                                         $activityStatus = trim((string) ($activity['status'] ?? ''));
                                         $activityType = trim((string) ($activity['type'] ?? 'activity'));
+                                        $activityBrowser = trim((string) ($activity['browser'] ?? ''));
+                                        $activityPlatform = trim((string) ($activity['platform'] ?? ''));
+                                        $activityDevice = trim((string) ($activity['device'] ?? ''));
+                                        $activityIpAddress = trim((string) ($activity['ip_address'] ?? ''));
                                     @endphp
                                     <div class="px-6 py-5">
                                         <div class="flex flex-col gap-4">
@@ -401,6 +405,22 @@
                                                 <p class="text-[.98rem] font-semibold leading-[1.65] text-[#1a2e3b]">
                                                     {{ $activity['description'] }}
                                                 </p>
+                                                @if ($activityBrowser !== '' || $activityPlatform !== '' || $activityDevice !== '' || $activityIpAddress !== '')
+                                                    <div class="flex flex-wrap gap-2 text-[.72rem] font-medium text-[#587189]">
+                                                        @if ($activityBrowser !== '')
+                                                            <span class="rounded-sm bg-[#f6fafd] px-2.5 py-1">{{ $activityBrowser }}</span>
+                                                        @endif
+                                                        @if ($activityPlatform !== '')
+                                                            <span class="rounded-sm bg-[#f6fafd] px-2.5 py-1">{{ $activityPlatform }}</span>
+                                                        @endif
+                                                        @if ($activityDevice !== '')
+                                                            <span class="rounded-sm bg-[#f6fafd] px-2.5 py-1">{{ $activityDevice }}</span>
+                                                        @endif
+                                                        @if ($activityIpAddress !== '')
+                                                            <span class="rounded-sm bg-[#f6fafd] px-2.5 py-1">IP: {{ $activityIpAddress }}</span>
+                                                        @endif
+                                                    </div>
+                                                @endif
                                             </div>
 
                                             <div class="grid grid-cols-2 gap-3 border-t border-[#edf5fb] pt-3 text-[.8rem]">
@@ -420,8 +440,8 @@
                         @else
                             <div class="px-6 py-6">
                                 <div class="rounded-sm border border-dashed border-[#d4e8f5] bg-[#f6fafd] p-6">
-                                    <h3 class="text-lg font-semibold text-[#1a2e3b]">No recent activity yet</h3>
-                                    <p class="mt-2 text-[.88rem] leading-[1.8] text-[#587189]">Recent appointment, treatment, and account updates will appear here.</p>
+                                    <h3 class="text-lg font-semibold text-[#1a2e3b]">No login records yet</h3>
+                                    <p class="mt-2 text-[.88rem] leading-[1.8] text-[#587189]">Your successful patient logins will appear here once recorded.</p>
                                 </div>
                             </div>
                         @endif

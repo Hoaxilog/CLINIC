@@ -56,6 +56,9 @@ class PatientLoginActivityTest extends TestCase
         $response = $this->post('/login', [
             'email' => 'patient-login@example.com',
             'password' => 'secret123',
+        ], [
+            'REMOTE_ADDR' => '203.0.113.15',
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
         ]);
 
         $response->assertRedirect('/patient/dashboard');
@@ -68,6 +71,14 @@ class PatientLoginActivityTest extends TestCase
             'event' => 'user_logged_in',
             'description' => 'Logged In',
         ]);
+
+        $properties = json_decode((string) DB::table('activity_log')->where('subject_id', $userId)->value('properties'), true);
+
+        $this->assertSame('203.0.113.15', data_get($properties, 'attributes.ip_address'));
+        $this->assertSame('Chrome', data_get($properties, 'attributes.browser'));
+        $this->assertSame('Windows', data_get($properties, 'attributes.platform'));
+        $this->assertSame('Desktop', data_get($properties, 'attributes.device'));
+        $this->assertNotEmpty(data_get($properties, 'attributes.user_agent'));
     }
 
     public function test_successful_patient_login_is_only_logged_once_per_day(): void

@@ -578,6 +578,7 @@ class LoginController extends Controller
         }
 
         $loggedAt = now();
+        $userAgent = Str::limit(trim((string) $request->userAgent()), 500, '');
 
         $alreadyLoggedToday = DB::table('activity_log')
             ->where('event', 'user_logged_in')
@@ -601,6 +602,10 @@ class LoginController extends Controller
                 'attributes' => [
                     'ip_address' => (string) $request->ip(),
                     'login_at' => $loggedAt->toDateTimeString(),
+                    'user_agent' => $userAgent,
+                    'browser' => $this->detectBrowser($userAgent),
+                    'platform' => $this->detectPlatform($userAgent),
+                    'device' => $this->detectDevice($userAgent),
                 ],
             ]),
             'batch_uuid' => null,
@@ -608,5 +613,75 @@ class LoginController extends Controller
             'created_at' => $loggedAt,
             'updated_at' => $loggedAt,
         ]);
+    }
+
+    private function detectBrowser(string $userAgent): string
+    {
+        $browserSignatures = [
+            'Edge' => ['Edg/', 'Edge/'],
+            'Opera' => ['OPR/', 'Opera/'],
+            'Chrome' => ['Chrome/'],
+            'Firefox' => ['Firefox/'],
+            'Safari' => ['Safari/'],
+        ];
+
+        foreach ($browserSignatures as $label => $needles) {
+            foreach ($needles as $needle) {
+                if ($needle === 'Safari/' && str_contains($userAgent, 'Chrome/')) {
+                    continue;
+                }
+
+                if (str_contains($userAgent, $needle)) {
+                    return $label;
+                }
+            }
+        }
+
+        return 'Unknown Browser';
+    }
+
+    private function detectPlatform(string $userAgent): string
+    {
+        $platformSignatures = [
+            'Windows' => ['Windows NT'],
+            'Android' => ['Android'],
+            'iPhone' => ['iPhone'],
+            'iPad' => ['iPad'],
+            'macOS' => ['Macintosh', 'Mac OS X'],
+            'Linux' => ['Linux'],
+        ];
+
+        foreach ($platformSignatures as $label => $needles) {
+            foreach ($needles as $needle) {
+                if (str_contains($userAgent, $needle)) {
+                    return $label;
+                }
+            }
+        }
+
+        return 'Unknown Platform';
+    }
+
+    private function detectDevice(string $userAgent): string
+    {
+        $normalized = strtolower($userAgent);
+
+        if ($normalized === '') {
+            return 'Unknown Device';
+        }
+
+        if (str_contains($normalized, 'ipad')) {
+            return 'Tablet';
+        }
+
+        if (str_contains($normalized, 'mobile') || str_contains($normalized, 'iphone') || str_contains($normalized, 'android')) {
+            return 'Mobile';
+        }
+
+        if (str_contains($normalized, 'tablet')) {
+            return 'Tablet';
+        }
+
+        return 'Desktop';
     }
 }

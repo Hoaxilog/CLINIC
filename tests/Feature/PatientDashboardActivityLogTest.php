@@ -80,7 +80,7 @@ class PatientDashboardActivityLogTest extends TestCase
         });
     }
 
-    public function test_patient_dashboard_shows_recent_activity_log_entries(): void
+    public function test_patient_dashboard_shows_recent_login_log_entries_only(): void
     {
         $patientUserId = DB::table('users')->insertGetId([
             'username' => 'patient.one',
@@ -94,38 +94,7 @@ class PatientDashboardActivityLogTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        DB::table('services')->insert([
-            'id' => 1,
-            'service_name' => 'Cleaning',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $appointmentId = DB::table('appointments')->insertGetId([
-            'patient_id' => 24,
-            'service_id' => 1,
-            'requester_user_id' => $patientUserId,
-            'appointment_date' => now()->addDays(3)->setTime(9, 0)->toDateTimeString(),
-            'status' => 'Pending',
-            'requester_email' => 'patient@example.com',
-            'requester_first_name' => 'Pat',
-            'requester_last_name' => 'Ient',
-            'created_at' => now()->subDays(2),
-            'updated_at' => now()->subDay(),
-        ]);
-
         DB::table('activity_log')->insert([
-            [
-                'description' => 'Created Appointment Request',
-                'subject_id' => $appointmentId,
-                'subject_type' => 'App\\Models\\Appointment',
-                'causer_id' => $patientUserId,
-                'causer_type' => 'App\\Models\\User',
-                'properties' => json_encode(['attributes' => ['status' => 'Pending']]),
-                'event' => 'appointment_created',
-                'created_at' => now()->subHours(6),
-                'updated_at' => now()->subHours(6),
-            ],
             [
                 'description' => 'Updated User Account',
                 'subject_id' => $patientUserId,
@@ -134,8 +103,8 @@ class PatientDashboardActivityLogTest extends TestCase
                 'causer_type' => 'App\\Models\\User',
                 'properties' => json_encode(['attributes' => ['mobile_number' => '09999999999']]),
                 'event' => 'user_updated',
-                'created_at' => now()->subHours(3),
-                'updated_at' => now()->subHours(3),
+                'created_at' => now()->subHours(6),
+                'updated_at' => now()->subHours(6),
             ],
             [
                 'description' => 'Logged In',
@@ -143,31 +112,34 @@ class PatientDashboardActivityLogTest extends TestCase
                 'subject_type' => 'App\\Models\\User',
                 'causer_id' => $patientUserId,
                 'causer_type' => 'App\\Models\\User',
-                'properties' => json_encode(['attributes' => ['login_at' => now()->subHours(4)->toDateTimeString()]]),
+                'properties' => json_encode(['attributes' => [
+                    'login_at' => now()->subHours(4)->toDateTimeString(),
+                    'ip_address' => '203.0.113.41',
+                    'browser' => 'Chrome',
+                    'platform' => 'Windows',
+                    'device' => 'Desktop',
+                ]]),
                 'event' => 'user_logged_in',
                 'created_at' => now()->subHours(4),
                 'updated_at' => now()->subHours(4),
             ],
             [
-                'description' => 'Created Treatment Record',
-                'subject_id' => 5,
-                'subject_type' => 'App\\Models\\TreatmentRecord',
+                'description' => 'Logged In',
+                'subject_id' => $patientUserId,
+                'subject_type' => 'App\\Models\\User',
                 'causer_id' => 99,
                 'causer_type' => 'App\\Models\\User',
-                'properties' => json_encode(['attributes' => ['treatment' => 'Dental Filling']]),
-                'event' => 'treatment_record_created',
-                'created_at' => now()->subHours(2),
-                'updated_at' => now()->subHours(2),
+                'properties' => json_encode(['attributes' => [
+                    'login_at' => now()->subHour()->toDateTimeString(),
+                    'ip_address' => '198.51.100.22',
+                    'browser' => 'Safari',
+                    'platform' => 'iPhone',
+                    'device' => 'Mobile',
+                ]]),
+                'event' => 'user_logged_in',
+                'created_at' => now()->subHour(),
+                'updated_at' => now()->subHour(),
             ],
-        ]);
-
-        DB::table('treatment_records')->insert([
-            'id' => 5,
-            'patient_id' => 24,
-            'treatment' => 'Dental Filling',
-            'amount_charged' => 1500,
-            'created_at' => now()->subHours(2),
-            'updated_at' => now()->subHour(),
         ]);
 
         $patient = User::query()->findOrFail($patientUserId);
@@ -175,14 +147,15 @@ class PatientDashboardActivityLogTest extends TestCase
         $response = $this->actingAs($patient)->get(route('patient.dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Activity Log');
+        $response->assertSee('Login Logs');
         $response->assertSee('Logged in');
         $response->assertSee('Successfully logged into your account.');
         $response->assertSee(now()->subHours(4)->format('Y-m-d'));
-        $response->assertSee('appointment created', false);
-        $response->assertSee('profile updated', false);
-        $response->assertSee('treatment record added', false);
-        $response->assertSee('payment recorded', false);
-        $response->assertSee('Payment of PHP 1,500.00 recorded for Dental Filling.');
+        $response->assertSee('Chrome');
+        $response->assertSee('Windows');
+        $response->assertSee('Desktop');
+        $response->assertSee('IP: 203.0.113.41');
+        $response->assertDontSee('Recent updates related to your appointments, records, and account.');
+        $response->assertDontSee('Updated User Account');
     }
 }
