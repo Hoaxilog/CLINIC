@@ -35,6 +35,12 @@
                 const label = this.toolLabels?.[code] || '';
                 return label ? `${code} - ${label}` : code;
             },
+            hasChiefComplaint(tooth) {
+                const wholeCode = this.localTeeth?.[tooth]?.whole_tooth?.code || null;
+                if (wholeCode === 'CC') return true;
+                const surfaces = ['top', 'bottom', 'left', 'right', 'center'];
+                return surfaces.some((part) => (this.localTeeth?.[tooth]?.[part]?.code || null) === 'CC');
+            },
             getStatusLine(tooth, index) {
                 const key = `line_${index}`;
                 return this.localTeeth?.[tooth]?.[key] || null;
@@ -70,7 +76,7 @@
             },
             removeStatusCode(tooth, code, ignoreSurface = null) {
                 this.ensureTeeth();
-                const surfaces = ['top', 'bottom', 'left', 'right', 'center'];
+                const surfaces = ['top', 'bottom', 'left', 'right', 'center', 'whole_tooth'];
                 for (const surface of surfaces) {
                     if (surface === ignoreSurface) continue;
                     if ((this.localTeeth?.[tooth]?.[surface]?.code || null) === code) return;
@@ -90,6 +96,22 @@
                 const color = this.getToolColor(code);
                 if (!color) return;
                 if (!this.localTeeth[tooth]) this.localTeeth[tooth] = {};
+                if (code === 'CC') {
+                    const currentWhole = this.localTeeth?.[tooth]?.whole_tooth || null;
+                    if ((currentWhole?.code || null) === 'CC') {
+                        delete this.localTeeth[tooth].whole_tooth;
+                        this.removeStatusCode(tooth, 'CC');
+                        return;
+                    }
+                    ['top', 'bottom', 'left', 'right', 'center'].forEach((surface) => {
+                        if ((this.localTeeth?.[tooth]?.[surface]?.code || null) === 'CC') {
+                            delete this.localTeeth[tooth][surface];
+                        }
+                    });
+                    this.localTeeth[tooth].whole_tooth = { color, code };
+                    this.removeStatusCode(tooth, code);
+                    return;
+                }
                 const currentData = this.localTeeth[tooth][part] || null;
                 if (currentData?.code === code) {
                     delete this.localTeeth[tooth][part];
@@ -106,6 +128,10 @@
                 if (this.isReadOnly) return;
                 if (!tooth || !part) return;
                 this.ensureTeeth();
+                if ((this.localTeeth?.[tooth]?.whole_tooth?.code || null) === 'CC') {
+                    delete this.localTeeth[tooth].whole_tooth;
+                    this.removeStatusCode(tooth, 'CC');
+                }
                 const currentData = this.localTeeth?.[tooth]?.[part] || null;
                 if (!currentData?.code) return;
                 delete this.localTeeth[tooth][part];

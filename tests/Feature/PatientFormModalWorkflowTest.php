@@ -79,6 +79,70 @@ class PatientFormModalWorkflowTest extends TestCase
             ->assertSet('selectedHistoryId', '');
     }
 
+    public function test_new_visit_flow_can_progress_from_health_history_to_dental_and_treatment_steps(): void
+    {
+        $user = User::factory()->make([
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $user->id = 106;
+
+        $this->actingAs($user);
+
+        Livewire::test(PatientFormModal::class)
+            ->set('showModal', true)
+            ->set('isEditing', true)
+            ->set('isAdmin', true)
+            ->set('isReadOnly', false)
+            ->set('forceNewRecord', true)
+            ->set('currentStep', 2)
+            ->call('goToStep', 3)
+            ->assertSet('pendingNavigationStep', 3)
+            ->assertDispatched('validateHealthHistory')
+            ->dispatch('healthHistoryValidated', data: [
+                'what_seeing_dentist_reason_q2' => 'Follow-up',
+                'is_clicking_jaw_q3a' => 0,
+                'is_pain_jaw_q3b' => 0,
+                'is_difficulty_opening_closing_q3c' => 0,
+                'is_locking_jaw_q3d' => 0,
+                'is_clench_grind_q4' => 0,
+                'is_bad_experience_q5' => 0,
+                'is_nervous_q6' => 0,
+                'is_condition_q1' => 0,
+                'is_hospitalized_q2' => 0,
+                'is_serious_illness_operation_q3' => 0,
+                'is_taking_medications_q4' => 0,
+                'is_allergic_medications_q5' => 0,
+                'is_allergic_latex_rubber_metals_q6' => 0,
+                'is_pregnant_q7' => 0,
+                'is_breast_feeding_q8' => 0,
+                'selectedHistoryId' => 'new',
+            ])
+            ->assertSet('currentStep', 3)
+            ->call('goToStep', 4)
+            ->assertSet('pendingNavigationStep', 4)
+            ->assertDispatched('requestDentalChartData')
+            ->dispatch('dentalChartDataProvided', data: [
+                'teeth' => [],
+                'oral_exam' => [
+                    'oral_hygiene_status' => 'Good',
+                    'gingiva' => 'Healthy',
+                    'calcular_deposits' => 'None',
+                    'stains' => 'None',
+                    'complete_denture' => 'None',
+                    'partial_denture' => 'None',
+                ],
+                'comments' => [
+                    'notes' => '',
+                    'treatment_plan' => '',
+                ],
+                'meta' => [
+                    'dentition_type' => 'adult',
+                    'numbering_system' => 'FDI',
+                ],
+            ])
+            ->assertSet('currentStep', 4);
+    }
+
     public function test_backward_navigation_does_not_require_validation(): void
     {
         $user = User::factory()->make([

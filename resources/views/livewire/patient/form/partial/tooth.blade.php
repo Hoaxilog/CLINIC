@@ -64,49 +64,58 @@
     class="flex flex-col items-center group w-20 sm:w-16 relative overflow-visible">
     @if (isset($isLower) && $isLower)
         {{-- LOWER ARCH --}}
-        {{-- SURFACE --}}
-        <div class="relative w-18 h-18 sm:w-14 sm:h-14 z-10 overflow-visible">
-            <svg viewBox="0 0 100 100"
-                class="w-full h-full drop-shadow-sm hover:scale-110 transition-transform duration-200 z-0 relative">
-                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'top'; expanded = false; $dispatch('picker-open', { tooth })"
-                    d="M 50 50 L 20 22 C 28 10, 42 12, 50 18 C 58 12, 72 10, 80 22 L 50 50 Z"
-                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'top')" stroke="#7DC242" stroke-width="2.5"
-                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
-                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'top')">{{ $getTooltip('top') }}</title>
-                </path>
-                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'right'; expanded = false; $dispatch('picker-open', { tooth })"
-                    d="M 50 50 L 80 22 C 90 28, 88 42, 82 50 C 88 58, 90 72, 80 78 L 50 50 Z"
-                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'right')" stroke="#7DC242" stroke-width="2.5"
-                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
-                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'right')">{{ $getTooltip('right') }}</title>
-                </path>
-                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'bottom'; expanded = false; $dispatch('picker-open', { tooth })"
-                    d="M 50 50 L 80 78 C 72 90, 58 88, 50 82 C 42 88, 28 90, 20 78 L 50 50 Z"
-                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'bottom')" stroke="#7DC242" stroke-width="2.5"
-                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
-                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'bottom')">{{ $getTooltip('bottom') }}</title>
-                </path>
-                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'left'; expanded = false; $dispatch('picker-open', { tooth })"
-                    d="M 50 50 L 20 78 C 10 72, 12 58, 18 50 C 12 42, 10 28, 20 22 L 50 50 Z"
-                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'left')" stroke="#7DC242" stroke-width="2.5"
-                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
-                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'left')">{{ $getTooltip('left') }}</title>
-                </path>
-                @if ($type === 'circle')
-                    <circle x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
-                        cx="50" cy="50" r="14" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
-                        stroke="#7DC242" stroke-width="2.5" class="hover:opacity-75 transition-opacity">
-                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')">{{ $getTooltip('center') }}</title>
-                    </circle>
-                @else
-                    <rect x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
-                        x="37" y="37" width="26" height="26" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
-                        stroke="#7DC242" stroke-width="2.5" stroke-linejoin="round"
-                        class="hover:opacity-75 transition-opacity">
-                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')">{{ $getTooltip('center') }}</title>
-                    </rect>
-                @endif
-            </svg>
+        <div class="relative flex w-20 flex-col items-center sm:w-16">
+            <div x-cloak x-show="$store.dentalChart.hasChiefComplaint(tooth)"
+                class="pointer-events-none absolute inset-x-0 -top-1 z-20 flex h-[5.8rem] items-center justify-center sm:h-[4.7rem]">
+                <svg viewBox="0 0 100 100" class="h-full w-full overflow-visible">
+                    <ellipse cx="50" cy="52" rx="34" ry="46" fill="none" stroke="#ef4444" stroke-width="4" />
+                </svg>
+            </div>
+
+            {{-- SURFACE --}}
+            <div class="relative h-20 w-20 overflow-visible sm:h-16 sm:w-16 z-10">
+                <svg viewBox="0 0 100 100"
+                    class="relative z-0 h-full w-full drop-shadow-sm transition-transform duration-200 hover:scale-110">
+                    <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'top'; expanded = false; $dispatch('picker-open', { tooth })"
+                        d="M 50 50 L 20 22 C 28 10, 42 12, 50 18 C 58 12, 72 10, 80 22 L 50 50 Z"
+                        x-bind:fill="$store.dentalChart.getPartFill(tooth, 'top')" stroke="#7DC242" stroke-width="2.5"
+                        stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'top')">{{ $getTooltip('top') }}</title>
+                    </path>
+                    <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'right'; expanded = false; $dispatch('picker-open', { tooth })"
+                        d="M 50 50 L 80 22 C 90 28, 88 42, 82 50 C 88 58, 90 72, 80 78 L 50 50 Z"
+                        x-bind:fill="$store.dentalChart.getPartFill(tooth, 'right')" stroke="#7DC242" stroke-width="2.5"
+                        stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'right')">{{ $getTooltip('right') }}</title>
+                    </path>
+                    <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'bottom'; expanded = false; $dispatch('picker-open', { tooth })"
+                        d="M 50 50 L 80 78 C 72 90, 58 88, 50 82 C 42 88, 28 90, 20 78 L 50 50 Z"
+                        x-bind:fill="$store.dentalChart.getPartFill(tooth, 'bottom')" stroke="#7DC242" stroke-width="2.5"
+                        stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'bottom')">{{ $getTooltip('bottom') }}</title>
+                    </path>
+                    <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'left'; expanded = false; $dispatch('picker-open', { tooth })"
+                        d="M 50 50 L 20 78 C 10 72, 12 58, 18 50 C 12 42, 10 28, 20 22 L 50 50 Z"
+                        x-bind:fill="$store.dentalChart.getPartFill(tooth, 'left')" stroke="#7DC242" stroke-width="2.5"
+                        stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'left')">{{ $getTooltip('left') }}</title>
+                    </path>
+                    @if ($type === 'circle')
+                        <circle x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
+                            cx="50" cy="50" r="14" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
+                            stroke="#7DC242" stroke-width="2.5" class="hover:opacity-75 transition-opacity">
+                            <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')">{{ $getTooltip('center') }}</title>
+                        </circle>
+                    @else
+                        <rect x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
+                            x="37" y="37" width="26" height="26" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
+                            stroke="#7DC242" stroke-width="2.5" stroke-linejoin="round"
+                            class="hover:opacity-75 transition-opacity">
+                            <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')">{{ $getTooltip('center') }}</title>
+                        </rect>
+                    @endif
+                </svg>
+            </div>
 
             @if (count($quickTools) > 0)
                 <div class="absolute left-1/2 top-1/2 z-[100] -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
@@ -214,12 +223,12 @@
                     </svg>
                 </div>
             @endif
-        </div>
 
-        {{-- ROOT IMAGE --}}
-        <div class="h-20 sm:h-18 w-full flex items-start justify-center -mt-1 z-0">
-            <img src="{{ asset('images/teeth/' . $toothForImage . '.png') }}" alt="T{{ $tooth }}"
-                class="w-16 sm:w-10 h-auto object-contain opacity-80" onerror="this.style.display='none'" />
+            {{-- ROOT IMAGE --}}
+            <div class="-mt-1 flex h-20 w-full items-start justify-center z-0 sm:h-18">
+                <img src="{{ asset('images/teeth/' . $toothForImage . '.png') }}" alt="T{{ $tooth }}"
+                    class="h-auto w-16 object-contain opacity-80 sm:w-10" onerror="this.style.display='none'" />
+            </div>
         </div>
 
         {{-- STATUS GRID (READ ONLY) --}}
@@ -261,53 +270,62 @@
                 x-text="$store.dentalChart.getStatusCode(tooth, 3)">{{ $s3['code'] ?? '-' }}</div>
         </div>
 
-        <div class="h-20 sm:h-18 w-full flex items-end justify-center -mb-1 z-0">
-            <img src="{{ asset('images/teeth/' . $toothForImage . '.png') }}" alt="T{{ $tooth }}"
-                class="w-16 sm:w-10 h-auto object-contain opacity-80" onerror="this.style.display='none'" />
-        </div>
+        <div class="relative flex w-20 flex-col items-center sm:w-16">
+            <div x-cloak x-show="$store.dentalChart.hasChiefComplaint(tooth)"
+                class="pointer-events-none absolute inset-x-0 -top-1 z-20 flex h-[5.8rem] items-center justify-center sm:h-[4.7rem]">
+                <svg viewBox="0 0 100 100" class="h-full w-full overflow-visible">
+                    <ellipse cx="50" cy="52" rx="34" ry="46" fill="none" stroke="#ef4444" stroke-width="4" />
+                </svg>
+            </div>
 
-        <div class="relative w-18 h-18 sm:w-14 sm:h-14 z-10 overflow-visible">
-            <svg viewBox="0 0 100 100"
-                class="w-full h-full drop-shadow-sm hover:scale-110 transition-transform duration-200 relative z-0">
-                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'top'; expanded = false; $dispatch('picker-open', { tooth })"
-                    d="M 50 50 L 20 22 C 28 10, 42 12, 50 18 C 58 12, 72 10, 80 22 L 50 50 Z"
-                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'top')" stroke="#7DC242" stroke-width="2.5"
-                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
-                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'top')">{{ $getTooltip('top') }}</title>
-                </path>
-                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'right'; expanded = false; $dispatch('picker-open', { tooth })"
-                    d="M 50 50 L 80 22 C 90 28, 88 42, 82 50 C 88 58, 90 72, 80 78 L 50 50 Z"
-                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'right')" stroke="#7DC242" stroke-width="2.5"
-                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
-                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'right')">{{ $getTooltip('right') }}</title>
-                </path>
-                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'bottom'; expanded = false; $dispatch('picker-open', { tooth })"
-                    d="M 50 50 L 80 78 C 72 90, 58 88, 50 82 C 42 88, 28 90, 20 78 L 50 50 Z"
-                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'bottom')" stroke="#7DC242" stroke-width="2.5"
-                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
-                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'bottom')">{{ $getTooltip('bottom') }}</title>
-                </path>
-                <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'left'; expanded = false; $dispatch('picker-open', { tooth })"
-                    d="M 50 50 L 20 78 C 10 72, 12 58, 18 50 C 12 42, 10 28, 20 22 L 50 50 Z"
-                    x-bind:fill="$store.dentalChart.getPartFill(tooth, 'left')" stroke="#7DC242" stroke-width="2.5"
-                    stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
-                    <title x-text="$store.dentalChart.getPartTooltip(tooth, 'left')">{{ $getTooltip('left') }}</title>
-                </path>
-                @if ($type === 'circle')
-                    <circle x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
-                        cx="50" cy="50" r="14" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
-                        stroke="#7DC242" stroke-width="2.5" class="hover:opacity-75 transition-opacity">
-                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')">{{ $getTooltip('center') }}</title>
-                    </circle>
-                @else
-                    <rect x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
-                        x="37" y="37" width="26" height="26" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
-                        stroke="#7DC242" stroke-width="2.5" stroke-linejoin="round"
-                        class="hover:opacity-75 transition-opacity">
-                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')">{{ $getTooltip('center') }}</title>
-                    </rect>
-                @endif
-            </svg>
+            <div class="-mb-1 flex h-20 w-full items-end justify-center z-0 sm:h-18">
+                <img src="{{ asset('images/teeth/' . $toothForImage . '.png') }}" alt="T{{ $tooth }}"
+                    class="h-auto w-16 object-contain opacity-80 sm:w-10" onerror="this.style.display='none'" />
+            </div>
+
+            <div class="relative h-20 w-20 overflow-visible sm:h-16 sm:w-16 z-10">
+                <svg viewBox="0 0 100 100"
+                    class="relative z-0 h-full w-full drop-shadow-sm transition-transform duration-200 hover:scale-110">
+                    <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'top'; expanded = false; $dispatch('picker-open', { tooth })"
+                        d="M 50 50 L 20 22 C 28 10, 42 12, 50 18 C 58 12, 72 10, 80 22 L 50 50 Z"
+                        x-bind:fill="$store.dentalChart.getPartFill(tooth, 'top')" stroke="#7DC242" stroke-width="2.5"
+                        stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'top')">{{ $getTooltip('top') }}</title>
+                    </path>
+                    <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'right'; expanded = false; $dispatch('picker-open', { tooth })"
+                        d="M 50 50 L 80 22 C 90 28, 88 42, 82 50 C 88 58, 90 72, 80 78 L 50 50 Z"
+                        x-bind:fill="$store.dentalChart.getPartFill(tooth, 'right')" stroke="#7DC242" stroke-width="2.5"
+                        stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'right')">{{ $getTooltip('right') }}</title>
+                    </path>
+                    <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'bottom'; expanded = false; $dispatch('picker-open', { tooth })"
+                        d="M 50 50 L 80 78 C 72 90, 58 88, 50 82 C 42 88, 28 90, 20 78 L 50 50 Z"
+                        x-bind:fill="$store.dentalChart.getPartFill(tooth, 'bottom')" stroke="#7DC242" stroke-width="2.5"
+                        stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'bottom')">{{ $getTooltip('bottom') }}</title>
+                    </path>
+                    <path x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'left'; expanded = false; $dispatch('picker-open', { tooth })"
+                        d="M 50 50 L 20 78 C 10 72, 12 58, 18 50 C 12 42, 10 28, 20 22 L 50 50 Z"
+                        x-bind:fill="$store.dentalChart.getPartFill(tooth, 'left')" stroke="#7DC242" stroke-width="2.5"
+                        stroke-linejoin="round" class="hover:opacity-75 transition-opacity">
+                        <title x-text="$store.dentalChart.getPartTooltip(tooth, 'left')">{{ $getTooltip('left') }}</title>
+                    </path>
+                    @if ($type === 'circle')
+                        <circle x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
+                            cx="50" cy="50" r="14" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
+                            stroke="#7DC242" stroke-width="2.5" class="hover:opacity-75 transition-opacity">
+                            <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')">{{ $getTooltip('center') }}</title>
+                        </circle>
+                    @else
+                        <rect x-on:click.stop="if ($store.dentalChart.isReadOnly) return; open = true; part = 'center'; expanded = false; $dispatch('picker-open', { tooth })"
+                            x="37" y="37" width="26" height="26" x-bind:fill="$store.dentalChart.getPartFill(tooth, 'center')"
+                            stroke="#7DC242" stroke-width="2.5" stroke-linejoin="round"
+                            class="hover:opacity-75 transition-opacity">
+                            <title x-text="$store.dentalChart.getPartTooltip(tooth, 'center')">{{ $getTooltip('center') }}</title>
+                        </rect>
+                    @endif
+                </svg>
+            </div>
 
             @if (count($quickTools) > 0)
                 <div class="absolute left-1/2 top-1/2 z-[100] -translate-x-1/2 -translate-y-1/2 pointer-events-auto"

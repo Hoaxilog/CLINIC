@@ -9,11 +9,41 @@
             : $inputClass;
     @endphp
 
+    @php
+        $hasTreatmentRecord = !empty($existingImages)
+            || !empty($selectedTreatments)
+            || filled($treatment)
+            || filled($cost_of_treatment)
+            || filled($amount_charged)
+            || filled($remarks);
+    @endphp
+
     <div class="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
         <h2 class="text-lg font-semibold text-slate-900">Treatment Record</h2>
         <p class="mt-1 text-sm text-slate-500">Capture treatment details, billing, and attached images.</p>
     </div>
 
+    @if ($isReadOnly && ! $hasTreatmentRecord)
+        <div class="flex min-h-[58vh] w-full flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-10 text-center">
+            <div class="rounded-full bg-blue-50 p-6">
+                <svg class="h-20 w-20 text-[#0086da]" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" />
+                </svg>
+            </div>
+            <div class="mt-6">
+                <h3 class="text-2xl font-bold text-gray-800">No Treatment Records</h3>
+                <p class="mt-2 max-w-md text-gray-500">
+                    This patient does not have any treatment records yet. Create the first record from the visit flow.
+                </p>
+            </div>
+            <button type="button" wire:click="$dispatch('openNewVisitRecord')"
+                class="mt-6 inline-flex items-center rounded-lg bg-[#0086da] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:bg-[#0073a8]">
+                + New Record
+            </button>
+        </div>
+    @else
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div class="xl:col-span-7 rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
             <div class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)]">
@@ -256,4 +286,5 @@
             </div>
         </div>
     </div>
+    @endif
 </div>

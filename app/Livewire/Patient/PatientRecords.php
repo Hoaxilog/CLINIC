@@ -218,7 +218,7 @@ class PatientRecords extends Component
 
     public function render()
     {
-        $patients = $this->getPatientsQuery()->paginate(9);
+        $patients = $this->getPatientsQuery()->paginate(21);
         $patientIds = $patients->getCollection()->pluck('id')->filter()->values();
 
         $lastCompletedMap = collect();

@@ -133,7 +133,7 @@ class PatientFormModal extends Component
             return;
         }
 
-        if (! $this->isReadOnly && $step !== $this->currentStep) {
+        if (! $this->isReadOnly && ! $this->forceNewRecord && $step !== $this->currentStep) {
             $this->dispatch('flash-message', type: 'info', message: 'Finish saving or cancel the current edit before opening another section.');
             $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
 

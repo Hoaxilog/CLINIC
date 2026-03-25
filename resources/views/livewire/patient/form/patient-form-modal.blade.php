@@ -40,7 +40,7 @@
                     <div class="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
                         @php
                             $basicInfoEditing = $isEditing && ! $isReadOnly && $currentStep == 1;
-                            $editingLockedToSection = $isEditing && ! $isReadOnly;
+                            $editingLockedToSection = $isEditing && ! $isReadOnly && ! $forceNewRecord;
                             $canNavigateFromBasicInfo = ! $basicInfoEditing && ! $editingLockedToSection;
                         @endphp
                         <div class="flex flex-wrap items-center justify-center gap-y-3">
@@ -210,13 +210,23 @@
                     <div class="border-t border-gray-200 bg-white px-4 py-4 sm:px-6">
                         @php
                             // ── Button visibility matrix ──────────────────────────────────────────
+                            $hasHealthRecords = !empty($healthHistoryList);
+                            $hasDentalRecords = !empty($chartHistory);
+                            $hasTreatmentRecord = !empty($treatmentRecordData['id'] ?? null);
+                            $hasExistingRecordForStep = match ($currentStep) {
+                                2 => $hasHealthRecords,
+                                3 => $hasDentalRecords,
+                                4 => $hasTreatmentRecord,
+                                default => false,
+                            };
+
                             // Edit This Record: step 1 read-only only
                             $showEditButton = $isEditing && $isReadOnly && $currentStep == 1 && $isAdmin;
 
                             // Health history stays read-only for existing records.
                             $showEditVisitButton = false;
-                            $showEditClinicalButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [3, 4], true);
-                            $showNewRecordButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [2, 3, 4], true);
+                            $showEditClinicalButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [3, 4], true) && $hasExistingRecordForStep;
+                            $showNewRecordButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [2, 3, 4], true) && $hasExistingRecordForStep;
 
                             $finalEditableStep = $isEditing
                                 ? ($currentStep === 1 ? 1 : ($isAdmin ? 4 : 1))
@@ -272,7 +282,7 @@
                                     x-on:click="$dispatch('patient-form-draft-pause', { ms: 3000 })"
                                     wire:click="cancelEdit" type="button"
                                     class="rounded-sm border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-[#1a2e3b] hover:bg-[#f6fafd]">
-                                    {{ $isEditing && !$isReadOnly ? 'Cancel Changes' : 'Close' }}
+                                    {{ $isEditing && !$isReadOnly ? 'Cancel' : 'Close' }}
                                 </button>
                             </div>
 

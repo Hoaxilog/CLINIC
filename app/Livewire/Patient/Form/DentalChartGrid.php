@@ -102,6 +102,11 @@ class DentalChartGrid extends Component
         $toolColor = $this->getCurrentToolColor();
         if (!$toolColor) return;
 
+        if ($this->selectedTool === 'CC') {
+            $this->toggleWholeToothMarker($tooth_num, $toolColor);
+            return;
+        }
+
         $currentData = $this->teeth[$tooth_num][$part] ?? null;
 
         if ($currentData && isset($currentData['code']) && $currentData['code'] === $this->selectedTool) {
@@ -135,7 +140,7 @@ class DentalChartGrid extends Component
 
     private function removeStatusCode($tooth_num, $code, $ignoreSurface = null)
     {
-        $surfaces = ['top', 'bottom', 'left', 'right', 'center'];
+        $surfaces = ['top', 'bottom', 'left', 'right', 'center', 'whole_tooth'];
         foreach ($surfaces as $surface) {
             if ($surface === $ignoreSurface) continue;
             if (($this->teeth[$tooth_num][$surface]['code'] ?? null) === $code) return;
@@ -170,6 +175,29 @@ class DentalChartGrid extends Component
                 'color' => $toolColor
             ];
         }
+    }
+
+    private function toggleWholeToothMarker($tooth_num, $toolColor): void
+    {
+        $current = $this->teeth[$tooth_num]['whole_tooth'] ?? null;
+
+        if (($current['code'] ?? null) === 'CC') {
+            unset($this->teeth[$tooth_num]['whole_tooth']);
+            $this->removeStatusCode($tooth_num, 'CC');
+            return;
+        }
+
+        foreach (['top', 'bottom', 'left', 'right', 'center'] as $surface) {
+            if (($this->teeth[$tooth_num][$surface]['code'] ?? null) === 'CC') {
+                unset($this->teeth[$tooth_num][$surface]);
+            }
+        }
+
+        $this->teeth[$tooth_num]['whole_tooth'] = [
+            'color' => $toolColor,
+            'code' => 'CC',
+        ];
+        $this->removeStatusCode($tooth_num, 'CC');
     }
 
     public function render()
