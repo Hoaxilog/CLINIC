@@ -53,7 +53,7 @@ class ProfileController extends Controller
         // Fetch role name for display
         $roleName = User::roleLabelFromId($user?->role !== null ? (int) $user->role : null);
 
-        return view('profile', compact('user', 'roleName', 'isGoogleUser', 'accountDisplayName', 'accountMobileNumber'));
+        return view('profile', compact('user', 'roleName', 'isGoogleUser', 'accountDisplayName', 'accountMobileNumber', 'hasMiddleNameColumn'));
     }
 
     public function update(Request $request)
@@ -65,50 +65,46 @@ class ProfileController extends Controller
             return back()->with('error', 'We could not find your account details.');
         }
 
-        if ((int) $user->role === User::ROLE_PATIENT) {
-            $hasMiddleNameColumn = Schema::hasColumn('users', 'middle_name');
+        $hasMiddleNameColumn = Schema::hasColumn('users', 'middle_name');
 
-            $sanitized = [
-                'first_name' => InputSanitizer::sanitizeTitleCase($request->input('first_name')),
-                'last_name' => InputSanitizer::sanitizeTitleCase($request->input('last_name')),
-                'mobile_number' => InputSanitizer::sanitizeCountryCodeLocalNumber($request->input('mobile_number')),
-            ];
+        $sanitized = [
+            'first_name' => InputSanitizer::sanitizeTitleCase($request->input('first_name')),
+            'last_name' => InputSanitizer::sanitizeTitleCase($request->input('last_name')),
+            'mobile_number' => InputSanitizer::sanitizeCountryCodeLocalNumber($request->input('mobile_number')),
+        ];
 
-            if ($hasMiddleNameColumn) {
-                $sanitized['middle_name'] = InputSanitizer::sanitizeTitleCase($request->input('middle_name'));
-            }
-
-            $rules = [
-                'first_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
-                'last_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
-                'mobile_number' => ['required', 'digits:10'],
-            ];
-
-            if ($hasMiddleNameColumn) {
-                $rules['middle_name'] = ['nullable', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"];
-            }
-
-            $validated = validator($sanitized, $rules, [
-                'mobile_number.digits' => 'Contact number must be exactly 10 digits after +63.',
-            ])->validate();
-
-            $updatePayload = [
-                'first_name' => $validated['first_name'],
-                'last_name' => $validated['last_name'],
-                'mobile_number' => $validated['mobile_number'],
-                'updated_at' => now(),
-            ];
-
-            if ($hasMiddleNameColumn) {
-                $updatePayload['middle_name'] = ($validated['middle_name'] ?? '') !== '' ? $validated['middle_name'] : null;
-            }
-
-            DB::table('users')->where('id', $userId)->update($updatePayload);
-
-            return back()->with('success', 'Your account details were updated successfully.');
+        if ($hasMiddleNameColumn) {
+            $sanitized['middle_name'] = InputSanitizer::sanitizeTitleCase($request->input('middle_name'));
         }
 
-        return back()->with('success', 'Account details are managed by the clinic.');
+        $rules = [
+            'first_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+            'last_name' => ['required', 'string', 'min:2', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
+            'mobile_number' => ['required', 'digits:10'],
+        ];
+
+        if ($hasMiddleNameColumn) {
+            $rules['middle_name'] = ['nullable', 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"];
+        }
+
+        $validated = validator($sanitized, $rules, [
+            'mobile_number.digits' => 'Contact number must be exactly 10 digits after +63.',
+        ])->validate();
+
+        $updatePayload = [
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'mobile_number' => $validated['mobile_number'],
+            'updated_at' => now(),
+        ];
+
+        if ($hasMiddleNameColumn) {
+            $updatePayload['middle_name'] = ($validated['middle_name'] ?? '') !== '' ? $validated['middle_name'] : null;
+        }
+
+        DB::table('users')->where('id', $userId)->update($updatePayload);
+
+        return back()->with('success', 'Your account details were updated successfully.');
     }
 
     public function updatePassword(Request $request)

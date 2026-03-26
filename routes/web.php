@@ -49,9 +49,6 @@ Route::middleware(['guest'])->group(function () {
     Route::get('auth/google/callback', [LoginController::class, 'handleGoogleCallback'])
         ->name('auth.google.callback');
 
-
-    // (Reset routes moved below to allow both guests and authenticated users)
-
     // Registration Routes (Manual)
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
@@ -101,6 +98,9 @@ Route::middleware(['auth', 'staffOrDentist'])->group(function () {
     Route::get('/appointment/requests', function () {
         return view('appointment-requests');
     })->name('appointment.requests');
+    Route::get('/appointment/history', function () {
+        return view('appointment-history');
+    })->name('appointment.history');
     Route::get('/appointment/calendar', function () {
         return view('appointment', ['initialTab' => 'calendar']);
     })->name('appointment.calendar');

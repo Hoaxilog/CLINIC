@@ -1,4 +1,18 @@
-<div x-data="{ modalOpen: @entangle('showAppointmentModal').live, detailsLoading: false }" x-on:appointment-details-loaded.window="detailsLoading = false" class="h-full">
+<div class="h-full" x-data="{
+    serverModalOpen: @entangle('showAppointmentModal').live,
+    modalOpen: false,
+    openingPatientForm: false,
+    resumeAppointmentModalOnPatientFormClose: false,
+    init() {
+        this.modalOpen = this.serverModalOpen;
+        this.$watch('serverModalOpen', value => {
+            this.modalOpen = value;
+        });
+    }
+}" x-init="init()"
+    x-on:patient-form-opened.window="openingPatientForm = false; modalOpen = false"
+    x-on:patient-form-closed.window="openingPatientForm = false; if (resumeAppointmentModalOnPatientFormClose) { modalOpen = true; resumeAppointmentModalOnPatientFormClose = false }"
+    x-on:patient-form-open-failed.window="openingPatientForm = false; resumeAppointmentModalOnPatientFormClose = false">
 
     @php
         $cancelledAppointments = $todayAppointments->where('status', 'Cancelled');
@@ -24,7 +38,7 @@
                 @if (count($scheduledAppointments) > 0)
                     @foreach ($scheduledAppointments as $app)
                         <div wire:key="today-{{ $app->id }}-{{ $app->status }}"
-                            x-on:click="detailsLoading = true; modalOpen = true"
+                            x-on:click="modalOpen = true"
                             wire:click="viewAppointment({{ $app->id }})"
                             class="group cursor-pointer rounded-none border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md">
                             <div class="flex items-start justify-between gap-3">
@@ -81,7 +95,7 @@
                 @if (count($waitingQueue) > 0)
                     @foreach ($waitingQueue as $wait)
                         <div wire:key="wait-{{ $wait->id }}-{{ $wait->status }}"
-                            x-on:click="detailsLoading = true; modalOpen = true"
+                            x-on:click="modalOpen = true"
                             wire:click="viewAppointment({{ $wait->id }})"
                             class="group cursor-pointer rounded-none border bg-white p-4 transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md {{ $loop->first ? 'border-amber-300 ring-1 ring-amber-100 shadow-md' : 'border-amber-200 shadow-sm' }}">
                             <div class="flex items-start justify-between gap-3">
@@ -143,7 +157,7 @@
                 @if (count($ongoingAppointments) > 0)
                     @foreach ($ongoingAppointments as $ongoing)
                         <div wire:key="ongoing-{{ $ongoing->id }}-{{ $ongoing->status }}"
-                            x-on:click="detailsLoading = true; modalOpen = true"
+                            x-on:click="modalOpen = true"
                             wire:click="viewAppointment({{ $ongoing->id }})"
                             class="group cursor-pointer rounded-none border border-emerald-200 bg-emerald-50/40 p-4 shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md">
                             <div class="flex items-start justify-between gap-3">
@@ -211,7 +225,7 @@
                 @if (count($cancelledAppointments) > 0)
                     @foreach ($cancelledAppointments as $app)
                         <div wire:key="cancelled-{{ $app->id }}-{{ $app->status }}"
-                            x-on:click="detailsLoading = true; modalOpen = true"
+                            x-on:click="modalOpen = true"
                             wire:click="viewAppointment({{ $app->id }})"
                             class="group cursor-pointer rounded-none border border-rose-200 bg-rose-50/60 p-4 transition hover:-translate-y-0.5 hover:border-rose-300 hover:bg-white hover:shadow-md">
                             <div class="flex items-start justify-between gap-3">
@@ -253,213 +267,6 @@
         </div>
     </div>
 
-    <div x-cloak x-show="modalOpen" x-transition.opacity
-        class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black opacity-60"
-            x-on:click="detailsLoading = false; modalOpen = false; $wire.closeAppointmentModal()"></div>
-        <div
-            class="relative z-10 mx-4 w-full max-w-4xl overflow-hidden rounded-none border border-slate-200 bg-white shadow-2xl">
-
-            <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-                <h3 class="text-xl font-bold text-slate-900">Lobby Appointment Details</h3>
-                <button class="rounded-full p-2 text-slate-400 transition hover:bg-white hover:text-slate-600"
-                    x-on:click="detailsLoading = false; modalOpen = false; $wire.closeAppointmentModal()">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-
-            @if (session()->has('error'))
-                <div
-                    class="flex items-center gap-2 border-b border-rose-200 bg-rose-50 px-6 py-3 text-sm font-semibold text-rose-600">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            <div x-cloak x-show="detailsLoading"
-                class="min-h-[300px] items-center justify-center bg-slate-50 text-center flex">
-                <div class="flex flex-col items-center gap-3">
-                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
-                    <div class="text-sm font-semibold text-gray-700">Loading appointment details...</div>
-                </div>
-            </div>
-
-            <div x-cloak x-show="!detailsLoading" class="max-h-[80vh] overflow-y-auto p-6">
-
-                <div class="mb-6 rounded-none border border-slate-200 bg-slate-50 p-5">
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                        <div>
-                            <label
-                                class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500">Date</label>
-                            <input type="text"
-                                value="{{ \Carbon\Carbon::parse($selectedDate)->format('F j, Y') }}"
-                                class="w-full border-0 bg-transparent p-0 text-lg font-bold text-slate-900 focus:ring-0"
-                                readonly />
-                        </div>
-                        <div>
-                            <label
-                                class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500">Start
-                                Time</label>
-                            <input type="text" value="{{ $selectedTime }}"
-                                class="w-full border-0 bg-transparent p-0 text-lg font-bold text-slate-900 focus:ring-0"
-                                readonly />
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500">End
-                                Time</label>
-                            <input type="text" value="{{ $endTime }}"
-                                class="w-full border-0 bg-transparent p-0 text-lg font-bold text-slate-900 focus:ring-0"
-                                readonly />
-                        </div>
-                    </div>
-                </div>
-
-                @if ($dentistName && ($appointmentStatus == 'Ongoing' || $appointmentStatus == 'Completed'))
-                    <div class="mb-6 flex items-center gap-4 rounded-none border border-emerald-200 bg-emerald-50 p-4">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode('Dr ' . $dentistName) }}&background=10b981&color=fff"
-                            class="h-10 w-10 rounded-full border-2 border-white shadow-sm">
-                        <div>
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Assigned Dentist
-                            </p>
-                            <p class="text-base font-bold text-slate-900">Dr. {{ $dentistName }}</p>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="mb-5 grid grid-cols-1 gap-5 md:grid-cols-3">
-                    <div>
-                        <label class="mb-1.5 block text-xs font-semibold text-slate-600">First Name</label>
-                        <input wire:model="firstName" type="text"
-                            class="w-full rounded-none border border-slate-200 bg-slate-50 px-4 py-2.5 font-medium text-slate-900 outline-none"
-                            readonly />
-                    </div>
-                    <div>
-                        <label class="mb-1.5 block text-xs font-semibold text-slate-600">Middle Name</label>
-                        <input wire:model="middleName" type="text"
-                            class="w-full rounded-none border border-slate-200 bg-slate-50 px-4 py-2.5 font-medium text-slate-900 outline-none"
-                            readonly />
-                    </div>
-                    <div>
-                        <label class="mb-1.5 block text-xs font-semibold text-slate-600">Last Name</label>
-                        <input wire:model="lastName" type="text"
-                            class="w-full rounded-none border border-slate-200 bg-slate-50 px-4 py-2.5 font-medium text-slate-900 outline-none"
-                            readonly />
-                    </div>
-                </div>
-
-                <div class="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <div>
-                        <label class="mb-1.5 block text-xs font-semibold text-slate-600">Contact Number</label>
-                        <input wire:model="contactNumber" type="text"
-                            class="w-full rounded-none border border-slate-200 bg-slate-50 px-4 py-2.5 font-medium text-slate-900 outline-none"
-                            readonly />
-                    </div>
-                    <div>
-                        <label class="mb-1.5 block text-xs font-semibold text-slate-600">Service Required</label>
-                        <select wire:model="selectedService"
-                            class="w-full rounded-none border border-slate-200 bg-white px-4 py-2.5 font-medium text-slate-900 outline-none focus:ring-2 focus:ring-slate-200"
-                            {{ $appointmentStatus != 'Waiting' ? 'disabled' : '' }}>
-                            @foreach ($servicesList as $service)
-                                <option value="{{ $service->id }}">
-                                    {{ $service->service_name }}
-                                    ({{ \Carbon\Carbon::parse($service->duration)->format('H:i') }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex flex-col justify-end gap-3 border-t border-slate-200 pt-6 sm:flex-row">
-
-                    @if (!in_array($appointmentStatus, ['Cancelled', 'Completed']))
-                        <button type="button" wire:click="updateStatus('Cancelled')" wire:loading.attr="disabled"
-                            wire:target="updateStatus"
-                            wire:confirm="Are you sure you want to cancel this appointment?"
-                            class="mr-auto rounded-none px-5 py-2.5 font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60">
-                            Cancel Appointment
-                        </button>
-                    @endif
-
-                    @if ($appointmentStatus === 'Scheduled')
-                        <button type="button" wire:click="processPatient" wire:loading.attr="disabled"
-                            wire:target="processPatient"
-                            class="rounded-none border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">
-                            View Info
-                        </button>
-                        <button type="button" wire:click="updateStatus('Waiting')" wire:loading.attr="disabled"
-                            wire:target="updateStatus"
-                            class="flex items-center gap-2 rounded-none bg-amber-500 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60">
-                            
-                            Mark as Arrived
-                        </button>
-                    @elseif($appointmentStatus === 'Waiting')
-                        <button type="button" wire:click="processPatient" wire:loading.attr="disabled"
-                            wire:target="processPatient"
-                            class="rounded-none border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">
-                            View Patient Info
-                        </button>
-                        @if (auth()->user()?->canHandleChairsideFlow())
-                            <button type="button" wire:click="admitPatient" wire:loading.attr="disabled"
-                                wire:target="admitPatient"
-                                class="flex items-center gap-2 rounded-none bg-emerald-600 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
-                                Call to Chair
-                            </button>
-                        @endif
-                    @elseif($appointmentStatus === 'Ongoing')
-                        @if ($this->canOpenViewingPatientChart())
-                            <button type="button" wire:click="openPatientChart" wire:loading.attr="disabled"
-                                wire:target="openPatientChart"
-                                class="flex items-center gap-2 rounded-none bg-slate-800 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                                Open Chart
-                            </button>
-                        @endif
-                        <button type="button" wire:click="updateStatus('Completed')" wire:loading.attr="disabled"
-                            wire:target="updateStatus"
-                            class="flex items-center gap-2 rounded-none bg-emerald-600 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Finish Session
-                        </button>
-                    @elseif($appointmentStatus === 'Completed')
-                        <span
-                            class="flex items-center gap-2 rounded-none border border-emerald-200 bg-emerald-50 px-5 py-2.5 font-bold text-emerald-700">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Completed
-                        </span>
-                    @elseif($appointmentStatus === 'Cancelled')
-                        <span
-                            class="flex items-center gap-2 rounded-none border border-rose-200 bg-rose-50 px-5 py-2.5 font-bold text-rose-700">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                            Cancelled
-                        </span>
-                    @endif
-
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('livewire.appointment.partials.appointment-modal')
 
 </div>

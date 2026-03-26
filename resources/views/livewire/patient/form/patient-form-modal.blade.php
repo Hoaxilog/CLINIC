@@ -54,16 +54,18 @@
                                     <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Basic Information</span>
                                 </div>
 
-                                <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
+                                @if ($isEditing)
+                                    <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
 
-                                <!-- Tab 2: Health Records -->
-                                <div
-                                    @if ($isEditing && $canNavigateFromBasicInfo) x-on:click.prevent="handleStepNavigation(2)" @endif
-                                    class="flex items-center gap-2.5 transition {{ $currentStep == 2 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 2 && $canNavigateFromBasicInfo ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $basicInfoEditing ? 'cursor-not-allowed opacity-60' : '' }}">
-                                    <span
-                                        class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 2 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">2</span>
-                                    <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Health Records</span>
-                                </div>
+                                    <!-- Tab 2: Health Records -->
+                                    <div
+                                        @if ($isEditing && $canNavigateFromBasicInfo) x-on:click.prevent="handleStepNavigation(2)" @endif
+                                        class="flex items-center gap-2.5 transition {{ $currentStep == 2 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 2 && $canNavigateFromBasicInfo ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $basicInfoEditing ? 'cursor-not-allowed opacity-60' : '' }}">
+                                        <span
+                                            class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 2 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">2</span>
+                                        <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Health Records</span>
+                                    </div>
+                                @endif
 
                                 @if ($isEditing && $canViewClinicalRecords)
                                     <div class="mx-3 h-px w-8 bg-gray-200 sm:w-12"></div>
@@ -230,7 +232,7 @@
 
                             $finalEditableStep = $isEditing
                                 ? ($currentStep === 1 ? 1 : ($isAdmin ? 4 : 1))
-                                : ($isAdmin ? 4 : 2);
+                                : 1;
                             $shouldShowSave = ! $isReadOnly && (! $isEditing || $currentStep === $finalEditableStep);
 
                             $showNext = false; // tabs + save buttons replace Next

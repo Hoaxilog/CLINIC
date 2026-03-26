@@ -76,14 +76,23 @@ class PatientFormModal extends Component
         $this->newPatientId = $id;
         $this->checkAdminRole();
 
-        if (! $this->canAccessPatientRecord((int) $id)) {
+        $patientId = (int) $id;
+
+        if ($patientId <= 0 || ! DB::table('patients')->where('id', $patientId)->exists()) {
+            $this->dispatch('flash-message', type: 'error', message: 'Patient record was not found.');
+            $this->dispatch('patient-form-open-failed');
+
+            return;
+        }
+
+        if (! $this->canAccessPatientRecord($patientId)) {
             $this->dispatch('flash-message', type: 'error', message: 'This patient is currently in session with another dentist. Only the assigned dentist or an admin can open the active record.');
             $this->dispatch('patient-form-open-failed');
 
             return;
         }
 
-        $this->loadPatientData($id);
+        $this->loadPatientData($patientId);
 
         $this->currentStep = max(1, min((int) $startStep, $this->getMaxStep()));
         if ($this->canViewClinicalRecords && $this->currentStep >= 3) {
@@ -239,9 +248,6 @@ class PatientFormModal extends Component
 
         if ($this->isSaving) {
             $this->isEditing ? $this->updateBasicInfo() : $this->createFullPatientRecord();
-        } elseif (! $this->isEditing) {
-            // Create mode: move to step 2 (health history) after basic info is filled
-            $this->currentStep = 2;
         }
     }
 
@@ -1010,8 +1016,8 @@ class PatientFormModal extends Component
     private function getMaxStep(): int
     {
         if (! $this->isEditing) {
-            // Create mode flows: Basic Info → Health History (→ Dental → Treatment for admin)
-            return $this->isAdmin ? 4 : 2;
+            // Create mode only collects the patient's basic information.
+            return 1;
         }
 
         // Edit/view mode: staff can view clinical records, but only admin/dentist can edit them.

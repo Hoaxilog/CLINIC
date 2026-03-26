@@ -197,36 +197,76 @@ class HealthHistory extends Component
     }
 
     protected $validationAttributes = [
-        'what_seeing_dentist_reason_q2' => 'Reason for seeing dentist',
-        'is_clicking_jaw_q3a' => 'Clicking of the Jaw',
-        'is_pain_jaw_q3b' => 'Pain below the ear',
-        'is_difficulty_opening_closing_q3c' => 'Difficulty opening/closing',
-        'is_locking_jaw_q3d' => 'Locking of the jaw',
-        'is_clench_grind_q4' => 'Clench or grind',
-        'is_bad_experience_q5' => 'Bad experience',
-        'is_nervous_q6' => 'Nervous',
-        'what_nervous_concern_q6' => 'Nervous concern',
-        'is_condition_q1' => 'Medical condition',
-        'what_condition_reason_q1' => 'Medical condition reason',
-        'is_hospitalized_q2' => 'Hospitalized',
-        'what_hospitalized_reason_q2' => 'Hospitalized reason',
-        'is_serious_illness_operation_q3' => 'Serious illness/operation',
-        'what_serious_illness_operation_reason_q3' => 'Serious illness/operation reason',
-        'is_taking_medications_q4' => 'Taking medications',
-        'what_medications_list_q4' => 'Medications list',
-        'is_allergic_medications_q5' => 'Allergic to medications',
-        'what_allergies_list_q5' => 'Allergies list',
-        'is_allergic_latex_rubber_metals_q6' => 'Allergic to latex/rubber/metals',
-        'is_pregnant_q7' => 'Pregnant',
-        'is_breast_feeding_q8' => 'Breast feeding',
+        'what_seeing_dentist_reason_q2' => 'reason for today\'s visit',
+        'is_clicking_jaw_q3a' => 'clicking of the jaw',
+        'is_pain_jaw_q3b' => 'pain below the ear',
+        'is_difficulty_opening_closing_q3c' => 'difficulty opening or closing your mouth',
+        'is_locking_jaw_q3d' => 'locking of the jaw',
+        'is_clench_grind_q4' => 'clenching or grinding',
+        'is_bad_experience_q5' => 'bad dental experience',
+        'is_nervous_q6' => 'feeling nervous about treatment',
+        'what_nervous_concern_q6' => 'concern about treatment',
+        'is_condition_q1' => 'medical condition history',
+        'what_condition_reason_q1' => 'medical condition details',
+        'is_hospitalized_q2' => 'hospitalization history',
+        'what_hospitalized_reason_q2' => 'hospitalization details',
+        'is_serious_illness_operation_q3' => 'serious illness or operation history',
+        'what_serious_illness_operation_reason_q3' => 'serious illness or operation details',
+        'is_taking_medications_q4' => 'current medications',
+        'what_medications_list_q4' => 'medication details',
+        'is_allergic_medications_q5' => 'medication allergy history',
+        'what_allergies_list_q5' => 'allergy details',
+        'is_allergic_latex_rubber_metals_q6' => 'allergy to latex, rubber, or metals',
+        'is_pregnant_q7' => 'pregnancy status',
+        'is_breast_feeding_q8' => 'breastfeeding status',
     ];
+
+    protected function messages(): array
+    {
+        return [
+            'what_seeing_dentist_reason_q2.required' => 'Please tell us why you are visiting the dentist today.',
+
+            'is_clicking_jaw_q3a.required' => 'Please choose Yes or No for clicking of the jaw.',
+            'is_pain_jaw_q3b.required' => 'Please choose Yes or No for pain below the ear.',
+            'is_difficulty_opening_closing_q3c.required' => 'Please choose Yes or No for difficulty opening or closing your mouth.',
+            'is_locking_jaw_q3d.required' => 'Please choose Yes or No for locking of the jaw.',
+            'is_clench_grind_q4.required' => 'Please choose Yes or No for clenching or grinding your teeth.',
+            'is_bad_experience_q5.required' => 'Please choose Yes or No for bad experience in a dental office.',
+            'is_nervous_q6.required' => 'Please choose Yes or No if you feel nervous about treatment.',
+            'what_nervous_concern_q6.required_if' => 'Please share your concern so we can make your treatment more comfortable.',
+
+            'is_condition_q1.required' => 'Please choose Yes or No for medical condition history.',
+            'what_condition_reason_q1.required_if' => 'Please provide details about the medical condition.',
+            'is_hospitalized_q2.required' => 'Please choose Yes or No for hospitalization history.',
+            'what_hospitalized_reason_q2.required_if' => 'Please provide details about the hospitalization.',
+            'is_serious_illness_operation_q3.required' => 'Please choose Yes or No for serious illness or operation history.',
+            'what_serious_illness_operation_reason_q3.required_if' => 'Please provide details about the illness or operation.',
+            'is_taking_medications_q4.required' => 'Please choose Yes or No if you are currently taking medications.',
+            'what_medications_list_q4.required_if' => 'Please list the medications you are currently taking.',
+            'is_allergic_medications_q5.required' => 'Please choose Yes or No for medication allergies.',
+            'what_allergies_list_q5.required_if' => 'Please tell us which medications you are allergic to.',
+            'is_allergic_latex_rubber_metals_q6.required' => 'Please choose Yes or No for allergies to latex, rubber, or metals.',
+
+            'is_pregnant_q7.required' => 'Please choose Yes or No for pregnancy status.',
+            'is_breast_feeding_q8.required' => 'Please choose Yes or No for breastfeeding status.',
+
+            'what_last_visit_reason_q1.regex' => 'Please use letters, numbers, spaces, and common punctuation only.',
+            'what_seeing_dentist_reason_q2.regex' => 'Please use letters, numbers, spaces, and common punctuation only.',
+            'what_nervous_concern_q6.regex' => 'Please use letters, numbers, spaces, and common punctuation only.',
+            'what_condition_reason_q1.regex' => 'Please use letters, numbers, spaces, and common punctuation only.',
+            'what_hospitalized_reason_q2.regex' => 'Please use letters, numbers, spaces, and common punctuation only.',
+            'what_serious_illness_operation_reason_q3.regex' => 'Please use letters, numbers, spaces, and common punctuation only.',
+            'what_medications_list_q4.regex' => 'Please use letters, numbers, spaces, and common punctuation only.',
+            'what_allergies_list_q5.regex' => 'Please use letters, numbers, spaces, and common punctuation only.',
+        ];
+    }
 
     #[On('validateHealthHistory')]
     public function validateForm()
     {
         try {
             $this->sanitizeFormData();
-            $validatedData = $this->validate();
+            $validatedData = $this->validate($this->rules(), $this->messages(), $this->validationAttributes);
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
             $field = $e->validator->errors()->keys()[0] ?? null;

@@ -318,7 +318,8 @@
                                 $isAppointmentGroupActive =
                                     request()->routeIs('appointment') ||
                                     request()->routeIs('appointment.requests') ||
-                                    request()->routeIs('appointment.calendar');
+                                    request()->routeIs('appointment.calendar') ||
+                                    request()->routeIs('appointment.history');
                                 $isAppointmentMenuOpen = $isAppointmentGroupActive;
                             @endphp
                             <button type="button" data-appointment-toggle
@@ -342,13 +343,17 @@
                                 </span>
                             </button>
                             <div data-appointment-submenu
-                                class="relative ml-2 mt-0.5 space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out group-[.collapsed]:hidden {{ $isAppointmentMenuOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none' }}">
+                                class="relative ml-2 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out group-[.collapsed]:hidden {{ $isAppointmentMenuOpen ? 'max-h-80 opacity-100 pb-2' : 'max-h-0 opacity-0 pointer-events-none' }}">
                                 <a href="{{ route('appointment.calendar') }}" title="Appointment Calendar"
                                     class="{{ request()->routeIs('appointment.calendar') || request()->routeIs('appointment') ? 'bg-[#0086DA] text-white shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] before:bg-white/70' : 'text-slate-300 hover:bg-white/10 hover:text-white before:bg-slate-400/70' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2">                                    Appointment Calendar
                                 </a>
                                 <a href="{{ route('appointment.requests') }}" title="Appointment Request"
                                     class="{{ request()->routeIs('appointment.requests') ? 'bg-[#0086DA] text-white shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] before:bg-white/70' : 'text-slate-300 hover:bg-white/10 hover:text-white before:bg-slate-400/70' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2">
                                     Appointment Request
+                                </a>
+                                <a href="{{ route('appointment.history') }}" title="Appointment History"
+                                    class="{{ request()->routeIs('appointment.history') ? 'bg-[#0086DA] text-white shadow-[0_10px_24px_-16px_rgba(0,134,218,0.85)] before:bg-white/70' : 'text-slate-300 hover:bg-white/10 hover:text-white before:bg-slate-400/70' }} relative block mx-2 rounded-xl px-3 py-2 pl-[3.5rem] text-sm font-medium tracking-normal before:absolute before:left-[1.875rem] before:top-1/2 before:h-px before:w-4 before:-translate-y-1/2">
+                                    Appointment History
                                 </a>
                             </div>
                         </li>
@@ -490,8 +495,9 @@
                     appointmentToggle.getAttribute('aria-expanded') === 'true';
 
                 const renderAppointmentState = () => {
-                    appointmentSubmenu.classList.toggle('max-h-40', isOpen);
+                    appointmentSubmenu.classList.toggle('max-h-80', isOpen);
                     appointmentSubmenu.classList.toggle('opacity-100', isOpen);
+                    appointmentSubmenu.classList.toggle('pb-2', isOpen);
                     appointmentSubmenu.classList.toggle('max-h-0', !isOpen);
                     appointmentSubmenu.classList.toggle('opacity-0', !isOpen);
                     appointmentSubmenu.classList.toggle('pointer-events-none', !isOpen);
