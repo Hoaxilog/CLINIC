@@ -185,7 +185,7 @@
                 <p class="text-gray-500 mt-2 max-w-md mx-auto">This patient does not have any dental records yet. Click
                     the button below to create the first chart.</p>
             </div>
-            @if (! $isReadOnly)
+            @if ($isReadOnly)
                 <button type="button" wire:click="$dispatch('openNewVisitRecord')"
                     class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"

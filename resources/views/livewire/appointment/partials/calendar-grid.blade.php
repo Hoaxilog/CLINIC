@@ -2,7 +2,7 @@
     @if ($isBlockMode)
         <div
             class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
-            Block mode is active. Select an available slot to block, or tap a blocked slot to unblock it.
+            Block mode is active. Select an available slot to block. Only future blocked slots can be unblocked.
         </div>
     @endif
     <div class="relative">
@@ -87,6 +87,7 @@
                                 @php
                                     $mobileBlockedSlot = $this->getBlockedSlotAt($date->toDateString(), $time);
                                     $mobileIsBlocked = $mobileBlockedSlot !== null;
+                                    $mobileCanUnblock = $this->canUnblockSlot($mobileBlockedSlot);
                                     $mobileIsOccupied = $this->isSlotOccupied($date->toDateString(), $time);
                                     $mobileHasAppointments = $this->hasAppointmentsInSlot(
                                         $date->toDateString(),
@@ -95,23 +96,33 @@
                                 @endphp
                                 <button type="button"
                                     wire:key="mobile-slot-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $time) }}"
-                                        @if ($isBlockMode) @if ($mobileIsBlocked)
+                                        @if ($isBlockMode) @if ($mobileIsBlocked && $mobileCanUnblock)
                                             @click="confirm('Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($mobileBlockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($mobileBlockedSlot->end_time)->format('h:i A') }}?') && $wire.unblockSlot({{ $mobileBlockedSlot->id }})"
-                                        @elseif(!$mobileHasAppointments)
+                                        @elseif(!$mobileHasAppointments && !$mobileIsBlocked)
                                             @click="confirm('Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?') && $wire.blockSlot('{{ $date->toDateString() }}', '{{ $time }}')" @endif
                                     @elseif($mobileIsBlocked)
-                                        @click.prevent="showBlocked('{{ $date->toDateString() }}', '{{ $time }}')"
+                                        @click.prevent="showBlocked(
+                                            @js($date->toDateString()),
+                                            @js($time),
+                                            @js($this->blockedByLabel($mobileBlockedSlot)),
+                                            @js(trim((string) ($mobileBlockedSlot->reason ?? '')))
+                                        )"
                                     @elseif(!$mobileIsOccupied) @click="modalOpen = true"
                                         wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')"
                                         @endif
                                         class="rounded-md border px-2 py-1.5 text-xs font-medium transition
-                                        {{ $mobileIsBlocked ? 'border-red-200 bg-red-100 text-red-700 hover:bg-red-200' : ($mobileIsOccupied ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400' : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50') }}">
+                                        {{ $mobileIsBlocked ? ($isBlockMode && !$mobileCanUnblock ? 'cursor-not-allowed border-gray-300 bg-gray-200 text-gray-600' : 'border-red-200 bg-red-100 text-red-700 hover:bg-red-200') : ($mobileIsOccupied ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400' : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50') }}">
                                         @if ($mobileIsBlocked)
-                                            {{ $isBlockMode ? 'Unblock' : 'Blocked' }}
+                                            {{ $isBlockMode ? ($mobileCanUnblock ? 'Unblock' : 'Locked') : 'Blocked' }}
                                         @elseif($isBlockMode && !$mobileHasAppointments)
                                             Block
                                         @else
                                             {{ \Carbon\Carbon::parse($time)->format('h:i A') }}
+                                        @endif
+                                        @if ($mobileIsBlocked && !$isBlockMode)
+                                            <span class="mt-1 block truncate text-[10px] font-medium normal-case">
+                                                By: {{ $this->blockedByLabel($mobileBlockedSlot) }}
+                                            </span>
                                         @endif
                                 </button>
                             @endforeach
@@ -142,22 +153,29 @@
                     @php
                         $blockedSlot = $this->getBlockedSlotAt($date->toDateString(), $time);
                         $isBlocked = $blockedSlot !== null;
+                        $canUnblock = $this->canUnblockSlot($blockedSlot);
                         $isOccupied = $this->isSlotOccupied($date->toDateString(), $time);
                         $hasAppointments = $this->hasAppointmentsInSlot($date->toDateString(), $time);
                     @endphp
 
                     <div wire:key="calendar-slot-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $time) }}"
-                        @if ($isBlockMode) @if ($isBlocked)
+                        @if ($isBlockMode) @if ($isBlocked && $canUnblock)
                                 @click="confirm('Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($blockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($blockedSlot->end_time)->format('h:i A') }}?') && $wire.unblockSlot({{ $blockedSlot->id }})"
-                            @elseif(!$hasAppointments)
+                            @elseif(!$hasAppointments && !$isBlocked)
                                 @click="confirm('Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?') && $wire.blockSlot('{{ $date->toDateString() }}', '{{ $time }}')" @endif
                         @elseif($isBlocked)
-                            @click.prevent="showBlocked('{{ $date->toDateString() }}', '{{ $time }}')"
+                            @click.prevent="showBlocked(
+                                @js($date->toDateString()),
+                                @js($time),
+                                @js($this->blockedByLabel($blockedSlot)),
+                                @js(trim((string) ($blockedSlot->reason ?? '')))
+                            )"
                         @elseif(!$isOccupied) @click="modalOpen = true"
                             wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')"
                             @endif
                             class="h-32 border-t border-r border-gray-200 transition-all
-                            @if ($isBlocked) bg-red-100 text-red-800 cursor-pointer hover:bg-red-200
+                            @if ($isBlocked && $isBlockMode && !$canUnblock) bg-gray-200 text-gray-700 cursor-not-allowed
+                            @elseif ($isBlocked) bg-red-100 text-red-800 cursor-pointer hover:bg-red-200
                             @elseif(!$isOccupied)
                                 hover:bg-stone-100 cursor-pointer
                             @else
@@ -166,12 +184,15 @@
                         @if ($isBlocked)
                             <div class="h-full w-full px-3 py-2">
                                 <p class="text-[10px] md:text-xs font-semibold uppercase tracking-wide">
-                                    {{ $isBlockMode ? 'Unblock' : 'Blocked' }}
+                                    {{ $isBlockMode ? ($canUnblock ? 'Unblock' : 'Locked') : 'Blocked' }}
                                 </p>
                                 @if (!empty($blockedSlot->reason))
                                     <p class="hidden md:block text-[10px] mt-1 truncate">
                                         {{ $blockedSlot->reason }}</p>
                                 @endif
+                                <p class="hidden md:block text-[10px] mt-1 truncate">
+                                    By: {{ $this->blockedByLabel($blockedSlot) }}
+                                </p>
                             </div>
                         @endif
                     </div>

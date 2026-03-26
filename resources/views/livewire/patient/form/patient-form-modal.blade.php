@@ -470,6 +470,12 @@
                         },
 
                         async handleModalOpened() {
+                            // Refresh context from current Livewire state so draft scope
+                            // stays correct across reopen/reuse of the same modal instance.
+                            this.mode = this.$wire.isEditing ? 'edit' : 'create';
+                            this.patientId = Number(this.$wire.newPatientId || 0);
+                            this.currentStep = Number(this.$wire.currentStep || this.currentStep || 1);
+
                             const localDraft = this.parseStoredLocalDraft();
                             let serverDraft = null;
 

@@ -12,9 +12,14 @@
             this.modalOpen = value;
         });
     },
-    showBlocked(date, time) {
+    showBlocked(date, time, blockedBy = '', reason = '') {
         const cleanTime = (time || '').toString().slice(0, 5);
-        this.blockedMessage = `The ${date} ${cleanTime} slot is blocked and cannot be booked.`;
+        const actor = (blockedBy || '').toString().trim() || 'Unknown staff';
+        const cleanReason = (reason || '').toString().trim();
+        this.blockedMessage = `The ${date} ${cleanTime} slot is blocked by ${actor} and cannot be booked.`;
+        if (cleanReason.length > 0) {
+            this.blockedMessage += ` Reason: ${cleanReason}`;
+        }
         this.blockedToast = true;
         if (this.blockedTimer) {
             clearTimeout(this.blockedTimer);

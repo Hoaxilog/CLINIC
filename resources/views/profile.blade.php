@@ -37,10 +37,6 @@
 
             <div class="border-b border-[#e4eff8] pb-6">
                 <h1 class="text-[1.7rem] font-extrabold leading-[1.1] tracking-[-.02em] text-[#1a2e3b]">My Profile</h1>
-                <p class="mt-3 max-w-3xl text-[.88rem] leading-[1.7] text-[#587189]">
-                    Review your clinic account details, update your basic identity information, and manage your password from one place. Email and role access
-                    are still managed by the clinic system.
-                </p>
             </div>
 
             <div class="grid gap-6 lg:grid-cols-[1.6fr_.9fr]">

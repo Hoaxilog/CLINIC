@@ -66,7 +66,7 @@
         {{-- LOWER ARCH --}}
         <div class="relative flex w-20 flex-col items-center sm:w-16">
             <div x-cloak x-show="$store.dentalChart.hasChiefComplaint(tooth)"
-                class="pointer-events-none absolute inset-x-0 -top-1 z-20 flex h-[5.8rem] items-center justify-center sm:h-[4.7rem]">
+                class="pointer-events-none absolute inset-x-0 -bottom-1 z-20 flex h-[5.8rem] items-center justify-center sm:h-[4.7rem]">
                 <svg viewBox="0 0 100 100" class="h-full w-full overflow-visible">
                     <ellipse cx="50" cy="52" rx="34" ry="46" fill="none" stroke="#ef4444" stroke-width="4" />
                 </svg>

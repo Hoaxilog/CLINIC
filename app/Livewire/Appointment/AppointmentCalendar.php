@@ -56,6 +56,8 @@ class AppointmentCalendar extends Component
 
     public $blockedSlotLookup = [];
 
+    protected array $blockedByNameCache = [];
+
     public $showAppointmentModal = false;
 
     public $showBlockModal = false;
@@ -317,6 +319,7 @@ class AppointmentCalendar extends Component
             $this->occupiedSlotCounts   = [];
             $this->blockedSlotMap       = [];
             $this->blockedSlotLookup    = [];
+            $this->blockedByNameCache   = [];
             return;
         }
 
@@ -328,6 +331,7 @@ class AppointmentCalendar extends Component
             ->map(fn ($appt) => $this->hydrateAppointmentTiming($appt));
 
         $this->blockedSlots = app(BlockedSlotService::class)->forWeek($startOfWeek, $endOfWeek);
+        $this->hydrateBlockedByNameCache();
 
         $this->rebuildOccupiedSlotCounts();
     }
@@ -592,6 +596,16 @@ class AppointmentCalendar extends Component
             return;
         }
 
+        $slot = app(BlockedSlotService::class)->find($blockedSlotId);
+        if (! $slot) {
+            return;
+        }
+
+        if (! $this->canUnblockSlot($slot)) {
+            $this->dispatch('flash-message', type: 'error', message: 'Past blocked slots can no longer be unblocked.');
+            return;
+        }
+
         app(BlockedSlotService::class)->delete($blockedSlotId);
         $this->refreshSlotCounts();
         $this->closeBlockSlotModal(true);
@@ -799,6 +813,81 @@ class AppointmentCalendar extends Component
         $key = $date.' '.$normalizedTime;
 
         return $this->blockedSlotLookup[$key] ?? null;
+    }
+
+    public function canUnblockSlot(?object $blockedSlot): bool
+    {
+        if (! $blockedSlot) {
+            return false;
+        }
+
+        try {
+            $slotStart = Carbon::parse($blockedSlot->date.' '.$blockedSlot->start_time)->seconds(0);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return $slotStart->gt(now());
+    }
+
+    public function blockedByLabel(?object $blockedSlot): string
+    {
+        $label = trim((string) ($blockedSlot->created_by ?? ''));
+        if ($label === '') {
+            return 'Unknown staff';
+        }
+
+        if (isset($this->blockedByNameCache[$label])) {
+            return $this->blockedByNameCache[$label];
+        }
+
+        if (str_contains($label, '@')) {
+            return 'Unknown staff';
+        }
+
+        return $label;
+    }
+
+    protected function hydrateBlockedByNameCache(): void
+    {
+        $this->blockedByNameCache = [];
+
+        $actors = collect($this->blockedSlots)
+            ->pluck('created_by')
+            ->filter(fn ($value) => is_string($value) && trim($value) !== '')
+            ->map(fn ($value) => trim((string) $value))
+            ->unique()
+            ->values();
+
+        if ($actors->isEmpty()) {
+            return;
+        }
+
+        $users = DB::table('users')
+            ->select('username', 'email', 'first_name', 'last_name')
+            ->where(function ($query) use ($actors) {
+                $query->whereIn('username', $actors)
+                    ->orWhereIn('email', $actors);
+            })
+            ->get();
+
+        foreach ($users as $user) {
+            $fullName = trim(trim((string) ($user->first_name ?? '')).' '.trim((string) ($user->last_name ?? '')));
+            if ($fullName === '') {
+                continue;
+            }
+
+            $username = trim((string) ($user->username ?? ''));
+            $email = trim((string) ($user->email ?? ''));
+
+            if ($username !== '') {
+                $this->blockedByNameCache[$username] = $fullName;
+            }
+
+            if ($email !== '') {
+                $this->blockedByNameCache[$email] = $fullName;
+            }
+        }
     }
 
     protected function rebuildOccupiedSlotCounts(): void

@@ -16,12 +16,8 @@
             || filled($cost_of_treatment)
             || filled($amount_charged)
             || filled($remarks);
+        $canStartNewRecord = auth()->check() && (auth()->user()?->canHandleChairsideFlow() ?? false);
     @endphp
-
-    <div class="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-        <h2 class="text-lg font-semibold text-slate-900">Treatment Record</h2>
-        <p class="mt-1 text-sm text-slate-500">Capture treatment details, billing, and attached images.</p>
-    </div>
 
     @if ($isReadOnly && ! $hasTreatmentRecord)
         <div class="flex min-h-[58vh] w-full flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-10 text-center">
@@ -38,9 +34,20 @@
                     This patient does not have any treatment records yet. Create the first record from the visit flow.
                 </p>
             </div>
-            @if (! $isReadOnly)
-                <button type="button" wire:click="$dispatch('openNewVisitRecord')"
-                    class="mt-6 inline-flex items-center rounded-lg bg-[#0086da] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:bg-[#0073a8]">
+            @if ($isReadOnly)
+                <button
+                    type="button"
+                    @if ($canStartNewRecord)
+                        wire:click="$dispatch('openNewVisitRecord')"
+                    @else
+                        disabled
+                        aria-disabled="true"
+                        title="Only admin or dentist can add new records."
+                    @endif
+                    class="mt-6 inline-flex items-center rounded-lg px-6 py-3 text-base font-bold text-white shadow-lg transition-all
+                        {{ $canStartNewRecord
+                            ? 'bg-[#0086da] hover:scale-105 hover:bg-[#0073a8] cursor-pointer'
+                            : 'bg-slate-300 cursor-not-allowed opacity-70' }}">
                     + New Record
                 </button>
             @endif

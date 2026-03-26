@@ -54,7 +54,7 @@ class BlockedSlotService
             'start_time' => $slotStart->format('H:i:s'),
             'end_time' => $slotEnd->format('H:i:s'),
             'reason' => null,
-            'created_by' => Auth::check() ?Auth::user()->username : null,
+            'created_by' => $this->resolveBlockingActor(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -93,7 +93,7 @@ class BlockedSlotService
             DB::table('blocked_slots')->where('id', $blockingSlotId)->update($payload);
         }
         else {
-            $payload['created_by'] = Auth::check() ?Auth::user()->username : null;
+            $payload['created_by'] = $this->resolveBlockingActor();
             $payload['created_at'] = now();
             DB::table('blocked_slots')->insert($payload);
         }
@@ -147,5 +147,28 @@ class BlockedSlotService
             ->orderBy('date')
             ->orderBy('start_time')
             ->get();
+    }
+
+    protected function resolveBlockingActor(): ?string
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return null;
+        }
+
+        $firstName = trim((string) ($user->first_name ?? ''));
+        $lastName = trim((string) ($user->last_name ?? ''));
+        $fullName = trim($firstName.' '.$lastName);
+
+        if ($fullName !== '') {
+            return $fullName;
+        }
+
+        $username = trim((string) ($user->username ?? ''));
+        if ($username !== '') {
+            return $username;
+        }
+
+        return 'User #'.$user->id;
     }
 }
