@@ -9,6 +9,14 @@
         allergies: @js((string) $is_allergic_medications_q5)
     }"
     x-on:show-health-history-loading.window="historyLoading = true"
+    x-on:sync-health-history-ui.window="
+        nervous = $event.detail?.nervous ?? '';
+        condition = $event.detail?.condition ?? '';
+        hospitalized = $event.detail?.hospitalized ?? '';
+        seriousIllness = $event.detail?.seriousIllness ?? '';
+        medications = $event.detail?.medications ?? '';
+        allergies = $event.detail?.allergies ?? '';
+    "
     x-on:health-history-ready.window="historyLoading = false">
     <div x-cloak x-show="historyLoading"
         class="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-sm text-center">
@@ -91,7 +99,7 @@
                                         <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $q['model'] }}"
                                             type="radio" value="1"
                                             class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                        <span class="ml-2 text-sm font-bold text-blue-700">YES</span>
+                                        <span class="ml-2 text-sm font-bold text-black">YES</span>
                                     </label>
                                     <label class="flex items-center cursor-pointer">
                                         <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $q['model'] }}"
@@ -116,7 +124,7 @@
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $item['model'] }}"
                                     @if (($item['model'] ?? null) === 'is_nervous_q6') x-model="nervous" @endif
                                     type="radio" value="1" class="h-4 w-4 text-blue-600">
-                                <span class="ml-2 text-sm font-bold text-blue-700">YES</span>
+                                <span class="ml-2 text-sm font-bold text-black">YES</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $item['model'] }}"
@@ -162,7 +170,7 @@
                                     @if (($med['model'] ?? null) === 'is_taking_medications_q4') x-model="medications" @endif
                                     @if (($med['model'] ?? null) === 'is_allergic_medications_q5') x-model="allergies" @endif
                                     type="radio" value="1" class="h-4 w-4 text-blue-600">
-                                <span class="ml-2 text-sm font-bold text-blue-700">YES</span>
+                                <span class="ml-2 text-sm font-bold text-black">YES</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $med['model'] }}"
@@ -216,7 +224,7 @@
                                 <label class="flex items-center cursor-pointer">
                                     <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $fem['model'] }}"
                                         type="radio" value="1" class="h-4 w-4 text-pink-600">
-                                    <span class="ml-2 text-sm font-bold text-pink-700">YES</span>
+                                    <span class="ml-2 text-sm font-bold text-black">YES</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer">
                                     <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $fem['model'] }}"

@@ -96,6 +96,7 @@ class HealthHistory extends Component
         $this->selectedHistoryId = $selectedHistoryId;
         $this->isCreating = $selectedHistoryId === 'new';
         $this->sanitizeFormData();
+        $this->dispatchUiStateSync();
     }
 
     public function triggerNewHistory()
@@ -104,8 +105,7 @@ class HealthHistory extends Component
         $this->selectedHistoryId = 'new';
 
         $this->resetHealthFields();
-
-        $this->dispatch('enableEditMode');
+        $this->dispatchUiStateSync();
     }
 
     #[On('setHealthHistoryContext')]
@@ -115,6 +115,7 @@ class HealthHistory extends Component
         $this->historyList = $historyList;
         $this->selectedHistoryId = $selectedId;
         $this->isCreating = $selectedId === 'new';
+        $this->dispatchUiStateSync();
     }
 
     public function updatedSelectedHistoryId($value)
@@ -310,6 +311,42 @@ class HealthHistory extends Component
         $this->dispatch('healthHistoryValidated', data: $validatedData);
     }
 
+    #[On('requestHealthHistoryData')]
+    public function provideDataWithoutValidation()
+    {
+        $this->sanitizeFormData();
+
+        $payload = [
+            'when_last_visit_q1' => $this->when_last_visit_q1,
+            'what_last_visit_reason_q1' => $this->what_last_visit_reason_q1,
+            'what_seeing_dentist_reason_q2' => $this->what_seeing_dentist_reason_q2,
+            'is_clicking_jaw_q3a' => $this->is_clicking_jaw_q3a,
+            'is_pain_jaw_q3b' => $this->is_pain_jaw_q3b,
+            'is_difficulty_opening_closing_q3c' => $this->is_difficulty_opening_closing_q3c,
+            'is_locking_jaw_q3d' => $this->is_locking_jaw_q3d,
+            'is_clench_grind_q4' => $this->is_clench_grind_q4,
+            'is_bad_experience_q5' => $this->is_bad_experience_q5,
+            'is_nervous_q6' => $this->is_nervous_q6,
+            'what_nervous_concern_q6' => $this->what_nervous_concern_q6,
+            'is_condition_q1' => $this->is_condition_q1,
+            'what_condition_reason_q1' => $this->what_condition_reason_q1,
+            'is_hospitalized_q2' => $this->is_hospitalized_q2,
+            'what_hospitalized_reason_q2' => $this->what_hospitalized_reason_q2,
+            'is_serious_illness_operation_q3' => $this->is_serious_illness_operation_q3,
+            'what_serious_illness_operation_reason_q3' => $this->what_serious_illness_operation_reason_q3,
+            'is_taking_medications_q4' => $this->is_taking_medications_q4,
+            'what_medications_list_q4' => $this->what_medications_list_q4,
+            'is_allergic_medications_q5' => $this->is_allergic_medications_q5,
+            'what_allergies_list_q5' => $this->what_allergies_list_q5,
+            'is_allergic_latex_rubber_metals_q6' => $this->is_allergic_latex_rubber_metals_q6,
+            'is_pregnant_q7' => $this->is_pregnant_q7,
+            'is_breast_feeding_q8' => $this->is_breast_feeding_q8,
+            'selectedHistoryId' => $this->selectedHistoryId,
+        ];
+
+        $this->dispatch('healthHistoryValidated', data: $payload);
+    }
+
     #[On('fillHealthHistory')]
     public function fillForm($data, $gender)
     {
@@ -320,12 +357,14 @@ class HealthHistory extends Component
             $this->gender = $gender;
         }
         $this->sanitizeFormData();
+        $this->dispatchUiStateSync();
     }
 
     public function resetForm()
     {
         $this->resetExcept(['isReadOnly', 'historyList', 'selectedHistoryId', 'gender', 'isCreating']);
         $this->resetValidation();
+        $this->dispatchUiStateSync();
     }
 
     public function render()
@@ -364,5 +403,30 @@ class HealthHistory extends Component
         }
 
         $this->{$field} = $this->sanitizeSentenceCaseText($this->{$field}, true, '.,&()/:;!?-');
+    }
+
+    private function dispatchUiStateSync(): void
+    {
+        $this->dispatch('sync-health-history-ui',
+            nervous: $this->toUiString($this->is_nervous_q6),
+            condition: $this->toUiString($this->is_condition_q1),
+            hospitalized: $this->toUiString($this->is_hospitalized_q2),
+            seriousIllness: $this->toUiString($this->is_serious_illness_operation_q3),
+            medications: $this->toUiString($this->is_taking_medications_q4),
+            allergies: $this->toUiString($this->is_allergic_medications_q5)
+        );
+    }
+
+    private function toUiString($value): string
+    {
+        if ($value === true || $value === 1 || $value === '1') {
+            return '1';
+        }
+
+        if ($value === false || $value === 0 || $value === '0') {
+            return '0';
+        }
+
+        return '';
     }
 }

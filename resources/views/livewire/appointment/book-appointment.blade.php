@@ -310,10 +310,10 @@
                                         <div>
                                             <label
                                                 class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                                Patient Middle Name (Optional)
+                                                Patient Middle Name 
                                             </label>
                                             <input type="text" wire:model.defer="patient_middle_name"
-                                                data-validate-field="patient_middle_name" placeholder="Mae"
+                                                data-validate-field="patient_middle_name" placeholder="(Optional)"
                                                 class="{{ $fieldClass('patient_middle_name') }}">
                                             @error('patient_middle_name')
                                                 <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
@@ -352,7 +352,7 @@
                                         <div>
                                             <label
                                                 class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                                Relationship with patient<span class="text-red-500">*</span>
+                                                Relationship to patient<span class="text-red-500">*</span>
                                             </label>
                                             <input type="text" wire:model.defer="relationship_to_patient"
                                                 data-validate-field="relationship_to_patient" placeholder="Mother, spouse, etc"
@@ -664,12 +664,6 @@
                                             class="inline-flex items-center justify-center whitespace-nowrap">Verify & Book</span>
                                         <span wire:loading wire:target="verifyGuestEmailOtp"
                                             class="absolute inset-0 flex items-center justify-center gap-2 whitespace-nowrap bg-[#0086da] px-7">
-                                            <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                                                <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                                    stroke-opacity="0.2" stroke-width="4" />
-                                                <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4"
-                                                    stroke-linecap="round" />
-                                            </svg>
                                             Verifying...
                                         </span>
                                     </button>
@@ -701,9 +695,6 @@
 
     </section>
 
-    {{-- ══════════════════════════════════
-         SCRIPTS (unchanged logic)
-    ══════════════════════════════════ --}}
     <script>
         let currentDate = new Date();
         let selectedDate = @js($selectedDate);

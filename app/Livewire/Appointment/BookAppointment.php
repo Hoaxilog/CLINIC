@@ -105,7 +105,6 @@ class BookAppointment extends Component
         $this->sanitizeBookingFields();
     }
 
-    // This runs automatically when $selectedDate is updated via JavaScript
     public function updatedSelectedDate($date)
     {
         if (empty($date) || ! $this->isValidSelectedDate($date)) {
@@ -140,7 +139,6 @@ class BookAppointment extends Component
     {
         $this->sanitizeField($propertyName);
 
-        // Keep server-side error bag in sync with user edits so error UI does not reappear after rerenders.
         $clearableFields = [
             'first_name',
             'last_name',
@@ -317,9 +315,13 @@ class BookAppointment extends Component
         }
 
         if ($isResend && ! $this->canResumeGuestOtpStep()) {
-            $this->addError('guestEmailOtp', 'Your current OTP session is no longer active. Please submit the form again.');
+            // Keep the user in OTP step and allow issuing a fresh code for the same email
+            // instead of forcing a full form re-submit.
+            if ($this->guestEmailOtpTargetEmail !== null && $normalizedEmail !== $this->guestEmailOtpTargetEmail) {
+                $this->addError('guestEmailOtp', 'Email changed. Please submit the form again.');
 
-            return;
+                return;
+            }
         }
 
         $resendState = $this->guestEmailOtpResendState($normalizedEmail);
@@ -756,26 +758,20 @@ class BookAppointment extends Component
             return false;
         }
 
+        $hasRequestedPatientFirstName = Schema::hasColumn('appointments', 'requested_patient_first_name');
+        $hasRequestedPatientLastName = Schema::hasColumn('appointments', 'requested_patient_last_name');
+        $hasRequestedPatientBirthDate = Schema::hasColumn('appointments', 'requested_patient_birth_date');
+        $hasRequesterBirthDate = Schema::hasColumn('appointments', 'requester_birth_date');
+
         $hasActiveAppointmentQuery = DB::table('appointments')
             ->whereNotIn('status', ['Cancelled', 'Completed'])
-            ->where(function ($query) {
-                if ($this->isBookingForSelf()) {
-                    if (Auth::check()) {
-                        $query->where('requester_user_id', Auth::id());
-
-                        if (! empty($this->email)) {
-                            $query->orWhere('requester_email', $this->email);
-                        }
-
-                        return;
-                    }
-
-                    $query->where('requester_email', $this->email);
-
-                    return;
-                }
-
-                if (Schema::hasColumn('appointments', 'requested_patient_first_name')) {
+            ->where(function ($query) use (
+                $hasRequestedPatientFirstName,
+                $hasRequestedPatientLastName,
+                $hasRequestedPatientBirthDate,
+                $hasRequesterBirthDate
+            ) {
+                if ($hasRequestedPatientFirstName) {
                     $query->whereRaw('LOWER(COALESCE(requested_patient_first_name, requester_first_name, \'\')) = ?', [
                         strtolower($this->resolvedPatientFirstName()),
                     ]);
@@ -785,7 +781,7 @@ class BookAppointment extends Component
                     ]);
                 }
 
-                if (Schema::hasColumn('appointments', 'requested_patient_last_name')) {
+                if ($hasRequestedPatientLastName) {
                     $query->whereRaw('LOWER(COALESCE(requested_patient_last_name, requester_last_name, \'\')) = ?', [
                         strtolower($this->resolvedPatientLastName()),
                     ]);
@@ -797,9 +793,9 @@ class BookAppointment extends Component
 
                 $patientBirthDate = $this->resolvedPatientBirthDate();
                 if ($patientBirthDate !== null) {
-                    if (Schema::hasColumn('appointments', 'requested_patient_birth_date')) {
+                    if ($hasRequestedPatientBirthDate) {
                         $query->whereRaw('DATE(COALESCE(requested_patient_birth_date, requester_birth_date)) = ?', [$patientBirthDate]);
-                    } elseif (Schema::hasColumn('appointments', 'requester_birth_date')) {
+                    } elseif ($hasRequesterBirthDate) {
                         $query->whereDate('requester_birth_date', $patientBirthDate);
                     }
                 }

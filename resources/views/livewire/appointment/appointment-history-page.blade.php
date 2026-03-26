@@ -65,6 +65,7 @@
                     <div class="relative">
                         <select wire:model.live="status"
                             class="w-full appearance-none border border-[#9bbdd0] bg-white py-2.5 pl-4 pr-9 text-[.8rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cce9f8] cursor-pointer">
+                            <option value="All">All</option>
                             <option value="Cancelled">Cancelled</option>
                             <option value="Completed">Completed</option>
                         </select>
@@ -168,7 +169,6 @@
 
                                 {{-- Appointment ID + Date --}}
                                 <td class="px-5 py-4 whitespace-nowrap">
-                                    <div class="text-[.82rem] font-bold text-[#1a2e3b]">#{{ $appointment->id }}</div>
                                     <div class="mt-0.5 text-[.7rem] font-semibold text-[#7a9db5]">
                                         {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}
                                     </div>

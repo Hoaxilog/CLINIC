@@ -22,6 +22,7 @@ class TreatmentRecord extends Component
         'cost_of_treatment',
         'amount_charged',
     ];
+    protected const MONEY_MAX = 99999999.99;
 
     protected const FALLBACK_TREATMENT_OPTIONS = [
         'Consultation',
@@ -77,8 +78,8 @@ class TreatmentRecord extends Component
             // [UPDATED] Made these fields Required
             'dmd' => ['required', 'string', 'regex:/^[\pL\pM\s\'\-.&,\/()]+$/u'],
             'treatment' => ['required', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
-            'cost_of_treatment' => 'required|numeric|min:0',
-            'amount_charged' => 'required|numeric|min:0',
+            'cost_of_treatment' => ['required', 'numeric', 'min:0', 'max:' . self::MONEY_MAX],
+            'amount_charged' => ['required', 'numeric', 'min:0', 'max:' . self::MONEY_MAX],
             
             'remarks' => ['nullable', 'string', 'regex:/^[\pL\pM\pN\s\'",.&()\/:;!?-]+$/u'],
             'beforeImages' => 'nullable|array|max:4',
@@ -95,6 +96,16 @@ class TreatmentRecord extends Component
         'cost_of_treatment' => 'Cost',
         'amount_charged' => 'Amount Charged',
     ];
+
+    protected function messages(): array
+    {
+        $max = number_format(self::MONEY_MAX, 2, '.', ',');
+
+        return [
+            'cost_of_treatment.max' => "Cost must not be greater than {$max}.",
+            'amount_charged.max' => "Amount Charged must not be greater than {$max}.",
+        ];
+    }
 
     public function updated($propertyName): void
     {
@@ -144,7 +155,7 @@ class TreatmentRecord extends Component
         // This will now fail and stop if fields are empty
         try {
             $this->sanitizeFormData();
-            $validatedData = $this->validate();
+            $validatedData = $this->validate($this->rules(), $this->messages(), $this->validationAttributes);
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
             $field = $e->validator->errors()->keys()[0] ?? null;
@@ -182,6 +193,26 @@ class TreatmentRecord extends Component
 
         $this->dispatch('treatmentRecordValidated', data: $validatedData);
         $this->reset(['beforeImages', 'afterImages']);
+    }
+
+    #[On('requestTreatmentRecordData')]
+    public function provideDataWithoutValidation()
+    {
+        $this->sanitizeFormData();
+
+        $payload = [
+            'dmd' => $this->dmd,
+            'treatment' => $this->treatment,
+            'cost_of_treatment' => $this->cost_of_treatment,
+            'amount_charged' => $this->amount_charged,
+            'remarks' => $this->remarks,
+        ];
+
+        if (! empty($this->existingImages)) {
+            $payload['image_list'] = $this->existingImages;
+        }
+
+        $this->dispatch('treatmentRecordDataProvided', data: $payload);
     }
 
     public function render()

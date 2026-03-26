@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DentalChart;
 use App\Models\TreatmentRecord;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -21,7 +22,8 @@ class DentalChartService
         array $chartData,
         string $modifier,
         bool $forceNew = false,
-        ?int $existingChartId = null
+        ?int $existingChartId = null,
+        CarbonInterface|string|null $timestamp = null
     ): ?int
     {
         if (empty($chartData)) {
@@ -29,6 +31,7 @@ class DentalChartService
         }
 
         $chartId = null;
+        $time = $timestamp instanceof CarbonInterface ? $timestamp : ($timestamp ? Carbon::parse((string) $timestamp) : now());
 
         if (! $forceNew && $existingChartId) {
             $existing = DB::table('dental_charts')
@@ -84,8 +87,8 @@ class DentalChartService
                 'patient_id'  => $patientId,
                 'chart_data'  => json_encode($chartData),
                 'modified_by' => $modifier,
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'created_at'  => $time,
+                'updated_at'  => $time,
             ]);
 
             $this->logChart('dental_chart_created', $chartId, [
@@ -99,13 +102,20 @@ class DentalChartService
     /**
      * Save a treatment record linked to a dental chart.
      */
-    public function saveTreatmentRecord(int $chartId, int $patientId, array $data, string $modifier): void
+    public function saveTreatmentRecord(
+        int $chartId,
+        int $patientId,
+        array $data,
+        string $modifier,
+        CarbonInterface|string|null $timestamp = null
+    ): void
     {
         if (empty($data)) {
             return;
         }
 
         $existing = DB::table('treatment_records')->where('dental_chart_id', $chartId)->first();
+        $time = $timestamp instanceof CarbonInterface ? $timestamp : ($timestamp ? Carbon::parse((string) $timestamp) : now());
 
         $payload = [
             'patient_id'        => $patientId,
@@ -115,8 +125,12 @@ class DentalChartService
             'amount_charged'    => $data['amount_charged'] ?? null,
             'remarks'           => $data['remarks'] ?? null,
             'modified_by'       => $modifier,
-            'updated_at'        => now(),
+            'updated_at'        => $time,
         ];
+
+        if (! $existing) {
+            $payload['created_at'] = $time;
+        }
 
         DB::table('treatment_records')->updateOrInsert(
             ['dental_chart_id' => $chartId],

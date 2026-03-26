@@ -14,6 +14,7 @@ class DentalChartGrid extends Component
     #[Reactive]
     public $dentitionType = 'adult';
     public $selectedTool = null;
+    public $instanceKey = 'initial';
     public $toolLabels = [];
     public $picker = ['open' => false, 'tooth' => null, 'part' => null, 'expanded' => false];
     public $quickToolCodes = ['C', 'CI', 'CD', 'CP', 'Am', 'LC', 'GIC', 'S', 'X', '---'];
@@ -54,11 +55,12 @@ class DentalChartGrid extends Component
         ['label' => 'Erupting Tooth', 'code' => 'â†‘/â†“', 'color' => 'blue'],
     ];
 
-    public function mount($teeth = [], $isReadOnly = false, $dentitionType = 'adult')
+    public function mount($teeth = [], $isReadOnly = false, $dentitionType = 'adult', $instanceKey = 'initial')
     {
         $this->teeth = $teeth ?? [];
         $this->isReadOnly = $isReadOnly;
         $this->dentitionType = in_array($dentitionType, ['adult', 'child'], true) ? $dentitionType : 'adult';
+        $this->instanceKey = is_string($instanceKey) && $instanceKey !== '' ? $instanceKey : 'initial';
 
         foreach ($this->tools as $tool) {
             $this->toolLabels[$tool['code']] = $tool['label'];

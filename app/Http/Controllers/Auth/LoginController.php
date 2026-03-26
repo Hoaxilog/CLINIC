@@ -430,7 +430,7 @@ class LoginController extends Controller
             'expiresAt' => $expiresAt,
         ], function ($message) use ($user) {
             $message->to($user->email);
-            $message->subject('Your Tejadent Login OTP');
+            $message->subject('Your Login OTP');
         });
     }
 

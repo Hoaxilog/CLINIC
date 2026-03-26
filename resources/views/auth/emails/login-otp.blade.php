@@ -146,7 +146,7 @@
 
             <div class="content">
                 <h2 class="title">Your one-time login code</h2>
-                <p class="text">Use the code below to finish signing in to your Tejadent account for
+                <p class="text">Use the code below to finish signing in to your account for
                     <strong style="color: #1a2e3b;">{{ $email }}</strong>.
                 </p>
 

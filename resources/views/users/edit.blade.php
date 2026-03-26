@@ -20,6 +20,8 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap');
     #edit-user-wrap * { font-family: 'Montserrat', sans-serif; }
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear { display: none; }
 </style>
 
 <div id="edit-user-wrap" class="px-6 pb-16 md:px-12 xl:px-20" style="font-family:'Montserrat',sans-serif; -webkit-font-smoothing:antialiased;">
@@ -216,7 +218,7 @@
                                 New Password
                             </label>
                             <div class="relative">
-                                <input type="password" id="admin-edit-password" name="password"
+                                <input type="password" id="admin-edit-password" name="password" autocomplete="new-password"
                                     placeholder="Leave blank to keep current" minlength="8"
                                     class="w-full border border-[#d4e8f5] bg-white px-4 pr-12 py-3 text-sm text-[#1a2e3b] placeholder:text-[#9bbdd0] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('password') border-red-400 focus:ring-red-200 focus:border-red-500 @enderror">
                                 <button type="button"
@@ -245,7 +247,7 @@
                                 Confirm New Password
                             </label>
                             <div class="relative">
-                                <input type="password" id="admin-edit-password-confirmation" name="password_confirmation"
+                                <input type="password" id="admin-edit-password-confirmation" name="password_confirmation" autocomplete="new-password"
                                     placeholder="Confirm new password" minlength="8"
                                     class="w-full border border-[#d4e8f5] bg-white px-4 pr-12 py-3 text-sm text-[#1a2e3b] placeholder:text-[#9bbdd0] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb]">
                                 <button type="button"

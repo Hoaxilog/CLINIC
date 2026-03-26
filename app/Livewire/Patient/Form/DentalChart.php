@@ -24,6 +24,7 @@ class DentalChart extends Component
     public $dentitionType = 'adult';
     public $numberingSystem = 'FDI';
     public $patientAge = null;
+    public $instanceKey = 'initial';
     
     #[Reactive]
     public $isReadOnly = false; 
@@ -81,13 +82,14 @@ class DentalChart extends Component
     }
 
 
-    public function mount($data = [], $isReadOnly = false, $history = [], $selectedHistoryId = '', $isCreating = false, $patientAge = null)
+    public function mount($data = [], $isReadOnly = false, $history = [], $selectedHistoryId = '', $isCreating = false, $patientAge = null, $instanceKey = 'initial')
     {
         $this->isReadOnly = $isReadOnly;
         $this->history = $history; 
         $this->selectedHistoryId = $selectedHistoryId; 
         $this->isCreating = $isCreating;
         $this->patientAge = is_numeric($patientAge) ? (int) $patientAge : null;
+        $this->instanceKey = is_string($instanceKey) && $instanceKey !== '' ? $instanceKey : 'initial';
 
         if (!empty($data)) {
             if(isset($data['teeth'])) {
@@ -221,6 +223,30 @@ class DentalChart extends Component
             $this->dispatch('patient-form-navigation-finished', currentStep: 3);
             return;
         }
+
+        if (! $this->shouldShowChart) {
+            $fullData = [
+                'teeth' => $this->teeth,
+                'oral_exam' => $this->oralExam,
+                'comments' => $this->chartComments,
+                'meta' => [
+                    'dentition_type' => $this->dentitionType,
+                    'numbering_system' => $this->numberingSystem,
+                ],
+            ];
+
+            $this->dispatch('dentalChartDataProvided', data: $fullData);
+            return;
+        }
+
+        $this->dispatch('request-dental-chart-teeth');
+    }
+
+    #[On('requestDentalChartDataWithoutValidation')]
+    public function provideDataWithoutValidation()
+    {
+        $this->sanitizeFormData();
+        $this->teeth = $this->sanitizeTeethForDentition($this->teeth, $this->dentitionType);
 
         if (! $this->shouldShowChart) {
             $fullData = [

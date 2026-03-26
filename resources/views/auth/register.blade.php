@@ -18,6 +18,11 @@
         body {
             font-family: 'Montserrat', sans-serif;
         }
+
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
     </style>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
@@ -122,6 +127,20 @@
                                 <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
+                        @if ($hasMiddleNameColumn ?? false)
+                            <div class="sm:col-span-2">
+                                <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">Middle Name</label>
+                                <input type="text" name="middle_name" value="{{ old('middle_name') }}"
+                                    @class([
+                                        'w-full rounded-xl border bg-[#f7fbfe] px-4 py-3.5 text-[.95rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:bg-white focus:ring-4 focus:ring-[#0086da]/10',
+                                        'border-red-500' => $errors->has('middle_name'),
+                                        'border-[#cfe3f2]' => !$errors->has('middle_name'),
+                                    ]) placeholder="Santos">
+                                @error('middle_name')
+                                    <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endif
                     </div>
 
                     <div>
@@ -153,10 +172,25 @@
                         @enderror
                     </div>
 
+                    @if ($hasBirthDateColumn ?? false)
+                        <div>
+                            <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">Birth Date</label>
+                            <input type="date" name="birth_date" value="{{ old('birth_date') }}" max="{{ now()->subDay()->toDateString() }}"
+                                @class([
+                                    'w-full rounded-xl border bg-[#f7fbfe] px-4 py-3.5 text-[.95rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:bg-white focus:ring-4 focus:ring-[#0086da]/10',
+                                    'border-red-500' => $errors->has('birth_date'),
+                                    'border-[#cfe3f2]' => !$errors->has('birth_date'),
+                                ]) required>
+                            @error('birth_date')
+                                <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
+
                     <div>
                         <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">Password</label>
                         <div class="relative">
-                            <input type="password" id="register-password" name="password"
+                            <input type="password" id="register-password" name="password" autocomplete="new-password"
                                 @class([
                                     'w-full rounded-xl border bg-[#f7fbfe] px-4 py-3.5 pr-12 text-[.95rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:bg-white focus:ring-4 focus:ring-[#0086da]/10',
                                     'border-red-500' => $errors->has('password'),
@@ -185,7 +219,7 @@
                     <div>
                         <label class="mb-2 block text-[.72rem] font-bold uppercase tracking-[.16em] text-[#1a2e3b]">Confirm Password</label>
                         <div class="relative">
-                            <input type="password" id="register-password-confirmation" name="password_confirmation"
+                            <input type="password" id="register-password-confirmation" name="password_confirmation" autocomplete="new-password"
                                 class="w-full rounded-xl border border-[#cfe3f2] bg-[#f7fbfe] px-4 py-3.5 pr-12 text-[.95rem] text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:bg-white focus:ring-4 focus:ring-[#0086da]/10"
                                 required placeholder="Retype your password">
                             <button type="button"

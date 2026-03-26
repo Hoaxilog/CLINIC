@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>New Password - Tejadent</title>
     @vite('resources/css/app.css')
+    <style>
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+    </style>
     <script>
         function toggleResetPassword(fieldId, eyeOpenId, eyeClosedId) {
             const passwordField = document.getElementById(fieldId);
@@ -80,6 +86,7 @@
                         type="password"
                         id="reset-password"
                         name="password"
+                        autocomplete="new-password"
                         @class([
                             'w-full border-2 rounded-lg px-4 pr-10 py-3 focus:outline-none transition',
                             'border-red-500 focus:border-red-500' => $errors->has('password'),
@@ -118,6 +125,7 @@
                         type="password"
                         id="reset-password-confirmation"
                         name="password_confirmation"
+                        autocomplete="new-password"
                         @class([
                             'w-full border-2 rounded-lg px-4 pr-10 py-3 focus:outline-none transition',
                             'border-red-500 focus:border-red-500' => $errors->has('password') || $errors->has('password_confirmation'),

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Patient;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -11,14 +13,16 @@ class HealthHistoryService
     /**
      * Insert a new health history row and return the new ID.
      */
-    public function create(int $patientId, array $data, string $modifier): int
+    public function create(int $patientId, array $data, string $modifier, CarbonInterface|string|null $timestamp = null): int
     {
         unset($data['selectedHistoryId'], $data['id']);
 
+        $time = $timestamp instanceof CarbonInterface ? $timestamp : ($timestamp ? Carbon::parse((string) $timestamp) : now());
+
         $data['patient_id']  = $patientId;
         $data['modified_by'] = $modifier;
-        $data['created_at']  = now();
-        $data['updated_at']  = now();
+        $data['created_at']  = $time;
+        $data['updated_at']  = $time;
 
         $id = DB::table('health_histories')->insertGetId($data);
 

@@ -39,7 +39,12 @@
 
             <div data-form-scroll
                 class="flex-1 overflow-auto p-4 sm:px-6 lg:px-6 xl:p-8 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-slate-100 scrollbar-thumb-slate-300">
-                <livewire:patient.form.dental-chart-grid :teeth="$teeth" :isReadOnly="$isReadOnly" :dentitionType="$dentitionType" />
+                <livewire:patient.form.dental-chart-grid
+                    :wire:key="'dental-chart-grid-'.$instanceKey"
+                    :teeth="$teeth"
+                    :isReadOnly="$isReadOnly"
+                    :dentitionType="$dentitionType"
+                    :instanceKey="$instanceKey" />
                 <div class="max-w-6xl mx-auto flex flex-col gap-12">
                     <section class="w-full">
                         <div class="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -199,4 +204,3 @@
         </div>
     @endif
 </div>
-

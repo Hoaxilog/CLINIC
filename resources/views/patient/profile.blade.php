@@ -226,7 +226,7 @@
 
                                     <div class="space-y-2">
                                         <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Current Password</label>
-                                        <input type="password" name="current_password" placeholder="Current password"
+                                        <input type="password" name="current_password" placeholder="Current password" autocomplete="current-password"
                                             class="w-full border border-[#d4e8f5] bg-white px-4 py-3 text-sm text-[#1a2e3b] placeholder:text-[#9bbdd0] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('current_password') border-red-400 focus:ring-red-200 focus:border-red-500 @enderror">
                                         @error('current_password')
                                             <span class="text-xs text-red-500 font-bold">{{ $message }}</span>
@@ -235,7 +235,7 @@
 
                                     <div class="space-y-2">
                                         <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">New Password</label>
-                                        <input type="password" name="password" placeholder="New password"
+                                        <input type="password" name="password" placeholder="New password" autocomplete="new-password"
                                             class="w-full border border-[#d4e8f5] bg-white px-4 py-3 text-sm text-[#1a2e3b] placeholder:text-[#9bbdd0] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('password') border-red-400 focus:ring-red-200 focus:border-red-500 @enderror">
                                         @error('password')
                                             <span class="text-xs text-red-500 font-bold">{{ $message }}</span>
@@ -244,7 +244,7 @@
 
                                     <div class="space-y-2">
                                         <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Confirm Password</label>
-                                        <input type="password" name="password_confirmation" placeholder="Confirm new password"
+                                        <input type="password" name="password_confirmation" placeholder="Confirm new password" autocomplete="new-password"
                                             class="w-full border border-[#d4e8f5] bg-white px-4 py-3 text-sm text-[#1a2e3b] placeholder:text-[#9bbdd0] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb]">
                                     </div>
 

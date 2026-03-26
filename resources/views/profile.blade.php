@@ -189,7 +189,7 @@
                                         <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
                                             Current Password
                                         </label>
-                                        <input type="password" name="current_password" placeholder="Current password"
+                                        <input type="password" name="current_password" placeholder="Current password" autocomplete="current-password"
                                             class="w-full border border-[#e4eff8] bg-white px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('current_password') border-rose-400 @enderror">
                                         @error('current_password')
                                             <span class="text-xs text-rose-600">{{ $message }}</span>
@@ -200,7 +200,7 @@
                                         <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
                                             New Password
                                         </label>
-                                        <input type="password" name="password" placeholder="New password"
+                                        <input type="password" name="password" placeholder="New password" autocomplete="new-password"
                                             class="w-full border border-[#e4eff8] bg-white px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('password') border-rose-400 @enderror">
                                         @error('password')
                                             <span class="text-xs text-rose-600">{{ $message }}</span>
@@ -211,7 +211,7 @@
                                         <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
                                             Confirm Password
                                         </label>
-                                        <input type="password" name="password_confirmation"
+                                        <input type="password" name="password_confirmation" autocomplete="new-password"
                                             placeholder="Confirm new password"
                                             class="w-full border border-[#e4eff8] bg-white px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10">
                                     </div>

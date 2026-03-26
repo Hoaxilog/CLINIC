@@ -10,6 +10,12 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.svg') }}">
     @vite('resources/css/app.css')
+    <style>
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+    </style>
 
     @if (!empty($showCaptcha))
         <!-- reCAPTCHA (shown after 3 failed attempts) -->
@@ -92,7 +98,7 @@
                                 </svg>
                             </span>
                             <input value="{{ old('email') }}" type="email" placeholder="Email address"
-                                name="email"
+                                name="email" autocomplete="email"
                                 class="@error('email') border-red-500 @enderror w-full pl-10 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-200" />
                         </div>
                     </div>
@@ -108,7 +114,7 @@
                                     </path>
                                 </svg>
                             </span>
-                            <input type="password" id="login-password" placeholder="Password" name="password"
+                            <input type="password" id="login-password" placeholder="Password" name="password" autocomplete="current-password"
                                 class="@error('password') border-red-500 @enderror w-full pl-10 pr-10 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500 transition duration-200" />
                             <button type="button" onclick="toggleLoginPassword()"
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 transition"

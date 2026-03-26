@@ -41,14 +41,15 @@
                         @php
                             $basicInfoEditing = $isEditing && ! $isReadOnly && $currentStep == 1;
                             $editingLockedToSection = $isEditing && ! $isReadOnly && ! $forceNewRecord;
+                            $basicInfoLockedFromOtherStep = $isEditing && ! $isReadOnly && $currentStep != 1;
                             $canNavigateFromBasicInfo = ! $basicInfoEditing && ! $editingLockedToSection;
                         @endphp
                         <div class="flex flex-wrap items-center justify-center gap-y-3">
 
                                 <!-- Tab 1: Basic Information -->
                                 <div
-                                    @if ($isEditing && !$editingLockedToSection) x-on:click.prevent="handleStepNavigation(1)" @endif
-                                    class="flex items-center gap-2.5 transition {{ $currentStep == 1 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 1 && !$editingLockedToSection ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ $editingLockedToSection && $currentStep !== 1 ? 'cursor-not-allowed opacity-60' : '' }}">
+                                    @if ($isEditing && !$editingLockedToSection && !$basicInfoLockedFromOtherStep) x-on:click.prevent="handleStepNavigation(1)" @endif
+                                    class="flex items-center gap-2.5 transition {{ $currentStep == 1 ? 'text-[#0086da]' : 'text-gray-400' }} {{ $isEditing && $currentStep !== 1 && !$editingLockedToSection && !$basicInfoLockedFromOtherStep ? 'cursor-pointer hover:text-[#0086da]' : '' }} {{ ($editingLockedToSection || $basicInfoLockedFromOtherStep) && $currentStep !== 1 ? 'cursor-not-allowed opacity-60' : '' }}">
                                     <span
                                         class="flex h-8 w-8 items-center justify-center rounded-sm border-2 {{ $currentStep == 1 ? 'border-[#0086da] bg-[#e8f4fc]' : 'border-gray-300 bg-white' }} text-sm font-semibold">1</span>
                                     <span class="whitespace-nowrap text-sm font-semibold sm:text-base">Basic Information</span>
@@ -191,7 +192,8 @@
                             <livewire:patient.form.dental-chart :wire:key="'dental-chart-'.$chartKey"
                                 :data="$dentalChartData" :isReadOnly="$isReadOnly"
                                 :history="$chartHistory" :selectedHistoryId="$selectedHistoryId"
-                                :isCreating="$forceNewRecord" :patientAge="$patientAge" />
+                                :isCreating="$forceNewRecord" :patientAge="$patientAge"
+                                :instanceKey="$chartKey" />
                         @endif
 
                         {{-- Tab 4: Treatment Record --}}
@@ -225,9 +227,6 @@
                             // Edit This Record: step 1 read-only only
                             $showEditButton = $isEditing && $isReadOnly && $currentStep == 1 && $isAdmin;
 
-                            // Health history stays read-only for existing records.
-                            $showEditVisitButton = false;
-                            $showEditClinicalButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [3, 4], true) && $hasExistingRecordForStep;
                             $showNewRecordButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [2, 3, 4], true) && $hasExistingRecordForStep;
 
                             $finalEditableStep = $isEditing
@@ -281,7 +280,7 @@
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div class="order-2 flex flex-wrap items-center gap-3 sm:order-1">
                                 <button data-draft-ignore
-                                    x-on:click="$dispatch('patient-form-draft-pause', { ms: 3000 })"
+                                    x-on:click="flushDraftNow(); $dispatch('patient-form-draft-pause', { ms: 3000 })"
                                     wire:click="cancelEdit" type="button"
                                     class="rounded-sm border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-[#1a2e3b] hover:bg-[#f6fafd]">
                                     {{ $isEditing && !$isReadOnly ? 'Cancel' : 'Close' }}
@@ -290,7 +289,7 @@
 
                             <div class="order-1 flex flex-wrap items-center justify-end gap-3 sm:order-2">
                                 @if ($showEditButton)
-                                    <button wire:click="enableEditMode" type="button"
+                                    <button wire:click="enableBasicInfoEdit" type="button"
                                         class="inline-flex items-center gap-2 rounded-sm bg-[#0086da] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0073a8]">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -298,30 +297,6 @@
                                             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                         </svg>
                                         Edit Basic Info
-                                    </button>
-                                @endif
-
-                                @if ($showEditVisitButton)
-                                    <button wire:click="enableEditMode" type="button"
-                                        class="inline-flex items-center gap-2 rounded-sm bg-[#0086da] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0073a8]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                        </svg>
-                                        Edit Visit Record
-                                    </button>
-                                @endif
-
-                                @if ($showEditClinicalButton)
-                                    <button wire:click="enableEditMode" type="button"
-                                        class="inline-flex items-center gap-2 rounded-sm bg-[#0086da] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0073a8]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                        </svg>
-                                        Edit Clinical Record
                                     </button>
                                 @endif
 
@@ -345,14 +320,14 @@
                                         @if (!$isEditing)
                                             Register Patient
                                         @else
-                                            Save All Changes
+                                            Save Patient Records 
                                         @endif
                                     </button>
                                 @endif
 
                                 @if ($showNext)
                                     <button data-trigger-scroll wire:click="nextStep" type="button"
-                                        wire:loading.attr="disabled" wire:target="nextStep,previousStep,save"
+                                        wire:loading.attr="disabled" wire:target="nextStep,save"
                                         class="rounded-sm bg-[#0086da] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0073a8] disabled:cursor-not-allowed disabled:opacity-60">
                                         <span wire:loading.remove wire:target="nextStep">Continue to Health Records →</span>
                                         <span wire:loading wire:target="nextStep">Saving...</span>
@@ -425,8 +400,12 @@
                             return `clinic:patient-form-draft:${this.userId}:${this.mode}:${scope}`;
                         },
 
+                        canPersistDraft() {
+                            return !Boolean(this.$wire?.isReadOnly);
+                        },
+
                         markDirtyDebounced() {
-                            if (this.persistPaused) {
+                            if (!this.canPersistDraft() || this.persistPaused) {
                                 return;
                             }
 
@@ -443,7 +422,7 @@
                         },
 
                         persistLocalDraft() {
-                            if (this.persistPaused) {
+                            if (!this.canPersistDraft() || this.persistPaused) {
                                 return;
                             }
                             this.currentStep = this.detectCurrentStep();
@@ -678,6 +657,9 @@
                         },
 
                         stopSyncTimer() {
+                            if (this.dirty && this.canPersistDraft()) {
+                                this.persistLocalDraft();
+                            }
                             if (this.syncTimer) {
                                 clearInterval(this.syncTimer);
                                 this.syncTimer = null;
@@ -685,8 +667,27 @@
                             this.cancelPendingDebounce();
                         },
 
+                        async flushDraftNow() {
+                            if (!this.canPersistDraft()) {
+                                return;
+                            }
+
+                            this.cancelPendingDebounce();
+                            this.currentStep = this.detectCurrentStep();
+                            this.dirty = true;
+                            this.persistLocalDraft();
+
+                            if (this.userId > 0 && !this.persistPaused) {
+                                try {
+                                    await this.syncIfNeeded();
+                                } catch (error) {
+                                    // local draft remains as fallback
+                                }
+                            }
+                        },
+
                         async syncIfNeeded() {
-                            if (!this.dirty || this.userId <= 0 || this.persistPaused) {
+                            if (!this.canPersistDraft() || !this.dirty || this.userId <= 0 || this.persistPaused) {
                                 return;
                             }
 
@@ -706,6 +707,7 @@
 
                         buildDraftPayload() {
                             this.currentStep = this.detectCurrentStep();
+                            const base = this.getDraftBasePayload();
                             const basicFields = [
                                 'last_name', 'first_name', 'middle_name', 'nickname', 'occupation', 'birth_date',
                                 'gender', 'civil_status',
@@ -734,11 +736,11 @@
                             ];
 
                             const dentalStore = Alpine.store('dentalChart');
-                            const dentalTeeth = dentalStore && typeof dentalStore.toPlain === 'function' ?
-                                dentalStore.toPlain(dentalStore.localTeeth || {}) :
-                                {};
+                            const dentalTeeth = dentalStore && typeof dentalStore.toPlain === 'function'
+                                ? dentalStore.toPlain(dentalStore.localTeeth || {})
+                                : (base?.dentalChart?.teeth || {});
 
-                            let dentitionType = 'adult';
+                            let dentitionType = base?.dentalChart?.dentitionType || 'adult';
                             const toggles = Array.from(document.querySelectorAll('[wire\\:click*="dentitionType"]'));
                             for (const btn of toggles) {
                                 if (btn.classList.contains('bg-sky-600') && btn.textContent.trim().toLowerCase() ===
@@ -747,7 +749,7 @@
                                 }
                             }
 
-                            const oralExam = {};
+                            const oralExam = { ...(base?.dentalChart?.oralExam || {}) };
                             [
                                 'oral_hygiene_status',
                                 'gingiva',
@@ -756,18 +758,24 @@
                                 'complete_denture',
                                 'partial_denture'
                             ].forEach((field) => {
-                                oralExam[field] = this.getFieldValue(`oralExam.${field}`);
+                                const state = this.getFieldValueState(`oralExam.${field}`);
+                                if (state.found) {
+                                    oralExam[field] = state.value;
+                                }
                             });
 
-                            const chartComments = {};
+                            const chartComments = { ...(base?.dentalChart?.chartComments || {}) };
                             ['notes', 'treatment_plan'].forEach((field) => {
-                                chartComments[field] = this.getFieldValue(`chartComments.${field}`);
+                                const state = this.getFieldValueState(`chartComments.${field}`);
+                                if (state.found) {
+                                    chartComments[field] = state.value;
+                                }
                             });
 
                             return {
                                 currentStep: this.currentStep,
-                                basicInfo: this.getFieldValues(basicFields),
-                                healthHistory: this.getFieldValues(healthFields),
+                                basicInfo: this.getFieldValues(basicFields, base?.basicInfo || {}),
+                                healthHistory: this.getFieldValues(healthFields, base?.healthHistory || {}),
                                 dentalChart: {
                                     teeth: dentalTeeth,
                                     oralExam,
@@ -775,7 +783,7 @@
                                     dentitionType,
                                     numberingSystem: 'FDI'
                                 },
-                                treatmentRecord: this.getFieldValues(treatmentFields),
+                                treatmentRecord: this.getFieldValues(treatmentFields, base?.treatmentRecord || {}),
                                 updatedAt: new Date().toISOString(),
                                 mode: this.mode,
                                 patientId: this.patientId
@@ -809,15 +817,37 @@
                             return 1;
                         },
 
-                        getFieldValues(fields) {
-                            const data = {};
+                        getFieldValues(fields, seed = {}) {
+                            const data = { ...seed };
                             fields.forEach((field) => {
-                                data[field] = this.getFieldValue(field);
+                                const state = this.getFieldValueState(field);
+                                if (state.found) {
+                                    data[field] = state.value;
+                                }
                             });
                             return data;
                         },
 
-                        getFieldValue(model) {
+                        getDraftBasePayload() {
+                            const parsed = this.parseStoredLocalDraft();
+                            if (parsed && typeof parsed === 'object') {
+                                return parsed;
+                            }
+                            return {
+                                basicInfo: {},
+                                healthHistory: {},
+                                dentalChart: {
+                                    teeth: {},
+                                    oralExam: {},
+                                    chartComments: {},
+                                    dentitionType: 'adult',
+                                    numberingSystem: 'FDI',
+                                },
+                                treatmentRecord: {},
+                            };
+                        },
+
+                        getFieldValueState(model) {
                             const escapedModel = model.replace(/\./g, '\\\\.');
                             const selectors = [
                                 `[wire\\:model\\.defer="${model}"]`,
@@ -830,15 +860,28 @@
 
                             const nodes = Array.from(document.querySelectorAll(selectors.join(',')));
                             if (!nodes.length) {
-                                return null;
+                                return {
+                                    found: false,
+                                    value: null,
+                                };
                             }
 
                             if (nodes[0].type === 'radio') {
                                 const checked = nodes.find((node) => node.checked);
-                                return checked ? checked.value : null;
+                                return {
+                                    found: true,
+                                    value: checked ? checked.value : null,
+                                };
                             }
 
-                            return nodes[0].value ?? null;
+                            return {
+                                found: true,
+                                value: nodes[0].value ?? null,
+                            };
+                        },
+
+                        getFieldValue(model) {
+                            return this.getFieldValueState(model).value;
                         },
 
                         formatTime(value) {
@@ -868,7 +911,16 @@
                         },
 
                         handleClickCapture(event) {
-                            if (!event?.target || this.persistPaused) {
+                            if (!event?.target || this.persistPaused || !this.canPersistDraft()) {
+                                return;
+                            }
+
+                            const dentalChartInteraction = event.target.closest('[data-dental-chart-grid]');
+                            if (dentalChartInteraction) {
+                                // Keep crash recovery for chart edits without triggering
+                                // immediate server draft sync on every tooth click.
+                                this.currentStep = this.detectCurrentStep();
+                                this.persistLocalDraft();
                                 return;
                             }
 

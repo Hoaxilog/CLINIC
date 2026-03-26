@@ -37,6 +37,28 @@ class PatientFormModalWorkflowTest extends TestCase
             ->assertDispatched('patient-form-navigation-finished');
     }
 
+    public function test_editable_draft_blocks_navigation_back_to_basic_information_until_saved(): void
+    {
+        $user = User::factory()->make([
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $user->id = 107;
+
+        $this->actingAs($user);
+
+        Livewire::test(PatientFormModal::class)
+            ->set('showModal', true)
+            ->set('isEditing', true)
+            ->set('isReadOnly', false)
+            ->set('forceNewRecord', true)
+            ->set('currentStep', 3)
+            ->call('goToStep', 1)
+            ->assertSet('currentStep', 3)
+            ->assertSet('pendingNavigationStep', null)
+            ->assertDispatched('flash-message')
+            ->assertDispatched('patient-form-navigation-finished');
+    }
+
     public function test_staff_can_save_from_basic_info_step(): void
     {
         $user = User::factory()->make([
@@ -52,7 +74,7 @@ class PatientFormModalWorkflowTest extends TestCase
             ->set('isReadOnly', false)
             ->set('currentStep', 1)
             ->assertSee('Loading section...')
-            ->assertSee('Save All Changes');
+            ->assertSee('Save All');
     }
 
     public function test_admin_can_start_new_connected_record_from_treatment_step(): void
@@ -164,6 +186,82 @@ class PatientFormModalWorkflowTest extends TestCase
             ->call('goToStep', 3)
             ->assertSet('currentStep', 3)
             ->assertSet('pendingNavigationStep', null);
+    }
+
+    public function test_editable_backward_navigation_collects_treatment_without_validation(): void
+    {
+        $user = User::factory()->make([
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $user->id = 108;
+
+        $this->actingAs($user);
+
+        Livewire::test(PatientFormModal::class)
+            ->set('showModal', true)
+            ->set('isEditing', true)
+            ->set('isAdmin', true)
+            ->set('canViewClinicalRecords', true)
+            ->set('isReadOnly', false)
+            ->set('forceNewRecord', true)
+            ->set('currentStep', 4)
+            ->call('goToStep', 3)
+            ->assertSet('pendingNavigationStep', 3)
+            ->assertDispatched('requestTreatmentRecordData')
+            ->dispatch('treatmentRecordDataProvided', data: [
+                'dmd' => 'Dr. Test',
+                'treatment' => 'Oral Prophylaxis',
+                'cost_of_treatment' => '1000',
+                'amount_charged' => '1000',
+                'remarks' => 'draft',
+            ])
+            ->assertSet('currentStep', 3)
+            ->assertSet('pendingNavigationStep', null)
+            ->assertSet('treatmentRecordData.dmd', 'Dr. Test');
+    }
+
+    public function test_editable_backward_navigation_collects_dental_without_validation(): void
+    {
+        $user = User::factory()->make([
+            'role' => User::ROLE_ADMIN,
+        ]);
+        $user->id = 109;
+
+        $this->actingAs($user);
+
+        Livewire::test(PatientFormModal::class)
+            ->set('showModal', true)
+            ->set('isEditing', true)
+            ->set('isAdmin', true)
+            ->set('canViewClinicalRecords', true)
+            ->set('isReadOnly', false)
+            ->set('forceNewRecord', true)
+            ->set('currentStep', 3)
+            ->call('goToStep', 2)
+            ->assertSet('pendingNavigationStep', 2)
+            ->assertDispatched('requestDentalChartDataWithoutValidation')
+            ->dispatch('dentalChartDataProvided', data: [
+                'teeth' => ['11' => ['surface' => 'O']],
+                'oral_exam' => [
+                    'oral_hygiene_status' => 'Good',
+                    'gingiva' => 'Healthy',
+                    'calcular_deposits' => 'None',
+                    'stains' => 'None',
+                    'complete_denture' => 'None',
+                    'partial_denture' => 'None',
+                ],
+                'comments' => [
+                    'notes' => 'chart note',
+                    'treatment_plan' => 'plan',
+                ],
+                'meta' => [
+                    'dentition_type' => 'adult',
+                    'numbering_system' => 'FDI',
+                ],
+            ])
+            ->assertSet('currentStep', 2)
+            ->assertSet('pendingNavigationStep', null)
+            ->assertSet('dentalChartData.comments.notes', 'chart note');
     }
 
     public function test_edit_save_persists_staged_basic_and_health_data_in_one_flow(): void

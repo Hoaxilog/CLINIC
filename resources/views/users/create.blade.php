@@ -7,6 +7,8 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap');
     #create-user-wrap * { font-family: 'Montserrat', sans-serif; }
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear { display: none; }
 </style>
 
 <script>
@@ -183,7 +185,7 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-[#7a9db5]">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                             </span>
-                            <input type="password" id="admin-create-password" name="password" placeholder="Min. 8 characters" required minlength="8"
+                            <input type="password" id="admin-create-password" name="password" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password"
                                 class="w-full pl-9 pr-10 py-2.5 border border-[#d4e8f5] bg-white text-[.85rem] text-[#1a2e3b] font-medium placeholder-[#a8c5d8] focus:outline-none focus:border-[#0086da] transition">
                             <button type="button"
                                 onclick="toggleAdminCreatePassword('admin-create-password','admin-create-eye-open','admin-create-eye-closed')"
@@ -210,7 +212,7 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-[#7a9db5]">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                             </span>
-                            <input type="password" id="admin-create-password-confirmation" name="password_confirmation" placeholder="Re-enter password" required minlength="8"
+                            <input type="password" id="admin-create-password-confirmation" name="password_confirmation" placeholder="Re-enter password" required minlength="8" autocomplete="new-password"
                                 class="w-full pl-9 pr-10 py-2.5 border border-[#d4e8f5] bg-white text-[.85rem] text-[#1a2e3b] font-medium placeholder-[#a8c5d8] focus:outline-none focus:border-[#0086da] transition">
                             <button type="button"
                                 onclick="toggleAdminCreatePassword('admin-create-password-confirmation','admin-create-confirm-eye-open','admin-create-confirm-eye-closed')"

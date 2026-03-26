@@ -171,7 +171,6 @@
                     </div>
                     <div class="info-row">Address: 251 Commonwealth Ave, Diliman, Quezon City</div>
                     <div class="info-row">Phone: +63 912 345 6789</div>
-                    <div class="info-row last">Facebook: facebook.com/TejaDentClinic</div>
                 </div>
             </div>
 

@@ -1,8 +1,64 @@
 <div
-    x-data="{ open: false }"
-    x-init="$watch('open', value => { document.body.classList.toggle('overflow-hidden', value); })"
+    x-data="{
+        open: false,
+        pollTimer: null,
+        init() {
+            this.$watch('open', value => {
+                document.body.classList.toggle('overflow-hidden', value);
+            });
+
+            this.pollTimer = window.setInterval(() => {
+                this.pollNotifications();
+            }, 5000);
+        },
+        destroy() {
+            if (this.pollTimer !== null) {
+                window.clearInterval(this.pollTimer);
+            }
+
+            document.body.classList.remove('overflow-hidden');
+        },
+        pollNotifications() {
+            if (this.shouldPausePolling()) {
+                return;
+            }
+
+            this.$wire.buildNotifications();
+        },
+        shouldPausePolling() {
+            if (this.open) {
+                return true;
+            }
+
+            return this.hasVisibleBlockingElement([
+                '[data-patient-form-modal]',
+                '[wire\\\\:loading].fixed.inset-0',
+                '[wire\\\\:loading].absolute.inset-0',
+                '.fixed.inset-0.z-50',
+                '.fixed.inset-0.z-\\[60\\]',
+            ]);
+        },
+        hasVisibleBlockingElement(selectors) {
+            return selectors.some((selector) => {
+                return Array.from(document.querySelectorAll(selector)).some((element) => {
+                    if (this.$root.contains(element)) {
+                        return false;
+                    }
+
+                    if (element.getAttribute('aria-hidden') === 'true') {
+                        return false;
+                    }
+
+                    const style = window.getComputedStyle(element);
+
+                    return style.display !== 'none'
+                        && style.visibility !== 'hidden'
+                        && style.pointerEvents !== 'none';
+                });
+            });
+        },
+    }"
     @keydown.escape.window="open = false"
-    wire:poll.10s="buildNotifications"
     class="relative z-50"
 >
     @php

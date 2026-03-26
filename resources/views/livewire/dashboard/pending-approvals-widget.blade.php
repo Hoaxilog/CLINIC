@@ -72,7 +72,7 @@
                             <div class="flex items-center justify-start">
                                 <a href="{{ route('appointment.requests', ['appointment' => $pending->id]) }}"
                                     class="whitespace-nowrap rounded-none border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition">
-                                    Review Now
+                                    View Appointment Request
                                 </a>
                             </div>
                         </td>

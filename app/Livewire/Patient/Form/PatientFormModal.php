@@ -128,13 +128,6 @@ class PatientFormModal extends Component
         $this->triggerStepValidation($this->currentStep);
     }
 
-    public function previousStep(): void
-    {
-        if ($this->currentStep > 1) {
-            $this->goToStep($this->currentStep - 1);
-        }
-    }
-
     public function goToStep(int $step): void
     {
         // Free tab navigation is only allowed in edit/view mode.
@@ -152,6 +145,13 @@ class PatientFormModal extends Component
 
         $maxStep = $this->getMaxStep();
         if ($step >= 1 && $step <= $maxStep) {
+            if (! $this->isReadOnly && $this->currentStep > 1 && $step === 1) {
+                $this->dispatch('flash-message', type: 'info', message: 'Save or cancel the current draft before returning to Basic Information.');
+                $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
+
+                return;
+            }
+
             if (! $this->isReadOnly && $this->currentStep === 1 && $step !== 1) {
                 $this->dispatch('flash-message', type: 'info', message: 'Save basic information first before opening the other sections.');
                 $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
@@ -169,6 +169,15 @@ class PatientFormModal extends Component
                 }
 
                 if ($step === $this->currentStep) {
+                    return;
+                }
+
+                if ($step < $this->currentStep) {
+                    // Backward step navigation is view-only. Collect current form
+                    // state without running full validation before switching tabs.
+                    $this->pendingNavigationStep = $step;
+                    $this->collectStepDataWithoutValidation($this->currentStep);
+
                     return;
                 }
 
@@ -207,7 +216,6 @@ class PatientFormModal extends Component
         $this->pendingNavigationStep = null;
         $this->isSaving = false;
         $this->resetErrorBag(['consentAuthorizationAccepted', 'consentTruthfulnessAccepted']);
-        $this->clearCurrentDraftAfterSuccessfulSave();
 
         if ($this->isEditing && ! $this->isReadOnly) {
             $this->isReadOnly = true;
@@ -285,6 +293,14 @@ class PatientFormModal extends Component
         }
     }
 
+    #[On('treatmentRecordDataProvided')]
+    public function handleTreatmentRecordData($data): void
+    {
+        $this->treatmentRecordData = $data;
+
+        $this->completePendingNavigationIfNeeded(4);
+    }
+
     #[On('treatmentRecordValidated')]
     public function handleTreatmentRecord($data): void
     {
@@ -355,16 +371,6 @@ class PatientFormModal extends Component
         $this->dispatch('dental-chart-ready');
     }
 
-    public function updatedSelectedVisitDate($value): void
-    {
-        if (! $this->isEditing || ! $this->isReadOnly || empty($value) || $value === 'new') {
-            return;
-        }
-
-        $this->loadVisitContextBySelection($value);
-        $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
-    }
-
     public function selectVisitRecord($value): void
     {
         if (! $this->isEditing || ! $this->isReadOnly || empty($value) || $value === 'new') {
@@ -388,10 +394,9 @@ class PatientFormModal extends Component
         $this->chartKey = uniqid();
     }
 
-    #[On('enableEditMode')]
-    public function enableEditMode(): void
+    public function enableBasicInfoEdit(): void
     {
-        if (! $this->isAdmin) {
+        if (! $this->isEditing || ! $this->isAdmin || ! $this->isReadOnly || $this->currentStep !== 1) {
             return;
         }
 
@@ -544,10 +549,15 @@ class PatientFormModal extends Component
         $this->basicInfoData = $safePayload['basicInfo'];
         $this->healthHistoryData = $safePayload['healthHistory'];
         $this->treatmentRecordData = $safePayload['treatmentRecord'];
+        if ($this->isEditing) {
+            $this->forceNewRecord = true;
+            $this->selectedHealthHistoryId = 'new';
+            $this->selectedVisitDate = '';
+        }
 
         $restoredDental = $safePayload['dentalChart'] ?? [];
         if (! empty($restoredDental) && $this->isAdmin && $this->isEditing) {
-            $this->pendingDentalDraft = [
+            $draftDental = [
                 'teeth'     => is_array($restoredDental['teeth'] ?? null) ? $restoredDental['teeth'] : [],
                 'oral_exam' => is_array($restoredDental['oralExam'] ?? null) ? $restoredDental['oralExam'] : [],
                 'comments'  => is_array($restoredDental['chartComments'] ?? null) ? $restoredDental['chartComments'] : [],
@@ -555,6 +565,19 @@ class PatientFormModal extends Component
                     'dentition_type'   => ($restoredDental['dentitionType'] ?? 'adult') === 'child' ? 'child' : 'adult',
                     'numbering_system' => is_string($restoredDental['numberingSystem'] ?? null) ? $restoredDental['numberingSystem'] : 'FDI',
                 ],
+            ];
+
+            // Keep restored dental draft as active state so moving between
+            // Step 4 -> Step 3 does not lose unsaved chart edits.
+            $this->dentalChartData = $draftDental;
+            $this->selectedHistoryId = '';
+            $this->currentDentalChartId = null;
+
+            $this->pendingDentalDraft = [
+                'teeth'     => $draftDental['teeth'],
+                'oral_exam' => $draftDental['oral_exam'],
+                'comments'  => $draftDental['comments'],
+                'meta'      => $draftDental['meta'],
             ];
             $this->hasPendingDentalDraft = true;
             $this->forceNewRecord = true;
@@ -617,7 +640,7 @@ class PatientFormModal extends Component
         $this->dispatch('flash-message', type: 'info', message: 'Patient information updated.');
     }
 
-    private function saveHealthHistoryRecord(): void
+    private function saveHealthHistoryRecord($timestamp = null): void
     {
         $hService   = app(HealthHistoryService::class);
         $modifier   = $this->modifier();
@@ -626,15 +649,8 @@ class PatientFormModal extends Component
         if ($selectedId && is_numeric($selectedId) && $selectedId !== 'new') {
             $hService->update((int) $selectedId, $this->newPatientId, $this->healthHistoryData, $modifier);
         } else {
-            $hService->create($this->newPatientId, $this->healthHistoryData, $modifier);
+            $hService->create($this->newPatientId, $this->healthHistoryData, $modifier, $timestamp);
         }
-
-        $this->loadPatientData($this->newPatientId);
-        $this->dispatch('setHealthHistoryContext',
-            gender: $this->basicInfoData['gender'] ?? null,
-            historyList: $this->healthHistoryList,
-            selectedId: $this->selectedHealthHistoryId
-        )->to('patient.form.health-history');
     }
 
     private function completeSave(string $message = 'Changes saved.'): void
@@ -649,15 +665,17 @@ class PatientFormModal extends Component
 
     private function persistEditSession(): void
     {
-        DB::transaction(function () {
+        $visitTimestamp = now();
+
+        DB::transaction(function () use ($visitTimestamp) {
             app(PatientService::class)->update($this->newPatientId, $this->basicInfoData, $this->modifier());
 
-            if ($this->currentStep === 2) {
-                $this->saveHealthHistoryRecord();
+            if (! empty($this->healthHistoryData)) {
+                $this->saveHealthHistoryRecord($visitTimestamp);
             }
 
             if ($this->isAdmin) {
-                $this->saveDentalAndTreatment();
+                $this->saveDentalAndTreatment($visitTimestamp);
             }
         });
 
@@ -673,7 +691,7 @@ class PatientFormModal extends Component
             : 'Patient record changes saved.');
     }
 
-    private function saveDentalAndTreatment(): void
+    private function saveDentalAndTreatment($timestamp = null): void
     {
         $dcService = app(DentalChartService::class);
         $modifier  = $this->modifier();
@@ -687,13 +705,14 @@ class PatientFormModal extends Component
             $this->dentalChartData,
             $modifier,
             $this->forceNewRecord,
-            $existingChartId
+            $existingChartId,
+            $timestamp
         );
         $this->forceNewRecord = false;
 
         if ($chartId) {
             $this->currentDentalChartId = $chartId;
-            $dcService->saveTreatmentRecord($chartId, $this->newPatientId, $this->treatmentRecordData, $modifier);
+            $dcService->saveTreatmentRecord($chartId, $this->newPatientId, $this->treatmentRecordData, $modifier, $timestamp);
             $this->chartHistory       = $dcService->getHistory($this->newPatientId);
             $this->treatmentRecordData = $dcService->getTreatmentRecord($chartId);
         }
@@ -757,7 +776,9 @@ class PatientFormModal extends Component
         // won't overwrite the record-date-specific chart on subsequent navigations.
         if ($this->canViewClinicalRecords && $this->newPatientId) {
             $this->chartHistory = app(DentalChartService::class)->getHistory($this->newPatientId);
+            $this->visitHistoryList = $this->buildVisitHistoryList($this->newPatientId);
         }
+
         $this->dentalDataLoaded = true;
 
         // Explicitly push data to child components so they update even when
@@ -872,10 +893,20 @@ class PatientFormModal extends Component
                 ->all()
             : [];
 
-        $records = collect(array_merge($healthMoments, $dentalMoments))
+        $healthSet = collect($healthMoments)
             ->map(fn ($value) => $this->normalizeVisitMomentKey($value))
             ->filter()
             ->unique()
+            ->values();
+
+        $dentalSet = collect($dentalMoments)
+            ->map(fn ($value) => $this->normalizeVisitMomentKey($value))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $records = $healthSet
+            ->intersect($dentalSet)
             ->map(fn (string $moment) => [
                 'value' => $moment,
                 'label' => Carbon::createFromFormat('Y-m-d H:i', $moment)->format('F j, Y - h:i A'),
@@ -952,18 +983,6 @@ class PatientFormModal extends Component
     }
 
 
-    private function normalizeVisitDate($value): ?string
-    {
-        if (empty($value)) {
-            return null;
-        }
-
-        try {
-            return Carbon::parse($value)->toDateString();
-        } catch (\Throwable) {
-            return null;
-        }
-    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Private — Helpers
@@ -1079,8 +1098,23 @@ class PatientFormModal extends Component
                     $this->hasPendingDentalDraft = false;
                     $this->chartKey = uniqid();
                 }
+
+                $this->dispatch('fillDentalChart', data: $this->dentalChartData)
+                    ->to('patient.form.dental-chart');
+                $this->dispatch('fillTreatmentRecord', data: $this->treatmentRecordData)
+                    ->to('patient.form.treatment-record');
             }
         }
+    }
+
+    private function collectStepDataWithoutValidation(int $step): void
+    {
+        match ($step) {
+            2 => $this->dispatch('requestHealthHistoryData')->to('patient.form.health-history'),
+            3 => $this->dispatch('requestDentalChartDataWithoutValidation')->to('patient.form.dental-chart'),
+            4 => $this->dispatch('requestTreatmentRecordData')->to('patient.form.treatment-record'),
+            default => null,
+        };
     }
 
     private function completePendingNavigationIfNeeded(int $validatedStep): bool

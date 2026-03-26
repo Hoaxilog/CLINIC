@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\PatientFormDraftService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PatientFormModalDraftMethodsTest extends TestCase
@@ -137,5 +138,36 @@ class PatientFormModalDraftMethodsTest extends TestCase
         $this->assertSame(1, $response['deleted'] ?? 0);
         $this->assertNull($service->getDraft($user->id, 'create', 0));
         $this->assertNotNull($service->getDraft($user->id, 'edit', 55));
+    }
+
+    public function test_apply_draft_payload_sets_edit_restore_to_new_record_state(): void
+    {
+        Livewire::test(PatientFormModal::class)
+            ->set('isEditing', true)
+            ->set('isAdmin', true)
+            ->set('newPatientId', 55)
+            ->set('selectedHealthHistoryId', '8')
+            ->set('selectedVisitDate', '2026-03-25 14:00')
+            ->call('applyDraftPayload', [
+                'currentStep' => 4,
+                'basicInfo' => ['first_name' => 'Ana'],
+                'healthHistory' => ['what_seeing_dentist_reason_q2' => 'Follow-up'],
+                'dentalChart' => [
+                    'teeth' => ['11' => ['status' => 'filled']],
+                    'oralExam' => ['gingiva' => 'Healthy'],
+                    'chartComments' => ['notes' => 'Draft dental note'],
+                    'dentitionType' => 'adult',
+                    'numberingSystem' => 'FDI',
+                ],
+                'treatmentRecord' => ['treatment' => 'Cleaning'],
+                'updatedAt' => now()->toIso8601String(),
+                'mode' => 'edit',
+                'patientId' => 55,
+            ])
+            ->assertSet('isReadOnly', false)
+            ->assertSet('forceNewRecord', true)
+            ->assertSet('selectedHealthHistoryId', 'new')
+            ->assertSet('selectedVisitDate', '')
+            ->assertSet('selectedHistoryId', '');
     }
 }

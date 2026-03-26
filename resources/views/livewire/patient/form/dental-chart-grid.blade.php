@@ -1,12 +1,15 @@
-<div class="flex flex-col items-center justify-center gap-12 mx-auto mb-16"
+<div data-dental-chart-grid class="flex flex-col items-center justify-center gap-12 mx-auto mb-16"
     x-data
     x-on:request-dental-chart-teeth.window="
         $wire.provideTeeth($store.dentalChart.toPlain($store.dentalChart.localTeeth))
     "
     x-init="
         const existing = Alpine.store('dentalChart');
+        const incomingInstanceKey = @js($instanceKey);
+        const incomingTeeth = @js($teeth) || {};
         const base = {
-            localTeeth: @js($teeth) || {},
+            instanceKey: incomingInstanceKey,
+            localTeeth: incomingTeeth,
             tools: @js($tools),
             toolLabels: @js($toolLabels),
             isReadOnly: @js($isReadOnly),
@@ -141,7 +144,17 @@
         if (!existing) {
             Alpine.store('dentalChart', base);
         } else {
-            Object.assign(existing, base);
+            const isSameInstance = existing.instanceKey === incomingInstanceKey;
+
+            existing.instanceKey = incomingInstanceKey;
+            existing.tools = base.tools;
+            existing.toolLabels = base.toolLabels;
+            existing.isReadOnly = base.isReadOnly;
+            existing.colors = base.colors;
+
+            if (!isSameInstance) {
+                existing.localTeeth = incomingTeeth;
+            }
         }
         $nextTick(() => { $dispatch('dental-chart-ready'); });
     ">

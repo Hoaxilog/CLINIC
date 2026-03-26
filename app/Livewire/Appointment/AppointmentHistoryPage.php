@@ -12,9 +12,13 @@ class AppointmentHistoryPage extends Component
 {
     use WithPagination;
 
+    private const STATUS_ALL = 'All';
+
+    private const HISTORY_STATUSES = ['Cancelled', 'Completed'];
+
     public string $search = '';
 
-    public string $status = 'Cancelled';
+    public string $status = self::STATUS_ALL;
 
     public string $serviceId = '';
 
@@ -60,7 +64,7 @@ class AppointmentHistoryPage extends Component
     public function resetFilters(): void
     {
         $this->reset('search', 'serviceId');
-        $this->status = 'Cancelled';
+        $this->status = self::STATUS_ALL;
         $this->fromDate = now()->subMonths(3)->toDateString();
         $this->toDate = now()->toDateString();
         $this->resetPage();
@@ -95,7 +99,8 @@ class AppointmentHistoryPage extends Component
                 DB::raw($lastNameExpr.' as last_name'),
                 DB::raw($middleNameExpr.' as middle_name')
             )
-            ->when($this->status !== '', fn ($query) => $query->where('appointments.status', $this->status))
+            ->whereIn('appointments.status', self::HISTORY_STATUSES)
+            ->when($this->status !== self::STATUS_ALL, fn ($query) => $query->where('appointments.status', $this->status))
             ->when($this->serviceId !== '', fn ($query) => $query->where('appointments.service_id', $this->serviceId))
             ->when($this->fromDate !== '', fn ($query) => $query->where('appointments.appointment_date', '>=', Carbon::parse($this->fromDate)->startOfDay()))
             ->when($this->toDate !== '', fn ($query) => $query->where('appointments.appointment_date', '<=', Carbon::parse($this->toDate)->endOfDay()))

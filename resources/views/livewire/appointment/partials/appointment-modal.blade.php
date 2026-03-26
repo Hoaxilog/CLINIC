@@ -38,7 +38,7 @@
                     @if ($isViewing && $appointmentStatus)
                         @php
                             $statusLabel = match($appointmentStatus) {
-                                'Pending'   => 'Awaiting Approval',
+                                'Pending'   => 'Waiting For Approval',
                                 'Scheduled' => 'Approved & Scheduled',
                                 'Waiting'   => 'Patient Arrived',
                                 'Ongoing'   => 'In Progress',
@@ -56,9 +56,6 @@
                                 default     => 'bg-gray-100 text-gray-500 border-gray-200',
                             };
                         @endphp
-                        <span class="inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide {{ $statusBadge }}">
-                            {{ $statusLabel }}
-                        </span>
                     @endif
                 </div>
             </div>
