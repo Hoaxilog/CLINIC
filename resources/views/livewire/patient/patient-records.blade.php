@@ -596,23 +596,23 @@
                                         {{ $patient->patient_type === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#f0f6fb] text-[#7a9db5]' }}">
                                         {{ $patient->patient_type ?? 'Inactive' }}
                                     </span>
-                                    @if ($this->canDeletePatientRecords())
-                                        <div class="relative" x-data="{ open: false }" @close-patient-menus.window="open = false">
+                                    <div class="relative" x-data="{ open: false }" @close-patient-menus.window="open = false">
+                                        <button type="button"
+                                            class="flex items-center justify-center w-7 h-7 bg-white text-black transition hover:border-[#0086da] hover:text-[#0086da]"
+                                            @click.stop="$dispatch('close-patient-menus'); open = !open">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-vertical"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                                        </button>
+                                        <div x-show="open" @click.away="open = false"
+                                            class="absolute right-0 z-20 mt-1 w-48 border border-[#e4eff8] bg-white shadow-[0_8px_24px_rgba(0,134,218,.12)]"
+                                            style="display:none;">
                                             <button type="button"
-                                                class="flex items-center justify-center w-7 h-7 bg-white text-black transition hover:border-[#0086da] hover:text-[#0086da]"
-                                                @click.stop="$dispatch('close-patient-menus'); open = !open">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-vertical"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                                                class="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[.78rem] font-semibold text-[#0086da] transition hover:bg-[#f0f8fe]"
+                                                wire:click="openProfile({{ $patient->id }})"
+                                                onclick="event.stopPropagation();">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                Profile
                                             </button>
-                                            <div x-show="open" @click.away="open = false"
-                                                class="absolute right-0 z-20 mt-1 w-48 border border-[#e4eff8] bg-white shadow-[0_8px_24px_rgba(0,134,218,.12)]"
-                                                style="display:none;">
-                                                <button type="button"
-                                                    class="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[.78rem] font-semibold text-[#0086da] transition hover:bg-[#f0f8fe]"
-                                                    wire:click="openProfile({{ $patient->id }})"
-                                                    onclick="event.stopPropagation();">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                    Profile
-                                                </button>
+                                            @if ($this->canDeletePatientRecords())
                                                 <div class="border-t border-[#e4eff8]"></div>
                                                 <button type="button"
                                                     class="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[.78rem] font-semibold text-red-600 transition hover:bg-red-50"
@@ -620,9 +620,9 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                                                     Delete
                                                 </button>
-                                            </div>
+                                            @endif
                                         </div>
-                                    @endif
+                                    </div>
                                 </div>
 
                                 {{-- Avatar + Name --}}
