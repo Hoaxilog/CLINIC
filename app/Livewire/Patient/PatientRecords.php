@@ -24,6 +24,11 @@ class PatientRecords extends Component
 
     protected $paginationTheme = 'tailwind';
 
+    public function canDeletePatientRecords(): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
     public function mount()
     {
         //
@@ -196,7 +201,7 @@ class PatientRecords extends Component
 
     public function deletePatient($id)
     {
-        if (Auth::check() && Auth::user()->role === 3) {
+        if (! $this->canDeletePatientRecords()) {
             $this->dispatch('flash-message', type: 'error', message: 'You do not have permission to delete patient records.');
             return;
         }
