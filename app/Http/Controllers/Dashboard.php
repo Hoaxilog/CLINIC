@@ -140,8 +140,6 @@ class Dashboard extends Controller
             ->where('status', 'Cancelled')
             ->count();
 
-        $todayUpcomingCount = $todayAppointmentsCount - $todayCompletedCount - $todayCancelledCount;
-
         $rangeEnd = $today->copy()->endOfDay();
         $prevRangeEnd = $rangeStart->copy()->subDay()->endOfDay();
         $prevRangeStart = $prevRangeEnd->copy()->subDays($rangeDays - 1)->startOfDay();
@@ -290,8 +288,6 @@ class Dashboard extends Controller
         $arrivedPatientsCount = (int) ($statusCountsMap['Arrived'] ?? 0);
         $ongoingPatientsCount = (int) ($statusCountsMap['Ongoing'] ?? 0);
         $completedPatientsCount = (int) ($statusCountsMap['Completed'] ?? 0);
-        $queueLoadCount = $waitingPatientsCount + $arrivedPatientsCount;
-
         $recentActivities = DB::table('activity_log')
             ->leftJoin('users', function ($join) {
                 $join->on('activity_log.causer_id', '=', 'users.id')
@@ -386,7 +382,6 @@ class Dashboard extends Controller
             'todayAppointmentsCount' => $todayAppointmentsCount,
             'todayCompletedCount' => $todayCompletedCount,
             'todayCancelledCount' => $todayCancelledCount,
-            'todayUpcomingCount' => max(0, $todayUpcomingCount),
             'todayProfit' => $todayProfit,
             'todayRevenue' => $todayRevenue,
             'todayCost' => $todayCost,
@@ -418,7 +413,6 @@ class Dashboard extends Controller
             'arrivedPatientsCount' => $arrivedPatientsCount,
             'ongoingPatientsCount' => $ongoingPatientsCount,
             'completedPatientsCount' => $completedPatientsCount,
-            'queueLoadCount' => $queueLoadCount,
             'recentActivities' => $recentActivities,
             'patientStatsTotal' => $patientStats['patientStatsTotal'],
             'patientStatsDates' => $patientStats['patientStatsDates'],

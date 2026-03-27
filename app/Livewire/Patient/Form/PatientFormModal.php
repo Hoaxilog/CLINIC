@@ -20,6 +20,7 @@ class PatientFormModal extends Component
     public $currentStep = 1;
     public $isEditing = false;
     public $isAdmin = false;
+    public $canEditBasicInfo = false;
     public $canViewClinicalRecords = false;
     public $isReadOnly = false;
     public $isSaving = false;
@@ -200,6 +201,13 @@ class PatientFormModal extends Component
     public function save(): void
     {
         if ($this->isReadOnly) {
+            return;
+        }
+        if (! $this->canEditCurrentStep()) {
+            $this->dispatch('flash-message', type: 'error', message: 'You do not have permission to edit this section.');
+            $this->isReadOnly = true;
+            $this->isSaving = false;
+
             return;
         }
         if (! $this->validateConsentForUpdate()) {
@@ -396,7 +404,7 @@ class PatientFormModal extends Component
 
     public function enableBasicInfoEdit(): void
     {
-        if (! $this->isEditing || ! $this->isAdmin || ! $this->isReadOnly || $this->currentStep !== 1) {
+        if (! $this->isEditing || ! $this->canEditBasicInfo || ! $this->isReadOnly || $this->currentStep !== 1) {
             return;
         }
 
@@ -545,11 +553,11 @@ class PatientFormModal extends Component
         $targetStep = max(1, min($this->getMaxStep(), (int) $normalized['currentStep']));
         $safePayload = $normalized['payload'];
 
-        $this->isReadOnly = false;
+        $this->isReadOnly = ! $this->canRestoreDraftAsEditable($targetStep);
         $this->basicInfoData = $safePayload['basicInfo'];
         $this->healthHistoryData = $safePayload['healthHistory'];
         $this->treatmentRecordData = $safePayload['treatmentRecord'];
-        if ($this->isEditing) {
+        if ($this->isEditing && ! $this->isReadOnly) {
             $this->forceNewRecord = true;
             $this->selectedHealthHistoryId = 'new';
             $this->selectedVisitDate = '';
@@ -645,11 +653,21 @@ class PatientFormModal extends Component
         $hService   = app(HealthHistoryService::class);
         $modifier   = $this->modifier();
         $selectedId = $this->healthHistoryData['selectedHistoryId'] ?? $this->selectedHealthHistoryId;
+        $isNewVisit = $this->forceNewRecord || $selectedId === 'new' || blank($selectedId);
 
-        if ($selectedId && is_numeric($selectedId) && $selectedId !== 'new') {
+        if ($isNewVisit) {
+            $this->selectedHealthHistoryId = (string) $hService->create(
+                $this->newPatientId,
+                $this->healthHistoryData,
+                $modifier,
+                $timestamp
+            );
+
+            return;
+        }
+
+        if (is_numeric($selectedId)) {
             $hService->update((int) $selectedId, $this->newPatientId, $this->healthHistoryData, $modifier);
-        } else {
-            $hService->create($this->newPatientId, $this->healthHistoryData, $modifier, $timestamp);
         }
     }
 
@@ -999,7 +1017,34 @@ class PatientFormModal extends Component
     private function checkAdminRole(): void
     {
         $this->isAdmin = Auth::user()?->canHandleChairsideFlow() ?? false;
+        $this->canEditBasicInfo = Auth::user()?->canAccessOperationalPages() ?? false;
         $this->canViewClinicalRecords = Auth::user()?->canAccessOperationalPages() ?? false;
+    }
+
+    private function canEditCurrentStep(): bool
+    {
+        if (! $this->isEditing) {
+            return true;
+        }
+
+        if ($this->currentStep === 1) {
+            return $this->canEditBasicInfo;
+        }
+
+        return $this->isAdmin;
+    }
+
+    private function canRestoreDraftAsEditable(int $step): bool
+    {
+        if (! $this->isEditing) {
+            return true;
+        }
+
+        if ($step === 1) {
+            return $this->canEditBasicInfo;
+        }
+
+        return $this->isAdmin;
     }
 
     private function canAccessPatientRecord(int $patientId): bool

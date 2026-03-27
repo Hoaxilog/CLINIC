@@ -63,8 +63,8 @@
                 [
                     'label' => 'Today\'s Appointments',
                     'value' => $todayAppointmentsCount ?? 0,
-                    'meta' => ($todayCompletedCount ?? 0).' completed',
-                    'href' => route('appointment.calendar'),
+                    'meta' => ($todayCompletedCount ?? 0).' completed | '.($todayCancelledCount ?? 0).' cancelled',
+                    'href' => route('appointment.history'),
                     'accent' => 'text-sky-700',
                 ],
                 [
@@ -80,13 +80,6 @@
                     'meta' => ($todayCancelledCount ?? 0).' cancelled',
                     'href' => route('appointment.calendar'),
                     'accent' => 'text-indigo-700',
-                ],
-                [
-                    'label' => 'Queue Load',
-                    'value' => $queueLoadCount ?? 0,
-                    'meta' => 'Waiting '.($waitingPatientsCount ?? 0).' ┬╖ Arrived '.($arrivedPatientsCount ?? 0),
-                    'href' => route('queue'),
-                    'accent' => 'text-amber-700',
                 ],
             ]
             : [
@@ -155,7 +148,7 @@
             </div>
         </section>
 
-        <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 {{ $isDentistDashboard ? 'xl:grid-cols-3' : 'xl:grid-cols-4' }}">
             @foreach ($topCards as $card)
                 <a href="{{ $card['href'] }}"
                     class="group border border-gray-200 bg-white p-5 shadow-sm transition hover:border-[#0086DA] hover:shadow-md">

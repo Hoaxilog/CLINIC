@@ -264,7 +264,7 @@
                             };
 
                             // Edit This Record: step 1 read-only only
-                            $showEditButton = $isEditing && $isReadOnly && $currentStep == 1 && $isAdmin;
+                            $showEditButton = $isEditing && $isReadOnly && $currentStep == 1 && $canEditBasicInfo;
 
                             $showNewRecordButton = $isEditing && $isReadOnly && $isAdmin && in_array($currentStep, [2, 3, 4], true) && $hasExistingRecordForStep;
 
