@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Appointment;
 
+use App\Services\BlockedSlotService;
+use App\Services\CalendarQueryService;
 use App\Support\InputSanitizer;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -124,6 +126,18 @@ class BookAppointment extends Component
         $this->dispatch('book-calendar-refresh', selectedDate: $date);
     }
 
+    public function updatedServiceId($value): void
+    {
+        // Re-generate slots whenever the service changes so duration-based
+        // filtering reflects the newly selected service immediately.
+        $this->selectedSlot = null;
+        $this->resetValidation('selectedSlot');
+
+        if (! empty($this->selectedDate)) {
+            $this->availableSlots = $this->generateSlots($this->selectedDate);
+        }
+    }
+
     public function updatedEmail($value): void
     {
         $normalizedEmail = InputSanitizer::sanitizeEmail($value);
@@ -197,12 +211,20 @@ class BookAppointment extends Component
 
     public function generateSlots($dateString)
     {
-        $date = Carbon::parse($dateString);
-        // Default hours since schedules table does not exist
-        $startTime = Carbon::parse($dateString.' 09:00:00');
-        $endTime = Carbon::parse($dateString.' 20:00:00');
-        $duration = 60; // minutes per slot
+        $clinicOpen  = Carbon::parse($dateString.' 09:00:00');
+        $clinicClose = Carbon::parse($dateString.' 18:00:00');
+        $latestStart = $clinicClose->copy()->subHour();
         $blockedSlots = collect();
+
+        // Resolve selected service duration in minutes (default 60 if none selected yet)
+        $durationMinutes = 60;
+        if (! empty($this->service_id)) {
+            $service = DB::table('services')->where('id', $this->service_id)->first();
+            if ($service && ! empty($service->duration)) {
+                [$h, $m] = array_map('intval', explode(':', $service->duration));
+                $durationMinutes = max(60, $h * 60 + $m);
+            }
+        }
 
         if ($this->blockedSlotsEnabled()) {
             $blockedSlots = DB::table('blocked_slots')
@@ -211,13 +233,7 @@ class BookAppointment extends Component
                 ->get();
         }
 
-        $bookedCounts = DB::table('appointments')
-            ->whereDate('appointment_date', $dateString)
-            ->whereIn('status', self::APPROVED_SLOT_STATUSES)
-            ->selectRaw('TIME(appointment_date) as time_slot, COUNT(*) as total')
-            ->groupBy('time_slot')
-            ->pluck('total', 'time_slot')
-            ->toArray();
+        $cqs = app(CalendarQueryService::class);
 
         $requestCounts = DB::table('appointments')
             ->whereDate('appointment_date', $dateString)
@@ -228,23 +244,38 @@ class BookAppointment extends Component
             ->toArray();
 
         $slots = [];
+        $cursor = $clinicOpen->copy();
 
-        while ($startTime->lte($endTime)) {
-            $slotTime = $startTime->format('H:i:00');
-            $currentCount = $bookedCounts[$slotTime] ?? 0;
-            $currentRequests = $requestCounts[$slotTime] ?? 0;
-            $slotDateTime = Carbon::parse($dateString.' '.$slotTime);
-            $slotEndDateTime = $slotDateTime->copy()->addMinutes($duration);
-            $isPast = $slotDateTime->lt(now());
-            $isBlocked = $this->isBlockedBySlotCollection($slotDateTime, $slotEndDateTime, $blockedSlots);
+        while ($cursor->lte($latestStart)) {
+            $slotTime     = $cursor->format('H:i:00');
+            $slotStart    = Carbon::parse($dateString.' '.$slotTime)->seconds(0);
+            $slotEnd      = $slotStart->copy()->addMinutes($durationMinutes);
+            $isPast       = $slotStart->lt(now());
+
+            // Hide slots whose end time exceeds clinic closing time
+            $exceedsHours = $slotEnd->gt($clinicClose);
+
+            // Duration-aware overlap check against approved/active appointments
+            $approvedConflicts = $exceedsHours ? 0 : $cqs->countConflicts($slotStart, $slotEnd, self::APPROVED_SLOT_STATUSES);
+            $blockedCapacity   = $exceedsHours ? self::SLOT_CAPACITY : $this->blockedCapacityBySlotCollection($slotStart, $slotEnd, $blockedSlots);
+            $effectiveCapacity = max(0, self::SLOT_CAPACITY - $blockedCapacity);
+            $isApprovedFull    = $approvedConflicts >= $effectiveCapacity;
+
+            $currentRequests   = $requestCounts[$slotTime] ?? 0;
+            $isRequestFull     = $currentRequests >= self::REQUEST_SLOT_CAP;
+
+            // Duration-aware block check
+            $isBlocked = (! $exceedsHours) && $blockedCapacity >= self::SLOT_CAPACITY;
+
             $slots[] = [
-                'time' => $startTime->format('h:i A'),
-                'value' => $slotTime,
-                'is_full' => $currentCount >= self::SLOT_CAPACITY || $currentRequests >= self::REQUEST_SLOT_CAP,
-                'is_past' => $isPast,
+                'time'       => $cursor->format('h:i A'),
+                'value'      => $slotTime,
+                'is_full'    => $exceedsHours || $isApprovedFull || $isRequestFull,
+                'is_past'    => $isPast,
                 'is_blocked' => $isBlocked,
             ];
-            $startTime->addMinutes($duration);
+
+            $cursor->addMinutes(60); // Grid steps are always 1 hour
         }
 
         return $slots;
@@ -721,14 +752,33 @@ class BookAppointment extends Component
     {
         $appointmentDateTime = Carbon::parse($this->selectedDate.' '.$this->selectedSlot)->toDateTimeString();
         $slotStart = Carbon::parse($appointmentDateTime)->seconds(0);
-        $slotEnd = $slotStart->copy()->addHour();
 
+        // Resolve actual service duration for range-based checks
+        $durationMinutes = 60;
+        if (! empty($this->service_id)) {
+            $service = DB::table('services')->where('id', $this->service_id)->first();
+            if ($service && ! empty($service->duration)) {
+                [$h, $m] = array_map('intval', explode(':', $service->duration));
+                $durationMinutes = max(60, $h * 60 + $m);
+            }
+        }
+
+        $slotEnd = $slotStart->copy()->addMinutes($durationMinutes);
+
+        // Reject if the appointment would end after clinic closing time
+        $clinicClose = Carbon::parse($this->selectedDate.' 18:00:00');
+        if ($slotEnd->gt($clinicClose)) {
+            $this->addError('selectedSlot', 'This service cannot start at this time as it would end after clinic hours.');
+            $this->availableSlots = $this->generateSlots($this->selectedDate);
+
+            return false;
+        }
+
+        // Duration-aware blocked slot check
+        $blockedCapacity = 0;
         if ($this->blockedSlotsEnabled()) {
-            $isBlocked = DB::table('blocked_slots')
-                ->whereDate('date', $slotStart->toDateString())
-                ->where('start_time', '<', $slotEnd->format('H:i:s'))
-                ->where('end_time', '>', $slotStart->format('H:i:s'))
-                ->exists();
+            $blockedCapacity = app(BlockedSlotService::class)->blockedCapacityForRange($slotStart, $slotEnd, self::SLOT_CAPACITY);
+            $isBlocked = $blockedCapacity >= self::SLOT_CAPACITY;
 
             if ($isBlocked) {
                 $this->addError('selectedSlot', 'This time slot is unavailable. Please choose another time.');
@@ -738,18 +788,20 @@ class BookAppointment extends Component
             }
         }
 
-        $activeSlotBookings = DB::table('appointments')
-            ->where('appointment_date', $appointmentDateTime)
-            ->whereIn('status', self::APPROVED_SLOT_STATUSES)
-            ->count();
+        // Duration-aware approved appointment capacity check
+        $activeSlotBookings = app(CalendarQueryService::class)
+            ->countConflicts($slotStart, $slotEnd, self::APPROVED_SLOT_STATUSES);
 
-        if ($activeSlotBookings >= self::SLOT_CAPACITY) {
+        $remainingCapacity = max(0, self::SLOT_CAPACITY - $blockedCapacity);
+
+        if ($activeSlotBookings >= $remainingCapacity) {
             $this->addError('selectedSlot', 'This time slot is already full. Please choose another time.');
             $this->availableSlots = $this->generateSlots($this->selectedDate);
 
             return false;
         }
 
+        // Pending request cap — still exact-slot based (Phase 4 scope)
         $totalActiveRequestsInSlot = DB::table('appointments')
             ->where('appointment_date', $appointmentDateTime)
             ->whereNotIn('status', self::INACTIVE_APPOINTMENT_STATUSES)
@@ -898,20 +950,16 @@ class BookAppointment extends Component
 
     protected function isBlockedBySlotCollection(Carbon $slotStart, Carbon $slotEnd, $blockedSlots): bool
     {
-        if (! $this->blockedSlotsEnabled() || $blockedSlots->isEmpty()) {
-            return false;
+        return $this->blockedCapacityBySlotCollection($slotStart, $slotEnd, $blockedSlots) >= self::SLOT_CAPACITY;
+    }
+
+    protected function blockedCapacityBySlotCollection(Carbon $slotStart, Carbon $slotEnd, $blockedSlots): int
+    {
+        if (! $this->blockedSlotsEnabled() || collect($blockedSlots)->isEmpty()) {
+            return 0;
         }
 
-        foreach ($blockedSlots as $blockedSlot) {
-            $blockedStart = Carbon::parse($slotStart->toDateString().' '.$blockedSlot->start_time)->seconds(0);
-            $blockedEnd = Carbon::parse($slotStart->toDateString().' '.$blockedSlot->end_time)->seconds(0);
-
-            if ($blockedStart < $slotEnd && $blockedEnd > $slotStart) {
-                return true;
-            }
-        }
-
-        return false;
+        return app(BlockedSlotService::class)->blockedCapacityForRangeFromCollection($slotStart, $slotEnd, $blockedSlots, self::SLOT_CAPACITY);
     }
 
     protected function resetGuestEmailOtpState(): void

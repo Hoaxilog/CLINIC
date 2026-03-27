@@ -53,7 +53,7 @@
         $btnInfo = 'bg-[#0086da] text-white hover:bg-[#006ab0]';
     @endphp
 
-    <div class="w-full max-w-9xl mx-auto px-2 py-6 lg:px-8 bg-white">
+    <div class="w-full max-w-9xl mx-auto px-2 py-4 lg:px-6 bg-white" style="font-family:'Montserrat',sans-serif;">
         <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
             @if ($activeTab === 'calendar')
                 <div class="flex flex-wrap items-center justify-end gap-2 md:flex-nowrap">

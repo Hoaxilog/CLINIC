@@ -99,15 +99,26 @@ class CalendarQueryService
      */
     public function countConflicts(Carbon $proposedStart, Carbon $proposedEnd, array $approvedStatuses): int
     {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            // SQLite: use strftime to add duration (stored as HH:MM:SS) in seconds
+            $endExpr = DB::raw(
+                "datetime(appointments.appointment_date, '+' || "
+                . "(CAST(substr(services.duration, 1, 2) AS INTEGER) * 3600 "
+                . "+ CAST(substr(services.duration, 4, 2) AS INTEGER) * 60 "
+                . "+ CAST(substr(services.duration, 7, 2) AS INTEGER)) || ' seconds')"
+            );
+        } else {
+            // MySQL / MariaDB
+            $endExpr = DB::raw('DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)');
+        }
+
         return DB::table('appointments')
             ->join('services', 'appointments.service_id', '=', 'services.id')
-            ->where(function ($q) use ($proposedStart, $proposedEnd) {
+            ->where(function ($q) use ($proposedStart, $proposedEnd, $endExpr) {
                 $q->where('appointments.appointment_date', '<', $proposedEnd->toDateTimeString())
-                  ->where(
-                      DB::raw('DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)'),
-                      '>',
-                      $proposedStart->toDateTimeString()
-                  )
+                  ->where($endExpr, '>', $proposedStart->toDateTimeString())
                   ->whereIn('appointments.status', ['Scheduled', 'Waiting', 'Ongoing']);
             })
             ->count();

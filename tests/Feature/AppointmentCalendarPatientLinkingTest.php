@@ -135,10 +135,9 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
 
         Livewire::test(AppointmentCalendar::class)
             ->call('viewAppointment', $appointmentId)
-            ->assertSee('Patient record not linked yet')
-            ->assertSee('Patient Record Review')
-            ->assertSee('Link to Existing Patient')
-            ->assertSee('Create New Patient');
+            ->assertSee('No patient record linked yet')
+            ->assertSee('Link to Selected Patient')
+            ->assertSee('Create New Patient Record');
     }
 
     public function test_pending_appointment_can_be_approved_without_linked_patient(): void
@@ -279,8 +278,8 @@ class AppointmentCalendarPatientLinkingTest extends TestCase
 
         Livewire::test(AppointmentCalendar::class)
             ->call('viewAppointment', $appointmentId)
-            ->assertSee('Patient record not linked yet')
-            ->assertSee('chart and admission actions stay blocked');
+            ->assertSee('No patient record linked yet')
+            ->assertSee('Link an existing patient record');
     }
 
     public function test_staff_can_link_scheduled_appointment_to_existing_patient(): void

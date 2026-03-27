@@ -1,105 +1,138 @@
 @if ($activeTab === 'calendar')
     @if ($isBlockMode)
         <div
-            class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
-            Block mode is active. Select an available slot to block. Only future blocked slots can be unblocked.
+            class="mb-4 flex items-center gap-3 border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800"
+            style="font-family:'Montserrat',sans-serif;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="shrink-0">
+                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            Block mode active — select an available slot to block it. Only future blocked slots can be unblocked.
         </div>
     @endif
-    <div class="relative">
+
+    <div class="relative" style="font-family:'Montserrat',sans-serif;">
+
+        {{-- ── Day/Chair header ── --}}
         <div
-            class="grid grid-cols-[100px_repeat(7,minmax(0,1fr))] lg:grid-cols-[120px_repeat(7,minmax(0,1fr))] border-t border-gray-200 sticky top-14 w-full bg-white z-20 shadow-sm">
-            <div class="p-3.5 flex items-center justify-center text-sm font-medium text-gray-900">
-            </div>
+            class="grid grid-cols-[90px_repeat(7,minmax(0,1fr))] lg:grid-cols-[110px_repeat(7,minmax(0,1fr))] sticky top-14 z-20 w-full border-b border-[#e4eff8] bg-white shadow-[0_2px_8px_0_rgba(0,134,218,0.06)]">
+            {{-- Time label spacer --}}
+            <div class="border-r border-[#e4eff8]"></div>
+
             @foreach ($weekDates as $date)
                 <div wire:key="calendar-day-header-{{ $date->format('Y-m-d') }}"
-                    class="p-3.5 flex flex-col items-center justify-center border-r border-b border-gray-200  {{ $date->isToday() ? 'bg-[#0086da] text-white' : '' }}">
-                    <span
-                        class="text-sm lg:text-base font-medium {{ $date->isToday() ? ' text-white' : 'text-gray-500' }} mb-1">{{ $date->format('D') }}</span>
-                    <span class="text-base lg:text-lg font-medium ">
-                        {{ $date->format('M j') }}
-                    </span>
+                    class="border-r border-[#e4eff8] {{ $date->isToday() ? 'bg-[#0086da]' : 'bg-white' }}">
+                    {{-- Date row --}}
+                    <div class="flex flex-col items-center justify-center px-1 py-2.5">
+                        <span
+                            class="text-[10px] font-bold uppercase tracking-[.14em] {{ $date->isToday() ? 'text-white/80' : 'text-[#7a9db5]' }}">
+                            {{ $date->format('D') }}
+                        </span>
+                        <span
+                            class="mt-0.5 text-sm font-extrabold {{ $date->isToday() ? 'text-white' : 'text-[#1a2e3b]' }}">
+                            {{ $date->format('M j') }}
+                        </span>
+                    </div>
+                    {{-- Chair sub-headers --}}
+                    <div
+                        class="grid grid-cols-2 border-t {{ $date->isToday() ? 'border-white/20' : 'border-[#e4eff8]' }}">
+                        <div
+                            class="px-1 py-1 text-center text-[9px] font-bold uppercase tracking-[.12em] {{ $date->isToday() ? 'text-white/80' : 'text-[#7a9db5]' }}">
+                            C1
+                        </div>
+                        <div
+                            class="border-l px-1 py-1 text-center text-[9px] font-bold uppercase tracking-[.12em] {{ $date->isToday() ? 'border-white/20 text-white/80' : 'border-[#e4eff8] text-[#7a9db5]' }}">
+                            C2
+                        </div>
+                    </div>
                 </div>
             @endforeach
         </div>
 
-        {{-- Mobile view --}}
-        <div class="sm:hidden space-y-4 pt-4">
+        {{-- ── Mobile view ── --}}
+        <div class="sm:hidden space-y-3 pt-3">
             @foreach ($weekDates as $date)
                 @php
                     $mobileDayAppointments = $this->getAppointmentsForDay($date)->sortBy('start_time');
                 @endphp
                 <div wire:key="calendar-mobile-day-{{ $date->format('Y-m-d') }}"
-                    class="rounded-xl border border-gray-200 bg-white p-4">
-                    <div class="flex items-center justify-between mb-3">
+                    class="border border-[#e4eff8] bg-white">
+                    {{-- Mobile day header --}}
+                    <div
+                        class="flex items-center justify-between px-4 py-3 {{ $date->isToday() ? 'bg-[#0086da]' : 'bg-[#f6fafd]' }} border-b border-[#e4eff8]">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            <p
+                                class="text-[10px] font-bold uppercase tracking-[.14em] {{ $date->isToday() ? 'text-white/80' : 'text-[#7a9db5]' }}">
                                 {{ $date->format('D') }}
                             </p>
-                            <p class="text-base font-bold text-gray-900">
+                            <p class="text-sm font-extrabold {{ $date->isToday() ? 'text-white' : 'text-[#1a2e3b]' }}">
                                 {{ $date->format('F j, Y') }}
                             </p>
                         </div>
                         @if ($date->isToday())
                             <span
-                                class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">Today</span>
+                                class="bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.1em] text-white">Today</span>
                         @endif
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="p-3 space-y-2">
                         @forelse ($mobileDayAppointments as $appt)
+                            @php
+                                $statusColorMobile = match($appt->status) {
+                                    'Ongoing'   => ['bg' => 'bg-amber-50',  'border' => 'border-amber-300',  'dot' => 'bg-amber-400',  'text' => 'text-amber-700'],
+                                    'Scheduled' => ['bg' => 'bg-blue-50',   'border' => 'border-blue-200',   'dot' => 'bg-[#0086da]',  'text' => 'text-[#0086da]'],
+                                    'Cancelled' => ['bg' => 'bg-red-50',    'border' => 'border-red-200',    'dot' => 'bg-red-500',    'text' => 'text-red-600'],
+                                    'Waiting'   => ['bg' => 'bg-orange-50', 'border' => 'border-orange-200', 'dot' => 'bg-orange-400', 'text' => 'text-orange-600'],
+                                    'Completed' => ['bg' => 'bg-green-50',  'border' => 'border-green-200',  'dot' => 'bg-green-500',  'text' => 'text-green-600'],
+                                    default     => ['bg' => 'bg-slate-50',  'border' => 'border-slate-200',  'dot' => 'bg-slate-400',  'text' => 'text-slate-600'],
+                                };
+                                $displayStatusMobile = $appt->status === 'Waiting' ? 'Ready' : $appt->status;
+                            @endphp
                             <button type="button" wire:key="mobile-appointment-{{ $appt->id }}"
                                 @click="modalOpen = true" wire:click="viewAppointment({{ $appt->id }})"
-                                class="w-full rounded-xl border border-blue-100 bg-blue-50 px-4 py-3.5 text-left">
-                                <div class="flex items-center justify-between gap-2">
-                                    <p class="text-base font-semibold text-gray-900 truncate">
+                                class="w-full border {{ $statusColorMobile['border'] }} {{ $statusColorMobile['bg'] }} px-3.5 py-3 text-left transition hover:brightness-95">
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <p class="text-sm font-bold text-[#1a2e3b] truncate">
                                         {{ $appt->last_name }}, {{ $appt->first_name }}
                                     </p>
-                                    <p class="text-sm font-semibold text-blue-700 whitespace-nowrap">
-                                        {{ \Carbon\Carbon::parse($appt->start_time)->format('h:i A') }}
-                                    </p>
+                                    <span class="flex items-center gap-1 shrink-0">
+                                        <span class="h-1.5 w-1.5 rounded-full {{ $statusColorMobile['dot'] }}"></span>
+                                        <span class="text-[10px] font-bold {{ $statusColorMobile['text'] }}">{{ $displayStatusMobile }}</span>
+                                    </span>
                                 </div>
-                                <p class="text-sm text-gray-700 truncate mb-1">{{ $appt->service_name }}</p>
-                                <p
-                                    class="text-sm font-semibold
-                                    @if ($appt->status == 'Ongoing') text-yellow-700
-                                    @elseif($appt->status == 'Scheduled') text-blue-700
-                                    @elseif($appt->status == 'Cancelled') text-red-700
-                                    @elseif($appt->status == 'Waiting') text-orange-700
-                                    @elseif($appt->status == 'Completed') text-green-700
-                                    @else text-gray-700 @endif">
-                                    {{ $appt->status === 'Waiting' ? 'Ready' : $appt->status }}
+                                <p class="text-xs text-[#3d5a6e] truncate">{{ $appt->service_name }}</p>
+                                <p class="mt-1 text-[10px] font-semibold text-[#7a9db5]">
+                                    {{ \Carbon\Carbon::parse($appt->start_time)->format('h:i A') }}
+                                    – {{ \Carbon\Carbon::parse($appt->end_time)->format('h:i A') }}
                                 </p>
                             </button>
                         @empty
-                            <p
-                                class="rounded-lg border border-dashed border-gray-200 px-3 py-2 text-xs text-gray-500">
+                            <p class="border border-dashed border-[#d4e8f5] px-3 py-3 text-xs text-[#7a9db5] text-center">
                                 No appointments yet.
                             </p>
                         @endforelse
                     </div>
 
-                    <div class="mt-4">
-                        <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            {{ $isBlockMode ? 'Tap a time to block or unblock' : 'Tap a time to book' }}
+                    <div class="px-3 pb-3">
+                        <p class="mb-2 text-[10px] font-bold uppercase tracking-[.12em] text-[#7a9db5]">
+                            {{ $isBlockMode ? 'Tap a slot to block / unblock' : 'Tap a slot to book' }}
                         </p>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-3 gap-1.5">
                             @foreach ($timeSlots as $time)
                                 @php
-                                    $mobileBlockedSlot = $this->getBlockedSlotAt($date->toDateString(), $time);
-                                    $mobileIsBlocked = $mobileBlockedSlot !== null;
-                                    $mobileCanUnblock = $this->canUnblockSlot($mobileBlockedSlot);
-                                    $mobileIsOccupied = $this->isSlotOccupied($date->toDateString(), $time);
-                                    $mobileHasAppointments = $this->hasAppointmentsInSlot(
-                                        $date->toDateString(),
-                                        $time,
-                                    );
+                                    $mobileBlockedSlot  = $this->getBlockedSlotAt($date->toDateString(), $time);
+                                    $mobileIsBlocked    = $mobileBlockedSlot !== null;
+                                    $mobileCanUnblock   = $this->canUnblockSlot($mobileBlockedSlot);
+                                    $mobileIsOccupied   = $this->isSlotOccupied($date->toDateString(), $time);
+                                    $mobileHasAppointments = $this->hasAppointmentsInSlot($date->toDateString(), $time);
                                 @endphp
                                 <button type="button"
                                     wire:key="mobile-slot-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $time) }}"
-                                        @if ($isBlockMode) @if ($mobileIsBlocked && $mobileCanUnblock)
-                                            @click="confirm('Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($mobileBlockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($mobileBlockedSlot->end_time)->format('h:i A') }}?') && $wire.unblockSlot({{ $mobileBlockedSlot->id }})"
-                                        @elseif(!$mobileHasAppointments && !$mobileIsBlocked)
-                                            @click="confirm('Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?') && $wire.blockSlot('{{ $date->toDateString() }}', '{{ $time }}')" @endif
+                                    @if ($isBlockMode) @if ($mobileIsBlocked && $mobileCanUnblock)
+                                        @click="confirm('Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($mobileBlockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($mobileBlockedSlot->end_time)->format('h:i A') }}?') && $wire.unblockSlot({{ $mobileBlockedSlot->id }})"
+                                    @elseif(!$mobileHasAppointments && !$mobileIsBlocked)
+                                        @click="confirm('Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?') && $wire.blockSlot('{{ $date->toDateString() }}', '{{ $time }}')" @endif
                                     @elseif($mobileIsBlocked)
                                         @click.prevent="showBlocked(
                                             @js($date->toDateString()),
@@ -109,21 +142,22 @@
                                         )"
                                     @elseif(!$mobileIsOccupied) @click="modalOpen = true"
                                         wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')"
-                                        @endif
-                                        class="rounded-md border px-2 py-1.5 text-xs font-medium transition
-                                        {{ $mobileIsBlocked ? ($isBlockMode && !$mobileCanUnblock ? 'cursor-not-allowed border-gray-300 bg-gray-200 text-gray-600' : 'border-red-200 bg-red-100 text-red-700 hover:bg-red-200') : ($mobileIsOccupied ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400' : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50') }}">
-                                        @if ($mobileIsBlocked)
-                                            {{ $isBlockMode ? ($mobileCanUnblock ? 'Unblock' : 'Locked') : 'Blocked' }}
-                                        @elseif($isBlockMode && !$mobileHasAppointments)
-                                            Block
-                                        @else
-                                            {{ \Carbon\Carbon::parse($time)->format('h:i A') }}
-                                        @endif
-                                        @if ($mobileIsBlocked && !$isBlockMode)
-                                            <span class="mt-1 block truncate text-[10px] font-medium normal-case">
-                                                By: {{ $this->blockedByLabel($mobileBlockedSlot) }}
-                                            </span>
-                                        @endif
+                                    @endif
+                                    class="px-1 py-1.5 text-[10px] font-semibold transition
+                                        {{ $mobileIsBlocked
+                                            ? ($isBlockMode && !$mobileCanUnblock
+                                                ? 'cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400'
+                                                : 'border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100')
+                                            : ($mobileIsOccupied
+                                                ? 'cursor-not-allowed border border-[#e4eff8] bg-[#f6fafd] text-[#7a9db5]'
+                                                : 'border border-[#d4e8f5] bg-white text-[#3d5a6e] hover:border-[#0086da] hover:bg-blue-50') }}">
+                                    @if ($mobileIsBlocked)
+                                        {{ $isBlockMode ? ($mobileCanUnblock ? 'Unblock' : 'Locked') : 'Blocked' }}
+                                    @elseif($isBlockMode && !$mobileHasAppointments)
+                                        Block
+                                    @else
+                                        {{ \Carbon\Carbon::parse($time)->format('h:i A') }}
+                                    @endif
                                 </button>
                             @endforeach
                         </div>
@@ -132,185 +166,291 @@
             @endforeach
         </div>
 
-        {{-- Desktop grid --}}
+        {{-- ── Desktop grid ── --}}
         <div
-            class="hidden sm:grid grid-cols-[100px_repeat(7,minmax(0,1fr))] lg:grid-cols-[120px_repeat(7,minmax(0,1fr))] w-full relative pt-4 z-10">
+            class="hidden sm:grid grid-cols-[90px_repeat(7,minmax(0,1fr))] lg:grid-cols-[110px_repeat(7,minmax(0,1fr))] w-full relative pt-4 z-10">
+
             @foreach ($timeSlots as $time)
+                {{-- Time label cell --}}
                 <div wire:key="calendar-time-label-{{ str_replace(':', '-', $time) }}"
-                    class="relative h-32 border-t border-r border-gray-200">
+                    class="relative h-28 border-t border-r border-gray-200 bg-white">
                     <span
-                        class="absolute top-0 left-2 -mt-2.5 bg-white px-1 text-xs lg:text-sm font-semibold text-gray-500">
+                        class="absolute top-0 left-0 right-0 -mt-2.5 px-2 text-right text-[10px] lg:text-xs font-semibold text-[#7a9db5]">
                         {{ Carbon\Carbon::parse($time)->format('h:i A') }}
                     </span>
                     @if ($loop->last)
                         <span
-                            class="absolute bottom-0 left-2 translate-y-1/2 bg-white px-1 text-xs lg:text-sm font-semibold text-gray-500">
+                            class="absolute bottom-0 left-0 right-0 translate-y-1/2 px-2 text-right text-[10px] lg:text-xs font-semibold text-[#7a9db5]">
                             {{ Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}
                         </span>
                     @endif
                 </div>
+
                 @foreach ($weekDates as $date)
                     @php
-                        $blockedSlot = $this->getBlockedSlotAt($date->toDateString(), $time);
-                        $isBlocked = $blockedSlot !== null;
-                        $canUnblock = $this->canUnblockSlot($blockedSlot);
-                        $isOccupied = $this->isSlotOccupied($date->toDateString(), $time);
-                        $hasAppointments = $this->hasAppointmentsInSlot($date->toDateString(), $time);
+                        $slotDateString = $date->toDateString();
                     @endphp
 
                     <div wire:key="calendar-slot-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $time) }}"
-                        @if ($isBlockMode) @if ($isBlocked && $canUnblock)
-                                @click="confirm('Unblock {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($blockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($blockedSlot->end_time)->format('h:i A') }}?') && $wire.unblockSlot({{ $blockedSlot->id }})"
-                            @elseif(!$hasAppointments && !$isBlocked)
-                                @click="confirm('Block {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?') && $wire.blockSlot('{{ $date->toDateString() }}', '{{ $time }}')" @endif
-                        @elseif($isBlocked)
-                            @click.prevent="showBlocked(
-                                @js($date->toDateString()),
-                                @js($time),
-                                @js($this->blockedByLabel($blockedSlot)),
-                                @js(trim((string) ($blockedSlot->reason ?? '')))
-                            )"
-                        @elseif(!$isOccupied) @click="modalOpen = true"
-                            wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ $time }}')"
-                            @endif
-                            class="h-32 border-t border-r border-gray-200 transition-all
-                            @if ($isBlocked && $isBlockMode && !$canUnblock) bg-gray-200 text-gray-700 cursor-not-allowed
-                            @elseif ($isBlocked) bg-red-100 text-red-800 cursor-pointer hover:bg-red-200
-                            @elseif(!$isOccupied)
-                                hover:bg-stone-100 cursor-pointer
-                            @else
-                                bg-gray-100 @endif
-                            ">
-                        @if ($isBlocked)
-                            <div class="h-full w-full px-3 py-2">
-                                <p class="text-[10px] md:text-xs font-semibold uppercase tracking-wide">
-                                    {{ $isBlockMode ? ($canUnblock ? 'Unblock' : 'Locked') : 'Blocked' }}
+                        class="relative h-28 border-t border-r border-gray-200 {{ $date->isToday() ? 'bg-[#f8fbfe]' : 'bg-white' }}">
+
+                        <div class="absolute inset-0 grid grid-cols-2">
+                            @foreach ([1, 2] as $chairId)
+                                @php
+                                    $chairBlockedSlot = $this->getBlockedSlotAt($slotDateString, $time, $chairId);
+                                    $chairIsBlocked = $this->isChairBlocked($slotDateString, $time, $chairId);
+                                    $chairCanUnblock = $this->canUnblockSlot($chairBlockedSlot);
+                                    $chairHasAppointment = $this->hasAppointmentsInChairSlot($slotDateString, $time, $chairId);
+                                    $laneIsAvailable = ! $chairIsBlocked && ! $chairHasAppointment;
+                                @endphp
+                                <button type="button"
+                                    wire:key="calendar-chair-slot-{{ $slotDateString }}-{{ str_replace(':', '-', $time) }}-{{ $chairId }}"
+                                    @if ($isBlockMode)
+                                        @if ($chairIsBlocked && $chairCanUnblock && $chairBlockedSlot)
+                                            @click="confirm('Unblock Chair {{ $chairId }} on {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($chairBlockedSlot->start_time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($chairBlockedSlot->end_time)->format('h:i A') }}?') && $wire.unblockSlot({{ $chairBlockedSlot->id }})"
+                                        @elseif(!$chairHasAppointment && !$chairIsBlocked)
+                                            @click="confirm('Block Chair {{ $chairId }} on {{ $date->format('M d, Y') }} {{ \Carbon\Carbon::parse($time)->format('h:i A') }} to {{ \Carbon\Carbon::parse($time)->addHour()->format('h:i A') }}?') && $wire.blockSlot('{{ $slotDateString }}', '{{ $time }}', {{ $chairId }})"
+                                        @endif
+                                    @elseif($chairIsBlocked && $chairBlockedSlot)
+                                        @click.prevent="showBlocked(
+                                            @js($slotDateString . ' Chair ' . $chairId),
+                                            @js($time),
+                                            @js($this->blockedByLabel($chairBlockedSlot)),
+                                            @js(trim((string) ($chairBlockedSlot->reason ?? '')))
+                                        )"
+                                    @elseif($laneIsAvailable)
+                                        @click="modalOpen = true"
+                                        wire:click="openAppointmentModal('{{ $slotDateString }}', '{{ $time }}')"
+                                    @endif
+                                    class="group/lane relative h-full w-full px-1 py-1 text-left transition
+                                        {{ $chairId === 1 ? 'border-r border-gray-200' : '' }}
+                                        @if ($chairIsBlocked && $isBlockMode && !$chairCanUnblock) cursor-not-allowed bg-gray-100
+                                        @elseif ($chairIsBlocked) cursor-pointer bg-rose-50 hover:bg-rose-100
+                                        @elseif ($laneIsAvailable) cursor-pointer hover:bg-[#f0f8ff]
+                                        @else cursor-default @endif">
+                                    @if ($chairIsBlocked && $chairBlockedSlot)
+                                        <div class="pointer-events-none flex h-full flex-col justify-center px-1 py-1">
+                                            <p class="text-[9px] font-bold uppercase tracking-[.1em] text-rose-600">
+                                                {{ $isBlockMode ? ($chairCanUnblock ? 'Unblock' : 'Locked') : 'Blocked' }}
+                                            </p>
+                                            <p class="mt-0.5 text-[8px] text-rose-500">Chair {{ $chairId }}</p>
+                                            @if (!empty($chairBlockedSlot->reason))
+                                                <p class="hidden lg:block mt-0.5 text-[9px] text-rose-500 truncate">
+                                                    {{ $chairBlockedSlot->reason }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @elseif (!$chairHasAppointment)
+                                        <div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover/lane:opacity-100">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                                fill="none" stroke="#0086da" stroke-width="2.5" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                                            </svg>
+                                        </div>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+
+                        {{-- Blocked overlay --}}
+                        @if (false && $isBlocked)
+                            <div class="pointer-events-none absolute inset-0 flex flex-col justify-center px-2 py-1.5">
+                                <p class="text-[9px] lg:text-[10px] font-bold uppercase tracking-[.1em] text-rose-600">
+                                    {{ $isBlockMode ? ($canUnblock ? '— Unblock —' : 'Locked') : 'Blocked' }}
                                 </p>
                                 @if (!empty($blockedSlot->reason))
-                                    <p class="hidden md:block text-[10px] mt-1 truncate">
-                                        {{ $blockedSlot->reason }}</p>
+                                    <p class="hidden lg:block mt-0.5 text-[9px] text-rose-500 truncate">
+                                        {{ $blockedSlot->reason }}
+                                    </p>
                                 @endif
-                                <p class="hidden md:block text-[10px] mt-1 truncate">
-                                    By: {{ $this->blockedByLabel($blockedSlot) }}
+                                <p class="hidden lg:block mt-0.5 text-[9px] text-rose-400 truncate">
+                                    {{ $this->blockedByLabel($blockedSlot) }}
                                 </p>
+                            </div>
+                        @endif
+
+                        {{-- Hover "+" hint for empty slots --}}
+                        @if (false && !$isBlocked && !$isOccupied)
+                            <div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="#0086da" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
                             </div>
                         @endif
                     </div>
                 @endforeach
             @endforeach
 
-            {{-- Appointment overlays --}}
+            {{-- ── Appointment overlay layer ── --}}
             <div
-                class="absolute inset-x-0 bottom-0 top-4 grid grid-cols-[100px_repeat(7,minmax(0,1fr))] lg:grid-cols-[120px_repeat(7,minmax(0,1fr))] w-full pointer-events-none">
+                class="absolute inset-x-0 bottom-0 top-4 grid grid-cols-[90px_repeat(7,minmax(0,1fr))] lg:grid-cols-[110px_repeat(7,minmax(0,1fr))] w-full pointer-events-none">
                 <div class="h-full"></div>
 
                 @foreach ($weekDates as $date)
                     <div wire:key="calendar-overlay-day-{{ $date->format('Y-m-d') }}"
-                        class="relative h-full border-r border-gray-200">
+                        class="relative h-full border-r border-transparent">
                         @php
-                            $dayAppointments = $this->getAppointmentsForDay($date);
-                            $dayStartHour = 9;
-                            $slotHeightRem = 8;
-                            $groupedByTime = $dayAppointments->groupBy('start_time');
+                            $dayAppointments = $this->getAppointmentsForDay($date)->sortBy([
+                                ['start_time', 'asc'],
+                                ['duration_in_minutes', 'desc'],
+                                ['id', 'asc'],
+                            ]);
+                            $dayStartHour        = 9;
+                            $slotHeightRem       = 7; // matches h-28 (7rem)
+                            $appointmentClusters = [];
+                            $currentCluster      = null;
+
+                            foreach ($dayAppointments as $appointment) {
+                                $appointmentStart = Carbon\Carbon::parse($appointment->start_time)->seconds(0);
+                                $appointmentEnd   = Carbon\Carbon::parse($appointment->end_time)->seconds(0);
+
+                                if ($currentCluster === null || $appointmentStart->greaterThanOrEqualTo($currentCluster['end'])) {
+                                    if ($currentCluster !== null) {
+                                        $appointmentClusters[] = $currentCluster;
+                                    }
+                                    $currentCluster = [
+                                        'items' => [$appointment],
+                                        'end'   => $appointmentEnd,
+                                    ];
+                                } else {
+                                    $currentCluster['items'][] = $appointment;
+                                    if ($appointmentEnd->greaterThan($currentCluster['end'])) {
+                                        $currentCluster['end'] = $appointmentEnd;
+                                    }
+                                }
+                            }
+
+                            if ($currentCluster !== null) {
+                                $appointmentClusters[] = $currentCluster;
+                            }
+
+                            $positionedAppointments = collect();
+
+                            foreach ($appointmentClusters as $cluster) {
+                                $laneEnds            = [];
+                                $clusterAppointments = [];
+
+                                foreach ($cluster['items'] as $appointment) {
+                                    $appointmentStart = Carbon\Carbon::parse($appointment->start_time)->seconds(0);
+                                    $appointmentEnd   = Carbon\Carbon::parse($appointment->end_time)->seconds(0);
+                                    $laneIndex        = null;
+
+                                    foreach ($laneEnds as $index => $laneEnd) {
+                                        if ($appointmentStart->greaterThanOrEqualTo($laneEnd)) {
+                                            $laneIndex = $index;
+                                            break;
+                                        }
+                                    }
+
+                                    if ($laneIndex === null) {
+                                        $laneIndex = count($laneEnds);
+                                    }
+
+                                    $laneEnds[$laneIndex]    = $appointmentEnd;
+                                    $clusterAppointments[]   = [
+                                        'appointment' => $appointment,
+                                        'lane_index'  => $laneIndex,
+                                    ];
+                                }
+
+                                $laneCount = max(1, count($laneEnds));
+
+                                foreach ($clusterAppointments as $clusterAppointment) {
+                                    $clusterAppointment['lane_count'] = $laneCount;
+                                    $positionedAppointments->push((object) $clusterAppointment);
+                                }
+                            }
                         @endphp
 
-                        @foreach ($groupedByTime as $timeKey => $appointmentsAtTime)
+                        @foreach ($positionedAppointments as $positionedAppointment)
                             @php
-                                $firstAppt = $appointmentsAtTime->first();
-                                $startCarbon = Carbon\Carbon::parse($firstAppt->start_time);
-                                $topInMinutes =
-                                    ($startCarbon->hour - $dayStartHour) * 60 + $startCarbon->minute;
-                                $slotTopIndex = intdiv(max(0, $topInMinutes), 60);
-                                $slotSpan = max(1, (int) ceil($firstAppt->duration_in_minutes / 60));
-                                $topPositionRem = $slotTopIndex * $slotHeightRem;
-                                $heightInRem = $slotSpan * $slotHeightRem;
-                                $countAtTime = $appointmentsAtTime->count();
+                                $appt           = $positionedAppointment->appointment;
+                                $startCarbon    = Carbon\Carbon::parse($appt->start_time);
+                                $topInMinutes   = ($startCarbon->hour - $dayStartHour) * 60 + $startCarbon->minute;
+                                $topPositionRem = (max(0, $topInMinutes) / 60) * $slotHeightRem;
+                                $heightInRem    = max(1.75, ((int) $appt->duration_in_minutes / 60) * $slotHeightRem - 0.25);
+                                $laneIndex      = (int) $positionedAppointment->lane_index;
+                                $laneCount      = max(1, (int) $positionedAppointment->lane_count);
+                                $renderedLaneCount = max(2, $laneCount);
+                                $laneGapRem     = 0.2;
+                                $cardWidthStyle = $renderedLaneCount > 1
+                                    ? "calc((100% - " . (($renderedLaneCount - 1) * $laneGapRem) . "rem) / {$renderedLaneCount})"
+                                    : '100%';
+                                $cardLeftStyle  = $renderedLaneCount > 1
+                                    ? "calc({$laneIndex} * ({$cardWidthStyle} + {$laneGapRem}rem))"
+                                    : '0px';
+
+                                // Status-based card colors
+                                $cardColors = match($appt->status) {
+                                    'Ongoing'   => ['bg' => '#fffbeb', 'border' => '#fbbf24', 'accent' => '#d97706', 'label' => '#92400e', 'name' => '#1a2e3b'],
+                                    'Cancelled' => ['bg' => '#fff1f2', 'border' => '#fca5a5', 'accent' => '#ef4444', 'label' => '#991b1b', 'name' => '#1a2e3b'],
+                                    'Waiting'   => ['bg' => '#fff7ed', 'border' => '#fdba74', 'accent' => '#f97316', 'label' => '#9a3412', 'name' => '#1a2e3b'],
+                                    'Completed' => ['bg' => '#f0fdf4', 'border' => '#86efac', 'accent' => '#22c55e', 'label' => '#166534', 'name' => '#1a2e3b'],
+                                    default     => ['bg' => '#eff7ff', 'border' => '#93c5fd', 'accent' => '#0086da', 'label' => '#1e40af', 'name' => '#1a2e3b'],
+                                };
+                                $displayStatus = $appt->status === 'Waiting' ? 'Ready' : $appt->status;
                             @endphp
 
-                            <div wire:key="calendar-group-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $timeKey) }}"
-                                class="absolute w-full pointer-events-auto"
-                                style="top: {{ $topPositionRem }}rem; height: {{ $heightInRem }}rem; z-index: 10;">
-                                <div class="h-full px-0.5 lg:px-1">
+                            <div wire:key="calendar-appt-overlay-{{ $date->format('Y-m-d') }}-{{ $appt->id }}"
+                                class="calendar-overlap-card absolute pointer-events-auto"
+                                data-lane-index="{{ $laneIndex }}"
+                                data-lane-count="{{ $renderedLaneCount }}"
+                                style="top: {{ $topPositionRem }}rem; height: {{ $heightInRem }}rem; left: {{ $cardLeftStyle }}; width: {{ $cardWidthStyle }}; z-index: 10; padding: 0 2px;">
 
-                                    @if ($countAtTime === 1)
-                                        @php
-                                            $canAddSecondAtThisTime = !$this->isSlotBlocked(
-                                                $date->toDateString(),
-                                                $timeKey,
-                                            );
-                                        @endphp
-                                        <div class="h-full flex flex-col gap-1 pointer-events-auto">
-                                            @if ($canAddSecondAtThisTime)
-                                                <button type="button"
-                                                    wire:key="add-second-appointment-{{ $date->format('Y-m-d') }}-{{ str_replace(':', '-', $timeKey) }}"
-                                                    @click="modalOpen = true"
-                                                    wire:click="openAppointmentModal('{{ $date->toDateString() }}', '{{ substr($timeKey, 0, 5) }}')"
-                                                    class="w-full rounded-md border border-emerald-700 bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700 text-center cursor-pointer shadow-sm">
-                                                    + Add Patient
-                                                </button>
-                                            @endif
+                                <button type="button" wire:key="appointment-stack-{{ $appt->id }}"
+                                    @click="modalOpen = true"
+                                    wire:click="viewAppointment({{ $appt->id }})"
+                                    class="w-full h-full text-left overflow-hidden transition-all hover:brightness-95 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#0086da]"
+                                    style="
+                                        background-color: {{ $cardColors['bg'] }};
+                                        border: 1.5px solid {{ $cardColors['border'] }};
+                                        border-left: 3px solid {{ $cardColors['accent'] }};
+                                        border-radius: 4px;
+                                        box-shadow: 0 1px 3px 0 rgba(0,0,0,.06);
+                                    ">
+                                    <div class="flex flex-col h-full p-1.5 min-h-0">
+                                        {{-- Chair label --}}
+                                        <div class="flex items-center gap-1 mb-0.5 shrink-0">
+                                            <span class="text-[8px] lg:text-[9px] font-black uppercase tracking-[.1em]"
+                                                style="color: {{ $cardColors['accent'] }}">
+                                                C{{ $laneIndex + 1 }}
+                                            </span>
+                                            <span class="h-px flex-1" style="background: {{ $cardColors['border'] }}"></span>
+                                        </div>
 
-                                            <div wire:key="appointment-{{ $firstAppt->id }}"
-                                                @click="modalOpen = true"
-                                                wire:click="viewAppointment({{ $firstAppt->id }})"
-                                                class="rounded-lg p-2.5 lg:p-3 border border-blue-600 bg-blue-100 flex-1 min-h-0 overflow-hidden cursor-pointer flex flex-col shadow-sm hover:bg-blue-200">
-                                                <p
-                                                    class="text-xs lg:text-sm font-semibold text-slate-900 mb-1 leading-tight truncate">
-                                                    {{ $firstAppt->last_name }},
-                                                    {{ $firstAppt->first_name }}
-                                                </p>
-                                                <p
-                                                    class="text-xs font-medium text-slate-700 leading-tight mb-1 truncate">
-                                                    {{ $firstAppt->service_name }}
-                                                </p>
-                                                <p
-                                                    class="text-xs font-normal text-blue-800 mb-1 whitespace-nowrap">
-                                                    {{ $firstAppt->start_time }} -
-                                                    {{ $firstAppt->end_time }}
-                                                </p>
-                                                <p
-                                                    class="text-xs font-normal truncate
-                                                @if ($firstAppt->status == 'Ongoing') text-yellow-600
-                                                @elseif($firstAppt->status == 'Scheduled') text-blue-600
-                                                @elseif($firstAppt->status == 'Cancelled') text-red-600
-                                                @elseif($firstAppt->status == 'Waiting') text-orange-600
-                                                @elseif($firstAppt->status == 'Completed') text-green-600
-                                                @else text-gray-600 @endif">
-                                                    {{ $firstAppt->status === 'Waiting' ? 'Ready' : $firstAppt->status }}
-                                                </p>
+                                        {{-- Patient name --}}
+                                        <p class="text-[10px] lg:text-[11px] font-extrabold leading-tight truncate"
+                                            style="color: {{ $cardColors['name'] }}">
+                                            {{ $appt->last_name }},
+                                            {{ $appt->first_name }}
+                                        </p>
+
+                                        {{-- Service name --}}
+                                        <p class="mt-0.5 text-[9px] lg:text-[10px] leading-tight truncate"
+                                            style="color: {{ $cardColors['accent'] }}; opacity: 0.85">
+                                            {{ $appt->service_name }}
+                                        </p>
+
+                                        {{-- Time & status at bottom --}}
+                                        <div class="mt-auto pt-1 shrink-0">
+                                            <p class="text-[9px] font-semibold truncate"
+                                                style="color: {{ $cardColors['accent'] }}">
+                                                {{ $startCarbon->format('g:i A') }}–{{ Carbon\Carbon::parse($appt->end_time)->format('g:i A') }}
+                                            </p>
+                                            <div class="flex items-center gap-1 mt-0.5">
+                                                <span class="h-1.5 w-1.5 rounded-full shrink-0"
+                                                    style="background: {{ $cardColors['accent'] }}"></span>
+                                                <span class="text-[9px] font-bold truncate"
+                                                    style="color: {{ $cardColors['label'] }}">
+                                                    {{ $displayStatus }}
+                                                </span>
                                             </div>
                                         </div>
-                                    @else
-                                        <div class="h-full flex flex-col gap-1 pointer-events-auto">
-                                            @foreach ($appointmentsAtTime->take(2) as $apptItem)
-                                                <button type="button"
-                                                    wire:key="appointment-stack-{{ $apptItem->id }}"
-                                                    @click="modalOpen = true"
-                                                    wire:click="viewAppointment({{ $apptItem->id }})"
-                                                    class="flex-1 min-h-0 rounded-lg border border-blue-600 bg-blue-100 px-2 py-1.5 text-left hover:bg-blue-200 shadow-sm">
-                                                    <p class="text-xs font-semibold text-slate-900 truncate">
-                                                        {{ $apptItem->last_name }},
-                                                        {{ $apptItem->first_name }}
-                                                    </p>
-                                                    <p class="text-[11px] text-slate-700 truncate">
-                                                        {{ $apptItem->service_name }}
-                                                    </p>
-                                                    <p class="text-[11px] text-blue-800 truncate">
-                                                        {{ $apptItem->start_time }} -
-                                                        {{ $apptItem->end_time }}
-                                                    </p>
-                                                </button>
-                                            @endforeach
-
-                                            @if ($countAtTime > 2)
-                                                <div
-                                                    class="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-[11px] font-semibold text-gray-600">
-                                                    +{{ $countAtTime - 2 }} more
-                                                </div>
-                                            @endif
-                                        </div>
-                                    @endif
-                                </div>
+                                    </div>
+                                </button>
                             </div>
                         @endforeach
                     </div>

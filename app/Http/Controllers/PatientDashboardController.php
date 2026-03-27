@@ -528,11 +528,9 @@ class PatientDashboardController extends Controller
         }
 
         if ($this->blockedSlotsEnabled()) {
-            $isBlocked = DB::table('blocked_slots')
-                ->whereDate('date', $slotStart->toDateString())
-                ->where('start_time', '<', $slotEnd->format('H:i:s'))
-                ->where('end_time', '>', $slotStart->format('H:i:s'))
-                ->exists();
+            $blockedCapacity = app(\App\Services\BlockedSlotService::class)
+                ->blockedCapacityForRange($slotStart, $slotEnd, self::SLOT_CAPACITY);
+            $isBlocked = $blockedCapacity >= self::SLOT_CAPACITY;
 
             if ($isBlocked) {
                 return 'This time slot is unavailable. Please choose another time.';
@@ -545,7 +543,9 @@ class PatientDashboardController extends Controller
             ->whereIn('status', self::APPROVED_SLOT_STATUSES)
             ->count();
 
-        if ($activeSlotBookings >= self::SLOT_CAPACITY) {
+        $remainingCapacity = max(0, self::SLOT_CAPACITY - ($blockedCapacity ?? 0));
+
+        if ($activeSlotBookings >= $remainingCapacity) {
             return 'This time slot is already full. Please choose another time.';
         }
 
@@ -565,7 +565,8 @@ class PatientDashboardController extends Controller
     protected function generateSlots(string $dateString, ?int $ignoreAppointmentId = null): array
     {
         $startTime = Carbon::parse($dateString.' 09:00:00');
-        $endTime = Carbon::parse($dateString.' 20:00:00');
+        $endTime = Carbon::parse($dateString.' 18:00:00');
+        $latestStartTime = $endTime->copy()->subHour();
         $duration = 60;
         $blockedSlots = collect();
 
@@ -596,7 +597,7 @@ class PatientDashboardController extends Controller
 
         $slots = [];
 
-        while ($startTime->lte($endTime)) {
+        while ($startTime->lte($latestStartTime)) {
             $slotTime = $startTime->format('H:i:00');
             $currentCount = $bookedCounts[$slotTime] ?? 0;
             $currentRequests = $requestCounts[$slotTime] ?? 0;
@@ -606,7 +607,8 @@ class PatientDashboardController extends Controller
             $slots[] = [
                 'time' => $startTime->format('h:i A'),
                 'value' => $slotTime,
-                'is_full' => $currentCount >= self::SLOT_CAPACITY || $currentRequests >= self::REQUEST_SLOT_CAP,
+                'is_full' => ($currentCount >= max(0, self::SLOT_CAPACITY - $this->blockedCapacityBySlotCollection($slotDateTime, $slotEndDateTime, $blockedSlots)))
+                    || $currentRequests >= self::REQUEST_SLOT_CAP,
                 'is_past' => $slotDateTime->lt(now()),
                 'is_blocked' => $this->isBlockedBySlotCollection($slotDateTime, $slotEndDateTime, $blockedSlots),
             ];
@@ -638,20 +640,17 @@ class PatientDashboardController extends Controller
 
     protected function isBlockedBySlotCollection(Carbon $slotStart, Carbon $slotEnd, $blockedSlots): bool
     {
-        if (! $this->blockedSlotsEnabled() || $blockedSlots->isEmpty()) {
-            return false;
+        return $this->blockedCapacityBySlotCollection($slotStart, $slotEnd, $blockedSlots) >= self::SLOT_CAPACITY;
+    }
+
+    protected function blockedCapacityBySlotCollection(Carbon $slotStart, Carbon $slotEnd, $blockedSlots): int
+    {
+        if (! $this->blockedSlotsEnabled() || collect($blockedSlots)->isEmpty()) {
+            return 0;
         }
 
-        foreach ($blockedSlots as $blockedSlot) {
-            $blockedStart = Carbon::parse($slotStart->toDateString().' '.(string) $blockedSlot->start_time);
-            $blockedEnd = Carbon::parse($slotStart->toDateString().' '.(string) $blockedSlot->end_time);
-
-            if ($blockedStart->lt($slotEnd) && $blockedEnd->gt($slotStart)) {
-                return true;
-            }
-        }
-
-        return false;
+        return app(\App\Services\BlockedSlotService::class)
+            ->blockedCapacityForRangeFromCollection($slotStart, $slotEnd, $blockedSlots, self::SLOT_CAPACITY);
     }
 
     protected function isValidSelectedDate(string $date): bool

@@ -56,6 +56,12 @@ class AppointmentCalendar extends Component
 
     public $blockedSlotLookup = [];
 
+    public $blockedChairMap = [];
+
+    public $blockedChairCounts = [];
+
+    public $occupiedChairSlotMap = [];
+
     protected array $blockedByNameCache = [];
 
     public $showAppointmentModal = false;
@@ -154,6 +160,8 @@ class AppointmentCalendar extends Component
 
     public $blockReason = '';
 
+    public $blockChairId = null;
+
     protected $rules = [
         'firstName' => ["required", 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
         'lastName' => ["required", 'string', 'max:100', "regex:/^[\\pL\\pM\\s'\\-]+$/u"],
@@ -229,7 +237,7 @@ class AppointmentCalendar extends Component
     public function generateTimeSlots()
     {
         $this->timeSlots = [];
-        for ($hour = 9; $hour <= 20; $hour++) {
+        for ($hour = 9; $hour <= 17; $hour++) {
             $this->timeSlots[] = sprintf('%02d:00', $hour);
         }
     }
@@ -254,9 +262,11 @@ class AppointmentCalendar extends Component
             $slotEnd = $slotStart->copy()->addMinutes($durationInMinutes);
             $approvedConflicts = $this->countApprovedConflictsForRange($slotStart, $slotEnd);
             $requestCount = $this->countActiveRequestsForExactSlot($slotStart);
+            $blockedCapacity = $this->blockedCapacityForRange($slotStart, $slotEnd);
             $isPast = $slotStart->lt(now());
-            $isBlocked = $this->hasBlockedConflict($slotStart, $slotEnd);
-            $isApprovedFull = $approvedConflicts >= self::SLOT_CAPACITY;
+            $isBlocked = $blockedCapacity >= self::SLOT_CAPACITY;
+            $effectiveCapacity = max(0, self::SLOT_CAPACITY - $blockedCapacity);
+            $isApprovedFull = $approvedConflicts >= $effectiveCapacity;
             $isRequestFull = $requestCount >= self::REQUEST_SLOT_CAP;
 
             $status = null;
@@ -319,6 +329,9 @@ class AppointmentCalendar extends Component
             $this->occupiedSlotCounts   = [];
             $this->blockedSlotMap       = [];
             $this->blockedSlotLookup    = [];
+            $this->blockedChairMap      = [];
+            $this->blockedChairCounts   = [];
+            $this->occupiedChairSlotMap = [];
             $this->blockedByNameCache   = [];
             return;
         }
@@ -425,12 +438,14 @@ class AppointmentCalendar extends Component
             'blockStartTime',
             'blockEndTime',
             'blockReason',
+            'blockChairId',
         ]);
         $this->blockingSlotId = null;
         $this->blockDate = $this->selectedDate ?: now()->toDateString();
         $this->blockStartTime = null;
         $this->blockEndTime = null;
         $this->blockReason = '';
+        $this->blockChairId = null;
     }
 
     public function openAppointmentModal($date, $time)
@@ -473,10 +488,18 @@ class AppointmentCalendar extends Component
         }
     }
 
-    public function blockSlot(string $date, string $time): void
+    public function blockSlot(string $date, string $time, ?int $chairId = null): void
     {
         if (! $this->blockedSlotsEnabled()) {
             $this->dispatch('flash-message', type: 'error', message: 'Blocked slots table is not available yet. Please run migrations.');
+
+            return;
+        }
+
+        $normalizedChairId = in_array($chairId, [1, 2], true) ? $chairId : null;
+
+        if ($normalizedChairId !== null && $this->hasAppointmentsInChairSlot($date, $time, $normalizedChairId)) {
+            $this->dispatch('flash-message', type: 'error', message: 'Cannot block a chair lane that already has an appointment.');
 
             return;
         }
@@ -485,7 +508,8 @@ class AppointmentCalendar extends Component
             $date,
             $time,
             $this->occupiedSlotCounts,
-            $this->blockedSlotMap
+            $this->blockedSlotMap,
+            $normalizedChairId
         );
 
         if (! $result['ok']) {
@@ -545,6 +569,7 @@ class AppointmentCalendar extends Component
         $this->blockStartTime  = substr((string) $slot->start_time, 0, 5);
         $this->blockEndTime    = substr((string) $slot->end_time, 0, 5);
         $this->blockReason     = (string) ($slot->reason ?? '');
+        $this->blockChairId    = isset($slot->chair_id) ? (int) $slot->chair_id : null;
         $this->showBlockModal  = true;
     }
 
@@ -577,7 +602,8 @@ class AppointmentCalendar extends Component
             $this->blockDate,
             $this->blockStartTime,
             $this->blockEndTime,
-            $this->blockReason
+            $this->blockReason,
+            $this->blockChairId
         );
 
         if (! $result['ok']) {
@@ -713,12 +739,22 @@ class AppointmentCalendar extends Component
             $proposedStart    = Carbon::parse($appointmentDate)->setTimeFromTimeString($this->selectedTime);
             $proposedEnd      = $proposedStart->copy()->addMinutes($durationMinutes);
 
-            if ($bss->hasConflict($proposedStart, $proposedEnd)) {
+            $blockedCapacity = $this->blockedCapacityForRange($proposedStart, $proposedEnd);
+
+            if ($blockedCapacity >= self::SLOT_CAPACITY) {
                 $this->addError('conflict', 'This time range includes blocked slots.');
                 return;
             }
 
-            if ($cqs->countConflicts($proposedStart, $proposedEnd, self::APPROVED_SLOT_STATUSES) >= self::SLOT_CAPACITY) {
+            $clinicClose = Carbon::parse($appointmentDate)->setTime(18, 0, 0);
+            if ($proposedEnd->gt($clinicClose)) {
+                $this->addError('conflict', 'This service cannot start at this time as it would end after clinic hours (6:00 PM).');
+                return;
+            }
+
+            $remainingCapacity = max(0, self::SLOT_CAPACITY - $blockedCapacity);
+
+            if ($cqs->countConflicts($proposedStart, $proposedEnd, self::APPROVED_SLOT_STATUSES) >= $remainingCapacity) {
                 $this->addError('conflict', 'This time slot already has two approved appointments.');
                 return;
             }
@@ -793,7 +829,7 @@ class AppointmentCalendar extends Component
             return true;
         }
 
-        return ($this->occupiedSlotCounts[$key] ?? 0) >= self::SLOT_CAPACITY;
+        return (($this->occupiedSlotCounts[$key] ?? 0) + ($this->blockedChairCounts[$key] ?? 0)) >= self::SLOT_CAPACITY;
     }
 
     public function isSlotBlocked($date, $time): bool
@@ -801,7 +837,8 @@ class AppointmentCalendar extends Component
         $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
         $key = $date.' '.$normalizedTime;
 
-        return ($this->blockedSlotMap[$key] ?? false) === true;
+        return ($this->blockedSlotMap[$key] ?? false) === true
+            || (($this->blockedChairCounts[$key] ?? 0) >= self::SLOT_CAPACITY);
     }
 
     public function hasAppointmentsInSlot(string $date, string $time): bool
@@ -812,12 +849,35 @@ class AppointmentCalendar extends Component
         return ($this->occupiedSlotCounts[$key] ?? 0) > 0;
     }
 
-    public function getBlockedSlotAt(string $date, string $time): ?object
+    public function getBlockedSlotAt(string $date, string $time, ?int $chairId = null): ?object
     {
         $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
         $key = $date.' '.$normalizedTime;
 
-        return $this->blockedSlotLookup[$key] ?? null;
+        if (in_array($chairId, [1, 2], true)) {
+            return $this->blockedSlotLookup[$key.'|chair:'.$chairId]
+                ?? $this->blockedSlotLookup[$key.'|all']
+                ?? null;
+        }
+
+        return $this->blockedSlotLookup[$key.'|all'] ?? null;
+    }
+
+    public function isChairBlocked(string $date, string $time, int $chairId): bool
+    {
+        $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
+        $key = $date.' '.$normalizedTime;
+
+        return ($this->blockedSlotMap[$key] ?? false) === true
+            || (($this->blockedChairMap[$key][$chairId] ?? false) === true);
+    }
+
+    public function hasAppointmentsInChairSlot(string $date, string $time, int $chairId): bool
+    {
+        $normalizedTime = strlen($time) >= 5 ? substr($time, 0, 5) : $time;
+        $key = $date.' '.$normalizedTime;
+
+        return ($this->occupiedChairSlotMap[$key][$chairId] ?? false) === true;
     }
 
     public function canUnblockSlot(?object $blockedSlot): bool
@@ -900,6 +960,9 @@ class AppointmentCalendar extends Component
         $slotCounts = [];
         $blockedMap = [];
         $blockedLookup = [];
+        $blockedChairMap = [];
+        $blockedChairCounts = [];
+        $occupiedChairSlotMap = [];
 
         foreach ($this->occupiedAppointments as $appointment) {
             $slotCursor = Carbon::parse($appointment->start_date.' '.$appointment->start_time)->seconds(0);
@@ -912,14 +975,93 @@ class AppointmentCalendar extends Component
             }
         }
 
+        $appointmentsByDate = $this->occupiedAppointments
+            ->groupBy('start_date')
+            ->map(fn (Collection $appointments) => $appointments->sortBy([
+                ['start_time', 'asc'],
+                ['duration_in_minutes', 'desc'],
+                ['id', 'asc'],
+            ])->values());
+
+        foreach ($appointmentsByDate as $date => $appointments) {
+            $appointmentClusters = [];
+            $currentCluster = null;
+
+            foreach ($appointments as $appointment) {
+                $appointmentStart = Carbon::parse($appointment->start_time)->seconds(0);
+                $appointmentEnd = Carbon::parse($appointment->end_time)->seconds(0);
+
+                if ($currentCluster === null || $appointmentStart->greaterThanOrEqualTo($currentCluster['end'])) {
+                    if ($currentCluster !== null) {
+                        $appointmentClusters[] = $currentCluster;
+                    }
+
+                    $currentCluster = [
+                        'items' => [$appointment],
+                        'end' => $appointmentEnd,
+                    ];
+                } else {
+                    $currentCluster['items'][] = $appointment;
+                    if ($appointmentEnd->greaterThan($currentCluster['end'])) {
+                        $currentCluster['end'] = $appointmentEnd;
+                    }
+                }
+            }
+
+            if ($currentCluster !== null) {
+                $appointmentClusters[] = $currentCluster;
+            }
+
+            foreach ($appointmentClusters as $cluster) {
+                $laneEnds = [];
+
+                foreach ($cluster['items'] as $appointment) {
+                    $appointmentStart = Carbon::parse($appointment->start_time)->seconds(0);
+                    $appointmentEnd = Carbon::parse($appointment->end_time)->seconds(0);
+                    $laneIndex = null;
+
+                    foreach ($laneEnds as $index => $laneEnd) {
+                        if ($appointmentStart->greaterThanOrEqualTo($laneEnd)) {
+                            $laneIndex = $index;
+                            break;
+                        }
+                    }
+
+                    if ($laneIndex === null) {
+                        $laneIndex = count($laneEnds);
+                    }
+
+                    $laneEnds[$laneIndex] = $appointmentEnd;
+
+                    $slotCursor = Carbon::parse($date.' '.$appointment->start_time)->seconds(0);
+                    $slotEnd = Carbon::parse($date.' '.$appointment->end_time)->seconds(0);
+                    $chairId = min(self::SLOT_CAPACITY, $laneIndex + 1);
+
+                    while ($slotCursor < $slotEnd) {
+                        $occupiedChairSlotMap[$slotCursor->format('Y-m-d H:i')][$chairId] = true;
+                        $slotCursor->addMinutes(30);
+                    }
+                }
+            }
+        }
+
         foreach ($this->blockedSlots as $slot) {
             $slotCursor = Carbon::parse($slot->date.' '.$slot->start_time)->seconds(0);
             $slotEnd = Carbon::parse($slot->date.' '.$slot->end_time)->seconds(0);
+            $chairId = isset($slot->chair_id) ? (int) $slot->chair_id : null;
+            $isChairSpecific = in_array($chairId, [1, 2], true);
 
             while ($slotCursor < $slotEnd) {
                 $key = $slotCursor->format('Y-m-d H:i');
-                $blockedMap[$key] = true;
-                $blockedLookup[$key] = $slot;
+                if (! $isChairSpecific) {
+                    $blockedMap[$key] = true;
+                    $blockedChairCounts[$key] = self::SLOT_CAPACITY;
+                    $blockedLookup[$key.'|all'] = $slot;
+                } else {
+                    $blockedChairMap[$key][$chairId] = true;
+                    $blockedChairCounts[$key] = count($blockedChairMap[$key]);
+                    $blockedLookup[$key.'|chair:'.$chairId] = $slot;
+                }
                 $slotCursor->addMinutes(30);
             }
         }
@@ -927,11 +1069,19 @@ class AppointmentCalendar extends Component
         $this->occupiedSlotCounts = $slotCounts;
         $this->blockedSlotMap = $blockedMap;
         $this->blockedSlotLookup = $blockedLookup;
+        $this->blockedChairMap = $blockedChairMap;
+        $this->blockedChairCounts = $blockedChairCounts;
+        $this->occupiedChairSlotMap = $occupiedChairSlotMap;
     }
 
     protected function hasBlockedConflict(Carbon $proposedStart, Carbon $proposedEnd): bool
     {
-        return app(BlockedSlotService::class)->hasConflict($proposedStart, $proposedEnd);
+        return $this->blockedCapacityForRange($proposedStart, $proposedEnd) >= self::SLOT_CAPACITY;
+    }
+
+    protected function blockedCapacityForRange(Carbon $proposedStart, Carbon $proposedEnd): int
+    {
+        return app(BlockedSlotService::class)->blockedCapacityForRange($proposedStart, $proposedEnd, self::SLOT_CAPACITY);
     }
 
     protected function blockedSlotsEnabled(): bool
@@ -948,14 +1098,24 @@ class AppointmentCalendar extends Component
 
     protected function countApprovedConflictsForRange(Carbon $proposedStart, Carbon $proposedEnd): int
     {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            $existingEnd = DB::raw(
+                "datetime(appointments.appointment_date, '+' || "
+                . "(CAST(substr(services.duration, 1, 2) AS INTEGER) * 3600 "
+                . "+ CAST(substr(services.duration, 4, 2) AS INTEGER) * 60 "
+                . "+ CAST(substr(services.duration, 7, 2) AS INTEGER)) || ' seconds')"
+            );
+        } else {
+            $existingEnd = DB::raw('DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)');
+        }
+
         return DB::table('appointments')
             ->join('services', 'appointments.service_id', '=', 'services.id')
             ->where('appointments.id', '!=', $this->viewingAppointmentId)
-            ->where(function ($query) use ($proposedStart, $proposedEnd) {
-                $existingStart = 'appointments.appointment_date';
-                $existingEnd = DB::raw('DATE_ADD(appointments.appointment_date, INTERVAL TIME_TO_SEC(services.duration) SECOND)');
-
-                $query->where($existingStart, '<', $proposedEnd->toDateTimeString())
+            ->where(function ($query) use ($proposedStart, $proposedEnd, $existingEnd) {
+                $query->where('appointments.appointment_date', '<', $proposedEnd->toDateTimeString())
                     ->where($existingEnd, '>', $proposedStart->toDateTimeString())
                     ->whereIn('appointments.status', self::APPROVED_SLOT_STATUSES);
             })
@@ -1182,15 +1342,25 @@ class AppointmentCalendar extends Component
         $proposedStart = Carbon::parse($this->selectedDate.' '.$this->selectedTime)->seconds(0);
         $proposedEnd = $proposedStart->copy()->addMinutes($durationInMinutes);
 
-        if ($this->hasBlockedConflict($proposedStart, $proposedEnd)) {
+        $blockedCapacity = $this->blockedCapacityForRange($proposedStart, $proposedEnd);
+
+        if ($blockedCapacity >= self::SLOT_CAPACITY) {
             $this->addError('conflict', 'This time range includes blocked slots.');
 
             return;
         }
 
-        $approvedConflicts = $this->countApprovedConflictsForRange($proposedStart, $proposedEnd);
+        $clinicClose = Carbon::parse($this->selectedDate)->setTime(18, 0, 0);
+        if ($proposedEnd->gt($clinicClose)) {
+            $this->addError('conflict', 'This service cannot start at this time as it would end after clinic hours (6:00 PM).');
 
-        if ($approvedConflicts >= self::SLOT_CAPACITY) {
+            return;
+        }
+
+        $approvedConflicts = $this->countApprovedConflictsForRange($proposedStart, $proposedEnd);
+        $remainingCapacity = max(0, self::SLOT_CAPACITY - $blockedCapacity);
+
+        if ($approvedConflicts >= $remainingCapacity) {
             $this->addError('conflict', 'This time slot already has two approved appointments.');
 
             return;
@@ -1292,13 +1462,14 @@ class AppointmentCalendar extends Component
 
         $sameTimePendingCount = $cqs->countSameTimePending($appointment->id, $appointmentAt->toDateTimeString());
         $sameDayActiveCount   = $cqs->countSameDayActive($appointmentAt, self::INACTIVE_APPOINTMENT_STATUSES);
-        $hasBlockedConflict   = $durationInMinutes > 0
-            ? app(BlockedSlotService::class)->hasConflict($appointmentAt, $appointmentEnd)
-            : false;
+        $blockedCapacity      = $durationInMinutes > 0
+            ? $this->blockedCapacityForRange($appointmentAt, $appointmentEnd)
+            : 0;
+        $hasBlockedConflict   = $blockedCapacity >= self::SLOT_CAPACITY;
 
         $approvedOverlapCount  = count($approvedOverlaps);
-        $remainingCapacity     = max(0, self::SLOT_CAPACITY - $approvedOverlapCount);
-        $canApprove            = ! $hasBlockedConflict && $approvedOverlapCount < self::SLOT_CAPACITY;
+        $remainingCapacity     = max(0, self::SLOT_CAPACITY - $approvedOverlapCount - $blockedCapacity);
+        $canApprove            = ! $hasBlockedConflict && $approvedOverlapCount < max(0, self::SLOT_CAPACITY - $blockedCapacity);
 
         if ($hasBlockedConflict) {
             $headline = 'Reschedule before approval';
