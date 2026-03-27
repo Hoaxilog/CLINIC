@@ -171,52 +171,61 @@
                                 <livewire:patient.form.basic-info wire:key="basic-info" :data="$basicInfoData" />
                             </div>
 
-                            @if ($isEditing && ! $isReadOnly)
-                                <div class="mt-6 rounded-md border border-gray-200 bg-white p-4">
-                                    <h3 class="text-sm font-semibold text-[#1a2e3b]">Patient Consent and Declaration</h3>
-                                    <p class="mt-2 text-xs leading-relaxed text-[#3d5a6e]">
-                                        In compliance with Republic Act No. 10173 (Data Privacy Act of 2012), I voluntarily
-                                        authorize this clinic and its authorized healthcare staff to collect, process, and
-                                        securely store my personal and health information for diagnosis, treatment, billing,
-                                        and related clinical operations.
-                                    </p>
-
-                                    <div class="mt-3 space-y-2">
-                                        <label class="flex items-start gap-2 text-xs text-[#1a2e3b]">
-                                            <input type="checkbox" wire:model="consentAuthorizationAccepted"
-                                                class="mt-0.5 rounded-sm border-gray-300 text-[#0086da] focus:ring-[#0086da]">
-                                            <span>
-                                                I understand and authorize the processing of my information under the Data
-                                                Privacy Act of 2012.
-                                            </span>
-                                        </label>
-                                        @error('consentAuthorizationAccepted')
-                                            <p data-error-for="consentAuthorizationAccepted" class="text-xs text-red-600">{{ $message }}</p>
-                                        @enderror
-
-                                        <label class="flex items-start gap-2 text-xs text-[#1a2e3b]">
-                                            <input type="checkbox" wire:model="consentTruthfulnessAccepted"
-                                                class="mt-0.5 rounded-sm border-gray-300 text-[#0086da] focus:ring-[#0086da]">
-                                            <span>
-                                                I confirm that all information I have provided is true, complete, and
-                                                correct to the best of my knowledge.
-                                            </span>
-                                        </label>
-                                        @error('consentTruthfulnessAccepted')
-                                            <p data-error-for="consentTruthfulnessAccepted" class="text-xs text-red-600">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-
-                                </div>
-                            @endif
                         @endif
 
                         {{-- Tab 2: Health Records --}}
                         @if ($currentStep == 2 && $isEditing)
-                            <livewire:patient.form.health-history wire:key="health-history"
-                                :data="$healthHistoryData" :gender="$basicInfoData['gender'] ?? null"
-                                :isReadOnly="$isReadOnly" :historyList="$healthHistoryList"
-                                :selectedHistoryId="$selectedHealthHistoryId" />
+                            <div class="space-y-6">
+                                <livewire:patient.form.health-history wire:key="health-history"
+                                    :data="$healthHistoryData" :gender="$basicInfoData['gender'] ?? null"
+                                    :isReadOnly="$isReadOnly" :historyList="$healthHistoryList"
+                                    :selectedHistoryId="$selectedHealthHistoryId" />
+
+                                @if (! $isReadOnly)
+                                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                        <h3 class="text-base font-semibold text-slate-900">Authorization And Consent For Treatment</h3>
+
+                                        <div class="mt-4 space-y-4 text-sm leading-relaxed text-slate-700">
+                                            <p>
+                                                I, the undersigned, certify that all the above medical and dental information is true to the best of my knowledge and that I have not omitted any pertinent information. I understand the information on this form is necessary to provide me with dental care in a safe and efficient manner. I also understand that providing incorrect information can be dangerous to my health. I am responsible for informing this office of any changes in my health or medication. If further information is needed, you have my permission to ask the respective healthcare provider or agency, who may release such information to you.
+                                            </p>
+                                            <p>
+                                                I also authorize the Dentist and the Staff to take x-rays, study models, photos, and other diagnostic aids deemed appropriate by the doctor to make a thorough diagnosis of my dental needs. Upon such diagnosis, I authorize the Dentist and Staff to perform all recommended treatments mutually agreed upon.
+                                            </p>
+                                            <p>
+                                                I agree to the use of anesthetics, sedatives, and other medication as necessary. I fully understand that using anesthetic agents embodies certain risks. I understand that I can ask for a complete recital of any possible complications. I also understand that antibiotics, analgesics, and other medications can cause allergic reactions like redness and swelling of tissues, pain, itching, vomiting, and/or anaphylactic shock.
+                                            </p>
+                                            <p>
+                                                Lastly, I understand that dentistry is not an exact science, and that no dentist can properly guarantee accurate results all the time.
+                                            </p>
+                                        </div>
+
+                                        <div class="mt-5 space-y-3">
+                                            <label class="flex items-start gap-3 text-sm text-slate-800">
+                                                <input type="checkbox" wire:model="consentTruthfulnessAccepted"
+                                                    class="mt-1 rounded-sm border-gray-300 text-[#0086da] focus:ring-[#0086da]">
+                                                <span>
+                                                    I certify that all the medical and dental information I provided is true, complete, and not knowingly omitted.
+                                                </span>
+                                            </label>
+                                            @error('consentTruthfulnessAccepted')
+                                                <p data-error-for="consentTruthfulnessAccepted" class="text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+
+                                            <label class="flex items-start gap-3 text-sm text-slate-800">
+                                                <input type="checkbox" wire:model="consentAuthorizationAccepted"
+                                                    class="mt-1 rounded-sm border-gray-300 text-[#0086da] focus:ring-[#0086da]">
+                                                <span>
+                                                    I understand and agree to the authorization and consent for treatment stated above.
+                                                </span>
+                                            </label>
+                                            @error('consentAuthorizationAccepted')
+                                                <p data-error-for="consentAuthorizationAccepted" class="text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
                         @endif
 
                         {{-- Tab 3: Dental Chart --}}
@@ -761,7 +770,17 @@
                                 'is_serious_illness_operation_q3', 'what_serious_illness_operation_reason_q3',
                                 'is_taking_medications_q4',
                                 'what_medications_list_q4', 'is_allergic_medications_q5', 'what_allergies_list_q5',
-                                'is_allergic_latex_rubber_metals_q6', 'is_pregnant_q7', 'is_breast_feeding_q8'
+                                'is_allergic_latex_rubber_metals_q6',
+                                'is_chest_pain_angina', 'is_shortness_of_breath', 'is_heart_disease_heart_attack',
+                                'is_heart_surgery', 'is_artificial_heart_valve_pacemaker', 'is_rheumatic_fever_heart_disease',
+                                'is_heart_murmur', 'is_mitral_valve_prolapse', 'is_high_low_blood_pressure',
+                                'is_stroke', 'is_respiratory_lung_problem', 'is_emphysema',
+                                'is_asthma', 'is_tuberculosis', 'is_blood_disease',
+                                'is_bleeding_problems_disorders', 'is_diabetes', 'is_liver_problem_jaundice_hepatitis',
+                                'is_kidney_bladder_problem', 'is_ulcers_hyperacidity', 'is_tumors_cancer_malignancies',
+                                'is_aids_hiv_positive', 'is_fainting_epilepsy_seizures', 'is_mental_health_disorder',
+                                'is_other_disease_condition_problem', 'what_other_disease_condition_problem',
+                                'is_pregnant_q7', 'is_breast_feeding_q8'
                             ];
                             const treatmentFields = ['dmd', 'treatment', 'cost_of_treatment', 'amount_charged',
                                 'remarks'

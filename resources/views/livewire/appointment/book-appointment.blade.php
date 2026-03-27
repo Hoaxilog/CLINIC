@@ -3,7 +3,6 @@
         $isPatientUser = auth()->check() && auth()->user()->role === 3;
         $patientName = $isPatientUser ? auth()->user()->username ?? 'Patient' : null;
 
-        /* ── Shared input base ── */
         $inputBase =
             'w-full border bg-white px-4 py-3 text-sm text-[#1a2e3b] placeholder:text-[#9bbdd0] font-[Montserrat] outline-none transition focus:ring-2 focus:ring-[#cde8fb] focus:border-[#0086da] rounded-none';
         $inputError =

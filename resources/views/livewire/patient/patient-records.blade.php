@@ -491,7 +491,7 @@
                                                         </div>
                                                         <div>
                                                             <div class="text-[.82rem] font-bold text-[#1a2e3b]">
-                                                                {{ $patient->last_name }}, {{ $patient->first_name }}
+                                                                {{ $patient->first_name }} {{ $patient->last_name }} 
                                                             </div>
                                                             <div class="text-[.6rem] font-bold uppercase tracking-[.18em] text-[#0086da]">
                                                                 ID: {{ $patient->id }}

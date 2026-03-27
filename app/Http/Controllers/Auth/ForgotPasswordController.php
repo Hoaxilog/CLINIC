@@ -19,20 +19,13 @@ use Illuminate\View\View;
 class ForgotPasswordController extends Controller
 {
 
-    /**
-     * 1. Show the form where user enters their email
-     */
     public function showLinkRequestForm(): View
     {
         return view('auth.forgot-password-smtp');
     }
 
-    /**
-     * 2. Process the email submission and send the link
-     */
     public function sendResetLinkEmail(SendPasswordResetLinkRequest $request): RedirectResponse
     {
-        // LIMITTER for anti spam
 
         $email = Str::lower($request->input('email'));
         $state = $this->resetRequestState($email, (string) $request->ip());
@@ -64,16 +57,10 @@ class ForgotPasswordController extends Controller
             ])->withInput();
         }
 
-        // Check if user exists using DB Builder
         $user = DB::table('users')->where('email', $request->email)->first();
 
         if (! $user) {
             return back()->with('failed', 'We can\'t find a user with that email address.');
-        }
-
-        // EDGE CASE: If user registered via Google (no password), block them
-        if ($user->google_id && is_null($user->password)) {
-            return back()->with('failed', 'This account uses Google Login. Please sign in with Google.');
         }
 
         // Generate a random secure token
@@ -88,7 +75,6 @@ class ForgotPasswordController extends Controller
             ],
         );
 
-        // Send the email using Mailtrap
         Mail::send('auth.emails.password-reset', ['token' => $token, 'email' => $request->email], function ($message) use ($request) {
             $message->to($request->email);
             $message->subject('Reset Password Request - Tejadent');
@@ -100,9 +86,6 @@ class ForgotPasswordController extends Controller
         return back()->with('reset_email', $request->email);
     }
 
-    /**
-     * 3. Show the "New Password" form (User clicked the email link)
-     */
     public function showResetForm(string $token): View|RedirectResponse
     {
         $resetRecord = DB::table('password_reset_tokens')
@@ -122,9 +105,6 @@ class ForgotPasswordController extends Controller
         return view('auth.reset-password', ['token' => $token]);
     }
 
-    /**
-     * 4. Update the password in the database
-     */
     public function reset(ResetPasswordRequest $request): RedirectResponse
     {
         // Verify the token matches the email

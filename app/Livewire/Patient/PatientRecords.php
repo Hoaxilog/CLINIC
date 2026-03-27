@@ -131,9 +131,20 @@ class PatientRecords extends Component
         }
 
         if (!empty($this->search)) {
-            $query->where('first_name', 'like', '%' . $this->search . '%')
-                  ->orWhere('last_name', 'like', '%' . $this->search . '%')
-                  ->orWhere('mobile_number', 'like', '%' . $this->search . '%');;
+            $search = trim(preg_replace('/\s+/', ' ', $this->search));
+
+            $query->where(function ($subQuery) use ($search) {
+                $likeSearch = '%' . $search . '%';
+
+                $subQuery->where('first_name', 'like', $likeSearch)
+                    ->orWhere('last_name', 'like', $likeSearch)
+                    ->orWhere('middle_name', 'like', $likeSearch)
+                    ->orWhere('mobile_number', 'like', $likeSearch)
+                    ->orWhereRaw("TRIM(CONCAT_WS(' ', first_name, last_name)) LIKE ?", [$likeSearch])
+                    ->orWhereRaw("TRIM(CONCAT_WS(' ', first_name, middle_name, last_name)) LIKE ?", [$likeSearch])
+                    ->orWhereRaw("TRIM(CONCAT_WS(' ', last_name, first_name)) LIKE ?", [$likeSearch])
+                    ->orWhereRaw("TRIM(CONCAT_WS(' ', last_name, ',', first_name)) LIKE ?", [$likeSearch]);
+            });
         }
 
         switch ($this->sortOption) {

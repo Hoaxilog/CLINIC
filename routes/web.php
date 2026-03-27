@@ -36,7 +36,7 @@ Route::get('/home', function () {
 // Service pages
 Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
 
-// Public (guest) routes
+// Public (guest) routeso
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [LoginController::class, 'index'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
@@ -44,10 +44,8 @@ Route::middleware(['guest'])->group(function () {
     Route::post('/login/otp', [LoginController::class, 'verifyOtp'])->name('login.otp.verify');
     Route::post('/login/otp/resend', [LoginController::class, 'resendOtp'])->name('login.otp.resend');
 
-    Route::get('auth/google/redirect', [LoginController::class, 'redirectToGoogle'])
-        ->name('auth.google.redirect');
-    Route::get('auth/google/callback', [LoginController::class, 'handleGoogleCallback'])
-        ->name('auth.google.callback');
+    Route::get('auth/google/redirect', [LoginController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+    Route::get('auth/google/callback', [LoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
     // Registration Routes (Manual)
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
@@ -63,21 +61,18 @@ Route::middleware(['guest'])->group(function () {
 
 });
 
-// Password reset accessible to ALL users 
 Route::view('/reset-password/expired', 'auth.reset-password-expired')->name('password.expired'); 
 Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.forgot');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 
-// Public booking route (supports both guests and authenticated users)
+//book appointment route
 Route::view('/book', 'book')->name('book');
 
 // Authenticated user routes (all logged-in users)
 Route::middleware(['auth'])->group(function () {
-    // Logout should be available to all authenticated users
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');

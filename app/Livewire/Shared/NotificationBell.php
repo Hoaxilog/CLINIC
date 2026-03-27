@@ -14,7 +14,6 @@ class NotificationBell extends Component
 
     public int $unreadCount = 0;
 
-    /** @var array<int, object> */
     public array $notifications = [];
 
     public function mount(): void

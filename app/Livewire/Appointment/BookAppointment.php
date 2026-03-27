@@ -116,6 +116,10 @@ class BookAppointment extends Component
             return;
         }
 
+        // A slot value like 09:00:00 exists on many dates, so clear the old
+        // selection whenever the user changes the appointment day.
+        $this->selectedSlot = null;
+        $this->resetValidation('selectedSlot');
         $this->availableSlots = $this->generateSlots($date);
         $this->dispatch('book-calendar-refresh', selectedDate: $date);
     }

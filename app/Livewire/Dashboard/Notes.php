@@ -29,7 +29,6 @@ class Notes extends Component
 
     protected function loadNotes()
     {
-        // [FIX] Only fetch notes belonging to the logged-in user
         // We check 'user_id' matches Auth::id()
         $this->notesList = DB::table('notes')
             ->where('user_id', Auth::id()) 
@@ -40,7 +39,6 @@ class Notes extends Component
     public function viewNotes($id)
     {
         try {
-            // [FIX] Ensure the user owns this note before viewing
             $note = DB::table('notes')
                 ->where('id', $id)
                 ->where('user_id', Auth::id()) 
@@ -72,7 +70,6 @@ class Notes extends Component
         DB::table('notes')->insert([
             'title' => $this->title,
             'notes' => $this->content,
-            // [FIX] Use dynamic Auth ID instead of hardcoded '2'
             'user_id' => Auth::id(), 
             'created_at' => now(),
             'updated_at' => now()
@@ -88,7 +85,6 @@ class Notes extends Component
 
         if ($this->noteId) {
             try {
-                // [FIX] Ensure user owns the note before updating
                 DB::table('notes')
                     ->where('id', $this->noteId)
                     ->where('user_id', Auth::id()) 
@@ -107,7 +103,6 @@ class Notes extends Component
 
     public function delete($id)
     {
-        // [FIX] Ensure user owns the note before deleting
         DB::table('notes')
             ->where('id', $id)
             ->where('user_id', Auth::id()) 

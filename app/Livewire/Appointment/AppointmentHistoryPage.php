@@ -104,16 +104,21 @@ class AppointmentHistoryPage extends Component
             ->when($this->serviceId !== '', fn ($query) => $query->where('appointments.service_id', $this->serviceId))
             ->when($this->fromDate !== '', fn ($query) => $query->where('appointments.appointment_date', '>=', Carbon::parse($this->fromDate)->startOfDay()))
             ->when($this->toDate !== '', fn ($query) => $query->where('appointments.appointment_date', '<=', Carbon::parse($this->toDate)->endOfDay()))
-            ->when($this->search !== '', function ($query) use ($firstNameExpr, $lastNameExpr) {
-                $term = trim($this->search);
+            ->when($this->search !== '', function ($query) use ($firstNameExpr, $lastNameExpr, $middleNameExpr) {
+                $term = trim(preg_replace('/\s+/', ' ', $this->search));
+                $likeTerm = '%'.$term.'%';
 
-                $query->where(function ($subQuery) use ($term, $firstNameExpr, $lastNameExpr) {
+                $query->where(function ($subQuery) use ($likeTerm, $firstNameExpr, $lastNameExpr, $middleNameExpr) {
                     $subQuery
-                        ->where('services.service_name', 'like', '%'.$term.'%')
-                        ->orWhere('appointments.id', 'like', '%'.$term.'%')
-                        ->orWhere(DB::raw($firstNameExpr), 'like', '%'.$term.'%')
-                        ->orWhere(DB::raw($lastNameExpr), 'like', '%'.$term.'%')
-                        ->orWhere(DB::raw("CONCAT($firstNameExpr, ' ', $lastNameExpr)"), 'like', '%'.$term.'%');
+                        ->where('services.service_name', 'like', $likeTerm)
+                        ->orWhere('appointments.id', 'like', $likeTerm)
+                        ->orWhere(DB::raw($firstNameExpr), 'like', $likeTerm)
+                        ->orWhere(DB::raw($lastNameExpr), 'like', $likeTerm)
+                        ->orWhere(DB::raw($middleNameExpr), 'like', $likeTerm)
+                        ->orWhereRaw("TRIM(CONCAT_WS(' ', $firstNameExpr, $lastNameExpr)) LIKE ?", [$likeTerm])
+                        ->orWhereRaw("TRIM(CONCAT_WS(' ', $firstNameExpr, $middleNameExpr, $lastNameExpr)) LIKE ?", [$likeTerm])
+                        ->orWhereRaw("TRIM(CONCAT_WS(' ', $lastNameExpr, $firstNameExpr)) LIKE ?", [$likeTerm])
+                        ->orWhereRaw("TRIM(CONCAT_WS(' ', $lastNameExpr, ',', $firstNameExpr)) LIKE ?", [$likeTerm]);
                 });
             })
             ->orderByDesc('appointments.appointment_date')

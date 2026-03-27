@@ -179,7 +179,7 @@ class AppointmentService
             })->exists();
 
         if ($hasConflict) {
-            return ['ok' => false, 'error' => 'Cannot admit: This slot is double-booked.'];
+            return ['ok' => false, 'error' => 'Cannot admit this patient yet: you are still handling another patient in this time slot.'];
         }
 
         $updated = DB::table('appointments')

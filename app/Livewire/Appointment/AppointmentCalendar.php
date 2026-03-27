@@ -638,6 +638,10 @@ class AppointmentCalendar extends Component
 
     public function updatedSelectedDate($value): void
     {
+        if (! empty($value) && ! $this->isViewing) {
+            $this->appointmentDate = $value;
+        }
+
         $this->refreshRescheduleTimeOptions();
     }
 
@@ -705,7 +709,8 @@ class AppointmentCalendar extends Component
             $cqs              = app(CalendarQueryService::class);
             $bss              = app(BlockedSlotService::class);
             $durationMinutes  = $this->durationToMinutes($service->duration);
-            $proposedStart    = Carbon::parse($this->appointmentDate)->setTimeFromTimeString($this->selectedTime);
+            $appointmentDate  = $this->selectedDate ?: $this->appointmentDate;
+            $proposedStart    = Carbon::parse($appointmentDate)->setTimeFromTimeString($this->selectedTime);
             $proposedEnd      = $proposedStart->copy()->addMinutes($durationMinutes);
 
             if ($bss->hasConflict($proposedStart, $proposedEnd)) {
@@ -727,7 +732,7 @@ class AppointmentCalendar extends Component
                 'contact_number'   => $this->contactNumber,
                 'birth_date'       => $normalizedBirthDate,
                 'service_id'       => $this->selectedService,
-                'appointment_date' => $this->appointmentDate,
+                'appointment_date' => $appointmentDate,
                 'time'             => $this->selectedTime,
             ]);
 

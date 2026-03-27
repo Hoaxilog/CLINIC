@@ -18,7 +18,7 @@
     </style>
 
     @if (!empty($showCaptcha))
-        <!-- reCAPTCHA (shown after 3 failed attempts) -->
+        <!-- RECAPTCHA (shown after 3 failed attempts) -->
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     @endif
 

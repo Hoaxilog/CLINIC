@@ -55,6 +55,25 @@ class PatientFormModal extends Component
     public $consentAuthorizationAccepted = false;
     public $consentTruthfulnessAccepted = false;
 
+    private function checkAdminRole(): void
+    {
+        $this->isAdmin = Auth::user()?->canHandleChairsideFlow() ?? false;
+        $this->canEditBasicInfo = Auth::user()?->canAccessOperationalPages() ?? false;
+        $this->canViewClinicalRecords = Auth::user()?->canAccessOperationalPages() ?? false;
+    }
+
+    private function getMaxStep(): int
+    {
+        if (! $this->isEditing) {
+            // Create mode only collects the patient's basic information.
+            return 1;
+        }
+
+        // Edit/view mode: staff can view clinical records, but only admin/dentist can edit them.
+        return $this->canViewClinicalRecords ? 4 : 2;
+    }
+
+
     // ─────────────────────────────────────────────────────────────────────────
     // Open / Close
     // ─────────────────────────────────────────────────────────────────────────
@@ -226,10 +245,6 @@ class PatientFormModal extends Component
 
             return;
         }
-        if (! $this->validateConsentForUpdate()) {
-            return;
-        }
-
         $this->pendingNavigationStep = null;
         $this->isSaving = true;
         $this->triggerStepValidation($this->currentStep);
@@ -667,7 +682,7 @@ class PatientFormModal extends Component
     {
         $patientService = app(PatientService::class);
         $hService       = app(HealthHistoryService::class);
-        $modifier       = $this->modifier();
+        $modifier       = Auth::user()?->username ?? 'SYSTEM';
 
         $createdPatientId = null;
         $createdHealthId  = null;
@@ -693,7 +708,9 @@ class PatientFormModal extends Component
 
     private function updateBasicInfo(): void
     {
-        app(PatientService::class)->update($this->newPatientId, $this->basicInfoData, $this->modifier());
+        $modifier = Auth::user()?->username ?? 'SYSTEM';
+
+        app(PatientService::class)->update($this->newPatientId, $this->basicInfoData, $modifier);
 
         $this->dispatch('patient-added');
         $this->isReadOnly = true;
@@ -705,7 +722,7 @@ class PatientFormModal extends Component
     private function saveHealthHistoryRecord($timestamp = null): void
     {
         $hService   = app(HealthHistoryService::class);
-        $modifier   = $this->modifier();
+        $modifier   = Auth::user()?->username ?? 'SYSTEM';
         $selectedId = $this->healthHistoryData['selectedHistoryId'] ?? $this->selectedHealthHistoryId;
         $isNewVisit = $this->forceNewRecord || $selectedId === 'new' || blank($selectedId);
 
@@ -738,9 +755,10 @@ class PatientFormModal extends Component
     private function persistEditSession(): void
     {
         $visitTimestamp = now();
+        $modifier = Auth::user()?->username ?? 'SYSTEM';
 
-        DB::transaction(function () use ($visitTimestamp) {
-            app(PatientService::class)->update($this->newPatientId, $this->basicInfoData, $this->modifier());
+        DB::transaction(function () use ($visitTimestamp, $modifier) {
+            app(PatientService::class)->update($this->newPatientId, $this->basicInfoData, $modifier);
 
             if (! empty($this->healthHistoryData)) {
                 $this->saveHealthHistoryRecord($visitTimestamp);
@@ -772,11 +790,12 @@ class PatientFormModal extends Component
         }
 
         $dcService = app(DentalChartService::class);
+        $modifier = Auth::user()?->username ?? 'SYSTEM';
         $dcService->saveTreatmentRecord(
             (int) $this->currentDentalChartId,
             (int) $this->newPatientId,
             $this->treatmentRecordData,
-            $this->modifier()
+            $modifier
         );
 
         $this->treatmentRecordData = $dcService->getTreatmentRecord((int) $this->currentDentalChartId);
@@ -790,7 +809,7 @@ class PatientFormModal extends Component
     private function saveDentalAndTreatment($timestamp = null): void
     {
         $dcService = app(DentalChartService::class);
-        $modifier  = $this->modifier();
+        $modifier  = Auth::user()?->username ?? 'SYSTEM';
 
         $existingChartId = (! $this->forceNewRecord && $this->currentDentalChartId)
             ? (int) $this->currentDentalChartId
@@ -1092,13 +1111,6 @@ class PatientFormModal extends Component
         $this->healthHistoryList = [];
     }
 
-    private function checkAdminRole(): void
-    {
-        $this->isAdmin = Auth::user()?->canHandleChairsideFlow() ?? false;
-        $this->canEditBasicInfo = Auth::user()?->canAccessOperationalPages() ?? false;
-        $this->canViewClinicalRecords = Auth::user()?->canAccessOperationalPages() ?? false;
-    }
-
     private function canEditCurrentStep(): bool
     {
         if (! $this->isEditing) {
@@ -1150,24 +1162,14 @@ class PatientFormModal extends Component
         return (int) ($ongoingAppointment->dentist_id ?? 0) === (int) $user->id;
     }
 
-    private function modifier(): string
-    {
-        return Auth::check() ? (Auth::user()->username ?? 'USER') : 'SYSTEM';
-    }
-
-    private function getMaxStep(): int
-    {
-        if (! $this->isEditing) {
-            // Create mode only collects the patient's basic information.
-            return 1;
-        }
-
-        // Edit/view mode: staff can view clinical records, but only admin/dentist can edit them.
-        return $this->canViewClinicalRecords ? 4 : 2;
-    }
-
     private function triggerStepValidation(int $step): void
     {
+        if ($step === 2 && ! $this->validateConsentForUpdate()) {
+            $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
+
+            return;
+        }
+
         match ($step) {
             1 => $this->dispatch('validateBasicInfo')->to('patient.form.basic-info'),
             2 => $this->dispatch('validateHealthHistory')->to('patient.form.health-history'),
@@ -1179,7 +1181,7 @@ class PatientFormModal extends Component
 
     private function validateConsentForUpdate(): bool
     {
-        if (! $this->isEditing || $this->currentStep !== 1) {
+        if (! $this->isEditing || $this->currentStep !== 2) {
             return true;
         }
 
@@ -1187,11 +1189,11 @@ class PatientFormModal extends Component
         $valid = true;
 
         if (! $this->consentAuthorizationAccepted) {
-            $this->addError('consentAuthorizationAccepted', 'Please authorize processing of personal information under the Data Privacy Act of 2012.');
+            $this->addError('consentAuthorizationAccepted', 'Please confirm the authorization and consent for treatment.');
             $valid = false;
         }
         if (! $this->consentTruthfulnessAccepted) {
-            $this->addError('consentTruthfulnessAccepted', 'Please confirm that the information provided is true and correct.');
+            $this->addError('consentTruthfulnessAccepted', 'Please confirm that the medical and dental information is true and complete.');
             $valid = false;
         }
 
@@ -1315,7 +1317,17 @@ class PatientFormModal extends Component
             'is_condition_q1', 'what_condition_reason_q1', 'is_hospitalized_q2', 'what_hospitalized_reason_q2',
             'is_serious_illness_operation_q3', 'what_serious_illness_operation_reason_q3', 'is_taking_medications_q4',
             'what_medications_list_q4', 'is_allergic_medications_q5', 'what_allergies_list_q5',
-            'is_allergic_latex_rubber_metals_q6', 'is_pregnant_q7', 'is_breast_feeding_q8',
+            'is_allergic_latex_rubber_metals_q6',
+            'is_chest_pain_angina', 'is_shortness_of_breath', 'is_heart_disease_heart_attack',
+            'is_heart_surgery', 'is_artificial_heart_valve_pacemaker', 'is_rheumatic_fever_heart_disease',
+            'is_heart_murmur', 'is_mitral_valve_prolapse', 'is_high_low_blood_pressure',
+            'is_stroke', 'is_respiratory_lung_problem', 'is_emphysema',
+            'is_asthma', 'is_tuberculosis', 'is_blood_disease',
+            'is_bleeding_problems_disorders', 'is_diabetes', 'is_liver_problem_jaundice_hepatitis',
+            'is_kidney_bladder_problem', 'is_ulcers_hyperacidity', 'is_tumors_cancer_malignancies',
+            'is_aids_hiv_positive', 'is_fainting_epilepsy_seizures', 'is_mental_health_disorder',
+            'is_other_disease_condition_problem', 'what_other_disease_condition_problem',
+            'is_pregnant_q7', 'is_breast_feeding_q8',
         ];
         $treatmentAllowed = ['dmd', 'treatment', 'cost_of_treatment', 'amount_charged', 'remarks'];
 

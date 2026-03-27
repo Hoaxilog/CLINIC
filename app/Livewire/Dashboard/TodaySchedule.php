@@ -238,7 +238,7 @@ class TodaySchedule extends Component
             ->exists();
 
         if ($hasConflict) {
-            $this->dispatch('flash-message', type: 'error', message: 'Cannot call next: This slot is double-booked.');
+            $this->dispatch('flash-message', type: 'error', message: 'Cannot call the next patient yet: you are still handling another patient in this time slot.');
 
             return;
         }
