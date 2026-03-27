@@ -26,6 +26,7 @@ class PatientFormModal extends Component
     public $isSaving = false;
     public $forceNewRecord = false;
     public $pendingNavigationStep = null;
+    public $treatmentImageUploadMode = false;
 
     // ── Form Data ─────────────────────────────────────────────────────────────
     public $basicInfoData = [];
@@ -137,6 +138,13 @@ class PatientFormModal extends Component
             return;
         }
 
+        if ($this->treatmentImageUploadMode && $step !== $this->currentStep) {
+            $this->dispatch('flash-message', type: 'info', message: 'Save or cancel the image upload before opening another section.');
+            $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
+
+            return;
+        }
+
         if (! $this->isReadOnly && ! $this->forceNewRecord && $step !== $this->currentStep) {
             $this->dispatch('flash-message', type: 'info', message: 'Finish saving or cancel the current edit before opening another section.');
             $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
@@ -200,6 +208,14 @@ class PatientFormModal extends Component
 
     public function save(): void
     {
+        if ($this->treatmentImageUploadMode) {
+            $this->pendingNavigationStep = null;
+            $this->isSaving = true;
+            $this->dispatch('validateTreatmentRecordImagesOnly')->to('patient.form.treatment-record');
+
+            return;
+        }
+
         if ($this->isReadOnly) {
             return;
         }
@@ -224,6 +240,14 @@ class PatientFormModal extends Component
         $this->pendingNavigationStep = null;
         $this->isSaving = false;
         $this->resetErrorBag(['consentAuthorizationAccepted', 'consentTruthfulnessAccepted']);
+
+        if ($this->treatmentImageUploadMode) {
+            $this->treatmentImageUploadMode = false;
+            $this->dispatch('fillTreatmentRecord', data: $this->treatmentRecordData)
+                ->to('patient.form.treatment-record');
+
+            return;
+        }
 
         if ($this->isEditing && ! $this->isReadOnly) {
             $this->isReadOnly = true;
@@ -325,6 +349,18 @@ class PatientFormModal extends Component
         $this->isSaving = false;
     }
 
+    #[On('treatmentRecordImagesValidated')]
+    public function handleTreatmentRecordImages($data): void
+    {
+        $this->treatmentRecordData = $data;
+
+        if ($this->isSaving && $this->isEditing && $this->isAdmin) {
+            $this->persistTreatmentImagesOnly();
+        }
+
+        $this->isSaving = false;
+    }
+
     #[On('switchHealthHistory')]
     public function switchHealthHistory($historyId): void
     {
@@ -395,6 +431,7 @@ class PatientFormModal extends Component
     {
         $this->isReadOnly = false;
         $this->forceNewRecord = true;
+        $this->treatmentImageUploadMode = false;
         $this->dentalChartData = [];
         $this->treatmentRecordData = [];
         $this->currentDentalChartId = null;
@@ -411,9 +448,26 @@ class PatientFormModal extends Component
         $this->isReadOnly = false;
     }
 
+    public function enableTreatmentImageUpload(): void
+    {
+        if (
+            ! $this->isEditing
+            || ! $this->isAdmin
+            || ! $this->isReadOnly
+            || $this->currentStep !== 4
+            || empty($this->currentDentalChartId)
+            || empty($this->treatmentRecordData['id'] ?? null)
+        ) {
+            return;
+        }
+
+        $this->treatmentImageUploadMode = true;
+    }
+
     #[On('openNewVisitRecord')]
     public function startNewVisitRecord(): void
     {
+        $this->treatmentImageUploadMode = false;
         if (! $this->isEditing || ! $this->isAdmin) {
             return;
         }
@@ -707,6 +761,30 @@ class PatientFormModal extends Component
         $this->completeSave($this->isAdmin
             ? 'Patient record changes saved.'
             : 'Patient record changes saved.');
+    }
+
+    private function persistTreatmentImagesOnly(): void
+    {
+        if (! $this->currentDentalChartId || ! $this->newPatientId) {
+            $this->isSaving = false;
+            $this->dispatch('flash-message', type: 'error', message: 'Unable to find the treatment record for image upload.');
+            return;
+        }
+
+        $dcService = app(DentalChartService::class);
+        $dcService->saveTreatmentRecord(
+            (int) $this->currentDentalChartId,
+            (int) $this->newPatientId,
+            $this->treatmentRecordData,
+            $this->modifier()
+        );
+
+        $this->treatmentRecordData = $dcService->getTreatmentRecord((int) $this->currentDentalChartId);
+        $this->treatmentImageUploadMode = false;
+        $this->dispatch('fillTreatmentRecord', data: $this->treatmentRecordData)
+            ->to('patient.form.treatment-record');
+        $this->dispatch('flash-message', type: 'success', message: 'Treatment images saved.');
+        $this->dispatch('patient-form-navigation-finished', currentStep: $this->currentStep);
     }
 
     private function saveDentalAndTreatment($timestamp = null): void

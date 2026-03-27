@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class DentalChartService
 {
@@ -139,6 +140,7 @@ class DentalChartService
 
         $saved = DB::table('treatment_records')->where('dental_chart_id', $chartId)->first();
         if ($saved) {
+            $this->removeImages($saved->id, $data['removed_image_ids'] ?? []);
             $this->saveImages($saved->id, $data['image_payloads'] ?? []);
 
             $subject = new TreatmentRecord;
@@ -249,6 +251,35 @@ class DentalChartService
         if (! empty($rows)) {
             DB::table('treatment_record_images')->insert($rows);
         }
+    }
+
+    private function removeImages(int $recordId, array $imageIds): void
+    {
+        $imageIds = collect($imageIds)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($imageIds->isEmpty()) {
+            return;
+        }
+
+        $images = DB::table('treatment_record_images')
+            ->where('treatment_record_id', $recordId)
+            ->whereIn('id', $imageIds->all())
+            ->get(['id', 'image_path']);
+
+        foreach ($images as $image) {
+            if (! empty($image->image_path)) {
+                Storage::disk('public')->delete($image->image_path);
+            }
+        }
+
+        DB::table('treatment_record_images')
+            ->where('treatment_record_id', $recordId)
+            ->whereIn('id', $imageIds->all())
+            ->delete();
     }
 
     private function logChart(string $event, int $chartId, array $properties): void

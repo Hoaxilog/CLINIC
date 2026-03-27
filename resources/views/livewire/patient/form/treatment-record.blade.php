@@ -161,7 +161,7 @@
                 <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-700">Treatment Images</h3>
 
                 <div class="mt-4 space-y-5">
-                    @if (!$isReadOnly)
+                    @if (!$isReadOnly || $imageUploadOnly)
                         <div>
                             <label for="beforeImages" class="{{ $labelClass }}">Before</label>
                             <input wire:model="beforeImages" type="file" id="beforeImages" multiple
@@ -210,14 +210,16 @@
                             <div class="grid grid-cols-2 gap-3">
                                 @foreach ($beforeImages as $index => $image)
                                     <div wire:key="before-image-{{ $index }}" class="relative overflow-hidden rounded-lg border border-sky-200 bg-sky-50 p-1">
-                                        <button type="button"
-                                            class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-base font-bold leading-none text-slate-700 shadow-sm transition hover:bg-white hover:text-red-600"
-                                            wire:click="removeBeforeImage({{ $index }})"
-                                            wire:loading.attr="disabled"
-                                            wire:target="removeBeforeImage"
-                                            aria-label="Remove before image">
-                                            &times;
-                                        </button>
+                                        @if (!$isReadOnly || $imageUploadOnly)
+                                            <button type="button"
+                                                class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-base font-bold leading-none text-slate-700 shadow-sm transition hover:bg-white hover:text-red-600"
+                                                wire:click="removeBeforeImage({{ $index }})"
+                                                wire:loading.attr="disabled"
+                                                wire:target="removeBeforeImage"
+                                                aria-label="Remove before image">
+                                                &times;
+                                            </button>
+                                        @endif
                                         <button type="button" class="block w-full"
                                             @click="activeImage = '{{ $image->temporaryUrl() }}'; activeLabel = 'before preview'; showImage = true">
                                             <img class="h-32 w-full rounded-md object-cover"
@@ -238,14 +240,16 @@
                             <div class="grid grid-cols-2 gap-3">
                                 @foreach ($afterImages as $index => $image)
                                     <div wire:key="after-image-{{ $index }}" class="relative overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 p-1">
-                                        <button type="button"
-                                            class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-base font-bold leading-none text-slate-700 shadow-sm transition hover:bg-white hover:text-red-600"
-                                            wire:click="removeAfterImage({{ $index }})"
-                                            wire:loading.attr="disabled"
-                                            wire:target="removeAfterImage"
-                                            aria-label="Remove after image">
-                                            &times;
-                                        </button>
+                                        @if (!$isReadOnly || $imageUploadOnly)
+                                            <button type="button"
+                                                class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-base font-bold leading-none text-slate-700 shadow-sm transition hover:bg-white hover:text-red-600"
+                                                wire:click="removeAfterImage({{ $index }})"
+                                                wire:loading.attr="disabled"
+                                                wire:target="removeAfterImage"
+                                                aria-label="Remove after image">
+                                                &times;
+                                            </button>
+                                        @endif
                                         <button type="button" class="block w-full"
                                             @click="activeImage = '{{ $image->temporaryUrl() }}'; activeLabel = 'after preview'; showImage = true">
                                             <img class="h-32 w-full rounded-md object-cover"
@@ -264,12 +268,22 @@
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 @foreach ($beforeList as $img)
-                                    <button type="button" class="overflow-hidden rounded-lg border border-slate-200 bg-white p-1"
-                                        @click="activeImage = '{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}'; activeLabel = 'before'; showImage = true">
-                                        <img class="h-32 w-full rounded-md object-cover"
-                                            src="{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}"
-                                            alt="Before image">
-                                    </button>
+                                    <div class="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-1">
+                                        @if ($imageUploadOnly)
+                                            <button type="button"
+                                                class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-base font-bold leading-none text-slate-700 shadow-sm transition hover:bg-white hover:text-red-600"
+                                                wire:click="removeExistingImage({{ (int) ($img['id'] ?? 0) }})"
+                                                aria-label="Remove existing before image">
+                                                &times;
+                                            </button>
+                                        @endif
+                                        <button type="button" class="block w-full"
+                                            @click="activeImage = '{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}'; activeLabel = 'before'; showImage = true">
+                                            <img class="h-32 w-full rounded-md object-cover"
+                                                src="{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}"
+                                                alt="Before image">
+                                        </button>
+                                    </div>
                                 @endforeach
                             </div>
                         </div>
@@ -281,14 +295,27 @@
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 @foreach ($afterList as $img)
-                                    <button type="button" class="overflow-hidden rounded-lg border border-slate-200 bg-white p-1"
-                                        @click="activeImage = '{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}'; activeLabel = 'after'; showImage = true">
-                                        <img class="h-32 w-full rounded-md object-cover"
-                                            src="{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}"
-                                            alt="After image">
-                                    </button>
+                                    <div class="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-1">
+                                        @if ($imageUploadOnly)
+                                            <button type="button"
+                                                class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-base font-bold leading-none text-slate-700 shadow-sm transition hover:bg-white hover:text-red-600"
+                                                wire:click="removeExistingImage({{ (int) ($img['id'] ?? 0) }})"
+                                                aria-label="Remove existing after image">
+                                                &times;
+                                            </button>
+                                        @endif
+                                        <button type="button" class="block w-full"
+                                            @click="activeImage = '{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}'; activeLabel = 'after'; showImage = true">
+                                            <img class="h-32 w-full rounded-md object-cover"
+                                                src="{{ \Illuminate\Support\Facades\Storage::url($img['image_path']) }}"
+                                                alt="After image">
+                                        </button>
+                                    </div>
                                 @endforeach
                             </div>
+                            @if ($imageUploadOnly)
+                                <p class="mt-2 text-xs text-slate-500">You can replace an image by removing it, then uploading a new one before saving.</p>
+                            @endif
                         </div>
                     @endif
 

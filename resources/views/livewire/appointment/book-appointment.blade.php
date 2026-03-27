@@ -548,7 +548,7 @@
 
                             {{-- reCAPTCHA (guests only) --}}
                             @guest
-                                <div class="mt-7" wire:ignore>
+                                <div class="mt-7 overflow-x-auto" wire:ignore>
                                     <div id="recaptcha-container" class="g-recaptcha"
                                         data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
                                 </div>

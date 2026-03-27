@@ -80,10 +80,10 @@
                         </div>
                     </div>
 
-                    <p class="text-xl text-[#0086DA] font-semibold mb-2">
+                    <p class="text-sm text-[#0086DA] font-semibold mb-2 text-center whitespace-nowrap">
                         "Your smile is our priority"
                     </p>
-                    <h1 class="text-5xl font-extrabold text-gray-800 mb-8 tracking-wide">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 mb-8 tracking-wide">
                         TEJA<span class="text-[#0086DA]">DENT</span>
                     </h1>
 

@@ -52,9 +52,13 @@ class TreatmentRecord extends Component
     public $beforeImages = [];
     public $afterImages = [];
     public $existingImages = [];
+    public $removedExistingImageIds = [];
 
     #[Reactive] 
     public $isReadOnly = false;
+
+    #[Reactive]
+    public $imageUploadOnly = false;
 
     public function mount($data = [], $isReadOnly = false)
     {
@@ -151,11 +155,29 @@ class TreatmentRecord extends Component
         $this->resetValidation(['afterImages', 'afterImages.*']);
     }
 
+    public function removeExistingImage(int $imageId): void
+    {
+        $index = collect($this->existingImages)->search(fn ($image) => (int) ($image['id'] ?? 0) === $imageId);
+        if ($index === false) {
+            return;
+        }
+
+        $image = $this->existingImages[$index] ?? null;
+        unset($this->existingImages[$index]);
+        $this->existingImages = array_values($this->existingImages);
+
+        if (! in_array($imageId, $this->removedExistingImageIds, true)) {
+            $this->removedExistingImageIds[] = $imageId;
+        }
+
+        $this->resetValidation(['beforeImages', 'beforeImages.*', 'afterImages', 'afterImages.*']);
+    }
+
     #[On('fillTreatmentRecord')]
     public function fillForm($data)
     {
         $this->resetValidation();
-        $this->reset(['dmd', 'treatment', 'selectedTreatments', 'cost_of_treatment', 'amount_charged', 'remarks', 'beforeImages', 'afterImages']);
+        $this->reset(['dmd', 'treatment', 'selectedTreatments', 'cost_of_treatment', 'amount_charged', 'remarks', 'beforeImages', 'afterImages', 'removedExistingImageIds']);
         $this->existingImages = [];
 
         if (!empty($data)) {
@@ -174,7 +196,6 @@ class TreatmentRecord extends Component
     #[On('validateTreatmentRecord')]
     public function validateForm()
     {
-        // This will now fail and stop if fields are empty
         try {
             $this->sanitizeFormData();
             $validatedData = $this->validate($this->rules(), $this->messages(), $this->validationAttributes);
@@ -188,33 +209,69 @@ class TreatmentRecord extends Component
             return;
         }
 
-        $beforeCount = is_array($this->beforeImages) ? count($this->beforeImages) : 0;
-        $afterCount = is_array($this->afterImages) ? count($this->afterImages) : 0;
-        if (($beforeCount + $afterCount) > 4) {
-            $this->addError('beforeImages', 'You can upload up to 4 images total.');
+        if (! $this->validateImageLimit()) {
             $this->dispatch('patient-form-navigation-finished', currentStep: 4);
             return;
         }
 
-        $payloads = [];
-        if (!empty($this->beforeImages)) {
-            foreach ($this->beforeImages as $image) {
-                $path = $image->store('treatment-records/before/' . now()->format('Y/m'), 'public');
-                $payloads[] = ['path' => $path, 'type' => 'before'];
-            }
-        }
-        if (!empty($this->afterImages)) {
-            foreach ($this->afterImages as $image) {
-                $path = $image->store('treatment-records/after/' . now()->format('Y/m'), 'public');
-                $payloads[] = ['path' => $path, 'type' => 'after'];
-            }
-        }
+        $payloads = $this->storePendingImagePayloads();
         if (!empty($payloads)) {
             $validatedData['image_payloads'] = $payloads;
         }
+        if (! empty($this->removedExistingImageIds)) {
+            $validatedData['removed_image_ids'] = array_values(array_unique(array_map('intval', $this->removedExistingImageIds)));
+        }
 
         $this->dispatch('treatmentRecordValidated', data: $validatedData);
-        $this->reset(['beforeImages', 'afterImages']);
+        $this->reset(['beforeImages', 'afterImages', 'removedExistingImageIds']);
+    }
+
+    #[On('validateTreatmentRecordImagesOnly')]
+    public function validateImagesOnly(): void
+    {
+        try {
+            $validatedData = $this->validate([
+                'beforeImages' => 'nullable|array|max:4',
+                'beforeImages.*' => 'image|max:10240',
+                'afterImages' => 'nullable|array|max:4',
+                'afterImages.*' => 'image|max:10240',
+            ]);
+        } catch (ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
+            $field = $e->validator->errors()->keys()[0] ?? null;
+            if ($field) {
+                $this->dispatch('scroll-to-error', field: $field);
+            }
+            $this->dispatch('patient-form-navigation-finished', currentStep: 4);
+            return;
+        }
+
+        if (! $this->validateImageLimit()) {
+            $this->dispatch('patient-form-navigation-finished', currentStep: 4);
+            return;
+        }
+
+        $payloads = $this->storePendingImagePayloads();
+        $removedImageIds = array_values(array_unique(array_map('intval', $this->removedExistingImageIds)));
+
+        if (empty($payloads) && empty($removedImageIds)) {
+            $this->addError('beforeImages', 'Add or remove at least one image before saving.');
+            $this->dispatch('patient-form-navigation-finished', currentStep: 4);
+            return;
+        }
+
+        $validatedData['image_payloads'] = $payloads;
+        $validatedData['image_list'] = $this->existingImages;
+        if (! empty($removedImageIds)) {
+            $validatedData['removed_image_ids'] = $removedImageIds;
+        }
+
+        foreach (['dmd', 'treatment', 'cost_of_treatment', 'amount_charged', 'remarks'] as $field) {
+            $validatedData[$field] = $this->{$field};
+        }
+
+        $this->dispatch('treatmentRecordImagesValidated', data: $validatedData);
+        $this->reset(['beforeImages', 'afterImages', 'removedExistingImageIds']);
     }
 
     #[On('requestTreatmentRecordData')]
@@ -354,5 +411,40 @@ class TreatmentRecord extends Component
             $catalogOptions,
             self::FALLBACK_TREATMENT_OPTIONS,
         )));
+    }
+
+    private function validateImageLimit(): bool
+    {
+        $existingCount = is_array($this->existingImages) ? count($this->existingImages) : 0;
+        $beforeCount = is_array($this->beforeImages) ? count($this->beforeImages) : 0;
+        $afterCount = is_array($this->afterImages) ? count($this->afterImages) : 0;
+
+        if (($existingCount + $beforeCount + $afterCount) > 4) {
+            $this->addError('beforeImages', 'You can store up to 4 images total per treatment record.');
+            return false;
+        }
+
+        return true;
+    }
+
+    private function storePendingImagePayloads(): array
+    {
+        $payloads = [];
+
+        if (!empty($this->beforeImages)) {
+            foreach ($this->beforeImages as $image) {
+                $path = $image->store('treatment-records/before/' . now()->format('Y/m'), 'public');
+                $payloads[] = ['path' => $path, 'type' => 'before'];
+            }
+        }
+
+        if (!empty($this->afterImages)) {
+            foreach ($this->afterImages as $image) {
+                $path = $image->store('treatment-records/after/' . now()->format('Y/m'), 'public');
+                $payloads[] = ['path' => $path, 'type' => 'after'];
+            }
+        }
+
+        return $payloads;
     }
 }
