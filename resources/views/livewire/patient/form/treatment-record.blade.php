@@ -208,13 +208,22 @@
                                 Pending Before Images
                             </div>
                             <div class="grid grid-cols-2 gap-3">
-                                @foreach ($beforeImages as $image)
-                                    <button type="button"
-                                        class="overflow-hidden rounded-lg border border-sky-200 bg-sky-50 p-1"
-                                        @click="activeImage = '{{ $image->temporaryUrl() }}'; activeLabel = 'before preview'; showImage = true">
-                                        <img class="h-32 w-full rounded-md object-cover"
-                                            src="{{ $image->temporaryUrl() }}" alt="Before image preview">
-                                    </button>
+                                @foreach ($beforeImages as $index => $image)
+                                    <div wire:key="before-image-{{ $index }}" class="relative overflow-hidden rounded-lg border border-sky-200 bg-sky-50 p-1">
+                                        <button type="button"
+                                            class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-base font-bold leading-none text-slate-700 shadow-sm transition hover:bg-white hover:text-red-600"
+                                            wire:click="removeBeforeImage({{ $index }})"
+                                            wire:loading.attr="disabled"
+                                            wire:target="removeBeforeImage"
+                                            aria-label="Remove before image">
+                                            &times;
+                                        </button>
+                                        <button type="button" class="block w-full"
+                                            @click="activeImage = '{{ $image->temporaryUrl() }}'; activeLabel = 'before preview'; showImage = true">
+                                            <img class="h-32 w-full rounded-md object-cover"
+                                                src="{{ $image->temporaryUrl() }}" alt="Before image preview">
+                                        </button>
+                                    </div>
                                 @endforeach
                             </div>
                             <p class="mt-2 text-xs text-slate-500">Preview only. These images will be saved when you save the record.</p>
@@ -227,13 +236,22 @@
                                 Pending After Images
                             </div>
                             <div class="grid grid-cols-2 gap-3">
-                                @foreach ($afterImages as $image)
-                                    <button type="button"
-                                        class="overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 p-1"
-                                        @click="activeImage = '{{ $image->temporaryUrl() }}'; activeLabel = 'after preview'; showImage = true">
-                                        <img class="h-32 w-full rounded-md object-cover"
-                                            src="{{ $image->temporaryUrl() }}" alt="After image preview">
-                                    </button>
+                                @foreach ($afterImages as $index => $image)
+                                    <div wire:key="after-image-{{ $index }}" class="relative overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 p-1">
+                                        <button type="button"
+                                            class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-base font-bold leading-none text-slate-700 shadow-sm transition hover:bg-white hover:text-red-600"
+                                            wire:click="removeAfterImage({{ $index }})"
+                                            wire:loading.attr="disabled"
+                                            wire:target="removeAfterImage"
+                                            aria-label="Remove after image">
+                                            &times;
+                                        </button>
+                                        <button type="button" class="block w-full"
+                                            @click="activeImage = '{{ $image->temporaryUrl() }}'; activeLabel = 'after preview'; showImage = true">
+                                            <img class="h-32 w-full rounded-md object-cover"
+                                                src="{{ $image->temporaryUrl() }}" alt="After image preview">
+                                        </button>
+                                    </div>
                                 @endforeach
                             </div>
                             <p class="mt-2 text-xs text-slate-500">Preview only. These images will be saved when you save the record.</p>
@@ -274,7 +292,7 @@
                         </div>
                     @endif
 
-                    @if (empty($existingImages))
+                    @if (empty($existingImages) && empty($beforeImages) && empty($afterImages))
                         <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
                             No treatment images yet.
                         </div>

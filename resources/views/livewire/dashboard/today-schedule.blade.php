@@ -174,7 +174,7 @@
                             <div
                                 class="mt-3 space-y-1 rounded-none border border-emerald-100 bg-white px-3 py-2 text-xs text-slate-600">
                                 <p>Dentist: <span
-                                        class="font-semibold text-slate-800">{{ $ongoing->dentist_name ? 'Dr. ' . $ongoing->dentist_name : 'Unassigned' }}</span>
+                                        class="font-semibold text-slate-800">{{ ($ongoing->dentist_name ?? $ongoing->dentist_username) ? 'Dr. ' . ($ongoing->dentist_name ?? $ongoing->dentist_username) : 'Unassigned' }}</span>
                                 </p>
                                 <p>Started: <span
                                         class="font-semibold text-slate-800">{{ \Carbon\Carbon::parse($ongoing->appointment_date)->format('h:i A') }}</span>

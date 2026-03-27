@@ -63,8 +63,8 @@ Route::middleware(['guest'])->group(function () {
 
 });
 
-// Password reset flow — accessible to ALL users (guest + authenticated)
-Route::view('/reset-password/expired', 'auth.reset-password-expired')->name('password.expired'); // must be BEFORE {token}
+// Password reset accessible to ALL users 
+Route::view('/reset-password/expired', 'auth.reset-password-expired')->name('password.expired'); 
 Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.forgot');

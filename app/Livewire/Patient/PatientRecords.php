@@ -59,7 +59,13 @@ class PatientRecords extends Component
             : collect();
 
         $this->treatmentRecords = $rawRecords->map(function ($record) use ($allImages) {
-            $record->image_list = $allImages->get($record->id, collect())->values()->toArray();
+            $record->image_list = $allImages->get($record->id, collect())
+                ->map(function ($image) {    
+                    return (array) $image;
+                })
+                ->values()
+                ->toArray();
+
             return $record;
         });
 

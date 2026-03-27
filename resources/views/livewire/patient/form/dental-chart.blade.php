@@ -2,6 +2,9 @@
     x-data="{ chartLoading: {{ $this->shouldShowChart ? 'true' : 'false' }} }"
     x-on:show-dental-loading.window="chartLoading = true"
     x-on:dental-chart-ready.window="chartLoading = false">
+    @php
+        $canStartNewRecord = auth()->check() && (auth()->user()?->canHandleChairsideFlow() ?? false);
+    @endphp
     <div x-cloak x-show="chartLoading"
         class="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-sm text-center">
         <div class="flex flex-col items-center gap-3">
@@ -191,8 +194,16 @@
                     the button below to create the first chart.</p>
             </div>
             @if ($isReadOnly)
-                <button type="button" wire:click="$dispatch('openNewVisitRecord')"
-                    class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
+                <button
+                    type="button"
+                    @if ($canStartNewRecord)
+                        wire:click="$dispatch('openNewVisitRecord')"
+                    @else
+                        disabled
+                        aria-disabled="true"
+                        title="Only admin or dentist can add new records."
+                    @endif
+                    class="flex items-center gap-2 rounded-lg px-6 py-3 text-lg font-bold text-white shadow-lg transition-all transform {{ $canStartNewRecord ? 'bg-[#0086da] hover:scale-105 cursor-pointer' : 'bg-slate-300 cursor-not-allowed opacity-70' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round">

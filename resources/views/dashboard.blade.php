@@ -47,7 +47,7 @@
                     'label' => 'Today\'s Appointments',
                     'value' => $todayAppointmentsCount ?? 0,
                     'meta' => ($todayCompletedCount ?? 0).' completed today',
-                    'href' => route('appointment.calendar'),
+                    'href' => route('appointment.history'),
                     'accent' => 'text-sky-700',
                 ],
                 [
@@ -270,44 +270,7 @@
         </div>
 
         <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-            @if ($isDentistDashboard)
-                <section id="needs-attention" class="border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4">
-                        <h2 class="text-lg font-bold text-gray-900">Clinical Priorities</h2>
-                        <p class="mt-1 text-xs text-gray-500">Quick links to the patients and queues that need immediate attention.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <a href="{{ route('queue') }}"
-                            class="block border border-amber-100 bg-amber-50 p-4 transition hover:border-amber-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-amber-700">Waiting + Arrived</div>
-                            <div class="mt-2 text-3xl font-bold text-amber-800">{{ $queueLoadCount ?? 0 }}</div>
-                            <p class="mt-1 text-xs text-amber-700/80">Waiting {{ $waitingPatientsCount ?? 0 }} ┬╖ Arrived {{ $arrivedPatientsCount ?? 0 }}</p>
-                        </a>
-
-                        <a href="{{ route('appointment.calendar') }}"
-                            class="block border border-sky-100 bg-sky-50 p-4 transition hover:border-sky-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-sky-700">Completed Today</div>
-                            <div class="mt-2 text-3xl font-bold text-sky-800">{{ $todayCompletedCount ?? 0 }}</div>
-                            <p class="mt-1 text-xs text-sky-700/80">Finished appointments for today.</p>
-                        </a>
-
-                        <a href="{{ route('patient-records') }}"
-                            class="block border border-rose-100 bg-rose-50 p-4 transition hover:border-rose-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-rose-700">Patient Records</div>
-                            <div class="mt-2 text-3xl font-bold text-rose-800">{{ $totalPatients ?? 0 }}</div>
-                            <p class="mt-1 text-xs text-rose-700/80">Open charts and patient details quickly.</p>
-                        </a>
-
-                        <a href="{{ route('appointment.calendar') }}"
-                            class="block border border-emerald-100 bg-emerald-50 p-4 transition hover:border-emerald-300">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700">{{ ($cancellationLabel ?? 'This Month')."'s Cancellation Rate" }}</div>
-                            <div class="mt-2 text-3xl font-bold text-emerald-800">{{ number_format($cancellationRate ?? 0, 1) }}%</div>
-                            <p class="mt-1 text-xs text-emerald-700/80">{{ $cancelledLast30 ?? 0 }} cancelled appointments out of {{ $bookedLast30 ?? 0 }} bookings.</p>
-                        </a>
-                    </div>
-                </section>
-            @elseif ($isAdminDashboard)
+            @if ($isAdminDashboard)
                 @php
                     $appointmentTrendLabels = $appointmentTrendLabels ?? [];
                     $appointmentTrendComparisonDates = $appointmentTrendComparisonDates ?? [];
@@ -489,39 +452,13 @@
                     @endif
                 </section>
             @else
-                <section class="border border-gray-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4">
-                        <h2 class="text-lg font-bold text-gray-900">{{ $isDentistDashboard ? 'Quick Access' : 'Front Desk Support' }}</h2>
-                        <p class="mt-1 text-xs text-gray-500">
-                            {{ $isDentistDashboard ? 'Fast links for chairside and patient-care actions.' : 'Use these tools after reviewing cancelled appointments and follow-up needs.' }}
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-3">
-                        @foreach ($quickLinks as $link)
-                            <a href="{{ $link['href'] }}"
-                                class="border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-[#0086DA] hover:bg-white">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900">{{ $link['label'] }}</p>
-                                        <p class="mt-1 text-xs leading-5 text-gray-500">{{ $link['description'] }}</p>
-                                    </div>
-                                    <span class="text-sm font-semibold text-[#0086DA]">Open</span>
-                                </div>
-                            </a>
-                        @endforeach
-
-                        <button type="button" id="addPatientQuickAction"
-                            class="border border-dashed border-gray-300 bg-white px-4 py-4 text-left transition hover:border-[#0086DA]">
-                            <p class="text-sm font-semibold text-gray-900">Add Patient</p>
-                            <p class="mt-1 text-xs leading-5 text-gray-500">Launch the patient form modal without leaving the dashboard.</p>
-                        </button>
-                    </div>
+                <section class="relative overflow-hidden border border-gray-200 bg-white shadow-sm">
+                    @livewire('dashboard.notes')
                 </section>
             @endif
         </div>
 
-        @if ($isDentistDashboard || $isAdminDashboard)
+        @if ($isAdminDashboard)
             <div class="mt-6">
                 <section id="recent-activity" class="border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="mb-4">
@@ -563,17 +500,3 @@
         <livewire:patient.form.patient-form-modal />
 @endsection
 
-@push('script')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addPatientQuickAction = document.getElementById('addPatientQuickAction');
-            if (addPatientQuickAction) {
-                addPatientQuickAction.addEventListener('click', function() {
-                    if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
-                        window.Livewire.dispatch('openAddPatientModal');
-                    }
-                });
-            }
-        });
-    </script>
-@endpush

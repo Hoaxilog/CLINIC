@@ -16,6 +16,7 @@ class HealthHistoryService
     public function create(int $patientId, array $data, string $modifier, CarbonInterface|string|null $timestamp = null): int
     {
         unset($data['selectedHistoryId'], $data['id']);
+        $data = $this->normalizePayload($data);
 
         $time = $timestamp instanceof CarbonInterface ? $timestamp : ($timestamp ? Carbon::parse((string) $timestamp) : now());
 
@@ -39,6 +40,7 @@ class HealthHistoryService
         $old = DB::table('health_histories')->where('id', $historyId)->first();
 
         unset($data['id'], $data['selectedHistoryId']);
+        $data = $this->normalizePayload($data);
         $data['modified_by'] = $modifier;
 
         DB::table('health_histories')->where('id', $historyId)->update($data);
@@ -72,5 +74,45 @@ class HealthHistoryService
             ->event('health_history_updated')
             ->withProperties(['health_history_id' => $historyId, 'old' => $old, 'attributes' => $new])
             ->log('Updated Health History');
+    }
+
+    private function normalizePayload(array $data): array
+    {
+        if (! array_key_exists('when_last_visit_q1', $data)) {
+            return $data;
+        }
+
+        $value = $data['when_last_visit_q1'];
+
+        if ($value instanceof CarbonInterface) {
+            $data['when_last_visit_q1'] = $value->toDateString();
+
+            return $data;
+        }
+
+        if ($value === null) {
+            return $data;
+        }
+
+        if (! is_string($value)) {
+            $data['when_last_visit_q1'] = null;
+
+            return $data;
+        }
+
+        $value = trim($value);
+        if ($value === '') {
+            $data['when_last_visit_q1'] = null;
+
+            return $data;
+        }
+
+        try {
+            $data['when_last_visit_q1'] = Carbon::parse($value)->toDateString();
+        } catch (\Throwable) {
+            $data['when_last_visit_q1'] = null;
+        }
+
+        return $data;
     }
 }

@@ -129,6 +129,28 @@ class TreatmentRecord extends Component
         $this->resetValidation('treatment');
     }
 
+    public function removeBeforeImage(int $index): void
+    {
+        if (! array_key_exists($index, $this->beforeImages)) {
+            return;
+        }
+
+        unset($this->beforeImages[$index]);
+        $this->beforeImages = array_values($this->beforeImages);
+        $this->resetValidation(['beforeImages', 'beforeImages.*']);
+    }
+
+    public function removeAfterImage(int $index): void
+    {
+        if (! array_key_exists($index, $this->afterImages)) {
+            return;
+        }
+
+        unset($this->afterImages[$index]);
+        $this->afterImages = array_values($this->afterImages);
+        $this->resetValidation(['afterImages', 'afterImages.*']);
+    }
+
     #[On('fillTreatmentRecord')]
     public function fillForm($data)
     {

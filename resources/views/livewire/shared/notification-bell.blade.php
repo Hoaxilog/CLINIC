@@ -31,16 +31,39 @@
             }
 
             return this.hasVisibleBlockingElement([
-                '[data-patient-form-modal]',
-                '[wire\\\\:loading].fixed.inset-0',
-                '[wire\\\\:loading].absolute.inset-0',
-                '.fixed.inset-0.z-50',
-                '.fixed.inset-0.z-\\[60\\]',
+                {
+                    selector: '[data-patient-form-modal]',
+                },
+                {
+                    selector: '.fixed.inset-0, .absolute.inset-0',
+                    predicate: (element) => this.hasWireLoadingAttribute(element),
+                },
+                {
+                    selector: '.fixed.inset-0.z-50',
+                },
+                {
+                    selector: '.fixed.inset-0.z-\\[60\\]',
+                },
             ]);
         },
+        hasWireLoadingAttribute(element) {
+            return Array.from(element.attributes).some((attribute) => {
+                return attribute.name === 'wire:loading'
+                    || attribute.name.startsWith('wire:loading.');
+            });
+        },
         hasVisibleBlockingElement(selectors) {
-            return selectors.some((selector) => {
+            return selectors.some((entry) => {
+                const selector = typeof entry === 'string' ? entry : entry.selector;
+                const predicate = typeof entry === 'string'
+                    ? null
+                    : (entry.predicate ?? null);
+
                 return Array.from(document.querySelectorAll(selector)).some((element) => {
+                    if (predicate && !predicate(element)) {
+                        return false;
+                    }
+
                     if (this.$root.contains(element)) {
                         return false;
                     }

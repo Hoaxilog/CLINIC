@@ -26,7 +26,7 @@
                 </div>
             @endif
             @if ($errors->any())
-                <div class="flex items-center gap-3 border border-rose-200 bg-rose-50 px-5 py-3 text-sm text-rose-700">
+                <div x-data="{ visible: true }" x-on:profile-edit-cancel.window="visible = false" x-show="visible" x-cloak class="flex items-center gap-3 border border-rose-200 bg-rose-50 px-5 py-3 text-sm text-rose-700">
                     <svg class="h-4 w-4 shrink-0 text-rose-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="square" d="M12 8v4m0 4h.01" />
                         <circle cx="12" cy="12" r="9" />
@@ -41,7 +41,29 @@
 
             <div class="grid gap-6 lg:grid-cols-[1.6fr_.9fr]">
                 <div class="space-y-6">
-                    <article x-data="{ editing: {{ $errors->any() ? 'true' : 'false' }} }" class="border border-[#e4eff8] bg-white">
+                    <article x-data="{
+                        editing: {{ $errors->any() ? 'true' : 'false' }},
+                        originals: {
+                            first_name: @js((string) ($user->first_name ?? '')),
+                            last_name: @js((string) ($user->last_name ?? '')),
+                            middle_name: @js((string) ($user->middle_name ?? '')),
+                            mobile_number: @js((string) ($accountMobileNumber ?? '')),
+                        },
+                        hasErrors: {
+                            first_name: {{ $errors->has('first_name') ? 'true' : 'false' }},
+                            last_name: {{ $errors->has('last_name') ? 'true' : 'false' }},
+                            middle_name: {{ $errors->has('middle_name') ? 'true' : 'false' }},
+                            mobile_number: {{ $errors->has('mobile_number') ? 'true' : 'false' }},
+                        },
+                        cancelIdentityForm() {
+                            this.editing = false;
+                            if (this.$refs.first_name) this.$refs.first_name.value = this.originals.first_name;
+                            if (this.$refs.last_name) this.$refs.last_name.value = this.originals.last_name;
+                            if (this.$refs.middle_name) this.$refs.middle_name.value = this.originals.middle_name;
+                            if (this.$refs.mobile_number) this.$refs.mobile_number.value = this.originals.mobile_number;
+                            window.dispatchEvent(new CustomEvent('profile-edit-cancel'));
+                        }
+                    }" class="border border-[#e4eff8] bg-white">
                         <div class="border-b border-[#e4eff8] px-6 py-6 sm:px-8">
                             <h2 class="text-[1.5rem] font-extrabold leading-[1.15] tracking-[-.02em] text-[#1a2e3b]">
                                 Account Identity
@@ -67,11 +89,16 @@
                                     <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
                                         First Name
                                     </label>
-                                    <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}"
-                                        x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
-                                        class="w-full border border-[#e4eff8] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('first_name') border-rose-400 focus:border-rose-500 focus:ring-rose-200 @enderror">
+                                    <input x-ref="first_name" type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}"
+                                        x-bind:readonly="!editing"
+                                        x-bind:class="{
+                                            'bg-white': editing,
+                                            'bg-[#f6fafd] cursor-not-allowed': !editing,
+                                            'border-rose-400 focus:border-rose-500 focus:ring-rose-200': editing && hasErrors.first_name
+                                        }"
+                                        class="w-full border border-[#e4eff8] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10">
                                     @error('first_name')
-                                        <span class="text-xs text-rose-600">{{ $message }}</span>
+                                        <span x-show="editing" x-cloak class="text-xs text-rose-600">{{ $message }}</span>
                                     @enderror
                                 </div>
 
@@ -79,11 +106,16 @@
                                     <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
                                         Last Name
                                     </label>
-                                    <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}"
-                                        x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
-                                        class="w-full border border-[#e4eff8] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('last_name') border-rose-400 focus:border-rose-500 focus:ring-rose-200 @enderror">
+                                    <input x-ref="last_name" type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}"
+                                        x-bind:readonly="!editing"
+                                        x-bind:class="{
+                                            'bg-white': editing,
+                                            'bg-[#f6fafd] cursor-not-allowed': !editing,
+                                            'border-rose-400 focus:border-rose-500 focus:ring-rose-200': editing && hasErrors.last_name
+                                        }"
+                                        class="w-full border border-[#e4eff8] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10">
                                     @error('last_name')
-                                        <span class="text-xs text-rose-600">{{ $message }}</span>
+                                        <span x-show="editing" x-cloak class="text-xs text-rose-600">{{ $message }}</span>
                                     @enderror
                                 </div>
 
@@ -92,11 +124,16 @@
                                         <label class="text-[.72rem] font-bold uppercase tracking-[.12em] text-[#587189]">
                                             Middle Name
                                         </label>
-                                        <input type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name) }}"
-                                            x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
-                                            class="w-full border border-[#e4eff8] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('middle_name') border-rose-400 focus:border-rose-500 focus:ring-rose-200 @enderror">
+                                        <input x-ref="middle_name" type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name) }}"
+                                            x-bind:readonly="!editing"
+                                            x-bind:class="{
+                                                'bg-white': editing,
+                                                'bg-[#f6fafd] cursor-not-allowed': !editing,
+                                                'border-rose-400 focus:border-rose-500 focus:ring-rose-200': editing && hasErrors.middle_name
+                                            }"
+                                            class="w-full border border-[#e4eff8] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10">
                                         @error('middle_name')
-                                            <span class="text-xs text-rose-600">{{ $message }}</span>
+                                            <span x-show="editing" x-cloak class="text-xs text-rose-600">{{ $message }}</span>
                                         @enderror
                                     </div>
                                 @endif
@@ -107,14 +144,19 @@
                                     </label>
                                     <div class="flex">
                                         <span class="inline-flex items-center border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] px-4 text-sm font-semibold text-[#3d5a6e]">+63</span>
-                                        <input type="text" name="mobile_number" inputmode="numeric" maxlength="10"
+                                        <input x-ref="mobile_number" type="text" name="mobile_number" inputmode="numeric" maxlength="10"
                                             oninput="this.value = this.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10)"
                                             value="{{ old('mobile_number', $accountMobileNumber) }}"
-                                            x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
-                                            class="w-full min-w-0 border border-[#e4eff8] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10 @error('mobile_number') border-rose-400 focus:border-rose-500 focus:ring-rose-200 @enderror">
+                                            x-bind:readonly="!editing"
+                                            x-bind:class="{
+                                                'bg-white': editing,
+                                                'bg-[#f6fafd] cursor-not-allowed': !editing,
+                                                'border-rose-400 focus:border-rose-500 focus:ring-rose-200': editing && hasErrors.mobile_number
+                                            }"
+                                            class="w-full min-w-0 border border-[#e4eff8] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#0086da]/10">
                                     </div>
                                     @error('mobile_number')
-                                        <span class="text-xs text-rose-600">{{ $message }}</span>
+                                        <span x-show="editing" x-cloak class="text-xs text-rose-600">{{ $message }}</span>
                                     @enderror
                                 </div>
 
@@ -144,7 +186,7 @@
                                     Save your updated name and contact number here. Role and email remain locked for admin control.
                                 </p>
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <button type="button" @click="$refs.identityForm.reset(); editing = false"
+                                    <button type="button" @click="cancelIdentityForm()"
                                         class="inline-flex items-center gap-2 border border-[#d4e8f5] bg-white px-5 py-[11px] text-[.7rem] font-bold uppercase tracking-[.1em] text-[#587189] transition hover:bg-[#f6fafd]">
                                         Cancel
                                     </button>

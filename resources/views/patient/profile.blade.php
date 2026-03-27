@@ -19,7 +19,7 @@
     @php
         $accountName = $requesterDisplayName ?? 'Patient';
         $memberSince = !empty($user->created_at)
-            ? \Carbon\Carbon::parse($user->created_at)->format('M Y')
+            ? \Carbon\Carbon::parse($user->created_at)->format('F Y')
             : 'Recently';
     @endphp
 
@@ -72,7 +72,28 @@
                 <div class="space-y-6">
 
                     {{-- Account Identity --}}
-                    <article x-data="{ editing: {{ $errors->any() ? 'true' : 'false' }} }"
+                    <article x-data="{
+                        editing: {{ $errors->any() ? 'true' : 'false' }},
+                        originals: {
+                            first_name: @js((string) ($user->first_name ?? '')),
+                            last_name: @js((string) ($user->last_name ?? '')),
+                            middle_name: @js((string) ($user->middle_name ?? '')),
+                            mobile_number: @js((string) ($user->mobile_number ?? '')),
+                        },
+                        hasErrors: {
+                            first_name: {{ $errors->has('first_name') ? 'true' : 'false' }},
+                            last_name: {{ $errors->has('last_name') ? 'true' : 'false' }},
+                            middle_name: {{ $errors->has('middle_name') ? 'true' : 'false' }},
+                            mobile_number: {{ $errors->has('mobile_number') ? 'true' : 'false' }},
+                        },
+                        cancelIdentityForm() {
+                            this.editing = false;
+                            if (this.$refs.first_name) this.$refs.first_name.value = this.originals.first_name;
+                            if (this.$refs.last_name) this.$refs.last_name.value = this.originals.last_name;
+                            if (this.$refs.middle_name) this.$refs.middle_name.value = this.originals.middle_name;
+                            if (this.$refs.mobile_number) this.$refs.mobile_number.value = this.originals.mobile_number;
+                        }
+                    }"
                         class="border border-[#e4eff8] bg-white shadow-[0_20px_48px_rgba(0,134,218,.07)]">
                         {{-- Card header --}}
                         <div class="flex flex-wrap items-center justify-between gap-4 border-b border-[#e4eff8] px-6 py-5 sm:px-8">
@@ -105,32 +126,47 @@
                             <div class="grid gap-5 sm:grid-cols-2">
                                 <div class="space-y-2">
                                     <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">First Name</label>
-                                    <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}"
-                                        x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
-                                        class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('first_name') border-red-400 focus:border-red-500 focus:ring-red-200 @enderror">
+                                    <input x-ref="first_name" type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}"
+                                        x-bind:readonly="!editing"
+                                        x-bind:class="{
+                                            'bg-white': editing,
+                                            'bg-[#f6fafd] cursor-not-allowed': !editing,
+                                            'border-red-400 focus:border-red-500 focus:ring-red-200': editing && hasErrors.first_name
+                                        }"
+                                        class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb]">
                                     @error('first_name')
-                                        <span class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
+                                    <span x-show="editing" x-cloak class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
 
                                 <div class="space-y-2">
                                     <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Last Name</label>
-                                    <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}"
-                                        x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
-                                        class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('last_name') border-red-400 focus:border-red-500 focus:ring-red-200 @enderror">
+                                    <input x-ref="last_name" type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}"
+                                        x-bind:readonly="!editing"
+                                        x-bind:class="{
+                                            'bg-white': editing,
+                                            'bg-[#f6fafd] cursor-not-allowed': !editing,
+                                            'border-red-400 focus:border-red-500 focus:ring-red-200': editing && hasErrors.last_name
+                                        }"
+                                        class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb]">
                                     @error('last_name')
-                                        <span class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
+                                        <span x-show="editing" x-cloak class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
 
                                 @if ($hasMiddleNameColumn)
                                     <div class="space-y-2">
                                         <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Middle Name</label>
-                                        <input type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name) }}"
-                                            x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
-                                            class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('middle_name') border-red-400 focus:border-red-500 focus:ring-red-200 @enderror">
+                                        <input x-ref="middle_name" type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name) }}"
+                                            x-bind:readonly="!editing"
+                                            x-bind:class="{
+                                                'bg-white': editing,
+                                                'bg-[#f6fafd] cursor-not-allowed': !editing,
+                                                'border-red-400 focus:border-red-500 focus:ring-red-200': editing && hasErrors.middle_name
+                                            }"
+                                            class="w-full border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb]">
                                         @error('middle_name')
-                                            <span class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
+                                            <span x-show="editing" x-cloak class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
                                         @enderror
                                     </div>
                                 @endif
@@ -139,14 +175,19 @@
                                     <label class="text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e]">Mobile Number</label>
                                     <div class="flex">
                                         <span class="inline-flex items-center border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] px-4 text-sm font-semibold text-[#3d5a6e]">+63</span>
-                                        <input type="text" name="mobile_number" inputmode="numeric" maxlength="10"
+                                        <input x-ref="mobile_number" type="text" name="mobile_number" inputmode="numeric" maxlength="10"
                                             oninput="this.value = this.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10)"
                                             value="{{ old('mobile_number', $user->mobile_number) }}"
-                                            x-bind:readonly="!editing" x-bind:class="editing ? 'bg-white' : 'bg-[#f6fafd] cursor-not-allowed'"
-                                            class="w-full min-w-0 border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb] @error('mobile_number') border-red-400 focus:border-red-500 focus:ring-red-200 @enderror">
+                                            x-bind:readonly="!editing"
+                                            x-bind:class="{
+                                                'bg-white': editing,
+                                                'bg-[#f6fafd] cursor-not-allowed': !editing,
+                                                'border-red-400 focus:border-red-500 focus:ring-red-200': editing && hasErrors.mobile_number
+                                            }"
+                                            class="w-full min-w-0 border border-[#d4e8f5] px-4 py-3 text-sm text-[#1a2e3b] outline-none transition focus:border-[#0086da] focus:ring-2 focus:ring-[#cde8fb]">
                                     </div>
                                     @error('mobile_number')
-                                        <span class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
+                                        <span x-show="editing" x-cloak class="text-[.72rem] font-bold text-red-500">{{ $message }}</span>
                                     @enderror
                                 </div>
 
@@ -161,7 +202,7 @@
                             <div x-show="editing" x-cloak class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#e4eff8] pt-5">
                                 <p class="text-[.78rem] leading-[1.6] text-[#7a9db5]">You can edit your name and mobile number here. Email stays locked for account access.</p>
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <button type="button" @click="$refs.identityForm.reset(); editing = false"
+                                    <button type="button" @click="cancelIdentityForm()"
                                         class="inline-flex items-center gap-2 border border-[#d4e8f5] bg-white px-5 py-[11px] text-[.7rem] font-bold uppercase tracking-[.1em] text-[#587189] transition hover:bg-[#f6fafd]">
                                         Cancel
                                     </button>

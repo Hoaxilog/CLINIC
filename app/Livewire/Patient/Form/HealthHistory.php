@@ -101,6 +101,10 @@ class HealthHistory extends Component
 
     public function triggerNewHistory()
     {
+        if ($this->isReadOnly) {
+            return;
+        }
+
         $this->isCreating = true;
         $this->selectedHistoryId = 'new';
 
@@ -121,6 +125,14 @@ class HealthHistory extends Component
     public function updatedSelectedHistoryId($value)
     {
         if ($value === 'new') {
+            if ($this->isReadOnly) {
+                $this->selectedHistoryId = '';
+                $this->isCreating = false;
+                $this->dispatchUiStateSync();
+
+                return;
+            }
+
             $this->triggerNewHistory();
         } else {
             $this->isCreating = false;
@@ -316,8 +328,13 @@ class HealthHistory extends Component
     {
         $this->sanitizeFormData();
 
+        $lastVisit = $this->when_last_visit_q1;
+        if (is_string($lastVisit) && trim($lastVisit) === '') {
+            $lastVisit = null;
+        }
+
         $payload = [
-            'when_last_visit_q1' => $this->when_last_visit_q1,
+            'when_last_visit_q1' => $lastVisit,
             'what_last_visit_reason_q1' => $this->what_last_visit_reason_q1,
             'what_seeing_dentist_reason_q2' => $this->what_seeing_dentist_reason_q2,
             'is_clicking_jaw_q3a' => $this->is_clicking_jaw_q3a,

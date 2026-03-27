@@ -1056,7 +1056,7 @@ class PatientFormModal extends Component
 
     private function validateConsentForUpdate(): bool
     {
-        if (! $this->isEditing) {
+        if (! $this->isEditing || $this->currentStep !== 1) {
             return true;
         }
 

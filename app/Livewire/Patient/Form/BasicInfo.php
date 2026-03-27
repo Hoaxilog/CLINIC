@@ -52,7 +52,6 @@ class BasicInfo extends Component
         'office_address',
     ];
 
-    // ... (Properties remain the same) ...
     // == Step 1: Patient Information ==
     public $last_name = '';
 
@@ -118,9 +117,6 @@ class BasicInfo extends Component
         $this->sanitizeFormData();
     }
 
-    // ... (getAgeProperty, rules, validationAttributes remain the same) ...
-
-    // Computed property for Age
     public function getAgeProperty()
     {
         if ($this->birth_date) {

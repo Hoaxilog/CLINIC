@@ -170,13 +170,52 @@
                             <div class="{{ $isReadOnly ? 'pointer-events-none' : '' }}">
                                 <livewire:patient.form.basic-info wire:key="basic-info" :data="$basicInfoData" />
                             </div>
+
+                            @if ($isEditing && ! $isReadOnly)
+                                <div class="mt-6 rounded-md border border-gray-200 bg-white p-4">
+                                    <h3 class="text-sm font-semibold text-[#1a2e3b]">Patient Consent and Declaration</h3>
+                                    <p class="mt-2 text-xs leading-relaxed text-[#3d5a6e]">
+                                        In compliance with Republic Act No. 10173 (Data Privacy Act of 2012), I voluntarily
+                                        authorize this clinic and its authorized healthcare staff to collect, process, and
+                                        securely store my personal and health information for diagnosis, treatment, billing,
+                                        and related clinical operations.
+                                    </p>
+
+                                    <div class="mt-3 space-y-2">
+                                        <label class="flex items-start gap-2 text-xs text-[#1a2e3b]">
+                                            <input type="checkbox" wire:model="consentAuthorizationAccepted"
+                                                class="mt-0.5 rounded-sm border-gray-300 text-[#0086da] focus:ring-[#0086da]">
+                                            <span>
+                                                I understand and authorize the processing of my information under the Data
+                                                Privacy Act of 2012.
+                                            </span>
+                                        </label>
+                                        @error('consentAuthorizationAccepted')
+                                            <p data-error-for="consentAuthorizationAccepted" class="text-xs text-red-600">{{ $message }}</p>
+                                        @enderror
+
+                                        <label class="flex items-start gap-2 text-xs text-[#1a2e3b]">
+                                            <input type="checkbox" wire:model="consentTruthfulnessAccepted"
+                                                class="mt-0.5 rounded-sm border-gray-300 text-[#0086da] focus:ring-[#0086da]">
+                                            <span>
+                                                I confirm that all information I have provided is true, complete, and
+                                                correct to the best of my knowledge.
+                                            </span>
+                                        </label>
+                                        @error('consentTruthfulnessAccepted')
+                                            <p data-error-for="consentTruthfulnessAccepted" class="text-xs text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                </div>
+                            @endif
                         @endif
 
                         {{-- Tab 2: Health Records --}}
                         @if ($currentStep == 2 && $isEditing)
                             <livewire:patient.form.health-history wire:key="health-history"
                                 :data="$healthHistoryData" :gender="$basicInfoData['gender'] ?? null"
-                                :isReadOnly="$selectedHealthHistoryId !== 'new'" :historyList="$healthHistoryList"
+                                :isReadOnly="$isReadOnly" :historyList="$healthHistoryList"
                                 :selectedHistoryId="$selectedHealthHistoryId" />
                         @endif
 
@@ -238,52 +277,21 @@
                             $showBack = false; // tabs replace Back
                         @endphp
 
-                        @if ($isEditing && !$isReadOnly && $shouldShowSave)
-                            <div class="mb-4 rounded-md border border-gray-200 bg-[#f6fafd] p-4">
-                                <h3 class="text-sm font-semibold text-[#1a2e3b]">Patient Consent and Declaration</h3>
-                                <p class="mt-2 text-xs leading-relaxed text-[#3d5a6e]">
-                                    In compliance with Republic Act No. 10173 (Data Privacy Act of 2012), I voluntarily
-                                    authorize this clinic and its authorized healthcare staff to collect, process, and
-                                    securely store my personal and health information for diagnosis, treatment, billing,
-                                    and related clinical operations.
-                                </p>
-
-                                <div class="mt-3 space-y-2">
-                                    <label class="flex items-start gap-2 text-xs text-[#1a2e3b]">
-                                        <input type="checkbox" wire:model="consentAuthorizationAccepted"
-                                            class="mt-0.5 rounded-sm border-gray-300 text-[#0086da] focus:ring-[#0086da]">
-                                        <span>
-                                            I understand and authorize the processing of my information under the Data
-                                            Privacy Act of 2012.
-                                        </span>
-                                    </label>
-                                    @error('consentAuthorizationAccepted')
-                                        <p class="text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-
-                                    <label class="flex items-start gap-2 text-xs text-[#1a2e3b]">
-                                        <input type="checkbox" wire:model="consentTruthfulnessAccepted"
-                                            class="mt-0.5 rounded-sm border-gray-300 text-[#0086da] focus:ring-[#0086da]">
-                                        <span>
-                                            I confirm that all information I have provided is true, complete, and
-                                            correct to the best of my knowledge.
-                                        </span>
-                                    </label>
-                                    @error('consentTruthfulnessAccepted')
-                                        <p class="text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                            </div>
-                        @endif
-
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div class="order-2 flex flex-wrap items-center gap-3 sm:order-1">
                                 <button data-draft-ignore
-                                    x-on:click="flushDraftNow(); $dispatch('patient-form-draft-pause', { ms: 3000 })"
-                                    wire:click="cancelEdit" type="button"
+                                    x-on:click.prevent="
+                                        if (! $wire.isReadOnly) {
+                                            await discardDraft();
+                                        } else {
+                                            flushDraftNow();
+                                            $dispatch('patient-form-draft-pause', { ms: 3000 });
+                                        }
+                                        await $wire.cancelEdit();
+                                    "
+                                    type="button"
                                     class="rounded-sm border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-[#1a2e3b] hover:bg-[#f6fafd]">
-                                    {{ $isEditing && !$isReadOnly ? 'Cancel' : 'Close' }}
+                                    {{ ! $isReadOnly ? 'Cancel' : 'Close' }}
                                 </button>
                             </div>
 
@@ -772,6 +780,12 @@
                                 }
                             });
 
+                            const treatmentRecord = this.getFieldValues(treatmentFields, base?.treatmentRecord || {});
+                            const selectedTreatments = this.getCheckedValues('selectedTreatments');
+                            if (selectedTreatments.length) {
+                                treatmentRecord.treatment = selectedTreatments.join(', ');
+                            }
+
                             return {
                                 currentStep: this.currentStep,
                                 basicInfo: this.getFieldValues(basicFields, base?.basicInfo || {}),
@@ -783,7 +797,7 @@
                                     dentitionType,
                                     numberingSystem: 'FDI'
                                 },
-                                treatmentRecord: this.getFieldValues(treatmentFields, base?.treatmentRecord || {}),
+                                treatmentRecord,
                                 updatedAt: new Date().toISOString(),
                                 mode: this.mode,
                                 patientId: this.patientId
@@ -882,6 +896,23 @@
 
                         getFieldValue(model) {
                             return this.getFieldValueState(model).value;
+                        },
+
+                        getCheckedValues(model) {
+                            const escapedModel = model.replace(/\./g, '\\\\.');
+                            const selectors = [
+                                `[wire\\:model\\.defer="${model}"]`,
+                                `[wire\\:model\\.live="${model}"]`,
+                                `[wire\\:model="${model}"]`,
+                                `[wire\\:model\\.defer="${escapedModel}"]`,
+                                `[wire\\:model\\.live="${escapedModel}"]`,
+                                `[wire\\:model="${escapedModel}"]`,
+                            ];
+
+                            return Array.from(document.querySelectorAll(selectors.join(',')))
+                                .filter((node) => node instanceof HTMLInputElement && node.type === 'checkbox' && node.checked)
+                                .map((node) => node.value)
+                                .filter((value) => typeof value === 'string' && value.trim() !== '');
                         },
 
                         formatTime(value) {

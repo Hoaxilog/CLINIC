@@ -154,7 +154,8 @@ class TodaySchedule extends Component
                 $this->appointmentBoardSelect(),
                 [
                     'appointments.dentist_id',
-                    'users.username as dentist_name',
+                    DB::raw("NULLIF(TRIM(CONCAT(COALESCE(users.first_name, ''), ' ', COALESCE(users.last_name, ''))), '') as dentist_name"),
+                    'users.username as dentist_username',
                 ]
             ));
 

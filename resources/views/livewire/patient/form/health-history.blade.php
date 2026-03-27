@@ -18,6 +18,9 @@
         allergies = $event.detail?.allergies ?? '';
     "
     x-on:health-history-ready.window="historyLoading = false">
+    @php
+        $canStartNewRecord = auth()->check() && (auth()->user()?->canHandleChairsideFlow() ?? false);
+    @endphp
     <div x-cloak x-show="historyLoading"
         class="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-sm text-center">
         <div class="flex flex-col items-center gap-3">
@@ -58,7 +61,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2">1. Date of last dental visit (Optional)</label>
-                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="when_last_visit_q1" type="date"
+                        <input @if ($isReadOnly) disabled @endif wire:model.defer="when_last_visit_q1" type="date"
                             class="{{ $lastVisitDateClass }}">
                         @error('when_last_visit_q1')
                             <span data-error-for="when_last_visit_q1" class="text-red-500 text-sm">{{ $message }}</span>
@@ -66,7 +69,7 @@
                     </div>
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2">What was done in your last dental (Optional)</label>
-                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="what_last_visit_reason_q1" type="text"
+                        <input @if ($isReadOnly) disabled @endif wire:model.defer="what_last_visit_reason_q1" type="text"
                             class="{{ $lastVisitReasonClass }}"
                             placeholder="e.g., Cleaning, Filling...">
                         @error('what_last_visit_reason_q1')
@@ -78,7 +81,7 @@
                 <div>
                     <label class="block text-lg font-medium text-gray-700 mb-2">2. Reason for seeing dentist
                         today? <span class="text-red-600">*</span></label>
-                    <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="what_seeing_dentist_reason_q2" type="text"
+                    <input @if ($isReadOnly) disabled @endif wire:model.defer="what_seeing_dentist_reason_q2" type="text"
                         class="{{ $todayReasonClass }}"
                         placeholder="e.g., Check-up...">
                     @error('what_seeing_dentist_reason_q2')
@@ -96,13 +99,13 @@
                                 <label class="block text-base font-medium text-gray-700">{{ $q['label'] }}</label>
                                 <div class="flex gap-x-6 mt-1">
                                     <label class="flex items-center cursor-pointer">
-                                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $q['model'] }}"
+                                        <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $q['model'] }}"
                                             type="radio" value="1"
                                             class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                         <span class="ml-2 text-sm font-bold text-black">YES</span>
                                     </label>
                                     <label class="flex items-center cursor-pointer">
-                                        <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $q['model'] }}"
+                                        <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $q['model'] }}"
                                             type="radio" value="0"
                                             class="h-4 w-4 text-gray-400 border-gray-300 focus:ring-gray-500">
                                         <span class="ml-2 text-sm text-gray-600">NO</span>
@@ -121,13 +124,13 @@
                         <label class="block text-lg font-medium text-gray-700">{{ $item['q'] }} <span class="text-red-600">*</span></label>
                         <div class="flex gap-x-6 mt-2">
                             <label class="flex items-center cursor-pointer">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $item['model'] }}"
+                                <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $item['model'] }}"
                                     @if (($item['model'] ?? null) === 'is_nervous_q6') x-model="nervous" @endif
                                     type="radio" value="1" class="h-4 w-4 text-blue-600">
                                 <span class="ml-2 text-sm font-bold text-black">YES</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $item['model'] }}"
+                                <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $item['model'] }}"
                                     @if (($item['model'] ?? null) === 'is_nervous_q6') x-model="nervous" @endif
                                     type="radio" value="0" class="h-4 w-4 text-gray-400">
                                 <span class="ml-2 text-sm text-gray-600">NO</span>
@@ -140,7 +143,7 @@
 
                         @if (isset($item['detail']))
                             <div x-cloak x-show="nervous === '1'" class="mt-2 pl-4 border-l-2 border-blue-200">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $item['detail'] }}" type="text"
+                                <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $item['detail'] }}" type="text"
                                     class="w-full border rounded px-3 py-2 text-sm @error($item['detail']) border-red-500 focus:border-red-500 focus:ring-red-200 @enderror"
                                     placeholder="{{ $item['placeholder'] }}">
                                 
@@ -163,7 +166,7 @@
                         <label class="block text-lg font-medium text-gray-700">{{ $med['q'] }} <span class="text-red-600">*</span></label>
                         <div class="flex gap-x-6 mt-2">
                             <label class="flex items-center cursor-pointer">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $med['model'] }}"
+                                <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $med['model'] }}"
                                     @if (($med['model'] ?? null) === 'is_condition_q1') x-model="condition" @endif
                                     @if (($med['model'] ?? null) === 'is_hospitalized_q2') x-model="hospitalized" @endif
                                     @if (($med['model'] ?? null) === 'is_serious_illness_operation_q3') x-model="seriousIllness" @endif
@@ -173,7 +176,7 @@
                                 <span class="ml-2 text-sm font-bold text-black">YES</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $med['model'] }}"
+                                <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $med['model'] }}"
                                     @if (($med['model'] ?? null) === 'is_condition_q1') x-model="condition" @endif
                                     @if (($med['model'] ?? null) === 'is_hospitalized_q2') x-model="hospitalized" @endif
                                     @if (($med['model'] ?? null) === 'is_serious_illness_operation_q3') x-model="seriousIllness" @endif
@@ -199,7 +202,7 @@
                                     ('{{ $med['model'] }}' === 'is_allergic_medications_q5' && allergies === '1')
                                 "
                                 class="mt-2 pl-4 border-l-2 border-blue-200">
-                                <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $med['detail'] }}" type="text"
+                                <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $med['detail'] }}" type="text"
                                     class="w-full border rounded px-3 py-2 text-sm @error($med['detail']) border-red-500 focus:border-red-500 focus:ring-red-200 @enderror"
                                     placeholder="Please specify details...">
                                 
@@ -222,12 +225,12 @@
                             <label class="block text-lg font-medium text-gray-700">{{ $fem['q'] }} <span class="text-red-600">*</span></label>
                             <div class="flex gap-x-6 mt-2">
                                 <label class="flex items-center cursor-pointer">
-                                    <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $fem['model'] }}"
+                                    <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $fem['model'] }}"
                                         type="radio" value="1" class="h-4 w-4 text-pink-600">
                                     <span class="ml-2 text-sm font-bold text-black">YES</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer">
-                                    <input @if ($isReadOnly && !$isCreating) disabled @endif wire:model.defer="{{ $fem['model'] }}"
+                                    <input @if ($isReadOnly) disabled @endif wire:model.defer="{{ $fem['model'] }}"
                                         type="radio" value="0" class="h-4 w-4 text-gray-400">
                                     <span class="ml-2 text-sm text-gray-600">NO</span>
                                 </label>
@@ -255,8 +258,16 @@
                 <p class="text-gray-500 mt-2 max-w-md mx-auto">This patient does not have any medical records yet.
                     Please add a record before proceeding.</p>
             </div>
-            <button type="button" wire:click="$dispatch('openNewVisitRecord')"
-                class="flex items-center gap-2 px-6 py-3 bg-[#0086da] text-white text-lg font-bold rounded-lg shadow-lg hover:scale-105 transition-all transform">
+            <button
+                type="button"
+                @if ($canStartNewRecord)
+                    wire:click="$dispatch('openNewVisitRecord')"
+                @else
+                    disabled
+                    aria-disabled="true"
+                    title="Only admin or dentist can add new records."
+                @endif
+                class="flex items-center gap-2 rounded-lg px-6 py-3 text-lg font-bold text-white shadow-lg transition-all transform {{ $canStartNewRecord ? 'bg-[#0086da] hover:scale-105 cursor-pointer' : 'bg-slate-300 cursor-not-allowed opacity-70' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round">

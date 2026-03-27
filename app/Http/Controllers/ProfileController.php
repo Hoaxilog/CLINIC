@@ -20,7 +20,11 @@ class ProfileController extends Controller
     {
         $user = DB::table('users')->where('id', Auth::id())->first();
         $isGoogleUser = $user && ! empty($user->google_id);
-        $accountDisplayName = trim((string) ($user->first_name ?? '').' '.(string) ($user->last_name ?? ''));
+        $accountDisplayName = collect([
+            $user->first_name ?? null,
+            $user->middle_name ?? null,
+            $user->last_name ?? null,
+        ])->filter(fn ($value) => filled($value))->implode(' ');
         $accountMobileNumber = trim((string) ($user->mobile_number ?? ''));
         $hasMiddleNameColumn = Schema::hasColumn('users', 'middle_name');
 
@@ -33,14 +37,17 @@ class ProfileController extends Controller
                         $query->orWhere('requester_email', $user->email);
                     }
                 })
-                ->select('requester_first_name', 'requester_last_name')
+                ->select('requester_first_name', 'requester_middle_name', 'requester_last_name')
                 ->orderByDesc('updated_at')
                 ->orderByDesc('appointment_date')
                 ->first();
 
             $requesterDisplayName = $accountDisplayName !== '' ? $accountDisplayName : trim(
-                (string) ($latestRequestIdentity->requester_first_name ?? '').' '.
-                (string) ($latestRequestIdentity->requester_last_name ?? '')
+                collect([
+                    $latestRequestIdentity->requester_first_name ?? null,
+                    $latestRequestIdentity->requester_middle_name ?? null,
+                    $latestRequestIdentity->requester_last_name ?? null,
+                ])->filter(fn ($value) => filled($value))->implode(' ')
             );
 
             if ($requesterDisplayName === '') {
