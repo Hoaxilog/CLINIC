@@ -50,6 +50,8 @@ class PatientFormModal extends Component
     public $dentalDataLoaded = false;
     public $pendingDentalDraft = null;
     public $hasPendingDentalDraft = false;
+    public $pendingTreatmentDraft = null;
+    public $hasPendingTreatmentDraft = false;
 
     // ── Consent ───────────────────────────────────────────────────────────────
     public $consentAuthorizationAccepted = false;
@@ -626,6 +628,10 @@ class PatientFormModal extends Component
         $this->basicInfoData = $safePayload['basicInfo'];
         $this->healthHistoryData = $safePayload['healthHistory'];
         $this->treatmentRecordData = $safePayload['treatmentRecord'];
+        $this->pendingTreatmentDraft = is_array($safePayload['treatmentRecord'] ?? null)
+            ? $safePayload['treatmentRecord']
+            : [];
+        $this->hasPendingTreatmentDraft = ! empty($this->pendingTreatmentDraft);
         if ($this->isEditing && ! $this->isReadOnly) {
             $this->forceNewRecord = true;
             $this->selectedHealthHistoryId = 'new';
@@ -1222,6 +1228,12 @@ class PatientFormModal extends Component
                     $this->pendingDentalDraft   = null;
                     $this->hasPendingDentalDraft = false;
                     $this->chartKey = uniqid();
+                }
+
+                if ($this->hasPendingTreatmentDraft && is_array($this->pendingTreatmentDraft)) {
+                    $this->treatmentRecordData = $this->pendingTreatmentDraft;
+                    $this->pendingTreatmentDraft = null;
+                    $this->hasPendingTreatmentDraft = false;
                 }
 
                 $this->dispatch('fillDentalChart', data: $this->dentalChartData)

@@ -100,6 +100,7 @@ class BookAppointment extends Component
             $this->contact_number = $user->mobile_number ?? '';
             $this->first_name = InputSanitizer::sanitizeTitleCase($user->first_name ?? '');
             $this->last_name = InputSanitizer::sanitizeTitleCase($user->last_name ?? '');
+            $this->patient_birth_date = $this->formatDateForForm($user->birth_date ?? null) ?? '';
 
             $this->prefillFromPreviousBooking();
         }
@@ -722,6 +723,19 @@ class BookAppointment extends Component
         return $fallback !== '' ? $fallbackValue : $currentValue;
     }
 
+    protected function formatDateForForm(mixed $value): ?string
+    {
+        if (blank($value)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse((string) $value)->toDateString();
+        } catch (Throwable $th) {
+            return null;
+        }
+    }
+
     protected function verifyRecaptchaForGuest(): bool
     {
         if (empty($this->recaptchaToken)) {
@@ -730,11 +744,21 @@ class BookAppointment extends Component
             return false;
         }
 
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET_KEY'),
-            'response' => $this->recaptchaToken,
-            'remoteip' => request()->ip(),
-        ]);
+        try {
+            $response = Http::asForm()
+                ->connectTimeout(5)
+                ->timeout(10)
+                ->post('https://www.google.com/recaptcha/api/siteverify', [
+                    'secret' => env('RECAPTCHA_SECRET_KEY'),
+                    'response' => $this->recaptchaToken,
+                    'remoteip' => request()->ip(),
+                ]);
+        } catch (Throwable $th) {
+            $this->resetRecaptchaState();
+            $this->addError('recaptcha', 'CAPTCHA verification is taking too long. Please try again.');
+
+            return false;
+        }
 
         if (! $response->json('success')) {
             $this->resetRecaptchaState();

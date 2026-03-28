@@ -406,7 +406,7 @@
                                     Service <span class="text-red-500">*</span>
                                 </label>
                                 <div class="relative">
-                                    <select wire:model.defer="service_id" data-validate-field="service_id"
+                                    <select wire:model.live="service_id" data-validate-field="service_id"
                                         class="{{ $selectClass('service_id') }}">
                                         <option value="">Select a service</option>
                                         @foreach ($services as $service)
@@ -475,14 +475,14 @@
                                 </div>
 
                                 {{-- Time slots --}}
-                                <div>
+                                <div class="relative">
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-3">
                                         Select a Time <span class="text-red-500">*</span>
                                     </label>
 
                                     <div class="{{ $slotGridClass }}" data-validate-field="selectedSlot"
-                                        wire:loading.remove wire:target="selectedDate">
+                                        wire:loading.remove wire:target="selectedDate,service_id">
                                         @forelse ($availableSlots as $slot)
                                             @php
                                                 $isFull = !empty($slot['is_full']);
@@ -515,7 +515,6 @@
                                                     '03:00 PM',
                                                     '04:00 PM',
                                                     '05:00 PM',
-                                                    '06:00 PM',
                                                 ];
                                             @endphp
                                             @foreach ($placeholders as $p)
@@ -527,15 +526,21 @@
                                         @endforelse
                                     </div>
 
-                                    <div wire:loading.flex wire:target="selectedDate"
-                                        class="mt-3 min-h-[160px] items-center justify-center">
-                                        <svg class="h-6 w-6 animate-spin text-[#0086da]" viewBox="0 0 24 24"
+                                    <div wire:loading.flex wire:target="selectedDate,service_id"
+                                        class="absolute inset-x-0 top-[2.15rem] bottom-0 z-10 flex-col items-center justify-center gap-3 border border-[#d4e8f5] bg-white/92 backdrop-blur-[1px]">
+                                        <svg class="h-7 w-7 animate-spin text-[#0086da]" viewBox="0 0 24 24"
                                             fill="none">
                                             <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                                stroke-opacity="0.2" stroke-width="4" />
+                                                stroke-opacity="0.18" stroke-width="4" />
                                             <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4"
                                                 stroke-linecap="round" />
                                         </svg>
+                                        <p class="text-[.72rem] font-bold uppercase tracking-[.14em] text-[#0086da]">
+                                            Loading Available Times
+                                        </p>
+                                        <p class="max-w-[15rem] text-center text-[.78rem] leading-relaxed text-[#7a9db5]">
+                                            Refreshing the time slots for your selected date and service.
+                                        </p>
                                     </div>
 
                                     @error('selectedSlot')
@@ -576,10 +581,10 @@
                             </div>
 
                             {{-- Submit --}}
-                            <button type="submit"
+                            <button type="submit" id="confirmAppointmentButton"
                                 class="mt-8 inline-flex w-full items-center justify-center gap-2 bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:-translate-y-px hover:bg-[#006ab0] disabled:cursor-not-allowed disabled:opacity-70"
                                 wire:loading.attr="disabled" wire:target="bookAppointment">
-                                <span wire:loading.remove wire:target="bookAppointment"
+                                <span id="confirmAppointmentIdleLabel" wire:loading.remove wire:target="bookAppointment"
                                     class="inline-flex items-center gap-2">
                                     <svg class="w-[14px] h-[14px]" fill="none" stroke="currentColor"
                                         stroke-width="2.5" viewBox="0 0 24 24">
@@ -588,9 +593,9 @@
                                     </svg>
                                     Confirm Appointment
                                 </span>
-                                <span wire:loading wire:target="bookAppointment"
+                                <span id="confirmAppointmentBusyLabel" wire:loading wire:target="bookAppointment"
                                     class="inline-flex items-center justify-center">
-                                    Processing...
+                                    {{ auth()->check() ? 'Processing...' : 'Verifying & Sending OTP...' }}
                                 </span>
                             </button>
 
@@ -601,6 +606,7 @@
                     @guest
                         @if ($guestOtpStepActive)
                             <div
+                                data-booking-step="otp"
                                 class="w-full max-w-xl mx-auto bg-white border border-[#e4eff8] p-8 md:p-12 shadow-[0_20px_48px_rgba(0,134,218,.08)]">
 
                                 {{-- Header --}}
@@ -834,6 +840,9 @@
         }
 
         async function syncBookingFormStateToLivewire() {
+            const selectedSlotInput = document.querySelector('input[name="selectedSlot"]:checked');
+            const selectedSlotValue = selectedSlotInput ? selectedSlotInput.value : null;
+
             const syncFieldValue = async (key, selector, transform = (value) => value) => {
                 const element = document.querySelector(selector);
                 if (!element) return;
@@ -849,16 +858,18 @@
             await syncFieldValue('patient_last_name', '[data-validate-field="patient_last_name"]', value => value.trim());
             await syncFieldValue('relationship_to_patient', '[data-validate-field="relationship_to_patient"]', value => value
                 .trim());
-            await syncFieldValue('service_id', '[data-validate-field="service_id"]');
+
+            // `service_id` and `selectedDate` are already live-bound. Re-setting
+            // them during submit re-triggers slot regeneration and can clear the
+            // user-facing time selection after the confirm button is clicked.
 
             const bookingForInput = document.querySelector('input[name="booking_for"]:checked');
             if (bookingForInput) {
                 await @this.set('booking_for', bookingForInput.value);
             }
 
-            const selectedSlotInput = document.querySelector('input[name="selectedSlot"]:checked');
-            if (selectedSlotInput) {
-                await @this.set('selectedSlot', selectedSlotInput.value);
+            if (selectedSlotValue) {
+                await @this.set('selectedSlot', selectedSlotValue);
             }
 
             const agreementInput = document.querySelector('input[data-validate-field="booking_agreement"]');
@@ -867,15 +878,53 @@
             }
         }
 
+        function setBookingSubmitUi(isSubmitting) {
+            const button = document.getElementById('confirmAppointmentButton');
+            const idleLabel = document.getElementById('confirmAppointmentIdleLabel');
+            const busyLabel = document.getElementById('confirmAppointmentBusyLabel');
+
+            if (!button || !idleLabel || !busyLabel) {
+                return;
+            }
+
+            button.disabled = isSubmitting;
+            button.classList.toggle('opacity-70', isSubmitting);
+            button.classList.toggle('cursor-not-allowed', isSubmitting);
+            idleLabel.style.display = isSubmitting ? 'none' : 'inline-flex';
+            busyLabel.style.display = isSubmitting ? 'inline-flex' : 'none';
+        }
+
+        async function waitForOtpStepRender(timeoutMs = 1800) {
+            const startedAt = Date.now();
+
+            while ((Date.now() - startedAt) < timeoutMs) {
+                if (document.querySelector('[data-booking-step="otp"]') || document.getElementById(
+                        'otpStatusPanel')) {
+                    return true;
+                }
+
+                await new Promise(resolve => window.requestAnimationFrame(resolve));
+            }
+
+            return false;
+        }
+
         async function submitBookingForm() {
             if (bookingSubmitInFlight) return;
             bookingSubmitInFlight = true;
+            setBookingSubmitUi(true);
             try {
+                const isGuestBookingFlow = !!document.getElementById('recaptcha-container');
                 if (document.getElementById('recaptcha-container')) await setRecaptchaToken();
                 await syncBookingFormStateToLivewire();
                 await @this.bookAppointment();
+
+                if (isGuestBookingFlow) {
+                    await waitForOtpStepRender();
+                }
             } finally {
                 bookingSubmitInFlight = false;
+                setBookingSubmitUi(false);
             }
         }
 

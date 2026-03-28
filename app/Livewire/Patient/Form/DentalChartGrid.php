@@ -52,7 +52,7 @@ class DentalChartGrid extends Component
         ['label' => 'Maryland Bridge', 'code' => 'MC', 'color' => 'blue'],
         ['label' => 'Veneer / Laminate', 'code' => 'V', 'color' => 'blue'],
         ['label' => 'Root Canal Treated', 'code' => 'RCT', 'color' => 'blue'],
-        ['label' => 'Erupting Tooth', 'code' => 'â†‘/â†“', 'color' => 'blue'],
+        ['label' => 'Erupting Tooth', 'code' => 'â†/â†', 'color' => 'blue'],
     ];
 
     public function mount($teeth = [], $isReadOnly = false, $dentitionType = 'adult', $instanceKey = 'initial')
@@ -78,8 +78,10 @@ class DentalChartGrid extends Component
 
     public function applyPickerTool($code, $tooth = null, $part = null)
     {
-        if ($this->isReadOnly) return;
-        if (!$tooth || !$part) return;
+        if ($this->isReadOnly)
+            return;
+        if (!$tooth || !$part)
+            return;
 
         $this->selectedTool = $code;
         $this->updateSurface($tooth, $part);
@@ -88,7 +90,8 @@ class DentalChartGrid extends Component
 
     private function getCurrentToolColor()
     {
-        if (!$this->selectedTool) return null;
+        if (!$this->selectedTool)
+            return null;
         foreach ($this->tools as $tool) {
             if ($tool['code'] === $this->selectedTool) {
                 return $tool['color'];
@@ -99,10 +102,12 @@ class DentalChartGrid extends Component
 
     public function updateSurface($tooth_num, $part)
     {
-        if ($this->isReadOnly) return;
+        if ($this->isReadOnly)
+            return;
 
         $toolColor = $this->getCurrentToolColor();
-        if (!$toolColor) return;
+        if (!$toolColor)
+            return;
 
         if ($this->selectedTool === 'CC') {
             $this->toggleWholeToothMarker($tooth_num, $toolColor);
@@ -132,8 +137,10 @@ class DentalChartGrid extends Component
         for ($i = 1; $i <= 3; $i++) {
             $key = 'line_' . $i;
             $line = $this->teeth[$tooth_num][$key] ?? null;
-            if (($line['code'] ?? null) === $code) return;
-            if (!$line && $firstEmptyKey === null) $firstEmptyKey = $key;
+            if (($line['code'] ?? null) === $code)
+                return;
+            if (!$line && $firstEmptyKey === null)
+                $firstEmptyKey = $key;
         }
         if ($firstEmptyKey) {
             $this->teeth[$tooth_num][$firstEmptyKey] = ['code' => $code, 'color' => $color];
@@ -144,8 +151,10 @@ class DentalChartGrid extends Component
     {
         $surfaces = ['top', 'bottom', 'left', 'right', 'center', 'whole_tooth'];
         foreach ($surfaces as $surface) {
-            if ($surface === $ignoreSurface) continue;
-            if (($this->teeth[$tooth_num][$surface]['code'] ?? null) === $code) return;
+            if ($surface === $ignoreSurface)
+                continue;
+            if (($this->teeth[$tooth_num][$surface]['code'] ?? null) === $code)
+                return;
         }
         for ($i = 1; $i <= 3; $i++) {
             $key = 'line_' . $i;
@@ -158,10 +167,12 @@ class DentalChartGrid extends Component
 
     public function updateStatus($tooth_num, $line_index)
     {
-        if ($this->isReadOnly) return;
+        if ($this->isReadOnly)
+            return;
 
         $toolColor = $this->getCurrentToolColor();
-        if (!$toolColor) return;
+        if (!$toolColor)
+            return;
 
         $key = 'line_' . $line_index;
         $currentLine = $this->teeth[$tooth_num][$key] ?? null;
