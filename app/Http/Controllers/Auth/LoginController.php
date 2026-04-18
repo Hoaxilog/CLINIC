@@ -26,10 +26,6 @@ class LoginController extends Controller
     public function index()
     {
         if (Auth::check()) {
-            if (Auth::user()?->isPatient()) {
-                return redirect()->route('patient.dashboard');
-            }
-
             return redirect()->route('dashboard');
         }
 
@@ -78,7 +74,7 @@ class LoginController extends Controller
                 'remoteip' => $request->ip(),
             ]);
 
-            if (! $response->json()['success']) {
+            if (!$response->json()['success']) {
                 session()->put('login_failed_attempts', $failedAttempts + 1);
                 RateLimiter::hit($throttleKey, 300);
 
@@ -88,7 +84,7 @@ class LoginController extends Controller
 
         $user = DB::table('users')->where('email', $email)->first();
 
-        if ($user && ! empty($user->password) && Hash::check($request->password, $user->password)) {
+        if ($user && !empty($user->password) && Hash::check($request->password, $user->password)) {
             $isUnverified = ($user->email_verified_at === null && $user->google_id === null);
 
             if ($isUnverified) {
@@ -110,7 +106,7 @@ class LoginController extends Controller
             return $this->completeLogin($request, $user);
         }
 
-        if ($user && empty($user->password) && ! empty($user->google_id)) {
+        if ($user && empty($user->password) && !empty($user->google_id)) {
             session()->put('login_failed_attempts', $failedAttempts + 1);
             RateLimiter::hit($throttleKey, 300);
 
@@ -135,26 +131,18 @@ class LoginController extends Controller
 
             $user = DB::table('users')->where('email', $googleUser->email)->first();
 
-            if ($user) {
-                if (! empty($user->google_id)) {
-                    if ($user->google_id !== $googleUser->id) {
-                        return redirect('/login')->with('failed', 'This email is already linked to a different Google account.');
-                    }
+            if (!$user) {
+                return redirect('/login')->with('failed', 'No account found for this Google email. Please contact the clinic administrator.');
+            }
 
-                    if ($this->requiresOtpChallenge($user->role)) {
-                        return $this->startOtpChallenge($request, $user);
-                    }
+            if (in_array((int) $user->role, [User::ROLE_PATIENT], true)) {
+                return redirect('/login')->with('failed', 'No account found for this Google email. Please contact the clinic administrator.');
+            }
 
-                    return $this->completeLogin($request, $user);
+            if (!empty($user->google_id)) {
+                if ($user->google_id !== $googleUser->id) {
+                    return redirect('/login')->with('failed', 'This email is already linked to a different Google account.');
                 }
-
-                DB::table('users')
-                    ->where('id', $user->id)
-                    ->update([
-                        'google_id' => $googleUser->id,
-                        'email_verified_at' => now(),
-                        'updated_at' => now(),
-                    ]);
 
                 if ($this->requiresOtpChallenge($user->role)) {
                     return $this->startOtpChallenge($request, $user);
@@ -163,28 +151,19 @@ class LoginController extends Controller
                 return $this->completeLogin($request, $user);
             }
 
-            $patientRoleId = DB::table('roles')
-                ->where('role_name', 'patient')
-                ->value('id');
+            DB::table('users')
+                ->where('id', $user->id)
+                ->update([
+                    'google_id' => $googleUser->id,
+                    'email_verified_at' => now(),
+                    'updated_at' => now(),
+                ]);
 
-            if (! $patientRoleId) {
-                return redirect('/login')->with('failed', 'Patient role is not configured. Please contact administrator.');
+            if ($this->requiresOtpChallenge($user->role)) {
+                return $this->startOtpChallenge($request, $user);
             }
 
-            $newUserId = DB::table('users')->insertGetId([
-                'username' => $googleUser->email,
-                'email' => $googleUser->email,
-                'google_id' => $googleUser->id,
-                'role' => (int) $patientRoleId,
-                'password' => Hash::make(Str::random(40)),
-                'email_verified_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            $newUser = DB::table('users')->where('id', $newUserId)->first();
-
-            return $this->completeLogin($request, $newUser);
+            return $this->completeLogin($request, $user);
         } catch (Exception $th) {
             return redirect('/login')->with('failed', 'Google Login failed. Please try again.');
         }
@@ -204,11 +183,11 @@ class LoginController extends Controller
     {
         $pendingOtp = $request->session()->get('pending_otp_login');
 
-        if (! $pendingOtp) {
+        if (!$pendingOtp) {
             return redirect()->route('login')->with('failed', 'Your OTP session has expired. Please log in again.');
         }
 
-        $lastSentAt = ! empty($pendingOtp['last_sent_at'])
+        $lastSentAt = !empty($pendingOtp['last_sent_at'])
             ? Carbon::parse($pendingOtp['last_sent_at'])
             : null;
         $remainingCooldown = 0;
@@ -246,7 +225,7 @@ class LoginController extends Controller
 
         $pendingOtp = $request->session()->get('pending_otp_login');
 
-        if (! $pendingOtp) {
+        if (!$pendingOtp) {
             return redirect()->route('login')->with('failed', 'Your OTP session has expired. Please log in again.');
         }
 
@@ -266,7 +245,7 @@ class LoginController extends Controller
             return redirect()->route('login')->with('failed', 'Your OTP has expired. Please log in again.');
         }
 
-        if (! Hash::check($request->otp, $pendingOtp['code_hash'])) {
+        if (!Hash::check($request->otp, $pendingOtp['code_hash'])) {
             RateLimiter::hit($verifyKey, $this->otpVerifyBlockSeconds());
 
             return back()->withErrors([
@@ -276,7 +255,7 @@ class LoginController extends Controller
 
         $user = DB::table('users')->where('id', $pendingOtp['user_id'])->first();
 
-        if (! $user) {
+        if (!$user) {
             $request->session()->forget('pending_otp_login');
 
             return redirect()->route('login')->with('failed', 'We could not complete the login. Please try again.');
@@ -294,7 +273,7 @@ class LoginController extends Controller
     {
         $pendingOtp = $request->session()->get('pending_otp_login');
 
-        if (! $pendingOtp) {
+        if (!$pendingOtp) {
             return redirect()->route('login')->with('failed', 'Your OTP session has expired. Please log in again.');
         }
 
@@ -314,7 +293,7 @@ class LoginController extends Controller
             return back()->with('failed', 'OTP resend limit reached. Please wait for the lock window to expire.');
         }
 
-        if (! empty($pendingOtp['last_sent_at'])) {
+        if (!empty($pendingOtp['last_sent_at'])) {
             $lastSentAt = Carbon::parse($pendingOtp['last_sent_at']);
             $elapsed = $lastSentAt->diffInSeconds(now(), false);
             if ($elapsed < $this->otpResendCooldownSeconds()) {
@@ -334,7 +313,7 @@ class LoginController extends Controller
 
         $user = DB::table('users')->where('id', $pendingOtp['user_id'])->first();
 
-        if (! $user) {
+        if (!$user) {
             $request->session()->forget('pending_otp_login');
 
             return redirect()->route('login')->with('failed', 'We could not complete the login. Please try again.');
@@ -349,20 +328,18 @@ class LoginController extends Controller
 
     private function redirectByRole($role, bool $isUnverified = false)
     {
-        $user = Auth::user();
-
         if (in_array((int) $role, [User::ROLE_ADMIN, User::ROLE_DENTIST], true)) {
             return redirect()->intended('/dashboard');
         }
 
         if ((int) $role === User::ROLE_STAFF) {
             return $isUnverified ? redirect('/dashboard') : redirect()->intended('/appointment');
-        } elseif ((int) $role === User::ROLE_PATIENT) {
-            if ($user && $user->requiresAccountSetupCompletion()) {
-                return redirect()->route('patient.complete-profile.show');
-            }
+        }
 
-            return redirect()->intended('/patient/dashboard');
+        // Block old patient accounts (role 3) — all accounts are now admin-created
+        if ((int) $role === User::ROLE_PATIENT) {
+            Auth::logout();
+            return redirect()->route('login')->with('failed', 'No account found with these credentials. Please contact the clinic administrator.');
         }
 
         return redirect()->intended('/dashboard');
@@ -370,7 +347,7 @@ class LoginController extends Controller
 
     private function loginThrottleKey(string $email, string $ip): string
     {
-        return 'login:'.$email.'|'.$ip;
+        return 'login:' . $email . '|' . $ip;
     }
 
     private function requiresOtpChallenge($role): bool
@@ -436,12 +413,12 @@ class LoginController extends Controller
 
     private function otpVerifyThrottleKey(int $userId, string $ip): string
     {
-        return 'otp-verify:'.$userId.'|'.$ip;
+        return 'otp-verify:' . $userId . '|' . $ip;
     }
 
     private function otpResendThrottleKey(int $userId, string $ip): string
     {
-        return 'otp-resend:'.$userId.'|'.$ip;
+        return 'otp-resend:' . $userId . '|' . $ip;
     }
 
     private function otpExpiresInMinutes(): int
@@ -491,7 +468,7 @@ class LoginController extends Controller
     {
         $lockedUntil = $state['locked_until'] ?? null;
 
-        if (! $lockedUntil) {
+        if (!$lockedUntil) {
             return 0;
         }
 
@@ -520,14 +497,14 @@ class LoginController extends Controller
 
     private function otpResendStateKey(string $email): string
     {
-        return 'login-otp-resend-state:'.sha1(Str::lower(trim($email)));
+        return 'login-otp-resend-state:' . sha1(Str::lower(trim($email)));
     }
 
     private function hasTrustedOtpDevice(Request $request, int $userId): bool
     {
         $trustedValue = (string) $request->cookie('trusted_otp_device', '');
 
-        if (! str_contains($trustedValue, '|')) {
+        if (!str_contains($trustedValue, '|')) {
             return false;
         }
 
@@ -548,7 +525,7 @@ class LoginController extends Controller
         Cache::put($this->trustedOtpCacheKey($userId, $token), true, now()->addMinutes($minutes));
         Cookie::queue(Cookie::make(
             'trusted_otp_device',
-            $userId.'|'.$token,
+            $userId . '|' . $token,
             $minutes,
             null,
             null,
@@ -561,7 +538,7 @@ class LoginController extends Controller
 
     private function trustedOtpCacheKey(int $userId, string $token): string
     {
-        return 'trusted-otp:'.$userId.':'.hash('sha256', $token);
+        return 'trusted-otp:' . $userId . ':' . hash('sha256', $token);
     }
 
     private function completeLogin(Request $request, object $user, bool $redirect = true)
@@ -570,7 +547,7 @@ class LoginController extends Controller
         $request->session()->regenerate();
         $this->logSuccessfulLogin($request, $user);
 
-        if (! $redirect) {
+        if (!$redirect) {
             return null;
         }
 
@@ -579,7 +556,7 @@ class LoginController extends Controller
 
     private function logSuccessfulLogin(Request $request, object $user): void
     {
-        if (! Schema::hasTable('activity_log')) {
+        if (!Schema::hasTable('activity_log')) {
             return;
         }
 

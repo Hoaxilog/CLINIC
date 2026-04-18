@@ -30,7 +30,6 @@
             <div class="text-sm font-semibold text-gray-700">Loading health history...</div>
         </div>
     </div>
-    {{-- CONDITION: Show Form if History Exists OR We are Creating a New One --}}
     @if (count($historyList) > 0 || $isCreating)
 
         <div class="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4"
@@ -220,8 +219,38 @@
                 @endforeach
 
                 <div class="rounded-md border border-slate-200 bg-slate-50/80 px-4 py-4">
-                    <h3 class="text-base font-semibold text-slate-900">Medical Conditions Checklist</h3>
-                    <p class="mt-1 text-sm text-slate-600">Mark all listed conditions with Yes or No before continuing.</p>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h3 class="text-base font-semibold text-slate-900">Medical Conditions Checklist</h3>
+                            <p class="mt-1 text-sm text-slate-600">Mark all listed conditions with Yes or No before continuing.</p>
+                        </div>
+                        @if (!$isReadOnly)
+                            <button
+                                type="button"
+                                id="no-to-all-conditions-btn"
+                                wire:click="setAllConditionsToNo"
+                                wire:loading.attr="disabled"
+                                wire:target="setAllConditionsToNo"
+                                class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-red-50 hover:border-red-300 hover:text-red-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                                title="Set all medical condition questions to NO">
+                                {{-- Loading state: spinner + Loading text --}}
+                                <span wire:loading.flex wire:target="setAllConditionsToNo" class="items-center gap-1.5">
+                                    <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                    Loading...
+                                </span>
+                                {{-- Default state: icon + label --}}
+                                <span wire:loading.remove wire:target="setAllConditionsToNo" class="inline-flex items-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round`    `   `   `   `   `   `" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    </svg>
+                                    No to All
+                                </span>
+                            </button>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">

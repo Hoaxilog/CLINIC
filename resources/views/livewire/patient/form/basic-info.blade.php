@@ -46,6 +46,22 @@
             </div>
 
             <div>
+                <label for="suffix" class="{{ $labelClass }}">Suffix</label>
+                <select wire:model.defer="suffix" id="suffix" class="{{ $fieldClass('suffix') }}">
+                    <option value="">None</option>
+                    <option value="Jr.">Jr.</option>
+                    <option value="Sr.">Sr.</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                </select>
+                @error('suffix')
+                    <span data-error-for="suffix" class="mt-1 block text-xs text-red-500">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div>
                 <label for="nickname" class="{{ $labelClass }}">Nickname</label>
                 <input wire:model.defer="nickname" type="text" id="nickname" class="{{ $fieldClass('nickname') }}"
                     placeholder="e.g., Jun">
@@ -210,10 +226,10 @@
     </div>
 
     @if ($this->age !== null && $this->age < 18)
-        <div class="rounded-sm border border-amber-200 bg-amber-50/60 p-5 md:p-6">
-            <div class="mb-5 border-b border-amber-200 pb-4">
-                <h2 class="text-base font-semibold text-amber-900">For Patients Below 18</h2>
-                <p class="mt-1 text-xs text-amber-700">Please complete guardian and parent details below.</p>
+        <div class="rounded-sm border border-gray-200 bg-white p-5 md:p-6">
+            <div class="mb-5 border-b border-gray-100 pb-4">
+                <h2 class="text-base font-semibold text-[#1a2e3b]">For Patients Below 18</h2>
+                <p class="mt-1 text-xs text-gray-500">Please complete guardian and parent details below.</p>
             </div>
 
             <div class="grid grid-cols-1 gap-5 md:grid-cols-2">

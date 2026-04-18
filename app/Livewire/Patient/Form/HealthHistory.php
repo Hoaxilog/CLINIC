@@ -571,6 +571,48 @@ class HealthHistory extends Component
         $this->dispatchUiStateSync();
     }
 
+    public function setAllConditionsToNo(): void
+    {
+        if ($this->isReadOnly) {
+            return;
+        }
+
+        $conditionFields = [
+            'is_chest_pain_angina',
+            'is_asthma',
+            'is_shortness_of_breath',
+            'is_tuberculosis',
+            'is_heart_disease_heart_attack',
+            'is_blood_disease',
+            'is_heart_surgery',
+            'is_bleeding_problems_disorders',
+            'is_artificial_heart_valve_pacemaker',
+            'is_diabetes',
+            'is_rheumatic_fever_heart_disease',
+            'is_liver_problem_jaundice_hepatitis',
+            'is_heart_murmur',
+            'is_kidney_bladder_problem',
+            'is_mitral_valve_prolapse',
+            'is_ulcers_hyperacidity',
+            'is_high_low_blood_pressure',
+            'is_tumors_cancer_malignancies',
+            'is_stroke',
+            'is_aids_hiv_positive',
+            'is_respiratory_lung_problem',
+            'is_fainting_epilepsy_seizures',
+            'is_emphysema',
+            'is_mental_health_disorder',
+            'is_other_disease_condition_problem',
+        ];
+
+        foreach ($conditionFields as $field) {
+            $this->{$field} = '0';
+        }
+
+        $this->resetValidation($conditionFields);
+        $this->dispatchUiStateSync();
+    }
+
     public function render()
     {
         return view('livewire.patient.form.health-history');

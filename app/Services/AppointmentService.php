@@ -234,6 +234,79 @@ class AppointmentService
             ->log('Rescheduled And Approved Appointment');
     }
 
+    /**
+     * Reschedule an already-Scheduled appointment by updating its date/time in place.
+     */
+    public function rescheduleScheduled(int $appointmentId, string $proposedDateTime, int $serviceId): void
+    {
+        $old = DB::table('appointments')->where('id', $appointmentId)->first();
+
+        DB::table('appointments')->where('id', $appointmentId)->update([
+            'appointment_date' => $proposedDateTime,
+            'service_id'       => $serviceId,
+            'updated_at'       => now(),
+        ]);
+
+        $subject     = new Appointment;
+        $subject->id = $appointmentId;
+        activity()->causedBy(Auth::user())->performedOn($subject)
+            ->event('appointment_rescheduled')
+            ->withProperties(['old' => ['appointment_date' => $old?->appointment_date], 'attributes' => [
+                'appointment_id'   => $appointmentId,
+                'appointment_date' => $proposedDateTime,
+                'service_id'       => $serviceId,
+            ]])
+            ->log('Rescheduled Appointment');
+    }
+
+    /**
+     * Create a new Scheduled appointment from a cancelled one, preserving patient/requester data.
+     * Returns the new appointment ID.
+     */
+    public function createRescheduledFromCancelled(int $cancelledAppointmentId, string $proposedDateTime, int $serviceId): int
+    {
+        $old = DB::table('appointments')->where('id', $cancelledAppointmentId)->first();
+
+        $payload = [
+            'patient_id'       => $old?->patient_id ?? null,
+            'service_id'       => $serviceId,
+            'appointment_date' => $proposedDateTime,
+            'status'           => 'Scheduled',
+            'modified_by'      => $this->modifier(),
+            'created_at'       => now(),
+            'updated_at'       => now(),
+        ];
+
+        // Carry over requester/booking fields if the columns exist
+        foreach ([
+            'booking_type', 'booking_for_other',
+            'requester_first_name', 'requester_last_name', 'requester_middle_name',
+            'requester_contact_number', 'requester_birth_date', 'requester_email',
+            'requester_user_id', 'requester_relationship_to_patient',
+        ] as $col) {
+            if (isset($old->$col) && Schema::hasColumn('appointments', $col)) {
+                $payload[$col] = $old->$col;
+            }
+        }
+
+        $newId = DB::table('appointments')->insertGetId($payload);
+
+        $subject     = new Appointment;
+        $subject->id = $newId;
+        activity()->causedBy(Auth::user())->performedOn($subject)
+            ->event('appointment_rescheduled_from_cancelled')
+            ->withProperties(['attributes' => [
+                'source_appointment_id' => $cancelledAppointmentId,
+                'new_appointment_id'    => $newId,
+                'appointment_date'      => $proposedDateTime,
+                'service_id'            => $serviceId,
+                'status'                => 'Scheduled',
+            ]])
+            ->log('Rescheduled Appointment from Cancelled');
+
+        return $newId;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Patient linking
     // ─────────────────────────────────────────────────────────────────────────

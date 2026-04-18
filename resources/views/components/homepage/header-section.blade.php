@@ -3,9 +3,6 @@
     $patientMinimalHeader = $patientMinimalHeader ?? false;
     $isPatientBookPage = request()->routeIs('book');
     $isPublicHomePage = request()->routeIs('home');
-    $guestActionMode = $guestActionMode ?? 'login';
-    $guestSecondaryLabel = $guestActionMode === 'register' ? 'Sign Up' : 'Login';
-    $guestSecondaryRoute = $guestActionMode === 'register' ? route('register') : route('login');
 @endphp
 
 <style>
@@ -141,10 +138,6 @@
                     </div>
                 </div>
             @else
-                <a href="{{ $guestSecondaryRoute }}"
-                    class="inline-flex items-center gap-[9px] whitespace-nowrap border border-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-[#0086da]">
-                    {{ $guestSecondaryLabel }}
-                </a>
                 <a href="{{ route('book') }}"
                     class="inline-flex items-center gap-[9px] whitespace-nowrap bg-[#0086da] px-6 py-3 text-[.7rem] font-bold uppercase tracking-[.1em] text-white transition duration-200 hover:-translate-y-px hover:bg-[#006ab0]">
                     Book Appointment
@@ -178,10 +171,6 @@
                     <a href="/home#{{ $id }}"
                         class="block border-b border-[#e4eff8] px-7 py-[17px] text-[.75rem] font-semibold uppercase tracking-[.08em] text-[#1a2e3b] no-underline transition hover:bg-[#f0f8fe] hover:text-[#0086da]">{{ $label }}</a>
                 @endforeach
-                <div class="px-7 pt-5 pb-3">
-                    <a href="{{ $guestSecondaryRoute }}"
-                        class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap border border-[#0086da] px-8 py-[13px] text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da] no-underline transition hover:bg-[#f0f8fe]">{{ $guestSecondaryLabel }}</a>
-                </div>
                 <div class="px-7 pt-5 pb-6">
                     <a href="{{ route('book') }}"
                         class="inline-flex w-full items-center justify-center gap-[9px] whitespace-nowrap bg-[#0086da] px-8 py-[15px] text-[.72rem] font-bold uppercase tracking-[.1em] text-white">Book

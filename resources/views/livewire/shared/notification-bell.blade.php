@@ -85,16 +85,15 @@
     class="relative z-50"
 >
     @php
-        $isPatientUser = auth()->check() && auth()->user()->role === 3;
-        $footerLink = $isPatientUser ? route('patient.dashboard') : url('/appointment');
-        $footerLabel = $isPatientUser ? 'View dashboard' : 'View all appointments';
+        $footerLink = url('/appointment');
+        $footerLabel = 'View all appointments';
     @endphp
 
     {{-- Bell Button --}}
     <button
         @click="open = !open"
-        class="relative inline-flex h-9 w-9 items-center justify-center rounded-sm border border-gray-200 bg-white text-[#3d5a6e] shadow-sm transition hover:border-[#d4e8f5] hover:bg-[#e8f4fc] hover:text-[#0086da] focus:outline-none focus:ring-2 focus:ring-[#e8f4fc]"
-        :class="open ? 'border-[#d4e8f5] bg-[#e8f4fc] text-[#0086da]' : ''"
+        :class="open ? 'border-gray-400 bg-gray-100 text-black' : ''"
+        class="relative flex h-9 w-9 items-center justify-center rounded-sm border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:border-gray-400 hover:bg-gray-100 hover:text-black focus:outline-none focus:ring-2 focus:ring-gray-200"
     >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M15.5 18C15.5 19.933 13.933 21.5 12 21.5C10.067 21.5 8.5 19.933 8.5 18" />

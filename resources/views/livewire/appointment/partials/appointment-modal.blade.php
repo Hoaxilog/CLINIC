@@ -78,17 +78,17 @@
 
         @if ($showAppointmentModal)
 
-            {{-- Loading overlay while Livewire fetches --}}
-            <div wire:loading.flex wire:target="openAppointmentModal,viewAppointment,saveAppointment,updateStatus,admitPatient"
-                class="min-h-[400px] flex-col items-center justify-center bg-white/80">
+            {{-- Loading overlay — centered spinner --}}
+            <div wire:loading.flex wire:target="openAppointmentModal,viewAppointment,saveAppointment,updateStatus,admitPatient,beginScheduledReschedule,cancelScheduledReschedule,saveScheduledReschedule,beginCancelledReschedule,cancelCancelledReschedule,rescheduleCancelled"
+                class="min-h-[460px] flex-col items-center justify-center bg-white">
                 <div class="flex flex-col items-center gap-3">
-                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
-                    <div class="text-sm font-semibold text-[#1a2e3b]">Loading...</div>
+                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-100 border-t-[#0086da]"></div>
+                    <div class="text-sm font-semibold text-[#587189]">Loading...</div>
                 </div>
             </div>
 
             <form wire:submit.prevent="saveAppointment"
-                wire:loading.remove wire:target="openAppointmentModal,viewAppointment,saveAppointment,updateStatus,admitPatient"
+                wire:loading.remove wire:target="openAppointmentModal,viewAppointment,saveAppointment,updateStatus,admitPatient,beginScheduledReschedule,cancelScheduledReschedule,saveScheduledReschedule,beginCancelledReschedule,cancelCancelledReschedule,rescheduleCancelled"
                 class="overflow-y-auto px-6 py-6" style="max-height: calc(100vh - 10rem);">
 
                 @php
@@ -106,7 +106,7 @@
                 @endphp
 
                 {{-- STATUS TIMELINE --}}
-                @if ($isViewing)
+                @if ($isViewing && !$isRescheduling)
                     @php
                         $statusSteps = ['Pending', 'Scheduled', 'Waiting', 'Ongoing', 'Completed'];
                         $currentIdx  = array_search($appointmentStatus, $statusSteps);
@@ -136,11 +136,24 @@
                     </div>
                 @endif
 
+                {{-- RESCHEDULE CONTEXT BANNER --}}
+                @if ($isViewing && $isRescheduling)
+                    <div class="mb-5 border border-[#cfe2f1] bg-[#f6fafd] px-4 py-3">
+                        <div class="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-[#587189]">Rescheduling for</div>
+                        <div class="text-sm font-semibold text-[#1a2e3b]">{{ trim(($firstName ?? '') . ' ' . ($lastName ?? '')) ?: '—' }}</div>
+                        @if ($appointmentStatus === 'Cancelled')
+                            <p class="mt-1 text-xs text-[#7a9db5]">A <strong>new Scheduled appointment</strong> will be created for this patient.</p>
+                        @else
+                            <p class="mt-1 text-xs text-[#7a9db5]">Choose a new date and time. The current appointment will be updated.</p>
+                        @endif
+                    </div>
+                @endif
+
                 {{-- DATE / TIME --}}
                 <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
                         <label class="{{ $labelClass }}">Date</label>
-                        @if ($isViewing && $appointmentStatus === 'Pending' && $isRescheduling)
+                        @if ($isViewing && $isRescheduling && in_array($appointmentStatus, ['Pending', 'Scheduled', 'Cancelled']))
                             <input type="date" wire:model.live="selectedDate" min="{{ now()->toDateString() }}" class="{{ $inputBase }}" />
                             @error('selectedDate')<span class="mt-1 block text-xs text-red-500">{{ $message }}</span>@enderror
                         @else
@@ -152,7 +165,7 @@
                     </div>
                     <div>
                         <label class="{{ $labelClass }}">Start Time</label>
-                        @if ($isViewing && $appointmentStatus === 'Pending' && $isRescheduling)
+                        @if ($isViewing && $isRescheduling && in_array($appointmentStatus, ['Pending', 'Scheduled', 'Cancelled']))
                             <div class="relative">
                                 <select wire:model.live="selectedTime" wire:loading.attr="disabled" wire:target="selectedDate"
                                     class="{{ $inputBase }} pr-12 disabled:cursor-wait disabled:bg-[#f8fbfe] disabled:text-[#7f94a3]">
@@ -195,7 +208,7 @@
                 </div>
 
                 {{-- REQUESTER INFO --}}
-                @if ($isViewing && $viewingBookingForOther)
+                @if ($isViewing && $viewingBookingForOther && !$isRescheduling)
                 <div class="mb-6 overflow-hidden rounded-xl border border-[#cfe2f1] bg-[#f6fafd]">
                     <div class="border-b border-[#cfe2f1] px-5 py-3">
                         <span class="text-xs font-bold uppercase tracking-widest text-[#587189]">Requester Info</span>
@@ -263,6 +276,7 @@
                 @endif
 
                 {{-- PATIENT NAME --}}
+                @if (!$isRescheduling)
                 <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
                         <label class="{{ $labelClass }}">First Name <span class="text-red-500 normal-case tracking-normal">*</span></label>
@@ -286,8 +300,10 @@
                         @error('lastName')<span class="mt-1 block text-xs text-red-500">{{ $message }}</span>@enderror
                     </div>
                 </div>
+                @endif
 
                 {{-- CONTACT / BIRTH DATE --}}
+                @if (!$isRescheduling)
                 <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                         <label class="{{ $labelClass }}">Contact Number <span class="text-red-500 normal-case tracking-normal">*</span></label>
@@ -308,13 +324,14 @@
                         @error('birthDate')<span class="mt-1 block text-xs text-red-500">{{ $message }}</span>@enderror
                     </div>
                 </div>
+                @endif
 
                 {{-- SERVICE --}}
                 <div class="mb-6">
                     <label class="{{ $labelClass }}">Service <span class="text-red-500 normal-case tracking-normal">*</span></label>
                     <select wire:model.live="selectedService"
-                        class="{{ $isViewing ? $readonlyInp : $serviceSelectClass }}"
-                        @if ($isViewing) disabled @endif>
+                        class="{{ ($isViewing && !$isRescheduling) ? $readonlyInp : $serviceSelectClass }}"
+                        @if ($isViewing && !$isRescheduling) disabled @endif>
                         <option value="" disabled>Select a service</option>
                         @foreach ($servicesList as $service)
                             <option value="{{ $service->id }}">
@@ -424,29 +441,32 @@
                 @endif
 
                 {{-- PATIENT LINKING (Scheduled/Waiting, no patient linked) --}}
-                @if ($isViewing && empty($viewingPatientId) && in_array($appointmentStatus, ['Waiting', 'Scheduled'], true) && auth()->user()->role !== 3)
+                @if ($isViewing && !$isRescheduling && empty($viewingPatientId) && in_array($appointmentStatus, ['Waiting', 'Scheduled'], true) && auth()->user()->role !== 3)
 
-                    <div class="mb-4 overflow-hidden rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
-                        <div class="text-sm font-semibold text-amber-900">No patient record linked yet</div>
-                        <p class="mt-1 text-xs text-amber-700">
-                            Link an existing patient record or create a new one below to enable chart access, check-in, and admission.
-                        </p>
-                        @if (!empty($pendingDuplicateWarnings))
-                            <div class="mt-2 space-y-0.5 text-xs font-semibold text-amber-700">
-                                @foreach ($pendingDuplicateWarnings as $w)<div>⚠ {{ $w }}</div>@endforeach
+                    {{-- Warning banner --}}
+                    <div class="mb-4 border border-amber-200 bg-amber-50 px-4 py-3">
+                        <div class="flex items-start gap-2.5">
+                            <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                            <div>
+                                <div class="text-xs font-bold text-amber-800">No patient record linked</div>
+                                <p class="mt-0.5 text-xs text-amber-700">Link an existing record or create a new one to enable chart access and admission.</p>
+                                @if (!empty($pendingDuplicateWarnings))
+                                    <div class="mt-1.5 space-y-0.5 text-xs font-semibold text-amber-700">
+                                        @foreach ($pendingDuplicateWarnings as $w)<div>⚠ {{ $w }}</div>@endforeach
+                                    </div>
+                                @endif
                             </div>
-                        @endif
+                        </div>
                     </div>
 
                     {{-- MATCH CANDIDATES --}}
-                    <div class="mb-6 overflow-hidden rounded-2xl border border-[#cfe2f1] bg-white/90">
-                        <div class="flex items-center justify-between border-b border-[#cfe2f1] bg-[#f5f9fd] px-5 py-3">
-                            <div>
-                                <div class="text-xs font-bold uppercase tracking-widest text-[#0086da]">Possible Patient Matches</div>
-                                <p class="mt-0.5 text-xs text-[#587189]">Click a candidate to review details before linking.</p>
-                            </div>
+                    <div class="mb-6 border border-[#cfe2f1] bg-white">
+
+                        {{-- Panel header --}}
+                        <div class="flex items-center justify-between border-b border-[#cfe2f1] bg-[#f6fafd] px-4 py-2.5">
+                            <div class="text-xs font-bold uppercase tracking-widest text-[#587189]">Possible Patient Matches</div>
                             @if (!empty($pendingMatchCandidates))
-                                <span class="inline-flex rounded-full bg-[#e8f4fc] px-3 py-1 text-xs font-semibold text-[#0086da]">
+                                <span class="border border-[#cfe2f1] bg-white px-2.5 py-0.5 text-xs font-semibold text-[#0086da]">
                                     {{ count($pendingMatchCandidates) }} {{ \Illuminate\Support\Str::plural('match', count($pendingMatchCandidates)) }}
                                 </span>
                             @endif
@@ -460,60 +480,51 @@
                             <div x-data="{ selectedMatch: @entangle('selectedPendingPatientId').live }"
                                 wire:key="match-candidates-panel"
                                 x-init="if (!selectedMatch) selectedMatch = {{ $initialMatchId }}"
-                                class="grid gap-0 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
+                                class="grid gap-0 lg:grid-cols-[220px_1fr]">
 
                                 {{-- Left — candidate list --}}
-                                <div class="border-b border-[#dbeaf7] bg-[#f5f9fd] p-4 lg:border-b-0 lg:border-r">
-                                    <div class="space-y-2">
-                                        @foreach ($pendingMatchCandidates as $candidate)
-                                            @php
-                                                $candidateId      = (int) $candidate->id;
-                                                $candidateName    = trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')) ?: 'Unnamed patient';
-                                                $candidateBirth   = !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->format('M d, Y') : 'No birth date';
-                                                $candidateBand    = (string) ($candidate->match_band ?? 'poor');
-                                                $candidatePercent = (int) ($candidate->match_percent ?? 0);
-                                                $dotColor = match ($candidateBand) {
-                                                    'strong'  => 'bg-emerald-500',
-                                                    'partial' => 'bg-amber-500',
-                                                    'weak'    => 'bg-slate-500',
-                                                    default   => 'bg-slate-400',
-                                                };
-                                            @endphp
-                                            <button type="button"
-                                                @click="selectedMatch = {{ $candidateId }}"
-                                                class="w-full rounded-xl border px-4 py-3 text-left transition"
-                                                :class="selectedMatch === {{ $candidateId }}
-                                                    ? 'border-[#2e8dd0] bg-[#eaf5ff] shadow-[inset_0_0_0_1px_rgba(0,134,218,.18)]'
-                                                    : 'border-[#d7e8f5] bg-white hover:border-[#8fc0e1]'">
-                                                <div class="flex items-start gap-3">
-                                                    <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full {{ $dotColor }}"></span>
-                                                    <div class="min-w-0 flex-1">
-                                                        <p class="font-bold text-[#1a2e3b]">{{ $candidateName }}</p>
-                                                        <p class="mt-0.5 text-xs text-[#6e8ea5]">{{ $candidateBirth }} · #{{ $candidateId }} · {{ $candidatePercent }}%</p>
-                                                    </div>
-                                                    <span aria-hidden="true"
-                                                        class="mt-0.5 ml-auto inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition"
-                                                        :class="selectedMatch === {{ $candidateId }}
-                                                            ? 'border-[#0086da] bg-[#0086da]'
-                                                            : 'border-[#9fc8e3] bg-white'">
-                                                        <span class="h-2 w-2 rounded-full bg-white"
-                                                            :class="selectedMatch === {{ $candidateId }} ? 'opacity-100' : 'opacity-0'"></span>
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        @endforeach
-                                    </div>
+                                <div class="border-b border-[#dbeaf7] bg-[#f6fafd] lg:border-b-0 lg:border-r">
+                                    @foreach ($pendingMatchCandidates as $candidate)
+                                        @php
+                                            $candidateId      = (int) $candidate->id;
+                                            $candidateName    = trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')) ?: 'Unnamed patient';
+                                            $candidateBirth   = !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->format('M d, Y') : 'No birth date';
+                                            $candidateBand    = (string) ($candidate->match_band ?? 'poor');
+                                            $candidatePercent = (int) ($candidate->match_percent ?? 0);
+                                            $barColor = match ($candidateBand) {
+                                                'strong'  => 'bg-emerald-500',
+                                                'partial' => 'bg-amber-400',
+                                                'weak'    => 'bg-gray-400',
+                                                default   => 'bg-gray-300',
+                                            };
+                                        @endphp
+                                        <button type="button"
+                                            @click="selectedMatch = {{ $candidateId }}"
+                                            class="w-full border-b border-[#e5eff8] px-4 py-3 text-left transition last:border-b-0"
+                                            :class="selectedMatch === {{ $candidateId }}
+                                                ? 'bg-white border-l-2 border-l-[#0086da]'
+                                                : 'bg-[#f6fafd] border-l-2 border-l-transparent hover:bg-white'">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <p class="text-sm font-semibold text-[#1a2e3b] leading-tight">{{ $candidateName }}</p>
+                                                <span class="shrink-0 text-[10px] font-bold tabular-nums text-[#7a9db5]">{{ $candidatePercent }}%</span>
+                                            </div>
+                                            <p class="mt-0.5 text-xs text-[#7a9db5]">{{ $candidateBirth }} · #{{ $candidateId }}</p>
+                                            <div class="mt-2 h-1 w-full bg-gray-200">
+                                                <div class="h-1 {{ $barColor }}" style="width: {{ $candidatePercent }}%"></div>
+                                            </div>
+                                        </button>
+                                    @endforeach
                                 </div>
 
                                 {{-- Right — candidate detail panel --}}
-                                <div class="relative bg-white p-4 md:p-5">
+                                <div class="relative bg-white">
 
-                                    {{-- Loading only on this right pane --}}
+                                    {{-- Loading overlay --}}
                                     <div wire:loading.flex wire:target="selectedPendingPatientId"
                                         class="absolute inset-0 z-10 items-center justify-center bg-white/80">
-                                        <div class="flex items-center gap-2 rounded-xl border border-[#cfe2f1] bg-white px-3 py-2 shadow-sm">
-                                            <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-blue-200 border-t-[#0086da]"></div>
-                                            <span class="text-xs font-semibold text-[#0086da]">Loading details...</span>
+                                        <div class="flex items-center gap-2 border border-[#cfe2f1] bg-white px-3 py-2">
+                                            <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200 border-t-[#0086da]"></div>
+                                            <span class="text-xs font-medium text-[#587189]">Loading...</span>
                                         </div>
                                     </div>
 
@@ -524,102 +535,104 @@
                                             $matchBand     = (string) ($candidate->match_band ?? 'poor');
                                             $matchPercent  = (int) ($candidate->match_percent ?? 0);
                                             $matchLabel    = (string) ($candidate->match_band_label ?? 'Poor match');
-                                            $matchBadge    = match ($matchBand) {
-                                                'strong'  => 'border-emerald-200 bg-emerald-50 text-emerald-700',
-                                                'partial' => 'border-amber-200 bg-amber-50 text-amber-700',
-                                                'weak'    => 'border-slate-300 bg-slate-100 text-slate-700',
-                                                default   => 'border-slate-300 bg-slate-50 text-slate-600',
+                                            $matchColor    = match ($matchBand) {
+                                                'strong'  => 'text-emerald-700 bg-emerald-50 border-emerald-200',
+                                                'partial' => 'text-amber-700 bg-amber-50 border-amber-200',
+                                                'weak'    => 'text-gray-600 bg-gray-100 border-gray-200',
+                                                default   => 'text-gray-500 bg-gray-50 border-gray-200',
                                             };
 
-                                            $requestName  = strtolower(trim(($firstName ?? '') . ' ' . ($lastName ?? '')));
-                                            $cName        = strtolower(trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')));
-                                            $nameMatch    = $requestName !== '' && $cName === $requestName;
+                                            $requestName = strtolower(trim(($firstName ?? '') . ' ' . ($lastName ?? '')));
+                                            $cName       = strtolower(trim(($candidate->first_name ?? '') . ' ' . ($candidate->last_name ?? '')));
+                                            $nameMatch   = $requestName !== '' && $cName === $requestName;
 
-                                            $reqBirth  = !empty($birthDate) ? \Carbon\Carbon::parse($birthDate)->toDateString() : null;
-                                            $cBirth    = !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->toDateString() : null;
+                                            $reqBirth   = !empty($birthDate) ? \Carbon\Carbon::parse($birthDate)->toDateString() : null;
+                                            $cBirth     = !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->toDateString() : null;
                                             $birthMatch = $reqBirth && $cBirth && $reqBirth === $cBirth;
 
-                                            $reqMobile = trim((string) ($viewingRequesterContactNumber ?: ($contactNumber ?? '')));
-                                            $cMobile   = trim((string) ($candidate->mobile_number ?? ''));
+                                            $reqMobile   = trim((string) ($viewingRequesterContactNumber ?: ($contactNumber ?? '')));
+                                            $cMobile     = trim((string) ($candidate->mobile_number ?? ''));
                                             $mobileMatch = $reqMobile && $cMobile && $reqMobile === $cMobile;
 
-                                            $reqEmail  = strtolower(trim((string) ($viewingRequesterEmail ?? '')));
-                                            $cEmail    = strtolower(trim((string) ($candidate->email_address ?? '')));
+                                            $reqEmail   = strtolower(trim((string) ($viewingRequesterEmail ?? '')));
+                                            $cEmail     = strtolower(trim((string) ($candidate->email_address ?? '')));
                                             $emailMatch = $reqEmail && $cEmail && $reqEmail === $cEmail;
                                         @endphp
-                                        <div x-cloak x-show="selectedMatch === {{ $candidateId }}" class="space-y-4">
-                                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                                <p class="text-xs font-bold uppercase tracking-widest text-[#7a9db5]">Match Signals</p>
-                                                <span class="inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide {{ $matchBadge }}">
+                                        <div x-cloak x-show="selectedMatch === {{ $candidateId }}" class="p-4">
+
+                                            {{-- Match score header --}}
+                                            <div class="mb-3 flex items-center justify-between">
+                                                <div class="text-xs font-bold uppercase tracking-widest text-[#587189]">Match Signals</div>
+                                                <span class="border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide {{ $matchColor }}">
                                                     {{ $matchPercent }}% · {{ $matchLabel }}
                                                 </span>
                                             </div>
 
+                                            {{-- Matched reasons as inline tags --}}
                                             @if (!empty($candidate->match_reasons))
-                                                <div class="flex flex-wrap gap-1.5">
+                                                <div class="mb-3 flex flex-wrap gap-1">
                                                     @foreach ($candidate->match_reasons as $reason)
-                                                        <span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                                                        <span class="border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
                                                             ✓ {{ $reason }}
                                                         </span>
                                                     @endforeach
                                                 </div>
                                             @endif
 
-                                            <div class="overflow-hidden rounded-xl border border-[#dbeaf7] bg-[#f8fbfe]">
-                                                <table class="w-full text-xs">
-                                                    <thead>
-                                                        <tr class="border-b border-[#dbeaf7]">
-                                                            <th class="px-3 py-2 text-left font-bold uppercase tracking-widest text-[#7a9db5]">Field</th>
-                                                            <th class="px-3 py-2 text-left font-bold uppercase tracking-widest text-[#7a9db5]">Requested</th>
-                                                            <th class="px-3 py-2 text-left font-bold uppercase tracking-widest text-[#7a9db5]">On Record</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody class="divide-y divide-[#e5eff8]">
-                                                        <tr>
-                                                            <td class="px-3 py-2 font-semibold text-[#7a9db5]">Name</td>
-                                                            <td class="px-3 py-2 text-[#1a2e3b]">{{ trim(($firstName ?? '') . ' ' . ($lastName ?? '')) ?: '—' }}</td>
-                                                            <td class="px-3 py-2 {{ $nameMatch ? 'font-semibold text-emerald-700' : 'text-[#1a2e3b]' }}">{{ $nameMatch ? '✓ ' : '' }}{{ $candidateName }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="px-3 py-2 font-semibold text-[#7a9db5]">Birthday</td>
-                                                            <td class="px-3 py-2 text-[#1a2e3b]">{{ $reqBirth ? \Carbon\Carbon::parse($reqBirth)->format('M d, Y') : '—' }}</td>
-                                                            <td class="px-3 py-2 {{ $birthMatch ? 'font-semibold text-emerald-700' : 'text-[#1a2e3b]' }}">{{ $birthMatch ? '✓ ' : '' }}{{ !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->format('M d, Y') : '—' }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="px-3 py-2 font-semibold text-[#7a9db5]">Mobile</td>
-                                                            <td class="px-3 py-2 text-[#1a2e3b]">{{ $reqMobile ?: '—' }}</td>
-                                                            <td class="px-3 py-2 {{ $mobileMatch ? 'font-semibold text-emerald-700' : 'text-[#1a2e3b]' }}">{{ $mobileMatch ? '✓ ' : '' }}{{ $candidate->mobile_number ?: '—' }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="px-3 py-2 font-semibold text-[#7a9db5]">Email</td>
-                                                            <td class="px-3 py-2 text-[#1a2e3b] break-all">{{ $reqEmail ?: '—' }}</td>
-                                                            <td class="px-3 py-2 break-all {{ $emailMatch ? 'font-semibold text-emerald-700' : 'text-[#1a2e3b]' }}">{{ $emailMatch ? '✓ ' : '' }}{{ $candidate->email_address ?: '—' }}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            {{-- Comparison table --}}
+                                            <table class="w-full border border-[#dbeaf7] text-xs">
+                                                <thead>
+                                                    <tr class="border-b border-[#dbeaf7] bg-[#f6fafd]">
+                                                        <th class="px-3 py-1.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#7a9db5]">Field</th>
+                                                        <th class="px-3 py-1.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#7a9db5]">Requested</th>
+                                                        <th class="px-3 py-1.5 text-left text-[10px] font-bold uppercase tracking-widest text-[#7a9db5]">On Record</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-[#e5eff8]">
+                                                    <tr>
+                                                        <td class="px-3 py-2 font-semibold text-[#7a9db5]">Name</td>
+                                                        <td class="px-3 py-2 text-[#1a2e3b]">{{ trim(($firstName ?? '') . ' ' . ($lastName ?? '')) ?: '—' }}</td>
+                                                        <td class="px-3 py-2 {{ $nameMatch ? 'font-semibold text-emerald-700' : 'text-[#1a2e3b]' }}">{{ $nameMatch ? '✓ ' : '' }}{{ $candidateName }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="px-3 py-2 font-semibold text-[#7a9db5]">Birthday</td>
+                                                        <td class="px-3 py-2 text-[#1a2e3b]">{{ $reqBirth ? \Carbon\Carbon::parse($reqBirth)->format('M d, Y') : '—' }}</td>
+                                                        <td class="px-3 py-2 {{ $birthMatch ? 'font-semibold text-emerald-700' : 'text-[#1a2e3b]' }}">{{ $birthMatch ? '✓ ' : '' }}{{ !empty($candidate->birth_date) ? \Carbon\Carbon::parse($candidate->birth_date)->format('M d, Y') : '—' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="px-3 py-2 font-semibold text-[#7a9db5]">Mobile</td>
+                                                        <td class="px-3 py-2 text-[#1a2e3b]">{{ $reqMobile ?: '—' }}</td>
+                                                        <td class="px-3 py-2 {{ $mobileMatch ? 'font-semibold text-emerald-700' : 'text-[#1a2e3b]' }}">{{ $mobileMatch ? '✓ ' : '' }}{{ $candidate->mobile_number ?: '—' }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="px-3 py-2 font-semibold text-[#7a9db5]">Email</td>
+                                                        <td class="px-3 py-2 break-all text-[#1a2e3b]">{{ $reqEmail ?: '—' }}</td>
+                                                        <td class="px-3 py-2 break-all {{ $emailMatch ? 'font-semibold text-emerald-700' : 'text-[#1a2e3b]' }}">{{ $emailMatch ? '✓ ' : '' }}{{ $candidate->email_address ?: '—' }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
 
                                             <button type="button"
                                                 @click.stop="openingPatientForm = true; resumeAppointmentModalOnPatientFormClose = true"
                                                 wire:click="previewPendingPatientRecord({{ $candidateId }})"
-                                                class="w-full rounded-lg border border-[#cfe2f1] bg-white px-4 py-2 text-xs font-semibold text-[#1a2e3b] transition hover:bg-[#f6fafd]">
-                                                View Full Patient Record
+                                                class="mt-3 w-full border border-[#cfe2f1] bg-[#f6fafd] px-3 py-2 text-xs font-semibold text-[#587189] transition hover:bg-white hover:text-[#1a2e3b]">
+                                                View Full Patient Record →
                                             </button>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
 
-                            {{-- Link / Create --}}
-                            <div class="flex flex-wrap gap-2 border-t border-[#cfe2f1] bg-[#f5f9fd] px-5 py-4">
+                            {{-- Link / Create actions --}}
+                            <div class="flex flex-wrap gap-2 border-t border-[#cfe2f1] bg-[#f6fafd] px-4 py-3">
                                 <button type="button" wire:click="linkPendingRequestToExistingPatient"
                                     wire:loading.attr="disabled" wire:target="linkPendingRequestToExistingPatient"
-                                    class="inline-flex items-center gap-2 rounded-lg bg-[#0086da] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0073a8]">
+                                    class="inline-flex items-center gap-2 bg-[#0086da] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0073a8]">
                                     Link to Selected Patient
                                 </button>
                                 <button type="button" wire:click="createPatientForPendingRequest"
                                     wire:loading.attr="disabled" wire:target="createPatientForPendingRequest"
-                                    class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
+                                    class="inline-flex items-center gap-2 border border-[#cfe2f1] bg-white px-4 py-2 text-sm font-semibold text-[#1a2e3b] transition hover:bg-[#f6fafd]">
                                     Create New Patient Record
                                 </button>
                             </div>
@@ -629,31 +642,33 @@
                                 <div class="text-sm font-semibold text-[#587189]">No matching records found</div>
                                 <p class="mt-1 text-xs text-[#7a9db5]">No existing patient closely matches this request.</p>
                             </div>
-                            <div class="border-t border-[#cfe2f1] bg-[#f5f9fd] px-5 py-4">
+                            <div class="border-t border-[#cfe2f1] bg-[#f6fafd] px-4 py-3">
                                 <button type="button" wire:click="createPatientForPendingRequest"
                                     wire:loading.attr="disabled" wire:target="createPatientForPendingRequest"
-                                    class="inline-flex w-full items-center justify-center rounded-lg bg-[#0086da] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0073a8]">
+                                    class="inline-flex w-full items-center justify-center bg-[#0086da] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0073a8]">
                                     Create New Patient Record
                                 </button>
                             </div>
                         @endif
                     </div>
 
-                @elseif ($isViewing && $viewingPatientId && in_array($appointmentStatus, ['Scheduled', 'Waiting', 'Completed'], true))
-                    <div class="mb-6 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
-                        <div>
-                            <div class="text-sm font-semibold text-emerald-900">Patient record linked ✓</div>
+                @elseif ($isViewing && !$isRescheduling && $viewingPatientId && in_array($appointmentStatus, ['Scheduled', 'Waiting', 'Completed'], true))
+                    <div class="mb-6 flex items-center justify-between border border-emerald-200 bg-emerald-50 px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div class="text-sm font-semibold text-emerald-900">Patient record linked</div>
                         </div>
                         @if (auth()->user()->role !== 3 && in_array($appointmentStatus, ['Scheduled', 'Waiting'], true))
                             <button type="button" wire:click="unlinkAppointmentPatient"
                                 wire:loading.attr="disabled" wire:target="unlinkAppointmentPatient"
                                 wire:confirm="Remove the patient record link? You can re-link it right after."
-                                class="shrink-0 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
+                                class="border border-emerald-300 bg-white px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100">
                                 Change / Unlink
                             </button>
                         @endif
                     </div>
                 @endif
+
 
                 {{-- FOOTER ACTIONS --}}
                 <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[#cfe2f1] pt-5">
@@ -712,16 +727,38 @@
                                     @endif
                                 @endif
                             @elseif($appointmentStatus === 'Scheduled')
-                                <button type="button" @click="openingPatientForm = true" wire:click="dispatchPatientForm(1)"
-                                    class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
-                                    View Patient Info
-                                </button>
-                                <button type="button" wire:click="updateStatus('Waiting')"
-                                    wire:loading.attr="disabled" wire:target="updateStatus"
-                                    wire:confirm="Mark patient as arrived and ready to be seen?"
-                                    class="inline-flex items-center gap-2 rounded-lg bg-[#0086da] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0073a8]">
-                                    Mark as Ready
-                                </button>
+                                @if (! $isRescheduling)
+                                    <button type="button" @click="openingPatientForm = true" wire:click="dispatchPatientForm(1)"
+                                        class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
+                                        View Patient Info
+                                    </button>
+                                    @if (auth()->user()->role !== 3)
+                                        <button type="button" wire:click="beginScheduledReschedule"
+                                            wire:loading.attr="disabled" wire:target="beginScheduledReschedule"
+                                            class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="0"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg>
+                                            Reschedule
+                                        </button>
+                                    @endif
+                                    <button type="button" wire:click="updateStatus('Waiting')"
+                                        wire:loading.attr="disabled" wire:target="updateStatus"
+                                        wire:confirm="Mark patient as arrived and ready to be seen?"
+                                        class="inline-flex items-center gap-2 rounded-lg bg-[#0086da] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0073a8]">
+                                        Mark as Ready
+                                    </button>
+                                @else
+                                    <button type="button" wire:click="cancelScheduledReschedule"
+                                        wire:loading.attr="disabled" wire:target="cancelScheduledReschedule"
+                                        class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
+                                        Cancel Reschedule
+                                    </button>
+                                    <button type="button" wire:click="saveScheduledReschedule"
+                                        wire:loading.attr="disabled" wire:target="saveScheduledReschedule"
+                                        wire:confirm="Save the new date and time for this appointment?"
+                                        class="inline-flex items-center gap-2 rounded-lg bg-[#0086da] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0073a8]">
+                                        Save New Schedule
+                                    </button>
+                                @endif
                             @elseif($appointmentStatus === 'Waiting')
                                 <button type="button" @click="openingPatientForm = true" wire:click="dispatchPatientForm(1)"
                                     class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
@@ -761,9 +798,30 @@
                                     ✓ Completed
                                 </span>
                             @elseif($appointmentStatus === 'Cancelled')
-                                <span class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-500">
-                                    ✕ Cancelled
-                                </span>
+                                @if (! $isRescheduling && auth()->user()->role !== 3)
+                                    <button type="button" wire:click="beginCancelledReschedule"
+                                        wire:loading.attr="disabled" wire:target="beginCancelledReschedule"
+                                        class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="0"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg>
+                                        Reschedule
+                                    </button>
+                                @elseif($isRescheduling)
+                                    <button type="button" wire:click="cancelCancelledReschedule"
+                                        wire:loading.attr="disabled" wire:target="cancelCancelledReschedule"
+                                        class="inline-flex items-center gap-2 rounded-lg border border-[#cfe2f1] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a2e3b] shadow-sm transition hover:bg-[#f6fafd]">
+                                        Cancel
+                                    </button>
+                                    <button type="button" wire:click="rescheduleCancelled"
+                                        wire:loading.attr="disabled" wire:target="rescheduleCancelled"
+                                        wire:confirm="Create a new scheduled appointment with this date and time?"
+                                        class="inline-flex items-center gap-2 rounded-lg bg-[#0086da] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0073a8]">
+                                        Book New Schedule
+                                    </button>
+                                @else
+                                    <span class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-500">
+                                        ✕ Cancelled
+                                    </span>
+                                @endif
                             @endif
                         @else
                             <button type="submit" wire:loading.attr="disabled" wire:target="saveAppointment"
@@ -778,10 +836,10 @@
 
             </form>
         @else
-            <div class="flex min-h-[400px] items-center justify-center bg-white">
+            <div class="flex min-h-[460px] items-center justify-center bg-white">
                 <div class="flex flex-col items-center gap-3">
-                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-blue-200 border-t-[#0086da]"></div>
-                    <div class="text-sm font-semibold text-[#1a2e3b]">Loading...</div>
+                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-100 border-t-[#0086da]"></div>
+                    <div class="text-sm font-semibold text-[#587189]">Loading...</div>
                 </div>
             </div>
         @endif

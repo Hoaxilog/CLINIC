@@ -22,10 +22,6 @@ class StaffOrDentistMiddleware
         $isStaff = $user?->canAccessOperationalPages() ?? false;
 
         if (! $isStaff) {
-            if ($role === User::ROLE_PATIENT) {
-                return redirect()->route('patient.dashboard');
-            }
-
             return abort(403, 'Unauthorized.');
         }
 

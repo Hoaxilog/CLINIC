@@ -42,12 +42,12 @@
                 </div>
 
                 <p style="margin:0 0 24px;font-size:14px;line-height:1.8;color:#587189;">
-                    If you need to review your appointment details, please log in to your patient account.
+                    If you need to reschedule or have questions, please contact the clinic directly.
                 </p>
 
-                <a href="{{ route('patient.dashboard') }}"
+                <a href="{{ url('/') }}"
                     style="display:inline-block;background:#0086da;color:#ffffff;text-decoration:none;padding:14px 28px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;">
-                    View Appointment
+                    Visit Our Website
                 </a>
             </div>
 

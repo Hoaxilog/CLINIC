@@ -22,10 +22,6 @@ class IsAdminMiddleware
         $isAdmin = $user?->isAdmin() ?? false;
 
         if (! $isAdmin) {
-            if ($role === User::ROLE_PATIENT) {
-                return redirect()->route('patient.dashboard');
-            }
-
             return redirect()->route('dashboard');
         }
 

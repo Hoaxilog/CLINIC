@@ -7,7 +7,6 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Schema;
 
 class User extends Authenticatable
 {
@@ -113,26 +112,6 @@ class User extends Authenticatable
         return (int) $this->role === self::ROLE_ADMIN;
     }
 
-    public function requiresAccountSetupCompletion(): bool
-    {
-        if (! $this->isPatient() || empty($this->google_id)) {
-            return false;
-        }
-
-        $requiredFields = ['first_name', 'last_name', 'mobile_number'];
-
-        if (Schema::hasColumn('users', 'birth_date')) {
-            $requiredFields[] = 'birth_date';
-        }
-
-        foreach ($requiredFields as $field) {
-            if (blank($this->{$field} ?? null)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     public function canAccessOperationalPages(): bool
     {

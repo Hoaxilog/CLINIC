@@ -42,7 +42,6 @@
 </head>
 
 <body class="min-h-screen bg-gray-50">
-    @php($guestActionMode = 'register')
     @include('components.homepage.header-section')
 
     <main>
@@ -182,14 +181,6 @@
                             alt="Google Logo" class="w-6 h-6 mr-3">
                         Continue with Google
                     </a>
-
-                    <div class="mt-6 text-center w-full max-w-xs">
-                        <p class="text-gray-600 text-sm">
-                            Don't have an account?
-                            <a href="{{ route('register') }}" class="text-[#0086DA] font-bold hover:underline">Sign
-                                Up</a>
-                        </p>
-                    </div>
 
                 </form>
             </div>

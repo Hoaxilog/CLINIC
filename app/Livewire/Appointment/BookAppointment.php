@@ -187,6 +187,30 @@ class BookAppointment extends Component
         }
     }
 
+    /**
+     * Batch-sync all form fields in a single Livewire round-trip.
+     * This replaces the multiple sequential @this.set() calls from JS
+     * that caused the double-loading animation on form submit.
+     */
+    public function syncFormData(array $data): void
+    {
+        $allowed = [
+            'first_name', 'last_name', 'middle_name',
+            'contact_number', 'email', 'booking_for',
+            'patient_first_name', 'patient_middle_name', 'patient_last_name',
+            'patient_birth_date', 'relationship_to_patient',
+            'selectedSlot', 'booking_agreement', 'recaptchaToken',
+        ];
+
+        foreach ($allowed as $field) {
+            if (array_key_exists($field, $data)) {
+                $this->{$field} = $data[$field];
+            }
+        }
+
+        $this->sanitizeBookingFields();
+    }
+
     public function updatedBookingFor(string $value): void
     {
         $this->patient_first_name = '';
@@ -590,10 +614,6 @@ class BookAppointment extends Component
         }
 
         session()->flash('success', 'Appointment requested! Please check your email for the details of your appointment.');
-
-        if (Auth::check() && (int) (Auth::user()->role ?? 0) === 3) {
-            return redirect()->route('patient.dashboard');
-        }
 
         return redirect()->route('book');
     }

@@ -267,7 +267,6 @@ class UserController extends Controller
             User::ROLE_ADMIN => 'Admin',
             User::ROLE_DENTIST => 'Dentist',
             User::ROLE_STAFF => 'Staff',
-            User::ROLE_PATIENT => 'Patient',
         ])->map(fn (string $label, int $id) => (object) [
             'id' => $id,
             'label' => $label,
@@ -280,7 +279,6 @@ class UserController extends Controller
             User::ROLE_ADMIN,
             User::ROLE_DENTIST,
             User::ROLE_STAFF,
-            User::ROLE_PATIENT,
         ];
     }
 

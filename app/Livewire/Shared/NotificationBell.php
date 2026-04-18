@@ -135,46 +135,6 @@ class NotificationBell extends Component
             foreach ($this->databaseNotificationsForUser($user->id) as $notification) {
                 $notifications->push($notification);
             }
-        } else {
-            foreach ($this->databaseNotificationsForUser($user->id) as $notification) {
-                $notifications->push($notification);
-            }
-
-            $recentAppointmentUpdates = DB::table('appointments')
-                ->leftJoin('services', 'appointments.service_id', '=', 'services.id')
-                ->where(function ($query) use ($user) {
-                    $query->where('appointments.requester_user_id', $user->id);
-
-                    if (! empty($user->email)) {
-                        $query->orWhereRaw('LOWER(appointments.requester_email) = ?', [strtolower((string) $user->email)]);
-                    }
-                })
-                ->select(
-                    'appointments.id',
-                    'appointments.status',
-                    'appointments.appointment_date',
-                    'appointments.updated_at',
-                    'services.service_name'
-                )
-                ->orderByDesc('appointments.updated_at')
-                ->limit(5)
-                ->get();
-
-            foreach ($recentAppointmentUpdates as $appointment) {
-                $status = (string) ($appointment->status ?? 'Updated');
-                $meta = Carbon::parse($appointment->appointment_date)->format('M d, h:i A');
-                $notifications->push((object) [
-                    'id' => 'patient-appt-'.$appointment->id.'-'.$status,
-                    'title' => $appointment->service_name ?? 'Appointment update',
-                    'message' => "Status: {$status}",
-                    'created_at' => $appointment->updated_at ?? $appointment->appointment_date,
-                    'status' => $status,
-                    'kind' => in_array($status, ['Scheduled', 'Waiting'], true) ? 'scheduled' : 'status',
-                    'meta' => $meta,
-                    'is_read' => false,
-                    'link' => route('patient.dashboard'),
-                ]);
-            }
         }
 
         $notifications = $notifications

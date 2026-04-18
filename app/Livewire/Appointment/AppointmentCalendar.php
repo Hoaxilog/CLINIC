@@ -246,7 +246,7 @@ class AppointmentCalendar extends Component
     {
         $this->rescheduleTimeOptions = [];
 
-        if (! $this->isViewing || ! $this->isRescheduling || $this->appointmentStatus !== 'Pending') {
+        if (! $this->isViewing || ! $this->isRescheduling || ! in_array($this->appointmentStatus, ['Pending', 'Scheduled', 'Cancelled'], true)) {
             return;
         }
 
@@ -1386,7 +1386,171 @@ class AppointmentCalendar extends Component
         $this->dispatch('flash-message', type: 'success', message: 'Appointment rescheduled and approved successfully.');
     }
 
+    public function beginScheduledReschedule(): void
+    {
+        if (! $this->isViewing || $this->appointmentStatus !== 'Scheduled' || Auth::user()?->role === 3) {
+            return;
+        }
 
+        $this->isRescheduling = true;
+        $this->selectedDate = $this->appointmentDate ?: $this->selectedDate;
+        if (! empty($this->selectedTime)) {
+            $this->selectedTime = substr((string) $this->selectedTime, 0, 5);
+        }
+        $this->updatedSelectedService($this->selectedService);
+        $this->refreshRescheduleTimeOptions();
+        $this->resetValidation(['selectedDate', 'selectedTime', 'conflict']);
+    }
+
+    public function cancelScheduledReschedule(): void
+    {
+        $this->isRescheduling = false;
+        $this->rescheduleTimeOptions = [];
+        $this->resetValidation(['selectedDate', 'selectedTime', 'conflict']);
+
+        if ($this->viewingAppointmentId) {
+            $this->viewAppointment((int) $this->viewingAppointmentId);
+        }
+    }
+
+    public function saveScheduledReschedule(): void
+    {
+        if (! $this->viewingAppointmentId || ! $this->isViewing || $this->appointmentStatus !== 'Scheduled') {
+            return;
+        }
+
+        if (Auth::user()?->role === 3) {
+            return;
+        }
+
+        $this->validate([
+            'selectedDate'    => 'required|date|after_or_equal:today',
+            'selectedTime'    => 'required|date_format:H:i',
+            'selectedService' => 'required',
+        ]);
+
+        $service = collect($this->servicesList)->firstWhere('id', $this->selectedService);
+        if (! $service) {
+            $this->addError('selectedService', 'Please select a valid service.');
+            return;
+        }
+
+        $durationInMinutes = $this->durationToMinutes($service->duration);
+        $proposedStart = Carbon::parse($this->selectedDate.' '.$this->selectedTime)->seconds(0);
+        $proposedEnd   = $proposedStart->copy()->addMinutes($durationInMinutes);
+
+        $blockedCapacity = $this->blockedCapacityForRange($proposedStart, $proposedEnd);
+        if ($blockedCapacity >= self::SLOT_CAPACITY) {
+            $this->addError('conflict', 'This time range includes blocked slots.');
+            return;
+        }
+
+        $clinicClose = Carbon::parse($this->selectedDate)->setTime(18, 0, 0);
+        if ($proposedEnd->gt($clinicClose)) {
+            $this->addError('conflict', 'This service cannot start at this time as it would end after clinic hours (6:00 PM).');
+            return;
+        }
+
+        $approvedConflicts = $this->countApprovedConflictsForRange($proposedStart, $proposedEnd);
+        $remainingCapacity = max(0, self::SLOT_CAPACITY - $blockedCapacity);
+        if ($approvedConflicts >= $remainingCapacity) {
+            $this->addError('conflict', 'This time slot already has two approved appointments.');
+            return;
+        }
+
+        app(AppointmentService::class)->rescheduleScheduled(
+            (int) $this->viewingAppointmentId,
+            $proposedStart->toDateTimeString(),
+            (int) $this->selectedService
+        );
+
+        $this->isRescheduling = false;
+        $this->loadAppointments();
+        $this->viewAppointment((int) $this->viewingAppointmentId);
+        $this->dispatch('flash-message', type: 'success', message: 'Appointment rescheduled successfully.');
+    }
+
+    public function rescheduleCancelled(): void
+    {
+        if (! $this->viewingAppointmentId || ! $this->isViewing || $this->appointmentStatus !== 'Cancelled') {
+            return;
+        }
+
+        if (Auth::user()?->role === 3) {
+            return;
+        }
+
+        $this->validate([
+            'selectedDate'    => 'required|date|after_or_equal:today',
+            'selectedTime'    => 'required|date_format:H:i',
+            'selectedService' => 'required',
+        ]);
+
+        $service = collect($this->servicesList)->firstWhere('id', $this->selectedService);
+        if (! $service) {
+            $this->addError('selectedService', 'Please select a valid service.');
+            return;
+        }
+
+        $durationInMinutes = $this->durationToMinutes($service->duration);
+        $proposedStart = Carbon::parse($this->selectedDate.' '.$this->selectedTime)->seconds(0);
+        $proposedEnd   = $proposedStart->copy()->addMinutes($durationInMinutes);
+
+        $blockedCapacity = $this->blockedCapacityForRange($proposedStart, $proposedEnd);
+        if ($blockedCapacity >= self::SLOT_CAPACITY) {
+            $this->addError('conflict', 'This time range includes blocked slots.');
+            return;
+        }
+
+        $clinicClose = Carbon::parse($this->selectedDate)->setTime(18, 0, 0);
+        if ($proposedEnd->gt($clinicClose)) {
+            $this->addError('conflict', 'This service cannot start at this time as it would end after clinic hours (6:00 PM).');
+            return;
+        }
+
+        $approvedConflicts = $this->countApprovedConflictsForRange($proposedStart, $proposedEnd);
+        $remainingCapacity = max(0, self::SLOT_CAPACITY - $blockedCapacity);
+        if ($approvedConflicts >= $remainingCapacity) {
+            $this->addError('conflict', 'This time slot already has two approved appointments.');
+            return;
+        }
+
+        $newId = app(AppointmentService::class)->createRescheduledFromCancelled(
+            (int) $this->viewingAppointmentId,
+            $proposedStart->toDateTimeString(),
+            (int) $this->selectedService
+        );
+
+        $this->isRescheduling = false;
+        $this->loadAppointments();
+        $this->viewAppointment($newId);
+        $this->dispatch('flash-message', type: 'success', message: 'New appointment scheduled successfully.');
+    }
+
+    public function beginCancelledReschedule(): void
+    {
+        if (! $this->isViewing || $this->appointmentStatus !== 'Cancelled' || Auth::user()?->role === 3) {
+            return;
+        }
+
+        $this->isRescheduling = true;
+        $this->selectedDate = now()->toDateString(); // start fresh, not the old cancelled date
+        $this->selectedTime = null;
+        $this->endTime = null;
+        $this->rescheduleTimeOptions = [];
+        $this->resetValidation(['selectedDate', 'selectedTime', 'conflict']);
+    }
+
+    public function cancelCancelledReschedule(): void
+    {
+        $this->isRescheduling = false;
+        $this->rescheduleTimeOptions = [];
+        $this->resetValidation(['selectedDate', 'selectedTime', 'conflict']);
+
+        if ($this->viewingAppointmentId) {
+            $this->viewAppointment((int) $this->viewingAppointmentId);
+        }
+    }
 
     protected function hydratePendingReviewContext(object $appointment): void
     {

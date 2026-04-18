@@ -1,8 +1,5 @@
 <div>
     @php
-        $isPatientUser = auth()->check() && auth()->user()->role === 3;
-        $patientName = $isPatientUser ? auth()->user()->username ?? 'Patient' : null;
-
         $inputBase =
             'w-full border bg-white px-4 py-3 text-sm text-[#1a2e3b] placeholder:text-[#9bbdd0] font-[Montserrat] outline-none transition focus:ring-2 focus:ring-[#cde8fb] focus:border-[#0086da] rounded-none';
         $inputError =
@@ -43,23 +40,13 @@
         style="font-family:'Montserrat',sans-serif; -webkit-font-smoothing:antialiased;">
 
         {{-- ══════════════════════════════════
-             HERO BANNER
+        HERO BANNER
         ══════════════════════════════════ --}}
         @if (!$guestOtpStepActive)
             <div class="px-6 pt-6 md:px-12 md:pt-8 xl:px-20">
                 <div class="mx-auto w-full max-w-[1400px] border border-[#e4eff8] bg-white">
                     <div class="flex items-center gap-4 px-6 py-6 md:px-8">
                         <div>
-                            @if ($isPatientUser)
-                                <a href="{{ route('patient.dashboard') }}"
-                                    class="mb-4 inline-flex items-center gap-[7px] text-[.68rem] font-bold uppercase tracking-[.12em] text-[#7a9db5] no-underline transition hover:text-[#0086da]">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2.5" stroke-linecap="square">
-                                        <path d="M19 12H5M12 5l-7 7 7 7" />
-                                    </svg>
-                                    Back to Dashboard
-                                </a>
-                            @endif
                             <h1 class="text-[1.35rem] font-extrabold leading-[1.1] tracking-[-.02em] text-[#1a2e3b]">Book
                                 an Appointment</h1>
                             <p class="mt-1 text-[.8rem] text-[#7a9db5]">Fill in your details, pick a service and time,
@@ -71,7 +58,7 @@
         @endif
 
         {{-- ══════════════════════════════════
-             SUCCESS MODAL
+        SUCCESS MODAL
         ══════════════════════════════════ --}}
         @if (session()->has('success'))
             <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -99,7 +86,7 @@
         @endif
 
         {{-- ══════════════════════════════════
-             MAIN FORM AREA
+        MAIN FORM AREA
         ══════════════════════════════════ --}}
         <div class="px-6 md:px-12 xl:px-20 {{ $guestOtpStepActive ? '' : 'py-12 md:py-16' }}">
             <div class="mx-auto max-w-[1400px]">
@@ -107,7 +94,8 @@
                 <form id="bookingForm">
 
                     {{-- ── Two-column form ── --}}
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start {{ $guestOtpStepActive ? 'hidden' : '' }}">
+                    <div
+                        class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start {{ $guestOtpStepActive ? 'hidden' : '' }}">
 
                         {{-- ── CARD 1: Patient Details ── --}}
                         <div
@@ -116,8 +104,8 @@
                             {{-- Card header --}}
                             <div class="flex items-center gap-3 mb-8 pb-6 border-b border-[#e4eff8]">
                                 <div class="w-8 h-8 bg-[#0086da] flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
-                                        stroke-width="2.5" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        viewBox="0 0 24 24">
                                         <path stroke-linecap="square" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
                                         <circle cx="12" cy="7" r="4" />
                                     </svg>
@@ -136,7 +124,8 @@
                                 <div class="mt-4 grid gap-3 md:grid-cols-2">
                                     <label
                                         class="cursor-pointer border p-4 transition {{ $booking_for === 'self' ? 'border-[#0086da] bg-[#eef7ff] shadow-[inset_0_0_0_1px_rgba(0,134,218,.12)]' : 'border-[#d4e8f5] bg-white hover:border-[#0086da]' }}">
-                                        <input type="radio" wire:model.live="booking_for" value="self" class="sr-only peer">
+                                        <input type="radio" wire:model.live="booking_for" value="self"
+                                            class="sr-only peer">
                                         <div class="flex items-start gap-3">
                                             <span
                                                 class="mt-1 flex h-4 w-4 items-center justify-center rounded-full border {{ $booking_for === 'self' ? 'border-[#0086da]' : 'border-[#9fc8e3]' }}">
@@ -144,9 +133,12 @@
                                                     class="h-2 w-2 rounded-full {{ $booking_for === 'self' ? 'bg-[#0086da]' : 'bg-transparent' }}"></span>
                                             </span>
                                             <div>
-                                                <p class="text-[.8rem] font-bold uppercase tracking-[.14em] text-[#1a2e3b]">For
+                                                <p
+                                                    class="text-[.8rem] font-bold uppercase tracking-[.14em] text-[#1a2e3b]">
+                                                    For
                                                     Myself</p>
-                                                <p class="mt-1 text-[.76rem] leading-relaxed text-[#5d7b8f]">Use my details as
+                                                <p class="mt-1 text-[.76rem] leading-relaxed text-[#5d7b8f]">Use my
+                                                    details as
                                                     the patient information for this request.</p>
                                             </div>
                                         </div>
@@ -162,17 +154,22 @@
                                                     class="h-2 w-2 rounded-full {{ $booking_for === 'someone_else' ? 'bg-[#0086da]' : 'bg-transparent' }}"></span>
                                             </span>
                                             <div>
-                                                <p class="text-[.8rem] font-bold uppercase tracking-[.14em] text-[#1a2e3b]">For
+                                                <p
+                                                    class="text-[.8rem] font-bold uppercase tracking-[.14em] text-[#1a2e3b]">
+                                                    For
                                                     Someone Else</p>
-                                                <p class="mt-1 text-[.76rem] leading-relaxed text-[#5d7b8f]">I am the contact
+                                                <p class="mt-1 text-[.76rem] leading-relaxed text-[#5d7b8f]">I am the
+                                                    contact
                                                     person, but the appointment is for another patient.</p>
                                             </div>
                                         </div>
                                     </label>
                                 </div>
                                 @error('booking_for')
-                                    <p class="text-[.75rem] text-red-500 mt-2 validation-error" data-error-for="booking_for">
-                                        {{ $message }}</p>
+                                    <p class="text-[.75rem] text-red-500 mt-2 validation-error"
+                                        data-error-for="booking_for">
+                                        {{ $message }}
+                                    </p>
                                 @enderror
                             </div>
 
@@ -190,8 +187,8 @@
                                 <div>
                                     <label
                                         class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                        {{ $booking_for === 'someone_else' ? 'Contact First Name' : 'First Name' }} <span
-                                            class="text-red-500">*</span>
+                                        {{ $booking_for === 'someone_else' ? 'Contact First Name' : 'First Name' }}
+                                        <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" wire:model.defer="first_name" data-validate-field="first_name"
                                         placeholder="Renz" class="{{ $fieldClass('first_name') }}">
@@ -250,9 +247,11 @@
                                         Contact Number <span class="text-red-500">*</span>
                                     </label>
                                     <div class="flex w-full min-w-0 items-stretch">
-                                        <span class="inline-flex shrink-0 items-center px-3 border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none whitespace-nowrap {{ $errors->has('contact_number') ? 'border-red-400' : '' }}">+63</span>
-                                        <input type="text" inputmode="numeric" maxlength="10" wire:model.defer="contact_number"
-                                            data-validate-field="contact_number" placeholder="9171234567"
+                                        <span
+                                            class="inline-flex shrink-0 items-center px-3 border border-r-0 border-[#d4e8f5] bg-[#f0f8fe] text-[#3d5a6e] text-sm font-semibold select-none whitespace-nowrap {{ $errors->has('contact_number') ? 'border-red-400' : '' }}">+63</span>
+                                        <input type="text" inputmode="numeric" maxlength="10"
+                                            wire:model.defer="contact_number" data-validate-field="contact_number"
+                                            placeholder="9171234567"
                                             oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/^0+/,'').slice(0,10)"
                                             class="{{ $fieldClass('contact_number') }} min-w-0 w-full flex-1">
                                     </div>
@@ -262,36 +261,34 @@
                                     @enderror
                                 </div>
 
-                                @unless ($isPatientUser)
-                                    <div class="md:col-span-2 xl:col-span-3">
-                                        <label
-                                            class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                            Email Address <span class="text-red-500">*</span>
-                                        </label>
-                                        <input type="email" wire:model.blur="email" data-validate-field="email"
-                                            placeholder="sample@gmail.com" class="{{ $fieldClass('email') }}">
-                                        @error('email')
-                                            <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
-                                                data-error-for="email">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                @endunless
+                                <div class="md:col-span-2 xl:col-span-3">
+                                    <label
+                                        class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
+                                        Email Address <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="email" wire:model.blur="email" data-validate-field="email"
+                                        placeholder="sample@gmail.com" class="{{ $fieldClass('email') }}">
+                                    @error('email')
+                                        <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
+                                            data-error-for="email">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
                             </div>
 
                             @if ($booking_for === 'someone_else')
                                 <div class="mt-8 border-t border-[#e4eff8] pt-6">
-                                <div class="mb-5">
-                                    <p class="text-[.62rem] font-bold uppercase tracking-[.18em] text-[#0086da]">
-                                        Patient Details
-                                    </p>
-                                    <p class="mt-1 text-[.77rem] leading-relaxed text-[#6d899b]">
-                                        Tell us who the appointment is actually for so staff can match or create the
-                                        correct patient record.
-                                    </p>
-                                </div>
+                                    <div class="mb-5">
+                                        <p class="text-[.62rem] font-bold uppercase tracking-[.18em] text-[#0086da]">
+                                            Patient Details
+                                        </p>
+                                        <p class="mt-1 text-[.77rem] leading-relaxed text-[#6d899b]">
+                                            Tell us who the appointment is actually for so staff can match or create the
+                                            correct patient record.
+                                        </p>
+                                    </div>
 
-                                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                                         <div>
                                             <label
                                                 class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
@@ -309,7 +306,7 @@
                                         <div>
                                             <label
                                                 class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">
-                                                Patient Middle Name 
+                                                Patient Middle Name
                                             </label>
                                             <input type="text" wire:model.defer="patient_middle_name"
                                                 data-validate-field="patient_middle_name" placeholder="(Optional)"
@@ -354,14 +351,15 @@
                                                 Relationship to patient<span class="text-red-500">*</span>
                                             </label>
                                             <input type="text" wire:model.defer="relationship_to_patient"
-                                                data-validate-field="relationship_to_patient" placeholder="Mother, spouse, etc"
+                                                data-validate-field="relationship_to_patient"
+                                                placeholder="Mother, spouse, etc"
                                                 class="{{ $fieldClass('relationship_to_patient') }}">
                                             @error('relationship_to_patient')
                                                 <p class="text-[.75rem] text-red-500 mt-1.5 validation-error"
                                                     data-error-for="relationship_to_patient">{{ $message }}</p>
                                             @enderror
                                         </div>
-                                </div>
+                                    </div>
                                 </div>
                             @endif
 
@@ -385,8 +383,8 @@
                             {{-- Card header --}}
                             <div class="flex items-center gap-3 mb-8 pb-6 border-b border-[#e4eff8]">
                                 <div class="w-8 h-8 bg-[#0086da] flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
-                                        stroke-width="2.5" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        viewBox="0 0 24 24">
                                         <rect x="3" y="4" width="18" height="18" stroke-linecap="square" />
                                         <path stroke-linecap="square" d="M16 2v4M8 2v4M3 10h18" />
                                     </svg>
@@ -484,25 +482,25 @@
                                     <div class="{{ $slotGridClass }}" data-validate-field="selectedSlot"
                                         wire:loading.remove wire:target="selectedDate,service_id">
                                         @forelse ($availableSlots as $slot)
-                                            @php
-                                                $isFull = !empty($slot['is_full']);
-                                                $isPast = !empty($slot['is_past']);
-                                                $isBlocked = !empty($slot['is_blocked']);
-                                                $disabled = $isFull || $isPast || $isBlocked;
-                                            @endphp
-                                            <label
-                                                class="{{ $disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }}">
-                                                <input type="radio" name="selectedSlot" wire:model="selectedSlot"
-                                                    data-validate-field="selectedSlot" value="{{ $slot['value'] }}"
-                                                    @disabled($disabled) class="peer sr-only">
-                                                <div
-                                                    class="text-center py-2.5 text-[.72rem] font-semibold border transition-all
-                                                {{ $disabled
-                                                    ? 'border-[#e4eff8] text-[#b2c2cf] bg-[#f8fbfe]'
-                                                    : 'border-[#d4e8f5] text-[#1a2e3b] hover:border-[#0086da] hover:bg-[#f0f8fe] peer-checked:border-[#0086da] peer-checked:bg-[#0086da] peer-checked:text-white' }}">
-                                                    {{ $slot['time'] }}{{ $isFull ? ' · Full' : '' }}
-                                                </div>
-                                            </label>
+                                                                            @php
+                                                                                $isFull = !empty($slot['is_full']);
+                                                                                $isPast = !empty($slot['is_past']);
+                                                                                $isBlocked = !empty($slot['is_blocked']);
+                                                                                $disabled = $isFull || $isPast || $isBlocked;
+                                                                            @endphp
+                                                                            <label
+                                                                                class="{{ $disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }}">
+                                                                                <input type="radio" name="selectedSlot" wire:model="selectedSlot"
+                                                                                    data-validate-field="selectedSlot" value="{{ $slot['value'] }}"
+                                                                                    @disabled($disabled) class="peer sr-only">
+                                                                                <div
+                                                                                    class="text-center py-2.5 text-[.72rem] font-semibold border transition-all
+                                                                                                                        {{ $disabled
+                                            ? 'border-[#e4eff8] text-[#b2c2cf] bg-[#f8fbfe]'
+                                            : 'border-[#d4e8f5] text-[#1a2e3b] hover:border-[#0086da] hover:bg-[#f0f8fe] peer-checked:border-[#0086da] peer-checked:bg-[#0086da] peer-checked:text-white' }}">
+                                                                                    {{ $slot['time'] }}{{ $isFull ? ' · Full' : '' }}
+                                                                                </div>
+                                                                            </label>
                                         @empty
                                             @php
                                                 $placeholders = [
@@ -530,15 +528,16 @@
                                         class="absolute inset-x-0 top-[2.15rem] bottom-0 z-10 flex-col items-center justify-center gap-3 border border-[#d4e8f5] bg-white/92 backdrop-blur-[1px]">
                                         <svg class="h-7 w-7 animate-spin text-[#0086da]" viewBox="0 0 24 24"
                                             fill="none">
-                                            <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                                stroke-opacity="0.18" stroke-width="4" />
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.18"
+                                                stroke-width="4" />
                                             <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4"
                                                 stroke-linecap="round" />
                                         </svg>
                                         <p class="text-[.72rem] font-bold uppercase tracking-[.14em] text-[#0086da]">
                                             Loading Available Times
                                         </p>
-                                        <p class="max-w-[15rem] text-center text-[.78rem] leading-relaxed text-[#7a9db5]">
+                                        <p
+                                            class="max-w-[15rem] text-center text-[.78rem] leading-relaxed text-[#7a9db5]">
                                             Refreshing the time slots for your selected date and service.
                                         </p>
                                     </div>
@@ -559,11 +558,13 @@
                                 <input type="hidden" id="recaptchaToken" wire:ignore>
                                 @error('recaptcha')
                                     <p class="text-[.75rem] text-red-500 mt-1.5 validation-error" data-error-for="recaptcha">
-                                        {{ $message }}</p>
+                                        {{ $message }}
+                                    </p>
                                 @enderror
                             @endguest
 
-                            <div class="mt-7 border border-[#e4eff8] bg-[#f8fbfe] p-5" data-validate-group="booking_agreement">
+                            <div class="mt-7 border border-[#e4eff8] bg-[#f8fbfe] p-5"
+                                data-validate-group="booking_agreement">
                                 <label class="flex items-start gap-3 cursor-pointer">
                                     <input type="checkbox" wire:model.defer="booking_agreement"
                                         data-validate-field="booking_agreement"
@@ -586,15 +587,22 @@
                                 wire:loading.attr="disabled" wire:target="bookAppointment">
                                 <span id="confirmAppointmentIdleLabel" wire:loading.remove wire:target="bookAppointment"
                                     class="inline-flex items-center gap-2">
-                                    <svg class="w-[14px] h-[14px]" fill="none" stroke="currentColor"
-                                        stroke-width="2.5" viewBox="0 0 24 24">
+                                    <svg class="w-[14px] h-[14px]" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        viewBox="0 0 24 24">
                                         <rect x="3" y="4" width="18" height="18" stroke-linecap="square" />
                                         <path stroke-linecap="square" d="M16 2v4M8 2v4M3 10h18" />
                                     </svg>
                                     Confirm Appointment
                                 </span>
-                                <span id="confirmAppointmentBusyLabel" wire:loading wire:target="bookAppointment"
-                                    class="inline-flex items-center justify-center">
+                                <span id="confirmAppointmentBusyLabel" wire:loading.flex wire:target="bookAppointment"
+                                    class="items-center justify-center gap-2">
+                                    <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
                                     {{ auth()->check() ? 'Processing...' : 'Verifying & Sending OTP...' }}
                                 </span>
                             </button>
@@ -605,14 +613,18 @@
                     {{-- ── OTP step (guests) ── --}}
                     @guest
                         @if ($guestOtpStepActive)
-                            <div
-                                data-booking-step="otp"
+                            <div data-booking-step="otp"
                                 class="w-full max-w-xl mx-auto bg-white border border-[#e4eff8] p-8 md:p-12 shadow-[0_20px_48px_rgba(0,134,218,.08)]">
 
                                 {{-- Header --}}
                                 <div class="flex items-center gap-3 mb-8 pb-6 border-b border-[#e4eff8]">
                                     <div class="w-8 h-8 bg-[#0086da] flex items-center justify-center flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                            fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail">
+                                            <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
+                                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                                        </svg>
                                     </div>
                                     <div>
                                         <div class="text-[.6rem] font-bold uppercase tracking-[.2em] text-[#0086da]">Step 3
@@ -626,7 +638,8 @@
                                 <div class="mt-5 mb-6">
                                     <button type="button" wire:click="cancelGuestOtpStep" data-single-tap
                                         class="inline-flex items-center gap-[7px] text-[.68rem] font-bold uppercase tracking-[.12em] text-[#7a9db5] transition hover:text-[#0086da]">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2.5" stroke-linecap="square">
                                             <path d="M19 12H5M12 5l-7 7 7 7" />
                                         </svg>
                                         Back to form
@@ -640,12 +653,12 @@
 
                                 @if (session()->has('otp_success'))
                                     <p class="mt-3 text-[.82rem] font-semibold text-emerald-600">
-                                        {{ session('otp_success') }}</p>
+                                        {{ session('otp_success') }}
+                                    </p>
                                 @endif
 
                                 {{-- Hidden data panel for JS countdown --}}
-                                <div id="otpStatusPanel" class="hidden"
-                                    data-expires-at="{{ $guestEmailOtpExpiresAt }}"
+                                <div id="otpStatusPanel" class="hidden" data-expires-at="{{ $guestEmailOtpExpiresAt }}"
                                     data-cooldown-until="{{ $guestEmailOtpCooldownUntil }}"
                                     data-lock-until="{{ $guestEmailOtpResendLockedUntil }}"
                                     data-resends-remaining="{{ $this->guestOtpResendsRemaining }}">
@@ -657,35 +670,43 @@
                                         <label
                                             class="block text-[.63rem] font-bold uppercase tracking-[.14em] text-[#3d5a6e] mb-2">One-Time
                                             Code</label>
-                                        <input type="text" inputmode="numeric" maxlength="6"
-                                            wire:model.defer="guestEmailOtp" data-validate-field="guestEmailOtp"
-                                            placeholder="• • • • • •"
+                                        <input type="text" inputmode="numeric" maxlength="6" wire:model.defer="guestEmailOtp"
+                                            data-validate-field="guestEmailOtp" placeholder="• • • • • •"
                                             class="{{ $fieldClass('guestEmailOtp') }} text-center text-lg tracking-[.4em] h-13">
                                     </div>
                                     <button type="button" wire:click="verifyGuestEmailOtp" wire:loading.attr="disabled"
                                         data-single-tap wire:target="verifyGuestEmailOtp"
                                         class="relative inline-flex h-[50px] w-full shrink-0 items-center justify-center whitespace-nowrap bg-[#0086da] px-7 text-[.72rem] font-bold uppercase tracking-[.1em] text-white transition hover:bg-[#006ab0] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[11rem]">
                                         <span wire:loading.remove wire:target="verifyGuestEmailOtp"
-                                            class="inline-flex items-center justify-center whitespace-nowrap">Verify & Book</span>
-                                        <span wire:loading wire:target="verifyGuestEmailOtp"
-                                            class="absolute inset-0 flex items-center justify-center gap-2 whitespace-nowrap bg-[#0086da] px-7">
+                                            class="inline-flex items-center justify-center whitespace-nowrap">Verify &
+                                            Book</span>
+                                        <span wire:loading.flex wire:target="verifyGuestEmailOtp"
+                                            class="absolute inset-0 items-center justify-center gap-2 whitespace-nowrap bg-[#0086da] px-7">
+                                            <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                    stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                            </svg>
                                             Verifying...
                                         </span>
                                     </button>
                                 </div>
 
                                 @error('guestEmailOtp')
-                                    <p class="text-[.75rem] text-red-500 mt-2 validation-error"
-                                        data-error-for="guestEmailOtp">{{ $message }}</p>
+                                    <p class="text-[.75rem] text-red-500 mt-2 validation-error" data-error-for="guestEmailOtp">
+                                        {{ $message }}
+                                    </p>
                                 @enderror
 
                                 {{-- Expiry line + Resend button (countdown embedded in label) --}}
                                 <div class="mt-6">
-                                    <p id="otpExpiryText" class="mb-3 text-[.75rem] text-[#7a9db5]">Code expires in --:--</p>
                                     <button type="button" id="otpResendButton" wire:click="resendGuestEmailOtp"
                                         wire:loading.attr="disabled" data-single-tap wire:target="resendGuestEmailOtp"
                                         class="inline-flex h-11 items-center justify-center border border-[#0086da] bg-white px-5 text-[.72rem] font-bold uppercase tracking-[.1em] text-[#0086da] transition hover:bg-[#0086da] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed">
-                                        <span wire:loading.remove wire:target="resendGuestEmailOtp" id="otpResendLabel">Resend OTP</span>
+                                        <span wire:loading.remove wire:target="resendGuestEmailOtp" id="otpResendLabel">Resend
+                                            OTP</span>
                                         <span wire:loading wire:target="resendGuestEmailOtp">Sending…</span>
                                     </button>
                                 </div>
@@ -839,43 +860,54 @@
             await syncRecaptchaToken(token);
         }
 
-        async function syncBookingFormStateToLivewire() {
-            const selectedSlotInput = document.querySelector('input[name="selectedSlot"]:checked');
-            const selectedSlotValue = selectedSlotInput ? selectedSlotInput.value : null;
+        function getRecaptchaTokenLocally() {
+            // Read recaptcha token from DOM + grecaptcha API without making any Livewire request
+            const domToken = (document.getElementById('recaptchaToken')?.value || '').trim();
+            if (domToken) return domToken;
+            const recaptchaApi = getRecaptchaApi();
+            if (!recaptchaApi) return '';
+            return recaptchaWidgetId !== null
+                ? (recaptchaApi.getResponse(recaptchaWidgetId) || '')
+                : (recaptchaApi.getResponse() || '');
+        }
 
-            const syncFieldValue = async (key, selector, transform = (value) => value) => {
-                const element = document.querySelector(selector);
-                if (!element) return;
-                await @this.set(key, transform(element.value));
+        async function syncBookingFormStateToLivewire() {
+            // Collect all field values locally first — no Livewire requests yet
+            const getValue = (selector, transform = v => v) => {
+                const el = document.querySelector(selector);
+                return el ? transform(el.value) : null;
             };
 
-            await syncFieldValue('first_name', '[data-validate-field="first_name"]', value => value.trim());
-            await syncFieldValue('last_name', '[data-validate-field="last_name"]', value => value.trim());
-            await syncFieldValue('patient_birth_date', '[data-validate-field="patient_birth_date"]', value => value.trim());
-            await syncFieldValue('contact_number', '[data-validate-field="contact_number"]', value => value.trim());
-            await syncFieldValue('email', '[data-validate-field="email"]', value => value.trim());
-            await syncFieldValue('patient_first_name', '[data-validate-field="patient_first_name"]', value => value.trim());
-            await syncFieldValue('patient_last_name', '[data-validate-field="patient_last_name"]', value => value.trim());
-            await syncFieldValue('relationship_to_patient', '[data-validate-field="relationship_to_patient"]', value => value
-                .trim());
-
-            // `service_id` and `selectedDate` are already live-bound. Re-setting
-            // them during submit re-triggers slot regeneration and can clear the
-            // user-facing time selection after the confirm button is clicked.
-
+            const selectedSlotInput = document.querySelector('input[name="selectedSlot"]:checked');
             const bookingForInput = document.querySelector('input[name="booking_for"]:checked');
-            if (bookingForInput) {
-                await @this.set('booking_for', bookingForInput.value);
-            }
-
-            if (selectedSlotValue) {
-                await @this.set('selectedSlot', selectedSlotValue);
-            }
-
             const agreementInput = document.querySelector('input[data-validate-field="booking_agreement"]');
-            if (agreementInput) {
-                await @this.set('booking_agreement', !!agreementInput.checked);
+            const isGuestFlow = !!document.getElementById('recaptcha-container');
+
+            const payload = {
+                first_name: getValue('[data-validate-field="first_name"]', v => v.trim()),
+                last_name: getValue('[data-validate-field="last_name"]', v => v.trim()),
+                patient_birth_date: getValue('[data-validate-field="patient_birth_date"]', v => v.trim()),
+                contact_number: getValue('[data-validate-field="contact_number"]', v => v.trim()),
+                email: getValue('[data-validate-field="email"]', v => v.trim()),
+                patient_first_name: getValue('[data-validate-field="patient_first_name"]', v => v.trim()),
+                patient_middle_name: getValue('[data-validate-field="patient_middle_name"]', v => v.trim()),
+                patient_last_name: getValue('[data-validate-field="patient_last_name"]', v => v.trim()),
+                relationship_to_patient: getValue('[data-validate-field="relationship_to_patient"]', v => v.trim()),
+                booking_for: bookingForInput ? bookingForInput.value : null,
+                selectedSlot: selectedSlotInput ? selectedSlotInput.value : null,
+                booking_agreement: agreementInput ? !!agreementInput.checked : false,
+            };
+
+            // Include recaptcha token in the same payload — avoids a separate @this.set() round-trip
+            if (isGuestFlow) {
+                payload.recaptchaToken = getRecaptchaTokenLocally();
             }
+
+            // Remove null entries (fields not present in the DOM)
+            Object.keys(payload).forEach(k => { if (payload[k] === null) delete payload[k]; });
+
+            // ONE single Livewire round-trip
+            await @this.syncFormData(payload);
         }
 
         function setBookingSubmitUi(isSubmitting) {
@@ -899,7 +931,7 @@
 
             while ((Date.now() - startedAt) < timeoutMs) {
                 if (document.querySelector('[data-booking-step="otp"]') || document.getElementById(
-                        'otpStatusPanel')) {
+                    'otpStatusPanel')) {
                     return true;
                 }
 
@@ -915,7 +947,8 @@
             setBookingSubmitUi(true);
             try {
                 const isGuestBookingFlow = !!document.getElementById('recaptcha-container');
-                if (document.getElementById('recaptcha-container')) await setRecaptchaToken();
+                // syncBookingFormStateToLivewire now includes recaptchaToken in its payload —
+                // no separate setRecaptchaToken() call needed (removes one extra round-trip)
                 await syncBookingFormStateToLivewire();
                 await @this.bookAppointment();
 
@@ -930,7 +963,7 @@
 
         function formatCountdown(secs) {
             const s = Math.max(0, Number(secs) || 0);
-            return `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
+            return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
         }
 
         function secondsUntil(ts) {
@@ -951,11 +984,6 @@
             const remaining = Number(panel.dataset.resendsRemaining || 0);
             const effectiveRemaining = lockSecs <= 0 && remaining < 1 && panel.dataset.lockUntil ? 3 : remaining;
 
-            if (expiryText) {
-                expiryText.textContent = expSecs > 0
-                    ? `Code expires in ${formatCountdown(expSecs)}`
-                    : 'Code expired. Request a new OTP.';
-            }
             if (resendLabel) {
                 if (lockSecs > 0) {
                     resendLabel.textContent = `Resend OTP locked (${formatCountdown(lockSecs)})`;
@@ -1056,81 +1084,81 @@
 
         function validateBookingFormBeforeSubmit() {
             const validators = [{
-                    key: 'first_name',
-                    message: 'Please enter the first name.',
-                    validate: () => (document.querySelector('[data-validate-field="first_name"]')?.value || '').trim() !== '',
+                key: 'first_name',
+                message: 'Please enter the first name.',
+                validate: () => (document.querySelector('[data-validate-field="first_name"]')?.value || '').trim() !== '',
+            },
+            {
+                key: 'last_name',
+                message: 'Please enter the last name.',
+                validate: () => (document.querySelector('[data-validate-field="last_name"]')?.value || '').trim() !== '',
+            },
+            {
+                key: 'patient_birth_date',
+                message: 'Please provide the patient birth date.',
+                validate: () => {
+                    const value = (document.querySelector('[data-validate-field="patient_birth_date"]')?.value || '').trim();
+                    if (value === '') return false;
+                    return value <= new Date().toISOString().slice(0, 10);
                 },
-                {
-                    key: 'last_name',
-                    message: 'Please enter the last name.',
-                    validate: () => (document.querySelector('[data-validate-field="last_name"]')?.value || '').trim() !== '',
+            },
+            {
+                key: 'contact_number',
+                message: 'Contact number must be exactly 10 digits after +63.',
+                validate: () => /^\d{10}$/.test((document.querySelector('[data-validate-field="contact_number"]')?.value || '').trim()),
+            },
+            {
+                key: 'email',
+                message: 'Please enter a valid email address.',
+                validate: () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((document.querySelector('[data-validate-field="email"]')?.value || '').trim()),
+            },
+            {
+                key: 'patient_first_name',
+                message: 'Please enter the patient first name.',
+                validate: () => (document.querySelector('[data-validate-field="patient_first_name"]')?.value || '').trim() !== '',
+            },
+            {
+                key: 'patient_last_name',
+                message: 'Please enter the patient last name.',
+                validate: () => (document.querySelector('[data-validate-field="patient_last_name"]')?.value || '').trim() !== '',
+            },
+            {
+                key: 'relationship_to_patient',
+                message: 'Please tell us your relationship to the patient.',
+                validate: () => (document.querySelector('[data-validate-field="relationship_to_patient"]')?.value || '').trim() !== '',
+            },
+            {
+                key: 'service_id',
+                message: 'Please select a service.',
+                validate: () => (document.querySelector('[data-validate-field="service_id"]')?.value || '').trim() !== '',
+            },
+            {
+                key: 'selectedDate',
+                message: 'Please pick a date.',
+                validate: () => (selectedDate || document.querySelector('[data-validate-field="selectedDate"]')?.value || '').trim() !== '',
+            },
+            {
+                key: 'selectedSlot',
+                message: 'Please select a time slot.',
+                validate: () => document.querySelector('input[name="selectedSlot"]:checked') !== null,
+            },
+            {
+                key: 'booking_agreement',
+                message: 'Please confirm the booking agreement before submitting your request.',
+                validate: () => !!document.querySelector('[data-validate-field="booking_agreement"]')?.checked,
+            },
+            {
+                key: 'recaptcha',
+                message: 'Please complete the CAPTCHA verification.',
+                validate: () => {
+                    if (!document.getElementById('recaptcha-container')) return true;
+                    const recaptchaApi = getRecaptchaApi();
+                    const widgetResponse = recaptchaApi ? (recaptchaWidgetId !== null ? recaptchaApi.getResponse(
+                        recaptchaWidgetId) : recaptchaApi.getResponse()) : '';
+                    return ((document.getElementById('recaptchaToken')?.value || '').trim() !== '') || (
+                        (widgetResponse || '').trim() !== '');
                 },
-                {
-                    key: 'patient_birth_date',
-                    message: 'Please provide the patient birth date.',
-                    validate: () => {
-                        const value = (document.querySelector('[data-validate-field="patient_birth_date"]')?.value || '').trim();
-                        if (value === '') return false;
-                        return value <= new Date().toISOString().slice(0, 10);
-                    },
-                },
-                {
-                    key: 'contact_number',
-                    message: 'Contact number must be exactly 10 digits after +63.',
-                    validate: () => /^\d{10}$/.test((document.querySelector('[data-validate-field="contact_number"]')?.value || '').trim()),
-                },
-                {
-                    key: 'email',
-                    message: 'Please enter a valid email address.',
-                    validate: () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((document.querySelector('[data-validate-field="email"]')?.value || '').trim()),
-                },
-                {
-                    key: 'patient_first_name',
-                    message: 'Please enter the patient first name.',
-                    validate: () => (document.querySelector('[data-validate-field="patient_first_name"]')?.value || '').trim() !== '',
-                },
-                {
-                    key: 'patient_last_name',
-                    message: 'Please enter the patient last name.',
-                    validate: () => (document.querySelector('[data-validate-field="patient_last_name"]')?.value || '').trim() !== '',
-                },
-                {
-                    key: 'relationship_to_patient',
-                    message: 'Please tell us your relationship to the patient.',
-                    validate: () => (document.querySelector('[data-validate-field="relationship_to_patient"]')?.value || '').trim() !== '',
-                },
-                {
-                    key: 'service_id',
-                    message: 'Please select a service.',
-                    validate: () => (document.querySelector('[data-validate-field="service_id"]')?.value || '').trim() !== '',
-                },
-                {
-                    key: 'selectedDate',
-                    message: 'Please pick a date.',
-                    validate: () => (selectedDate || document.querySelector('[data-validate-field="selectedDate"]')?.value || '').trim() !== '',
-                },
-                {
-                    key: 'selectedSlot',
-                    message: 'Please select a time slot.',
-                    validate: () => document.querySelector('input[name="selectedSlot"]:checked') !== null,
-                },
-                {
-                    key: 'booking_agreement',
-                    message: 'Please confirm the booking agreement before submitting your request.',
-                    validate: () => !!document.querySelector('[data-validate-field="booking_agreement"]')?.checked,
-                },
-                {
-                    key: 'recaptcha',
-                    message: 'Please complete the CAPTCHA verification.',
-                    validate: () => {
-                        if (!document.getElementById('recaptcha-container')) return true;
-                        const recaptchaApi = getRecaptchaApi();
-                        const widgetResponse = recaptchaApi ? (recaptchaWidgetId !== null ? recaptchaApi.getResponse(
-                            recaptchaWidgetId) : recaptchaApi.getResponse()) : '';
-                        return ((document.getElementById('recaptchaToken')?.value || '').trim() !== '') || (
-                            (widgetResponse || '').trim() !== '');
-                    },
-                }
+            }
             ];
 
             let firstInvalidKey = null;
@@ -1204,7 +1232,7 @@
             if (typeof recaptchaApi?.reset === 'function') {
                 try {
                     recaptchaWidgetId !== null ? recaptchaApi.reset(recaptchaWidgetId) : recaptchaApi.reset();
-                } catch {}
+                } catch { }
             }
             void syncRecaptchaToken('');
         });

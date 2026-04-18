@@ -34,6 +34,7 @@ class BasicInfo extends Component
         'last_name',
         'first_name',
         'middle_name',
+        'suffix',
         'nickname',
         'occupation',
         'civil_status',
@@ -58,6 +59,8 @@ class BasicInfo extends Component
     public $first_name = '';
 
     public $middle_name = '';
+
+    public $suffix = '';
 
     public $nickname = '';
 
